@@ -1,0 +1,716 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AB9B5B31165D816400F11069 /* c14n.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB9B5B2F165D816400F11069 /* c14n.cpp */; };
+		AB9B5B32165D816400F11069 /* c14n.h in Headers */ = {isa = PBXBuildFile; fileRef = AB9B5B30165D816400F11069 /* c14n.h */; };
+		AB9C01D9166E5467009487D9 /* metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB9C01D7166E5467009487D9 /* metadata.cpp */; };
+		AB9C01DA166E5467009487D9 /* metadata.h in Headers */ = {isa = PBXBuildFile; fileRef = AB9C01D8166E5467009487D9 /* metadata.h */; };
+		ABA38A8F16767CA400CB8EDB /* cfi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA38A8D16767CA400CB8EDB /* cfi.cpp */; };
+		ABA38A9016767CA400CB8EDB /* cfi.h in Headers */ = {isa = PBXBuildFile; fileRef = ABA38A8E16767CA400CB8EDB /* cfi.h */; };
+		ABAB94AB165EDE260018D451 /* xmlstring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAB94A9165EDE260018D451 /* xmlstring.cpp */; };
+		ABAB94AC165EDE260018D451 /* xmlstring.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAB94AA165EDE260018D451 /* xmlstring.h */; };
+		ABAB94B016652C200018D451 /* element.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAB94AE16652C200018D451 /* element.cpp */; };
+		ABAB94B116652C200018D451 /* element.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAB94AF16652C200018D451 /* element.h */; };
+		ABAB94B516653EE80018D451 /* dtd.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAB94B316653EE80018D451 /* dtd.h */; };
+		ABAB94BA16654FB20018D451 /* archive.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAB94B816654FB20018D451 /* archive.h */; };
+		ABAB94BF166560980018D451 /* zip_archive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAB94BD166560980018D451 /* zip_archive.cpp */; };
+		ABAB94C0166560980018D451 /* zip_archive.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAB94BE166560980018D451 /* zip_archive.h */; };
+		ABAB94C216667DE40018D451 /* archive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAB94C116667DE30018D451 /* archive.cpp */; };
+		ABAB94C61666AC6D0018D451 /* container.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAB94C41666AC6D0018D451 /* container.cpp */; };
+		ABAB94C71666AC6D0018D451 /* container.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAB94C51666AC6D0018D451 /* container.h */; };
+		ABAB94CA1666AEA10018D451 /* package.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAB94C81666AEA10018D451 /* package.cpp */; };
+		ABAB94CB1666AEA10018D451 /* package.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAB94C91666AEA10018D451 /* package.h */; };
+		ABAB94D21667B6FD0018D451 /* archive_xml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAB94D01667B6FD0018D451 /* archive_xml.cpp */; };
+		ABAB94D31667B6FD0018D451 /* archive_xml.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAB94D11667B6FD0018D451 /* archive_xml.h */; };
+		ABB18FE51656863300CFC651 /* Config.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB18FAC1656863300CFC651 /* Config.h */; };
+		ABB18FE61656863300CFC651 /* mkstemp.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FAD1656863300CFC651 /* mkstemp.c */; };
+		ABB18FE71656863300CFC651 /* zip.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB18FAE1656863300CFC651 /* zip.h */; };
+		ABB18FE81656863300CFC651 /* zip_add.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FAF1656863300CFC651 /* zip_add.c */; };
+		ABB18FE91656863300CFC651 /* zip_add_dir.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FB01656863300CFC651 /* zip_add_dir.c */; };
+		ABB18FEA1656863300CFC651 /* zip_close.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FB11656863300CFC651 /* zip_close.c */; };
+		ABB18FEB1656863300CFC651 /* zip_delete.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FB21656863300CFC651 /* zip_delete.c */; };
+		ABB18FEC1656863300CFC651 /* zip_dirent.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FB31656863300CFC651 /* zip_dirent.c */; };
+		ABB18FED1656863300CFC651 /* zip_entry_free.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FB41656863300CFC651 /* zip_entry_free.c */; };
+		ABB18FEE1656863300CFC651 /* zip_entry_new.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FB51656863300CFC651 /* zip_entry_new.c */; };
+		ABB18FEF1656863300CFC651 /* zip_err_str.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FB61656863300CFC651 /* zip_err_str.c */; };
+		ABB18FF01656863300CFC651 /* zip_error.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FB71656863300CFC651 /* zip_error.c */; };
+		ABB18FF11656863300CFC651 /* zip_error_clear.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FB81656863300CFC651 /* zip_error_clear.c */; };
+		ABB18FF21656863300CFC651 /* zip_error_get.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FB91656863300CFC651 /* zip_error_get.c */; };
+		ABB18FF31656863300CFC651 /* zip_error_get_sys_type.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FBA1656863300CFC651 /* zip_error_get_sys_type.c */; };
+		ABB18FF41656863300CFC651 /* zip_error_strerror.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FBB1656863300CFC651 /* zip_error_strerror.c */; };
+		ABB18FF51656863300CFC651 /* zip_error_to_str.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FBC1656863300CFC651 /* zip_error_to_str.c */; };
+		ABB18FF61656863300CFC651 /* zip_fclose.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FBD1656863300CFC651 /* zip_fclose.c */; };
+		ABB18FF71656863300CFC651 /* zip_file_error_clear.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FBE1656863300CFC651 /* zip_file_error_clear.c */; };
+		ABB18FF81656863300CFC651 /* zip_file_error_get.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FBF1656863300CFC651 /* zip_file_error_get.c */; };
+		ABB18FF91656863300CFC651 /* zip_file_get_offset.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FC01656863300CFC651 /* zip_file_get_offset.c */; };
+		ABB18FFA1656863300CFC651 /* zip_file_strerror.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FC11656863300CFC651 /* zip_file_strerror.c */; };
+		ABB18FFB1656863300CFC651 /* zip_filerange_crc.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FC21656863300CFC651 /* zip_filerange_crc.c */; };
+		ABB18FFC1656863300CFC651 /* zip_fopen.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FC31656863300CFC651 /* zip_fopen.c */; };
+		ABB18FFD1656863300CFC651 /* zip_fopen_index.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FC41656863300CFC651 /* zip_fopen_index.c */; };
+		ABB18FFE1656863300CFC651 /* zip_fread.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FC51656863300CFC651 /* zip_fread.c */; };
+		ABB18FFF1656863300CFC651 /* zip_free.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FC61656863300CFC651 /* zip_free.c */; };
+		ABB190001656863300CFC651 /* zip_get_archive_comment.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FC71656863300CFC651 /* zip_get_archive_comment.c */; };
+		ABB190011656863300CFC651 /* zip_get_archive_flag.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FC81656863300CFC651 /* zip_get_archive_flag.c */; };
+		ABB190021656863300CFC651 /* zip_get_file_comment.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FC91656863300CFC651 /* zip_get_file_comment.c */; };
+		ABB190031656863300CFC651 /* zip_get_name.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FCA1656863300CFC651 /* zip_get_name.c */; };
+		ABB190041656863300CFC651 /* zip_get_num_files.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FCB1656863300CFC651 /* zip_get_num_files.c */; };
+		ABB190051656863300CFC651 /* zip_memdup.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FCC1656863300CFC651 /* zip_memdup.c */; };
+		ABB190061656863300CFC651 /* zip_name_locate.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FCD1656863300CFC651 /* zip_name_locate.c */; };
+		ABB190071656863300CFC651 /* zip_new.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FCE1656863300CFC651 /* zip_new.c */; };
+		ABB190081656863300CFC651 /* zip_open.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FCF1656863300CFC651 /* zip_open.c */; };
+		ABB190091656863300CFC651 /* zip_rename.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FD01656863300CFC651 /* zip_rename.c */; };
+		ABB1900A1656863300CFC651 /* zip_replace.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FD11656863300CFC651 /* zip_replace.c */; };
+		ABB1900B1656863300CFC651 /* zip_set_archive_comment.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FD21656863300CFC651 /* zip_set_archive_comment.c */; };
+		ABB1900C1656863300CFC651 /* zip_set_archive_flag.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FD31656863300CFC651 /* zip_set_archive_flag.c */; };
+		ABB1900D1656863300CFC651 /* zip_set_file_comment.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FD41656863300CFC651 /* zip_set_file_comment.c */; };
+		ABB1900E1656863300CFC651 /* zip_set_name.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FD51656863300CFC651 /* zip_set_name.c */; };
+		ABB1900F1656863300CFC651 /* zip_source_buffer.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FD61656863300CFC651 /* zip_source_buffer.c */; };
+		ABB190101656863300CFC651 /* zip_source_file.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FD71656863300CFC651 /* zip_source_file.c */; };
+		ABB190111656863300CFC651 /* zip_source_filep.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FD81656863300CFC651 /* zip_source_filep.c */; };
+		ABB190121656863300CFC651 /* zip_source_free.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FD91656863300CFC651 /* zip_source_free.c */; };
+		ABB190131656863300CFC651 /* zip_source_function.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FDA1656863300CFC651 /* zip_source_function.c */; };
+		ABB190141656863300CFC651 /* zip_source_zip.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FDB1656863300CFC651 /* zip_source_zip.c */; };
+		ABB190151656863300CFC651 /* zip_stat.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FDC1656863300CFC651 /* zip_stat.c */; };
+		ABB190161656863300CFC651 /* zip_stat_index.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FDD1656863300CFC651 /* zip_stat_index.c */; };
+		ABB190171656863300CFC651 /* zip_stat_init.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FDE1656863300CFC651 /* zip_stat_init.c */; };
+		ABB190181656863300CFC651 /* zip_strerror.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FDF1656863300CFC651 /* zip_strerror.c */; };
+		ABB190191656863300CFC651 /* zip_unchange.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FE01656863300CFC651 /* zip_unchange.c */; };
+		ABB1901A1656863300CFC651 /* zip_unchange_all.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FE11656863300CFC651 /* zip_unchange_all.c */; };
+		ABB1901B1656863300CFC651 /* zip_unchange_archive.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FE21656863300CFC651 /* zip_unchange_archive.c */; };
+		ABB1901C1656863300CFC651 /* zip_unchange_data.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FE31656863300CFC651 /* zip_unchange_data.c */; };
+		ABB1901D1656863300CFC651 /* zipint.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB18FE41656863300CFC651 /* zipint.h */; };
+		ABB190201656868100CFC651 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = ABB1901F1656868100CFC651 /* libz.dylib */; };
+		ABB190251656DB2200CFC651 /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = ABB190241656DB2200CFC651 /* libxml2.dylib */; };
+		ABB190351656E82100CFC651 /* io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB190331656E82100CFC651 /* io.cpp */; };
+		ABB190361656E82100CFC651 /* io.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB190341656E82100CFC651 /* io.h */; };
+		ABB19039165A7E1000CFC651 /* schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB19037165A7E1000CFC651 /* schema.cpp */; };
+		ABB1903A165A7E1000CFC651 /* schema.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB19038165A7E1000CFC651 /* schema.h */; };
+		ABB1903D165A86E400CFC651 /* node.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB1903B165A86E400CFC651 /* node.cpp */; };
+		ABB1903E165A86E400CFC651 /* node.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB1903C165A86E400CFC651 /* node.h */; };
+		ABB19041165A8C3E00CFC651 /* xpath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB1903F165A8C3E00CFC651 /* xpath.cpp */; };
+		ABB19042165A8C3E00CFC651 /* xpath.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB19040165A8C3E00CFC651 /* xpath.h */; };
+		ABB19049165ADD6A00CFC651 /* ns.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB19047165ADD6900CFC651 /* ns.cpp */; };
+		ABB1904A165ADD6A00CFC651 /* ns.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB19048165ADD6900CFC651 /* ns.h */; };
+		ABB1904C165C13FF00CFC651 /* base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB1904B165C13FF00CFC651 /* base.cpp */; };
+		ABB19053165C1F9100CFC651 /* document.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB19051165C1F9000CFC651 /* document.cpp */; };
+		ABB19054165C1F9100CFC651 /* document.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB19052165C1F9000CFC651 /* document.h */; };
+		ABF2D99F1667F7860036B8CA /* xpath_wrangler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABF2D99D1667F7860036B8CA /* xpath_wrangler.cpp */; };
+		ABF2D9A01667F7860036B8CA /* xpath_wrangler.h in Headers */ = {isa = PBXBuildFile; fileRef = ABF2D99E1667F7860036B8CA /* xpath_wrangler.h */; };
+		ABF2D9A716682E1E0036B8CA /* spine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABF2D9A516682E1E0036B8CA /* spine.cpp */; };
+		ABF2D9A816682E1E0036B8CA /* spine.h in Headers */ = {isa = PBXBuildFile; fileRef = ABF2D9A616682E1E0036B8CA /* spine.h */; };
+		ABF2D9AC1668301D0036B8CA /* manifest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABF2D9AA1668301D0036B8CA /* manifest.cpp */; };
+		ABF2D9AD1668301D0036B8CA /* manifest.h in Headers */ = {isa = PBXBuildFile; fileRef = ABF2D9AB1668301D0036B8CA /* manifest.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AB9B5B2F165D816400F11069 /* c14n.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = c14n.cpp; sourceTree = "<group>"; };
+		AB9B5B30165D816400F11069 /* c14n.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = c14n.h; sourceTree = "<group>"; };
+		AB9C01D7166E5467009487D9 /* metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = metadata.cpp; sourceTree = "<group>"; };
+		AB9C01D8166E5467009487D9 /* metadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = metadata.h; sourceTree = "<group>"; };
+		ABA38A8D16767CA400CB8EDB /* cfi.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cfi.cpp; sourceTree = "<group>"; };
+		ABA38A8E16767CA400CB8EDB /* cfi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cfi.h; sourceTree = "<group>"; };
+		ABA72C241655382E003125FF /* ePub3.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = ePub3.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		ABA72C281655382E003125FF /* ePub3-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ePub3-Prefix.pch"; sourceTree = "<group>"; };
+		ABA72C291655382E003125FF /* ePub3Proj.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = ePub3Proj.xcconfig; sourceTree = "<group>"; };
+		ABA72C2A1655382E003125FF /* ePub3Target.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = ePub3Target.xcconfig; sourceTree = "<group>"; };
+		ABAB94A9165EDE260018D451 /* xmlstring.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = xmlstring.cpp; sourceTree = "<group>"; };
+		ABAB94AA165EDE260018D451 /* xmlstring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xmlstring.h; sourceTree = "<group>"; };
+		ABAB94AE16652C200018D451 /* element.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = element.cpp; sourceTree = "<group>"; };
+		ABAB94AF16652C200018D451 /* element.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = element.h; sourceTree = "<group>"; };
+		ABAB94B316653EE80018D451 /* dtd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dtd.h; sourceTree = "<group>"; };
+		ABAB94B816654FB20018D451 /* archive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = archive.h; sourceTree = "<group>"; };
+		ABAB94BB1665503C0018D451 /* epub3.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = epub3.h; sourceTree = "<group>"; };
+		ABAB94BD166560980018D451 /* zip_archive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = zip_archive.cpp; sourceTree = "<group>"; };
+		ABAB94BE166560980018D451 /* zip_archive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zip_archive.h; sourceTree = "<group>"; };
+		ABAB94C116667DE30018D451 /* archive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = archive.cpp; sourceTree = "<group>"; };
+		ABAB94C41666AC6D0018D451 /* container.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = container.cpp; sourceTree = "<group>"; };
+		ABAB94C51666AC6D0018D451 /* container.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = container.h; sourceTree = "<group>"; };
+		ABAB94C81666AEA10018D451 /* package.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = package.cpp; sourceTree = "<group>"; };
+		ABAB94C91666AEA10018D451 /* package.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = package.h; sourceTree = "<group>"; };
+		ABAB94D01667B6FD0018D451 /* archive_xml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = archive_xml.cpp; sourceTree = "<group>"; };
+		ABAB94D11667B6FD0018D451 /* archive_xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = archive_xml.h; sourceTree = "<group>"; };
+		ABB18FAC1656863300CFC651 /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
+		ABB18FAD1656863300CFC651 /* mkstemp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mkstemp.c; sourceTree = "<group>"; };
+		ABB18FAE1656863300CFC651 /* zip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zip.h; sourceTree = "<group>"; };
+		ABB18FAF1656863300CFC651 /* zip_add.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_add.c; sourceTree = "<group>"; };
+		ABB18FB01656863300CFC651 /* zip_add_dir.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_add_dir.c; sourceTree = "<group>"; };
+		ABB18FB11656863300CFC651 /* zip_close.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_close.c; sourceTree = "<group>"; };
+		ABB18FB21656863300CFC651 /* zip_delete.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_delete.c; sourceTree = "<group>"; };
+		ABB18FB31656863300CFC651 /* zip_dirent.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_dirent.c; sourceTree = "<group>"; };
+		ABB18FB41656863300CFC651 /* zip_entry_free.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_entry_free.c; sourceTree = "<group>"; };
+		ABB18FB51656863300CFC651 /* zip_entry_new.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_entry_new.c; sourceTree = "<group>"; };
+		ABB18FB61656863300CFC651 /* zip_err_str.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_err_str.c; sourceTree = "<group>"; };
+		ABB18FB71656863300CFC651 /* zip_error.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_error.c; sourceTree = "<group>"; };
+		ABB18FB81656863300CFC651 /* zip_error_clear.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_error_clear.c; sourceTree = "<group>"; };
+		ABB18FB91656863300CFC651 /* zip_error_get.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_error_get.c; sourceTree = "<group>"; };
+		ABB18FBA1656863300CFC651 /* zip_error_get_sys_type.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_error_get_sys_type.c; sourceTree = "<group>"; };
+		ABB18FBB1656863300CFC651 /* zip_error_strerror.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_error_strerror.c; sourceTree = "<group>"; };
+		ABB18FBC1656863300CFC651 /* zip_error_to_str.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_error_to_str.c; sourceTree = "<group>"; };
+		ABB18FBD1656863300CFC651 /* zip_fclose.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_fclose.c; sourceTree = "<group>"; };
+		ABB18FBE1656863300CFC651 /* zip_file_error_clear.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_file_error_clear.c; sourceTree = "<group>"; };
+		ABB18FBF1656863300CFC651 /* zip_file_error_get.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_file_error_get.c; sourceTree = "<group>"; };
+		ABB18FC01656863300CFC651 /* zip_file_get_offset.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_file_get_offset.c; sourceTree = "<group>"; };
+		ABB18FC11656863300CFC651 /* zip_file_strerror.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_file_strerror.c; sourceTree = "<group>"; };
+		ABB18FC21656863300CFC651 /* zip_filerange_crc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_filerange_crc.c; sourceTree = "<group>"; };
+		ABB18FC31656863300CFC651 /* zip_fopen.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_fopen.c; sourceTree = "<group>"; };
+		ABB18FC41656863300CFC651 /* zip_fopen_index.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_fopen_index.c; sourceTree = "<group>"; };
+		ABB18FC51656863300CFC651 /* zip_fread.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_fread.c; sourceTree = "<group>"; };
+		ABB18FC61656863300CFC651 /* zip_free.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_free.c; sourceTree = "<group>"; };
+		ABB18FC71656863300CFC651 /* zip_get_archive_comment.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_get_archive_comment.c; sourceTree = "<group>"; };
+		ABB18FC81656863300CFC651 /* zip_get_archive_flag.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_get_archive_flag.c; sourceTree = "<group>"; };
+		ABB18FC91656863300CFC651 /* zip_get_file_comment.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_get_file_comment.c; sourceTree = "<group>"; };
+		ABB18FCA1656863300CFC651 /* zip_get_name.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_get_name.c; sourceTree = "<group>"; };
+		ABB18FCB1656863300CFC651 /* zip_get_num_files.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_get_num_files.c; sourceTree = "<group>"; };
+		ABB18FCC1656863300CFC651 /* zip_memdup.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_memdup.c; sourceTree = "<group>"; };
+		ABB18FCD1656863300CFC651 /* zip_name_locate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_name_locate.c; sourceTree = "<group>"; };
+		ABB18FCE1656863300CFC651 /* zip_new.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_new.c; sourceTree = "<group>"; };
+		ABB18FCF1656863300CFC651 /* zip_open.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_open.c; sourceTree = "<group>"; };
+		ABB18FD01656863300CFC651 /* zip_rename.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_rename.c; sourceTree = "<group>"; };
+		ABB18FD11656863300CFC651 /* zip_replace.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_replace.c; sourceTree = "<group>"; };
+		ABB18FD21656863300CFC651 /* zip_set_archive_comment.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_set_archive_comment.c; sourceTree = "<group>"; };
+		ABB18FD31656863300CFC651 /* zip_set_archive_flag.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_set_archive_flag.c; sourceTree = "<group>"; };
+		ABB18FD41656863300CFC651 /* zip_set_file_comment.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_set_file_comment.c; sourceTree = "<group>"; };
+		ABB18FD51656863300CFC651 /* zip_set_name.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_set_name.c; sourceTree = "<group>"; };
+		ABB18FD61656863300CFC651 /* zip_source_buffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_source_buffer.c; sourceTree = "<group>"; };
+		ABB18FD71656863300CFC651 /* zip_source_file.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_source_file.c; sourceTree = "<group>"; };
+		ABB18FD81656863300CFC651 /* zip_source_filep.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_source_filep.c; sourceTree = "<group>"; };
+		ABB18FD91656863300CFC651 /* zip_source_free.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_source_free.c; sourceTree = "<group>"; };
+		ABB18FDA1656863300CFC651 /* zip_source_function.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_source_function.c; sourceTree = "<group>"; };
+		ABB18FDB1656863300CFC651 /* zip_source_zip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_source_zip.c; sourceTree = "<group>"; };
+		ABB18FDC1656863300CFC651 /* zip_stat.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_stat.c; sourceTree = "<group>"; };
+		ABB18FDD1656863300CFC651 /* zip_stat_index.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_stat_index.c; sourceTree = "<group>"; };
+		ABB18FDE1656863300CFC651 /* zip_stat_init.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_stat_init.c; sourceTree = "<group>"; };
+		ABB18FDF1656863300CFC651 /* zip_strerror.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_strerror.c; sourceTree = "<group>"; };
+		ABB18FE01656863300CFC651 /* zip_unchange.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_unchange.c; sourceTree = "<group>"; };
+		ABB18FE11656863300CFC651 /* zip_unchange_all.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_unchange_all.c; sourceTree = "<group>"; };
+		ABB18FE21656863300CFC651 /* zip_unchange_archive.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_unchange_archive.c; sourceTree = "<group>"; };
+		ABB18FE31656863300CFC651 /* zip_unchange_data.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_unchange_data.c; sourceTree = "<group>"; };
+		ABB18FE41656863300CFC651 /* zipint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zipint.h; sourceTree = "<group>"; };
+		ABB1901F1656868100CFC651 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		ABB190241656DB2200CFC651 /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
+		ABB1902E1656DD9000CFC651 /* base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = base.h; sourceTree = "<group>"; };
+		ABB190331656E82100CFC651 /* io.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = io.cpp; sourceTree = "<group>"; };
+		ABB190341656E82100CFC651 /* io.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = io.h; sourceTree = "<group>"; };
+		ABB19037165A7E1000CFC651 /* schema.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = schema.cpp; sourceTree = "<group>"; };
+		ABB19038165A7E1000CFC651 /* schema.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = schema.h; sourceTree = "<group>"; };
+		ABB1903B165A86E400CFC651 /* node.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = node.cpp; sourceTree = "<group>"; };
+		ABB1903C165A86E400CFC651 /* node.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = node.h; sourceTree = "<group>"; };
+		ABB1903F165A8C3E00CFC651 /* xpath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = xpath.cpp; sourceTree = "<group>"; };
+		ABB19040165A8C3E00CFC651 /* xpath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xpath.h; sourceTree = "<group>"; };
+		ABB19047165ADD6900CFC651 /* ns.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ns.cpp; sourceTree = "<group>"; };
+		ABB19048165ADD6900CFC651 /* ns.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ns.h; sourceTree = "<group>"; };
+		ABB1904B165C13FF00CFC651 /* base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = base.cpp; sourceTree = "<group>"; };
+		ABB19051165C1F9000CFC651 /* document.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = document.cpp; sourceTree = "<group>"; };
+		ABB19052165C1F9000CFC651 /* document.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = document.h; sourceTree = "<group>"; };
+		ABF2D99D1667F7860036B8CA /* xpath_wrangler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = xpath_wrangler.cpp; sourceTree = "<group>"; };
+		ABF2D99E1667F7860036B8CA /* xpath_wrangler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xpath_wrangler.h; sourceTree = "<group>"; };
+		ABF2D9A516682E1E0036B8CA /* spine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spine.cpp; sourceTree = "<group>"; };
+		ABF2D9A616682E1E0036B8CA /* spine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spine.h; sourceTree = "<group>"; };
+		ABF2D9AA1668301D0036B8CA /* manifest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = manifest.cpp; sourceTree = "<group>"; };
+		ABF2D9AB1668301D0036B8CA /* manifest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = manifest.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		ABA72C211655382E003125FF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ABB190251656DB2200CFC651 /* libxml2.dylib in Frameworks */,
+				ABB190201656868100CFC651 /* libz.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AB9B5B2A165D539400F11069 /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				ABB190241656DB2200CFC651 /* libxml2.dylib */,
+				ABB1901F1656868100CFC651 /* libz.dylib */,
+			);
+			name = Libraries;
+			sourceTree = "<group>";
+		};
+		ABA72C191655382E003125FF = {
+			isa = PBXGroup;
+			children = (
+				ABA72C261655382E003125FF /* ePub3 */,
+				ABA72C251655382E003125FF /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		ABA72C251655382E003125FF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				ABA72C241655382E003125FF /* ePub3.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		ABA72C261655382E003125FF /* ePub3 */ = {
+			isa = PBXGroup;
+			children = (
+				ABB18FAB1656863300CFC651 /* libzip */,
+				ABAB94B616654F580018D451 /* ePub */,
+				ABB190271656DD4400CFC651 /* xml */,
+				AB9B5B2A165D539400F11069 /* Libraries */,
+				ABA72C271655382E003125FF /* Supporting Files */,
+			);
+			path = ePub3;
+			sourceTree = "<group>";
+		};
+		ABA72C271655382E003125FF /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				ABA72C281655382E003125FF /* ePub3-Prefix.pch */,
+				ABA72C291655382E003125FF /* ePub3Proj.xcconfig */,
+				ABA72C2A1655382E003125FF /* ePub3Target.xcconfig */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		ABAB94B616654F580018D451 /* ePub */ = {
+			isa = PBXGroup;
+			children = (
+				ABAB94C31666AC4F0018D451 /* Components */,
+				ABAB94BC166560840018D451 /* Archives */,
+				ABAB94BB1665503C0018D451 /* epub3.h */,
+			);
+			path = ePub;
+			sourceTree = "<group>";
+		};
+		ABAB94BC166560840018D451 /* Archives */ = {
+			isa = PBXGroup;
+			children = (
+				ABAB94C116667DE30018D451 /* archive.cpp */,
+				ABAB94B816654FB20018D451 /* archive.h */,
+				ABAB94D01667B6FD0018D451 /* archive_xml.cpp */,
+				ABAB94D11667B6FD0018D451 /* archive_xml.h */,
+				ABAB94BD166560980018D451 /* zip_archive.cpp */,
+				ABAB94BE166560980018D451 /* zip_archive.h */,
+			);
+			name = Archives;
+			sourceTree = "<group>";
+		};
+		ABAB94C31666AC4F0018D451 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				ABAB94C41666AC6D0018D451 /* container.cpp */,
+				ABAB94C51666AC6D0018D451 /* container.h */,
+				ABAB94C81666AEA10018D451 /* package.cpp */,
+				ABAB94C91666AEA10018D451 /* package.h */,
+				ABF2D9A516682E1E0036B8CA /* spine.cpp */,
+				ABF2D9A616682E1E0036B8CA /* spine.h */,
+				ABF2D9AA1668301D0036B8CA /* manifest.cpp */,
+				ABF2D9AB1668301D0036B8CA /* manifest.h */,
+				AB9C01D7166E5467009487D9 /* metadata.cpp */,
+				AB9C01D8166E5467009487D9 /* metadata.h */,
+				ABF2D99D1667F7860036B8CA /* xpath_wrangler.cpp */,
+				ABF2D99E1667F7860036B8CA /* xpath_wrangler.h */,
+				ABA38A8D16767CA400CB8EDB /* cfi.cpp */,
+				ABA38A8E16767CA400CB8EDB /* cfi.h */,
+			);
+			name = Components;
+			sourceTree = "<group>";
+		};
+		ABB18FAB1656863300CFC651 /* libzip */ = {
+			isa = PBXGroup;
+			children = (
+				ABB18FAC1656863300CFC651 /* Config.h */,
+				ABB18FAD1656863300CFC651 /* mkstemp.c */,
+				ABB18FAE1656863300CFC651 /* zip.h */,
+				ABB18FAF1656863300CFC651 /* zip_add.c */,
+				ABB18FB01656863300CFC651 /* zip_add_dir.c */,
+				ABB18FB11656863300CFC651 /* zip_close.c */,
+				ABB18FB21656863300CFC651 /* zip_delete.c */,
+				ABB18FB31656863300CFC651 /* zip_dirent.c */,
+				ABB18FB41656863300CFC651 /* zip_entry_free.c */,
+				ABB18FB51656863300CFC651 /* zip_entry_new.c */,
+				ABB18FB61656863300CFC651 /* zip_err_str.c */,
+				ABB18FB71656863300CFC651 /* zip_error.c */,
+				ABB18FB81656863300CFC651 /* zip_error_clear.c */,
+				ABB18FB91656863300CFC651 /* zip_error_get.c */,
+				ABB18FBA1656863300CFC651 /* zip_error_get_sys_type.c */,
+				ABB18FBB1656863300CFC651 /* zip_error_strerror.c */,
+				ABB18FBC1656863300CFC651 /* zip_error_to_str.c */,
+				ABB18FBD1656863300CFC651 /* zip_fclose.c */,
+				ABB18FBE1656863300CFC651 /* zip_file_error_clear.c */,
+				ABB18FBF1656863300CFC651 /* zip_file_error_get.c */,
+				ABB18FC01656863300CFC651 /* zip_file_get_offset.c */,
+				ABB18FC11656863300CFC651 /* zip_file_strerror.c */,
+				ABB18FC21656863300CFC651 /* zip_filerange_crc.c */,
+				ABB18FC31656863300CFC651 /* zip_fopen.c */,
+				ABB18FC41656863300CFC651 /* zip_fopen_index.c */,
+				ABB18FC51656863300CFC651 /* zip_fread.c */,
+				ABB18FC61656863300CFC651 /* zip_free.c */,
+				ABB18FC71656863300CFC651 /* zip_get_archive_comment.c */,
+				ABB18FC81656863300CFC651 /* zip_get_archive_flag.c */,
+				ABB18FC91656863300CFC651 /* zip_get_file_comment.c */,
+				ABB18FCA1656863300CFC651 /* zip_get_name.c */,
+				ABB18FCB1656863300CFC651 /* zip_get_num_files.c */,
+				ABB18FCC1656863300CFC651 /* zip_memdup.c */,
+				ABB18FCD1656863300CFC651 /* zip_name_locate.c */,
+				ABB18FCE1656863300CFC651 /* zip_new.c */,
+				ABB18FCF1656863300CFC651 /* zip_open.c */,
+				ABB18FD01656863300CFC651 /* zip_rename.c */,
+				ABB18FD11656863300CFC651 /* zip_replace.c */,
+				ABB18FD21656863300CFC651 /* zip_set_archive_comment.c */,
+				ABB18FD31656863300CFC651 /* zip_set_archive_flag.c */,
+				ABB18FD41656863300CFC651 /* zip_set_file_comment.c */,
+				ABB18FD51656863300CFC651 /* zip_set_name.c */,
+				ABB18FD61656863300CFC651 /* zip_source_buffer.c */,
+				ABB18FD71656863300CFC651 /* zip_source_file.c */,
+				ABB18FD81656863300CFC651 /* zip_source_filep.c */,
+				ABB18FD91656863300CFC651 /* zip_source_free.c */,
+				ABB18FDA1656863300CFC651 /* zip_source_function.c */,
+				ABB18FDB1656863300CFC651 /* zip_source_zip.c */,
+				ABB18FDC1656863300CFC651 /* zip_stat.c */,
+				ABB18FDD1656863300CFC651 /* zip_stat_index.c */,
+				ABB18FDE1656863300CFC651 /* zip_stat_init.c */,
+				ABB18FDF1656863300CFC651 /* zip_strerror.c */,
+				ABB18FE01656863300CFC651 /* zip_unchange.c */,
+				ABB18FE11656863300CFC651 /* zip_unchange_all.c */,
+				ABB18FE21656863300CFC651 /* zip_unchange_archive.c */,
+				ABB18FE31656863300CFC651 /* zip_unchange_data.c */,
+				ABB18FE41656863300CFC651 /* zipint.h */,
+			);
+			path = libzip;
+			sourceTree = "<group>";
+		};
+		ABB190271656DD4400CFC651 /* xml */ = {
+			isa = PBXGroup;
+			children = (
+				ABB190281656DD4400CFC651 /* dtd */,
+				ABB1902A1656DD4400CFC651 /* parsers */,
+				ABB1902B1656DD4400CFC651 /* tree */,
+				ABB1902C1656DD4400CFC651 /* utilities */,
+				ABB1902D1656DD4400CFC651 /* validation */,
+			);
+			path = xml;
+			sourceTree = "<group>";
+		};
+		ABB190281656DD4400CFC651 /* dtd */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = dtd;
+			sourceTree = "<group>";
+		};
+		ABB1902A1656DD4400CFC651 /* parsers */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = parsers;
+			sourceTree = "<group>";
+		};
+		ABB1902B1656DD4400CFC651 /* tree */ = {
+			isa = PBXGroup;
+			children = (
+				ABB19051165C1F9000CFC651 /* document.cpp */,
+				ABB19052165C1F9000CFC651 /* document.h */,
+				ABB1903B165A86E400CFC651 /* node.cpp */,
+				ABB1903C165A86E400CFC651 /* node.h */,
+				ABAB94AE16652C200018D451 /* element.cpp */,
+				ABAB94AF16652C200018D451 /* element.h */,
+				ABB1903F165A8C3E00CFC651 /* xpath.cpp */,
+				ABB19040165A8C3E00CFC651 /* xpath.h */,
+			);
+			path = tree;
+			sourceTree = "<group>";
+		};
+		ABB1902C1656DD4400CFC651 /* utilities */ = {
+			isa = PBXGroup;
+			children = (
+				ABB1904B165C13FF00CFC651 /* base.cpp */,
+				ABB1902E1656DD9000CFC651 /* base.h */,
+				ABB190331656E82100CFC651 /* io.cpp */,
+				ABB190341656E82100CFC651 /* io.h */,
+				ABAB94A9165EDE260018D451 /* xmlstring.cpp */,
+				ABAB94AA165EDE260018D451 /* xmlstring.h */,
+			);
+			path = utilities;
+			sourceTree = "<group>";
+		};
+		ABB1902D1656DD4400CFC651 /* validation */ = {
+			isa = PBXGroup;
+			children = (
+				ABB19037165A7E1000CFC651 /* schema.cpp */,
+				ABB19038165A7E1000CFC651 /* schema.h */,
+				ABB19047165ADD6900CFC651 /* ns.cpp */,
+				ABB19048165ADD6900CFC651 /* ns.h */,
+				ABAB94B316653EE80018D451 /* dtd.h */,
+				AB9B5B2F165D816400F11069 /* c14n.cpp */,
+				AB9B5B30165D816400F11069 /* c14n.h */,
+			);
+			path = validation;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		ABA72C221655382E003125FF /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ABB18FE51656863300CFC651 /* Config.h in Headers */,
+				ABB18FE71656863300CFC651 /* zip.h in Headers */,
+				ABB1901D1656863300CFC651 /* zipint.h in Headers */,
+				ABB190361656E82100CFC651 /* io.h in Headers */,
+				ABB1903A165A7E1000CFC651 /* schema.h in Headers */,
+				ABB1903E165A86E400CFC651 /* node.h in Headers */,
+				ABB19042165A8C3E00CFC651 /* xpath.h in Headers */,
+				ABB1904A165ADD6A00CFC651 /* ns.h in Headers */,
+				ABB19054165C1F9100CFC651 /* document.h in Headers */,
+				AB9B5B32165D816400F11069 /* c14n.h in Headers */,
+				ABAB94AC165EDE260018D451 /* xmlstring.h in Headers */,
+				ABAB94B116652C200018D451 /* element.h in Headers */,
+				ABAB94B516653EE80018D451 /* dtd.h in Headers */,
+				ABAB94BA16654FB20018D451 /* archive.h in Headers */,
+				ABAB94C0166560980018D451 /* zip_archive.h in Headers */,
+				ABAB94C71666AC6D0018D451 /* container.h in Headers */,
+				ABAB94CB1666AEA10018D451 /* package.h in Headers */,
+				ABAB94D31667B6FD0018D451 /* archive_xml.h in Headers */,
+				ABF2D9A01667F7860036B8CA /* xpath_wrangler.h in Headers */,
+				ABF2D9A816682E1E0036B8CA /* spine.h in Headers */,
+				ABF2D9AD1668301D0036B8CA /* manifest.h in Headers */,
+				AB9C01DA166E5467009487D9 /* metadata.h in Headers */,
+				ABA38A9016767CA400CB8EDB /* cfi.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		ABA72C231655382E003125FF /* ePub3 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ABA72C311655382E003125FF /* Build configuration list for PBXNativeTarget "ePub3" */;
+			buildPhases = (
+				ABA72C201655382E003125FF /* Sources */,
+				ABA72C211655382E003125FF /* Frameworks */,
+				ABA72C221655382E003125FF /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ePub3;
+			productName = ePub3;
+			productReference = ABA72C241655382E003125FF /* ePub3.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		ABA72C1B1655382E003125FF /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0450;
+				ORGANIZATIONNAME = "Kobo Inc";
+			};
+			buildConfigurationList = ABA72C1E1655382E003125FF /* Build configuration list for PBXProject "ePub3" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = ABA72C191655382E003125FF;
+			productRefGroup = ABA72C251655382E003125FF /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				ABA72C231655382E003125FF /* ePub3 */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		ABA72C201655382E003125FF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ABB18FE61656863300CFC651 /* mkstemp.c in Sources */,
+				ABB18FE81656863300CFC651 /* zip_add.c in Sources */,
+				ABB18FE91656863300CFC651 /* zip_add_dir.c in Sources */,
+				ABB18FEA1656863300CFC651 /* zip_close.c in Sources */,
+				ABB18FEB1656863300CFC651 /* zip_delete.c in Sources */,
+				ABB18FEC1656863300CFC651 /* zip_dirent.c in Sources */,
+				ABB18FED1656863300CFC651 /* zip_entry_free.c in Sources */,
+				ABB18FEE1656863300CFC651 /* zip_entry_new.c in Sources */,
+				ABB18FEF1656863300CFC651 /* zip_err_str.c in Sources */,
+				ABB18FF01656863300CFC651 /* zip_error.c in Sources */,
+				ABB18FF11656863300CFC651 /* zip_error_clear.c in Sources */,
+				ABB18FF21656863300CFC651 /* zip_error_get.c in Sources */,
+				ABB18FF31656863300CFC651 /* zip_error_get_sys_type.c in Sources */,
+				ABB18FF41656863300CFC651 /* zip_error_strerror.c in Sources */,
+				ABB18FF51656863300CFC651 /* zip_error_to_str.c in Sources */,
+				ABB18FF61656863300CFC651 /* zip_fclose.c in Sources */,
+				ABB18FF71656863300CFC651 /* zip_file_error_clear.c in Sources */,
+				ABB18FF81656863300CFC651 /* zip_file_error_get.c in Sources */,
+				ABB18FF91656863300CFC651 /* zip_file_get_offset.c in Sources */,
+				ABB18FFA1656863300CFC651 /* zip_file_strerror.c in Sources */,
+				ABB18FFB1656863300CFC651 /* zip_filerange_crc.c in Sources */,
+				ABB18FFC1656863300CFC651 /* zip_fopen.c in Sources */,
+				ABB18FFD1656863300CFC651 /* zip_fopen_index.c in Sources */,
+				ABB18FFE1656863300CFC651 /* zip_fread.c in Sources */,
+				ABB18FFF1656863300CFC651 /* zip_free.c in Sources */,
+				ABB190001656863300CFC651 /* zip_get_archive_comment.c in Sources */,
+				ABB190011656863300CFC651 /* zip_get_archive_flag.c in Sources */,
+				ABB190021656863300CFC651 /* zip_get_file_comment.c in Sources */,
+				ABB190031656863300CFC651 /* zip_get_name.c in Sources */,
+				ABB190041656863300CFC651 /* zip_get_num_files.c in Sources */,
+				ABB190051656863300CFC651 /* zip_memdup.c in Sources */,
+				ABB190061656863300CFC651 /* zip_name_locate.c in Sources */,
+				ABB190071656863300CFC651 /* zip_new.c in Sources */,
+				ABB190081656863300CFC651 /* zip_open.c in Sources */,
+				ABB190091656863300CFC651 /* zip_rename.c in Sources */,
+				ABB1900A1656863300CFC651 /* zip_replace.c in Sources */,
+				ABB1900B1656863300CFC651 /* zip_set_archive_comment.c in Sources */,
+				ABB1900C1656863300CFC651 /* zip_set_archive_flag.c in Sources */,
+				ABB1900D1656863300CFC651 /* zip_set_file_comment.c in Sources */,
+				ABB1900E1656863300CFC651 /* zip_set_name.c in Sources */,
+				ABB1900F1656863300CFC651 /* zip_source_buffer.c in Sources */,
+				ABB190101656863300CFC651 /* zip_source_file.c in Sources */,
+				ABB190111656863300CFC651 /* zip_source_filep.c in Sources */,
+				ABB190121656863300CFC651 /* zip_source_free.c in Sources */,
+				ABB190131656863300CFC651 /* zip_source_function.c in Sources */,
+				ABB190141656863300CFC651 /* zip_source_zip.c in Sources */,
+				ABB190151656863300CFC651 /* zip_stat.c in Sources */,
+				ABB190161656863300CFC651 /* zip_stat_index.c in Sources */,
+				ABB190171656863300CFC651 /* zip_stat_init.c in Sources */,
+				ABB190181656863300CFC651 /* zip_strerror.c in Sources */,
+				ABB190191656863300CFC651 /* zip_unchange.c in Sources */,
+				ABB1901A1656863300CFC651 /* zip_unchange_all.c in Sources */,
+				ABB1901B1656863300CFC651 /* zip_unchange_archive.c in Sources */,
+				ABB1901C1656863300CFC651 /* zip_unchange_data.c in Sources */,
+				ABB190351656E82100CFC651 /* io.cpp in Sources */,
+				ABB19039165A7E1000CFC651 /* schema.cpp in Sources */,
+				ABB1903D165A86E400CFC651 /* node.cpp in Sources */,
+				ABB19041165A8C3E00CFC651 /* xpath.cpp in Sources */,
+				ABB19049165ADD6A00CFC651 /* ns.cpp in Sources */,
+				ABB1904C165C13FF00CFC651 /* base.cpp in Sources */,
+				ABB19053165C1F9100CFC651 /* document.cpp in Sources */,
+				AB9B5B31165D816400F11069 /* c14n.cpp in Sources */,
+				ABAB94AB165EDE260018D451 /* xmlstring.cpp in Sources */,
+				ABAB94B016652C200018D451 /* element.cpp in Sources */,
+				ABAB94BF166560980018D451 /* zip_archive.cpp in Sources */,
+				ABAB94C216667DE40018D451 /* archive.cpp in Sources */,
+				ABAB94C61666AC6D0018D451 /* container.cpp in Sources */,
+				ABAB94CA1666AEA10018D451 /* package.cpp in Sources */,
+				ABAB94D21667B6FD0018D451 /* archive_xml.cpp in Sources */,
+				ABF2D99F1667F7860036B8CA /* xpath_wrangler.cpp in Sources */,
+				ABF2D9A716682E1E0036B8CA /* spine.cpp in Sources */,
+				ABF2D9AC1668301D0036B8CA /* manifest.cpp in Sources */,
+				AB9C01D9166E5467009487D9 /* metadata.cpp in Sources */,
+				ABA38A8F16767CA400CB8EDB /* cfi.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		ABA72C2F1655382E003125FF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		ABA72C301655382E003125FF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		ABA72C321655382E003125FF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					/usr/include/libxml2,
+					/usr/local/include,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		ABA72C331655382E003125FF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					/usr/include/libxml2,
+					/usr/local/include,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		ABA72C1E1655382E003125FF /* Build configuration list for PBXProject "ePub3" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ABA72C2F1655382E003125FF /* Debug */,
+				ABA72C301655382E003125FF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ABA72C311655382E003125FF /* Build configuration list for PBXNativeTarget "ePub3" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ABA72C321655382E003125FF /* Debug */,
+				ABA72C331655382E003125FF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = ABA72C1B1655382E003125FF /* Project object */;
+}
