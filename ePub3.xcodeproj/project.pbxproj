@@ -13,6 +13,10 @@
 		AB9C01DA166E5467009487D9 /* metadata.h in Headers */ = {isa = PBXBuildFile; fileRef = AB9C01D8166E5467009487D9 /* metadata.h */; };
 		ABA38A8F16767CA400CB8EDB /* cfi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA38A8D16767CA400CB8EDB /* cfi.cpp */; };
 		ABA38A9016767CA400CB8EDB /* cfi.h in Headers */ = {isa = PBXBuildFile; fileRef = ABA38A8E16767CA400CB8EDB /* cfi.h */; };
+		ABA38A951677E21A00CB8EDB /* nav_point.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA38A931677E21A00CB8EDB /* nav_point.cpp */; };
+		ABA38A961677E21A00CB8EDB /* nav_point.h in Headers */ = {isa = PBXBuildFile; fileRef = ABA38A941677E21A00CB8EDB /* nav_point.h */; };
+		ABA38A991677E78F00CB8EDB /* nav_table.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA38A971677E78F00CB8EDB /* nav_table.cpp */; };
+		ABA38A9A1677E78F00CB8EDB /* nav_table.h in Headers */ = {isa = PBXBuildFile; fileRef = ABA38A981677E78F00CB8EDB /* nav_table.h */; };
 		ABAB94AB165EDE260018D451 /* xmlstring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAB94A9165EDE260018D451 /* xmlstring.cpp */; };
 		ABAB94AC165EDE260018D451 /* xmlstring.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAB94AA165EDE260018D451 /* xmlstring.h */; };
 		ABAB94B016652C200018D451 /* element.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAB94AE16652C200018D451 /* element.cpp */; };
@@ -115,6 +119,11 @@
 		AB9C01D8166E5467009487D9 /* metadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = metadata.h; sourceTree = "<group>"; };
 		ABA38A8D16767CA400CB8EDB /* cfi.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cfi.cpp; sourceTree = "<group>"; };
 		ABA38A8E16767CA400CB8EDB /* cfi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cfi.h; sourceTree = "<group>"; };
+		ABA38A931677E21A00CB8EDB /* nav_point.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nav_point.cpp; sourceTree = "<group>"; };
+		ABA38A941677E21A00CB8EDB /* nav_point.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nav_point.h; sourceTree = "<group>"; };
+		ABA38A971677E78F00CB8EDB /* nav_table.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nav_table.cpp; sourceTree = "<group>"; };
+		ABA38A981677E78F00CB8EDB /* nav_table.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nav_table.h; sourceTree = "<group>"; };
+		ABA38A9B16792F8B00CB8EDB /* nav_element.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nav_element.h; sourceTree = "<group>"; };
 		ABA72C241655382E003125FF /* ePub3.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = ePub3.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABA72C281655382E003125FF /* ePub3-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ePub3-Prefix.pch"; sourceTree = "<group>"; };
 		ABA72C291655382E003125FF /* ePub3Proj.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = ePub3Proj.xcconfig; sourceTree = "<group>"; };
@@ -238,6 +247,18 @@
 			name = Libraries;
 			sourceTree = "<group>";
 		};
+		ABA38A921677E1F600CB8EDB /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				ABA38A931677E21A00CB8EDB /* nav_point.cpp */,
+				ABA38A941677E21A00CB8EDB /* nav_point.h */,
+				ABA38A971677E78F00CB8EDB /* nav_table.cpp */,
+				ABA38A981677E78F00CB8EDB /* nav_table.h */,
+				ABA38A9B16792F8B00CB8EDB /* nav_element.h */,
+			);
+			name = Navigation;
+			sourceTree = "<group>";
+		};
 		ABA72C191655382E003125FF = {
 			isa = PBXGroup;
 			children = (
@@ -302,6 +323,7 @@
 		ABAB94C31666AC4F0018D451 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				ABA38A921677E1F600CB8EDB /* Navigation */,
 				ABAB94C41666AC6D0018D451 /* container.cpp */,
 				ABAB94C51666AC6D0018D451 /* container.h */,
 				ABAB94C81666AEA10018D451 /* package.cpp */,
@@ -482,6 +504,8 @@
 				ABF2D9AD1668301D0036B8CA /* manifest.h in Headers */,
 				AB9C01DA166E5467009487D9 /* metadata.h in Headers */,
 				ABA38A9016767CA400CB8EDB /* cfi.h in Headers */,
+				ABA38A961677E21A00CB8EDB /* nav_point.h in Headers */,
+				ABA38A9A1677E78F00CB8EDB /* nav_table.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -610,6 +634,8 @@
 				ABF2D9AC1668301D0036B8CA /* manifest.cpp in Sources */,
 				AB9C01D9166E5467009487D9 /* metadata.cpp in Sources */,
 				ABA38A8F16767CA400CB8EDB /* cfi.cpp in Sources */,
+				ABA38A951677E21A00CB8EDB /* nav_point.cpp in Sources */,
+				ABA38A991677E78F00CB8EDB /* nav_table.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
