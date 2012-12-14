@@ -17,6 +17,8 @@
 		ABA38A961677E21A00CB8EDB /* nav_point.h in Headers */ = {isa = PBXBuildFile; fileRef = ABA38A941677E21A00CB8EDB /* nav_point.h */; };
 		ABA38A991677E78F00CB8EDB /* nav_table.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA38A971677E78F00CB8EDB /* nav_table.cpp */; };
 		ABA38A9A1677E78F00CB8EDB /* nav_table.h in Headers */ = {isa = PBXBuildFile; fileRef = ABA38A981677E78F00CB8EDB /* nav_table.h */; };
+		ABA38A9E167A868100CB8EDB /* glossary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA38A9C167A868000CB8EDB /* glossary.cpp */; };
+		ABA38A9F167A868100CB8EDB /* glossary.h in Headers */ = {isa = PBXBuildFile; fileRef = ABA38A9D167A868000CB8EDB /* glossary.h */; };
 		ABAB94AB165EDE260018D451 /* xmlstring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAB94A9165EDE260018D451 /* xmlstring.cpp */; };
 		ABAB94AC165EDE260018D451 /* xmlstring.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAB94AA165EDE260018D451 /* xmlstring.h */; };
 		ABAB94B016652C200018D451 /* element.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAB94AE16652C200018D451 /* element.cpp */; };
@@ -124,6 +126,9 @@
 		ABA38A971677E78F00CB8EDB /* nav_table.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nav_table.cpp; sourceTree = "<group>"; };
 		ABA38A981677E78F00CB8EDB /* nav_table.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nav_table.h; sourceTree = "<group>"; };
 		ABA38A9B16792F8B00CB8EDB /* nav_element.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nav_element.h; sourceTree = "<group>"; };
+		ABA38A9C167A868000CB8EDB /* glossary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glossary.cpp; sourceTree = "<group>"; };
+		ABA38A9D167A868000CB8EDB /* glossary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glossary.h; sourceTree = "<group>"; };
+		ABA38AA1167B903F00CB8EDB /* cfi-resolver.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "cfi-resolver.js"; sourceTree = "<group>"; };
 		ABA72C241655382E003125FF /* ePub3.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = ePub3.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABA72C281655382E003125FF /* ePub3-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ePub3-Prefix.pch"; sourceTree = "<group>"; };
 		ABA72C291655382E003125FF /* ePub3Proj.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = ePub3Proj.xcconfig; sourceTree = "<group>"; };
@@ -254,9 +259,19 @@
 				ABA38A941677E21A00CB8EDB /* nav_point.h */,
 				ABA38A971677E78F00CB8EDB /* nav_table.cpp */,
 				ABA38A981677E78F00CB8EDB /* nav_table.h */,
+				ABA38A9C167A868000CB8EDB /* glossary.cpp */,
+				ABA38A9D167A868000CB8EDB /* glossary.h */,
 				ABA38A9B16792F8B00CB8EDB /* nav_element.h */,
 			);
 			name = Navigation;
+			sourceTree = "<group>";
+		};
+		ABA38AA0167B903300CB8EDB /* JavaScript */ = {
+			isa = PBXGroup;
+			children = (
+				ABA38AA1167B903F00CB8EDB /* cfi-resolver.js */,
+			);
+			name = JavaScript;
 			sourceTree = "<group>";
 		};
 		ABA72C191655382E003125FF = {
@@ -300,6 +315,7 @@
 		ABAB94B616654F580018D451 /* ePub */ = {
 			isa = PBXGroup;
 			children = (
+				ABA38AA0167B903300CB8EDB /* JavaScript */,
 				ABAB94C31666AC4F0018D451 /* Components */,
 				ABAB94BC166560840018D451 /* Archives */,
 				ABAB94BB1665503C0018D451 /* epub3.h */,
@@ -506,6 +522,7 @@
 				ABA38A9016767CA400CB8EDB /* cfi.h in Headers */,
 				ABA38A961677E21A00CB8EDB /* nav_point.h in Headers */,
 				ABA38A9A1677E78F00CB8EDB /* nav_table.h in Headers */,
+				ABA38A9F167A868100CB8EDB /* glossary.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -636,6 +653,7 @@
 				ABA38A8F16767CA400CB8EDB /* cfi.cpp in Sources */,
 				ABA38A951677E21A00CB8EDB /* nav_point.cpp in Sources */,
 				ABA38A991677E78F00CB8EDB /* nav_table.cpp in Sources */,
+				ABA38A9E167A868100CB8EDB /* glossary.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

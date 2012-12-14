@@ -41,6 +41,7 @@ public:
     }
     
     void RegisterNamespaces(const NamespaceList& namespaces);
+    void NameDefaultNamespace(const std::string& name);
     
 protected:
     xmlXPathContextPtr  _ctx;

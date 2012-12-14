@@ -48,6 +48,7 @@ public:
     ~ItemProperties() {}
     
     bool HasProperty(unsigned int p) const { return (_p & p) == p; }
+    bool HasProperty(const ItemProperties& p) const { return HasProperty(p._p); }
     
     bool operator==(const ItemProperties& o) const { return _p == o._p; }
     bool operator==(value_type v) const { return _p == v; }
@@ -106,7 +107,10 @@ public:
     const std::string& FallbackID() const { return _fallbackID; }
     const ManifestItem* Fallback() const;
     
-    bool HasProperty(const std::string& property) const;
+    bool HasProperty(const std::string& property) const { return _properties.HasProperty(ItemProperties(property)); }
+    bool HasProperty(ItemProperties::value_type prop) const { return _properties.HasProperty(prop); }
+    
+    xmlDocPtr ReferencedDocument() const;
     
 protected:
     const Package * _owner;

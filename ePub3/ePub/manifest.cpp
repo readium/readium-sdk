@@ -153,5 +153,29 @@ const ManifestItem* ManifestItem::Fallback() const
     
     return _owner->ManifestItemWithID(_fallbackID);
 }
+xmlDocPtr ManifestItem::ReferencedDocument() const
+{
+    // TODO: handle remote URLs
+    // get base part of href
+    std::string path;
+    size_t s = _href.find_first_of("#?");
+    if ( s == std::string::npos )
+        path = _href;
+    else
+        path.assign(_href.begin(), _href.begin()+s);
+    
+    ArchiveXmlReader * reader = _owner->ReaderForRelativePath(path);
+    if ( reader == nullptr )
+        return nullptr;
+    
+    xmlDocPtr result = nullptr;
+    int flags = XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR;
+    if ( _mediaType == "text/html" )
+        result = reader->htmlReadDocument(path.c_str(), "utf-8", flags);
+    else
+        result = reader->xmlReadDocument(path.c_str(), "utf-8", flags);
+    
+    return result;
+}
 
 EPUB3_END_NAMESPACE

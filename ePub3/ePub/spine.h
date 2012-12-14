@@ -37,15 +37,28 @@ public:
     const class ManifestItem* ManifestItem() const;
     bool Linear() const { return _linear; }
     
+    // these are direct
     SpineItem* Next() { return _next; }
     const SpineItem* Next() const { return _next; }
     SpineItem* Previous() { return _prev; }
     const SpineItem* Previous() const { return _prev; }
     
+    // these will skip past non-linear spine items
     SpineItem* NextStep();
     const SpineItem* NextStep() const;
     SpineItem* PriorStep();
     const SpineItem* PriorStep() const;
+    
+    // index is relative to receiving item
+    // invariants:
+    //   item.at(0)  == &item
+    //   item.at(1)  == item._next
+    //   item.at(-1) == item._prev
+    SpineItem* at(ssize_t idx) throw (std::out_of_range);
+    const SpineItem* at(ssize_t idx) const throw (std::out_of_range);
+    
+    SpineItem* operator[](ssize_t idx) throw (std::out_of_range) { return at(idx); }
+    const SpineItem* operator[](ssize_t idx) const throw (std::out_of_range) { return at(idx); }
     
 protected:
     std::string _idref;

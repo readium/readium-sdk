@@ -62,5 +62,37 @@ const SpineItem* SpineItem::PriorStep() const
 {
     return const_cast<SpineItem*>(this)->PriorStep();
 }
+SpineItem* SpineItem::at(ssize_t idx) throw (std::out_of_range)
+{
+    SpineItem* result = this;
+    ssize_t i = idx;
+    
+    if ( i > 0 )
+    {
+        while ( result != nullptr && i > 0 )
+        {
+            result = result->Next();
+            i--;
+        }
+    }
+    else if ( idx < 0 )
+    {
+        while ( result != nullptr && i < 0 )
+        {
+            result = result->Previous();
+            i++;
+        }
+    }
+    
+    // Q: maybe just return nullptr?
+    if ( result == nullptr )
+        throw std::out_of_range(_Str("Index ", i, " is out of range"));
+    
+    return result;
+}
+const SpineItem* SpineItem::at(ssize_t idx) const throw (std::out_of_range)
+{
+    return const_cast<SpineItem*>(this)->at(idx);
+}
 
 EPUB3_END_NAMESPACE

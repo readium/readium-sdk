@@ -35,6 +35,10 @@ xmlDocPtr InputBuffer::xmlReadDocument(const char * url, const char * encoding, 
 {
     return xmlReadIO(_buf->readcallback, _buf->closecallback, _buf->context, url, encoding, options);
 }
+xmlDocPtr InputBuffer::htmlReadDocument(const char *url, const char *encoding, int options)
+{
+    return htmlReadIO(_buf->readcallback, _buf->closecallback, _buf->context, url, encoding, options);
+}
 
 OutputBuffer::OutputBuffer(const std::string & encoding)
 {

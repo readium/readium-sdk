@@ -23,6 +23,7 @@
 
 // this chunk will go away once we have the C++ XML interface complete
 #include <string>
+#include <sstream>
 #include <libxml/tree.h>
 
 EPUB3_BEGIN_NAMESPACE
@@ -45,6 +46,25 @@ static inline std::string _getProp(xmlNodePtr node, const char *name, const char
     if ( ch == nullptr )
         return "";
     return reinterpret_cast<const char*>(ch);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// nicer way of constructing a C++ string from randomly-typed arguments
+
+static inline std::stringstream& __format(std::stringstream& s) { return s; }
+
+template <typename Arg1, typename... Args>
+static inline std::stringstream& __format(std::stringstream& s, const Arg1& arg1, const Args&... args)
+{
+    s << arg1;
+    return __format(s, args...);
+}
+
+template <typename... Args>
+static inline std::string _Str(const Args&... args)
+{
+    std::stringstream s;
+    return __format(s, args...).str();
 }
 
 EPUB3_END_NAMESPACE

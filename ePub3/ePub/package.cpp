@@ -11,6 +11,10 @@
 #include "archive.h"
 #include "archive_xml.h"
 #include "xpath_wrangler.h"
+#include "nav_table.h"
+#include "glossary.h"
+#include <sstream>
+#include <list>
 #include <libxml/xpathInternals.h>
 
 static const char * OPFNamespace = "http://www.idpf.org/2007/opf";
@@ -32,8 +36,18 @@ Package::Package(Archive* archive, const std::string& path, const std::string& t
     
     if ( Unpack() )
         throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": Not a valid OPF file at " + path);
+    
+    size_t loc = path.find_last_of('/');
+    if ( loc == std::string::npos )
+    {
+        _pathBase = '/';
+    }
+    else
+    {
+        _pathBase = path.substr(0, loc+1);
+    }
 }
-Package::Package(Package&& o) : _archive(o._archive), _opf(o._opf), _type(std::move(o._type)), _metadata(std::move(o._metadata)), _manifest(std::move(o._manifest)), _spine(std::move(o._spine))
+Package::Package(Package&& o) : _archive(o._archive), _opf(o._opf), _pathBase(std::move(o._pathBase)), _type(std::move(o._type)), _metadata(std::move(o._metadata)), _manifest(std::move(o._manifest)), _spine(std::move(o._spine))
 {
     o._archive = nullptr;
     o._opf = nullptr;
@@ -65,6 +79,54 @@ const ManifestItem* Package::ManifestItemWithID(const std::string &ident) const
     
     return found->second;
 }
+const class NavigationTable* Package::NavigationTable(const std::string &title) const
+{
+    auto found = _navigation.find(title);
+    if ( found == _navigation.end() )
+        return nullptr;
+    return found->second;
+}
+const ManifestItem* Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRemainingCFI) const throw (CFI::InvalidCFI)
+{
+    const ManifestItem* result = nullptr;
+    
+    // NB: Package is a friend of CFI, so it can access the components directly
+    if ( cfi._components.size() < 2 )
+        throw CFI::InvalidCFI("CFI contains less than 2 nodes, so is invalid for package-based lookups.");
+    
+    // first item directs us to the Spine: check the index against the one we know
+    auto component = cfi._components[0];
+    if ( component.nodeIndex != _spineCFIIndex )
+    {
+        throw CFI::InvalidCFI(_Str("CFI first node index (spine) is ", component.nodeIndex, " but should be ", _spineCFIIndex));
+    }
+    
+    // second component is the particular spine item
+    component = cfi._components[1];
+    if ( !component.IsIndirector() )
+        throw CFI::InvalidCFI("Package-based CFI's second item must be an indirector");
+    
+    try
+    {
+        if ( (component.nodeIndex % 2) == 1 )
+            throw CFI::InvalidCFI("CFI spine item index is odd, which makes no sense for always-empty spine nodes.");
+        const SpineItem* item = _spine->at(component.nodeIndex/2);
+        
+        // check and correct any qualifiers
+        item = ConfirmOrCorrectSpineItemQualifier(item, &component);
+        if ( item == nullptr )
+            throw CFI::InvalidCFI("CFI spine node qualifier doesn't match any spine item idref");
+        
+        // we know it's not null, because SpineItem::at() throws an exception if out of range
+        result = ManifestItemWithID(item->Idref());
+    }
+    catch (std::out_of_range& e)
+    {
+        throw CFI::InvalidCFI("CFI references out-of-range spine item");
+    }
+    
+    return result;
+}
 bool Package::Unpack()
 {
     // very basic sanity check
@@ -75,11 +137,26 @@ bool Package::Unpack()
     if ( rootName != "package" )
         return false;       // not an OPF file, innit?
     
-    XPathWrangler::NamespaceList nsList = {
-        { "opf", OPFNamespace },
-        { "dc", DCNamespace }
-    };
-    XPathWrangler xpath(_opf, nsList);
+    // go through children to determine the CFI index of the <spine> tag
+    static const xmlChar* kSpineName = BAD_CAST "spine";
+    _spineCFIIndex = 0;
+    xmlNodePtr child = root->children;
+    while ( child != nullptr )
+    {
+        if ( child->type == XML_ELEMENT_NODE )
+        {
+            _spineCFIIndex += 2;
+            if ( xmlStrEqual(child->name, kSpineName) )
+                break;
+        }
+        
+        child = child->next;
+    }
+    
+    if ( _spineCFIIndex == 0 )
+        return false;       // spineless!
+    
+    XPathWrangler xpath(_opf, {{"opf", OPFNamespace}, {"dc", DCNamespace}});
     
     // simple things: manifest and spine items
     xmlNodeSetPtr manifestNodes = nullptr;
@@ -182,7 +259,75 @@ bool Package::Unpack()
     xmlXPathFreeNodeSet(metadataNodes);
     xmlXPathFreeNodeSet(refineNodes);
     
+    // now the navigation tables
+    for ( auto item : _manifest )
+    {
+        if ( !item.second->HasProperty(ItemProperties::Navigation) )
+            continue;
+        
+        NavigationList tables = NavTablesFromManifestItem(item.second);
+        for ( auto table : tables )
+        {
+            // have to dynamic_cast these guys to get the right pointer type
+            _navigation[table->Title()] = dynamic_cast<class NavigationTable*>(table);
+        }
+    }
+    
     return true;
+}
+const SpineItem* Package::ConfirmOrCorrectSpineItemQualifier(const SpineItem *pItem, CFI::Component *pComponent) const
+{
+    if ( pComponent->HasQualifier() && pItem->Idref() != pComponent->qualifier )
+    {
+        // find the item with the qualifier
+        pItem = _spine;
+        uint32_t idx = 2;
+        
+        while ( pItem != nullptr )
+        {
+            if ( pItem->Idref() == pComponent->qualifier )
+            {
+                // found it-- correct the CFI
+                pComponent->nodeIndex = idx;
+                break;
+            }
+        }
+    }
+    
+    return pItem;
+}
+NavigationList Package::NavTablesFromManifestItem(const ManifestItem *pItem)
+{
+    if ( pItem == nullptr )
+        return NavigationList();
+    
+    xmlDocPtr doc = pItem->ReferencedDocument();
+    if ( doc == nullptr )
+        return NavigationList();
+    
+    // find each <nav> node
+    XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}}); // goddamn I love C++11 initializer list constructors
+    xpath.NameDefaultNamespace("html");
+    
+    xmlNodeSetPtr nodes = xpath.Nodes("//html:nav");
+    
+    NavigationList tables;
+    for ( size_t i = 0; i < nodes->nodeNr; i++ )
+    {
+        xmlNodePtr navNode = nodes->nodeTab[i];
+        
+        auto p = new class NavigationTable(navNode);
+        if ( p != nullptr )
+            tables.push_back(p);
+    }
+    
+    xmlXPathFreeNodeSet(nodes);
+    
+    // now look for any <dl> nodes with an epub:type of "glossary"
+    nodes = xpath.Nodes("//html:dl[epub:type='glossary']");
+    
+    
+    return tables;
 }
 
 EPUB3_END_NAMESPACE

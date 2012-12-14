@@ -114,5 +114,11 @@ void XPathWrangler::RegisterNamespaces(const NamespaceList &namespaces)
         xmlXPathRegisterNs(_ctx, XMLCHAR(item.first), XMLCHAR(item.second));
     }
 }
+void XPathWrangler::NameDefaultNamespace(const std::string &name)
+{
+    xmlNsPtr defNs = xmlSearchNs(_ctx->doc, xmlDocGetRootElement(_ctx->doc), nullptr);
+    if ( defNs != nullptr )
+        xmlXPathRegisterNs(_ctx, reinterpret_cast<const xmlChar*>(name.c_str()), defNs->href);
+}
 
 EPUB3_END_NAMESPACE

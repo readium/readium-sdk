@@ -12,6 +12,7 @@
 #include "base.h"
 #include <iostream>
 #include <libxml/xmlIO.h>
+#include <libxml/HTMLtree.h>
 
 EPUB3_XML_BEGIN_NAMESPACE
 
@@ -28,6 +29,7 @@ public:
     operator const xmlParserInputBuffer * () const { return xmlBuffer(); }
     
     xmlDocPtr xmlReadDocument(const char * url, const char * encoding, int options);
+    xmlDocPtr htmlReadDocument(const char * url, const char * encoding, int options);
     
 protected:
     xmlParserInputBufferPtr _buf;

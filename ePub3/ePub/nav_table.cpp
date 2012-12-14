@@ -36,20 +36,14 @@ bool NavigationTable::Parse(xmlNodePtr node)
     if ( _type.empty() )
         return false;
     
-    XPathWrangler xpath(node->doc);
+    XPathWrangler xpath(node->doc, {{"epub", ePub3NamespaceURI}}); // goddamn I love C++11 initializer list constructors
+    xpath.NameDefaultNamespace("html");
     
-    // find the default namespace for this document
-    xmlNsPtr defNs = xmlSearchNs(node->doc, node, nullptr);
-    XPathWrangler::NamespaceList nsList({{"epub", ePub3NamespaceURI}}); // goddamn I love C++11 initializer list constructors
-    if ( defNs != nullptr )
-        nsList["html"] = reinterpret_cast<const char*>(defNs->href);
-    
-    xpath.RegisterNamespaces(nsList);
     if ( name == "nav" )
     {
         // look for optional <h2> title
         // Q: Should we fail on finding multiple <h2> tags here?
-        auto strings = xpath.Strings("./h2[1]/text()", node);
+        auto strings = xpath.Strings("./html:h2[1]/text()", node);
         if ( !strings.empty() )
             _title = std::move(strings[0]);
     }
@@ -57,14 +51,14 @@ bool NavigationTable::Parse(xmlNodePtr node)
     {
         // look for optional <span> title
         // Q: As abive, should we fail on multiple title elements?
-        auto strings = xpath.Strings("./span[1]/text()", node);
+        auto strings = xpath.Strings("./html:span[1]/text()", node);
         if ( !strings.empty() )
             _title = std::move(strings[0]);
     }
     
     // load List Elements from a single Ordered List
     // first: confirm there's a single list
-    xmlNodeSetPtr nodes = xpath.Nodes("./ol", node);
+    xmlNodeSetPtr nodes = xpath.Nodes("./html:ol", node);
     if ( nodes == nullptr )
         return false;
     if ( nodes->nodeNr != 1 )
@@ -74,7 +68,7 @@ bool NavigationTable::Parse(xmlNodePtr node)
     }
     
     xmlXPathFreeNodeSet(nodes);
-    nodes = xpath.Nodes("./ol[1]/li", node);
+    nodes = xpath.Nodes("./html:ol[1]/html:li", node);
     if ( nodes == nullptr )
         return false;   // it's not explicit whether an empty <ol> is invalid, but...
     if ( nodes->nodeNr == 0 )
