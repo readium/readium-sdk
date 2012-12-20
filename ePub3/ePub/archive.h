@@ -28,8 +28,9 @@ protected:
     class func_less : public std::binary_function<T, T, bool>
     {
     public:
-        inline bool operator ()(const T& __a, const T&__b) const {
-            return &__a < &__b;
+        inline bool operator ()(const T& __a, const T&__b) const
+        {
+            return (&__a) < (&__b);
         }
     };
     
@@ -65,6 +66,8 @@ public:
     
     virtual ArchiveReader* ReaderAtPath(const std::string & path) const = 0;
     virtual ArchiveWriter* WriterAtPath(const std::string & path, bool compress=true, bool create=true) = 0;
+    
+    virtual bool ShouldCompress(const std::string& path, const std::string& mimeType, size_t size) const;
     
     virtual void SetPOSIXPermissions(const std::string & path, mode_t privs) {}
     virtual mode_t POSIXPermissions(const std::string & path) const { return 0; }

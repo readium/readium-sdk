@@ -10,6 +10,7 @@
 #define __ePub3__container__
 
 #include "epub3.h"
+#include "locator.h"
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 #include <string>
@@ -28,12 +29,13 @@ public:
     
 public:
     Container(const std::string& path);
+    Container(Locator locator);
     Container(const Container&) = delete;
     Container(Container&& o);
     virtual ~Container();
     
     virtual PathList PackageLocations() const;
-    virtual const PackageList& Packages();
+    virtual const PackageList& Packages() const { return _packages; }
     virtual std::string Version() const;
     
 protected:

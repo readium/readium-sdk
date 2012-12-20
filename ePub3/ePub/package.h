@@ -38,6 +38,7 @@ public:
     Package(Package&&);
     virtual ~Package();
     
+    virtual std::string UniqueID() const;
     virtual const std::string & Type() const { return _type; }
     virtual std::string Version() const;
     
@@ -49,8 +50,10 @@ public:
     
     const SpineItem* FirstSpineItem() const { return _spine; }
     const SpineItem* SpineItemAt(size_t idx) const;
+    size_t IndexOfSpineItemWithIDRef(const std::string& idref) const;
     
     const ManifestItem* ManifestItemWithID(const std::string& ident) const;
+    std::string CFISubpathForManifestItemWithID(const std::string& ident) const;
     
     const class NavigationTable* NavigationTable(const std::string& title) const;
     

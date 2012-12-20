@@ -99,6 +99,8 @@ public:
     ManifestItem(ManifestItem&&);
     virtual ~ManifestItem();
     
+    Shared<const Package> Package() const { return _owner; }
+    
     const std::string& Identifier() const { return _identifier; }
     const std::string& Href() const { return _href; }
     const std::string& MediaType() const { return _mediaType; }
@@ -113,7 +115,7 @@ public:
     xmlDocPtr ReferencedDocument() const;
     
 protected:
-    const Package * _owner;
+    Shared<const class Package> _owner;
     
     std::string     _identifier;
     std::string     _href;

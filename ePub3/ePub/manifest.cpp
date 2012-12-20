@@ -114,7 +114,7 @@ std::string ItemProperties::str() const
     return builder.str();
 }
 
-ManifestItem::ManifestItem(xmlNodePtr node, const Package* package) : _owner(package)
+ManifestItem::ManifestItem(xmlNodePtr node, const class Package* package) : _owner(package)
 {
     _identifier = _getProp(node, "id");
     if ( _identifier.empty() )

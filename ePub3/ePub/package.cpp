@@ -58,6 +58,14 @@ Package::~Package()
     if ( _opf != nullptr )
         xmlFreeDoc(_opf);
 }
+std::string Package::UniqueID() const
+{
+    XPathWrangler xpath(_opf, {{"opf", OPFNamespace}, {"dc", DCNamespace}});
+    std::vector<std::string> strings = xpath.Strings("//*[@id=/opf:package/@unique-identifier]/text()");
+    if ( strings.empty() )
+        return "";
+    return strings[0];
+}
 std::string Package::Version() const
 {
     return _getProp(xmlDocGetRootElement(_opf), "version");
@@ -71,6 +79,17 @@ const SpineItem* Package::SpineItemAt(size_t idx) const
     }
     return item;
 }
+size_t Package::IndexOfSpineItemWithIDRef(const std::string &idref) const
+{
+    const SpineItem * item = _spine;
+    for ( size_t i = 0; item != nullptr; i++, item = item->Next() )
+    {
+        if ( item->Idref() == idref )
+            return i;
+    }
+    
+    return size_t(-1);
+}
 const ManifestItem* Package::ManifestItemWithID(const std::string &ident) const
 {
     auto found = _manifest.find(ident);
@@ -78,6 +97,14 @@ const ManifestItem* Package::ManifestItemWithID(const std::string &ident) const
         return nullptr;
     
     return found->second;
+}
+std::string Package::CFISubpathForManifestItemWithID(const std::string &ident) const
+{
+    size_t sz = IndexOfSpineItemWithIDRef(ident);
+    if ( sz == size_t(-1) )
+        throw std::invalid_argument(_Str("Identifier '", ident, "' was not found in the spine."));
+    
+    return _Str(_spineCFIIndex, "/", sz*2, "[", ident, "]!/");
 }
 const class NavigationTable* Package::NavigationTable(const std::string &title) const
 {
