@@ -50,25 +50,24 @@ protected:
     
 public:
     // access a singleton instance managed by the class
-    static Shared<Library> MainLibrary(Locator* locator = new NullLocator());
-    virtual ~Library() { _singleton.reset(); }
+    static Library* MainLibrary(Locator* locator = new NullLocator());
+    virtual ~Library();
     
     Locator LocatorForEPubWithUniqueID(const std::string& uniqueID) const;
     
-    void AddEPubsInContainer(Shared<Container> container, Locator* locator = new NullLocator());
+    void AddEPubsInContainer(Container* container, Locator* locator = new NullLocator());
     void AddEPubsInContainerAtPath(Locator* locator) {
-        Container * c = new Container(*locator);
-        return AddEPubsInContainer(Shared<Container>(c));
+        return AddEPubsInContainer(new Container(*locator), locator);
     }
     
     // returns an epub3:// url for the package with a given identifier
-    std::string EPubURLForPackage(Shared<const Package> package) const;
+    std::string EPubURLForPackage(const Package* package) const;
     std::string EPubURLForPackage(const std::string& identifier) const;
     
     // may load a container/package, so non-const
     Package* PackageForEPubURL(const std::string& url);
     
-    std::string EPubCFIURLForManifestItem(Shared<const ManifestItem> item);
+    std::string EPubCFIURLForManifestItem(const ManifestItem* item);
     
     // may instantiate a Container & store it, so non-const
     const ManifestItem* ManifestItemForCFI(const std::string& urlWithCFI);
@@ -80,17 +79,17 @@ public:
     
 protected:
     // list of known (but not necessarily loaded) containers
-    typedef std::map<Shared<Locator>, Shared<Container>>    ContainerLookup;
+    typedef std::map<Locator*, Container*>          ContainerLookup;
     
     // if container is loaded, LookupEntry will contain a Package
     // otherwise, the locator is used to load the Container
-    typedef std::pair<Shared<Locator>, Shared<Package>>     LookupEntry;
-    typedef std::map<EPubIdentifier, LookupEntry>           PackageLookup;
+    typedef std::pair<Locator*, Package*>           LookupEntry;
+    typedef std::map<EPubIdentifier, LookupEntry>   PackageLookup;
     
     ContainerLookup _containers;
     PackageLookup   _packages;
     
-    static Shared<Library>  _singleton;
+    static Auto<Library>  _singleton;
 };
 
 EPUB3_END_NAMESPACE

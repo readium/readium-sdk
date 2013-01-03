@@ -475,7 +475,13 @@ WrapperBase * Node::Wrap(_xmlNode *aNode)
 }
 void Node::Unwrap(_xmlNode *aNode)
 {
+    /*
+    const char * content = (const char *)xmlNodeGetContent(aNode);
+    fprintf(stderr, "Deleting node: type %d, name %s, content %s\n", aNode->type, (aNode->name == nullptr ? "(null)" : (const char *)aNode->name), (content == nullptr ? "(null)" : content));
+    */
     if ( aNode->_private == nullptr )
+        return;
+    if ( aNode->type == 0 )
         return;
     
     WrapperBase * obj = reinterpret_cast<WrapperBase*>(aNode->_private);

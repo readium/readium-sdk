@@ -23,22 +23,22 @@ const size_t utf8_sizes[256] = {
     3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,5,5,5,5,6,6,1,1  // 0xE0-0xFF
 };
 
-#define UTF8CharLen(c) utf8_sizes[static_cast<xmlChar>(c)]
+typedef std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> utf32_convert;
+typedef std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> utf16_convert;
 
-typedef std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter_type;
-typedef converter_type::wide_string ucs4string;
+const string::size_type string::npos = string::__base::npos;
 
 string::string(const_u4pointer s)
 {
     size_type len = traits_type::length(s);
-    converter_type conv;
+    utf32_convert conv;
     _base.reserve(len*6);
     _base.append(conv.to_bytes(s));
     shrink_to_fit();
 }
 string::string(const_u4pointer s, size_type n)
 {
-    converter_type conv;
+    utf32_convert conv;
     _base.reserve(n*6);
     _base.append(conv.to_bytes(s, s+n));
     shrink_to_fit();
@@ -48,7 +48,32 @@ string::string(size_type n, value_type c)
     if ( n == 0 )
         return;
     
-    std::string s = converter_type().to_bytes(c);
+    std::string s = utf32_convert().to_bytes(c);
+    _base.reserve(s.length()*n);
+    for ( size_type i = 0; i < n; i++ )
+        _base.append(s);
+}
+string::string(const char16_t* s)
+{
+    size_type len = std::char_traits<char16_t>::length(s);
+    utf16_convert conv;
+    _base.reserve(len*6);
+    _base.append(conv.to_bytes(s));
+    shrink_to_fit();
+}
+string::string(const char16_t* s, size_type n)
+{
+    utf16_convert conv;
+    _base.reserve(n*6);
+    _base.append(conv.to_bytes(s, s+n));
+    shrink_to_fit();
+}
+string::string(size_type n, char16_t c)
+{
+    if ( n == 0 )
+        return;
+    
+    std::string s = utf16_convert().to_bytes(c);
     _base.reserve(s.length()*n);
     for ( size_type i = 0; i < n; i++ )
         _base.append(s);
@@ -77,7 +102,7 @@ string::string(const xmlChar * pos, const xmlChar * end) : _base(reinterpret_cas
 }
 string::size_type string::size() const noexcept
 {
-    return to_ucs4_size(_base.size());
+    return to_utf32_size(_base.size());
 }
 void string::resize(size_type n, value_type c)
 {
@@ -85,7 +110,7 @@ void string::resize(size_type n, value_type c)
     if ( n > __s )
     {
         // get UTF-8 prepresentation of the character
-        converter_type::byte_string utf8 = converter_type().to_bytes(c);
+        utf32_convert::byte_string utf8 = utf32_convert().to_bytes(c);
         
         // compute number of extra bytes to allocate & pre-allocate them
         size_type add = n - __s;
@@ -148,7 +173,7 @@ const string::value_type string::at(size_type pos) const
 string::value_type string::at(size_type pos)
 {
     const char * _pos = reinterpret_cast<const char*>(xmlAt(pos));
-    auto wstr = converter_type().from_bytes(_pos, _pos + UTF8CharLen(*_pos));
+    auto wstr = utf32_convert().from_bytes(_pos, _pos + UTF8CharLen(*_pos));
     return wstr[0];
 }
 const xmlChar * string::xmlAt(size_type pos) const
@@ -199,9 +224,17 @@ string & string::assign(const string &o, size_type i, size_type n)
 string & string::assign(const_u4pointer s, size_type n)
 {
     if ( n == npos )
-        _base.assign(converter_type().to_bytes(s));
+        _base.assign(utf32_convert().to_bytes(s));
     else
-        _base.assign(converter_type().to_bytes(s, s+n));
+        _base.assign(utf32_convert().to_bytes(s, s+n));
+    return *this;
+}
+string& string::assign(const char16_t* s, size_type n)
+{
+    if ( n == npos )
+        _base.assign(utf16_convert().to_bytes(s));
+    else
+        _base.assign(utf16_convert().to_bytes(s, s+n));
     return *this;
 }
 template <>
@@ -231,15 +264,28 @@ string & string::append(const string &o, size_type i, size_type n)
 string & string::append(const_u4pointer s, size_type n)
 {
     if ( n == npos )
-        _base.append(converter_type().to_bytes(s));
+        _base.append(utf32_convert().to_bytes(s));
     else
-        _base.append(converter_type().to_bytes(s, s+n));
+        _base.append(utf32_convert().to_bytes(s, s+n));
     return *this;
 }
 string & string::append(size_type n, value_type c)
 {
     size_type total = size() + n;
     resize(total, c);
+    return *this;
+}
+string & string::append(const char16_t* s, size_type n)
+{
+    if ( n == npos )
+        _base.append(utf16_convert().to_bytes(s));
+    else
+        _base.append(utf16_convert().to_bytes(s, s+n));
+    return *this;
+}
+string & string::append(size_type n, char16_t c)
+{
+    append(n, static_cast<char32_t>(c));
     return *this;
 }
 template <>
@@ -305,7 +351,21 @@ string & string::insert(size_type pos, const_u4pointer s, size_type e)
     if ( pos == npos )
         pos = size();
     
-    auto utf8 = (e == npos ? converter_type().to_bytes(s) : converter_type().to_bytes(s, s+e));
+    auto utf8 = (e == npos ? utf32_convert().to_bytes(s) : utf32_convert().to_bytes(s, s+e));
+    _base.insert(to_byte_size(pos), utf8);
+    return *this;
+}
+string & string::insert(size_type pos, const char16_t* s, size_type e)
+{
+    if ( e == 0 )
+        return *this;
+    
+    if ( pos > size() && pos != npos )
+        throw std::range_error("Position outside string bounds");
+    if ( pos == npos )
+        pos = size();
+    
+    auto utf8 = (e == npos ? utf16_convert().to_bytes(s) : utf16_convert().to_bytes(s, s+e));
     _base.insert(to_byte_size(pos), utf8);
     return *this;
 }
@@ -319,7 +379,35 @@ string & string::insert(size_type pos, size_type n, value_type c)
     else if ( pos > __s )
         throw std::range_error("Position outside string bounds");
     
-    auto utf8 = converter_type().to_bytes(c);
+    auto utf8 = utf32_convert().to_bytes(c);
+    if ( utf8.size() == 1 )
+    {
+        _base.insert(to_byte_size(pos), n, utf8[0]);
+    }
+    else
+    {
+        typeof(utf8) buf;
+        buf.reserve(n*utf8.length());
+        
+        for ( size_type i = 0; i < n; i++ )
+            buf.append(utf8);
+        
+        _base.insert(to_byte_size(pos), buf);
+    }
+    
+    return *this;
+}
+string & string::insert(size_type pos, size_type n, char16_t c)
+{
+    size_type __s = size();
+    if ( n == 0 )
+        return *this;
+    if ( pos == npos )
+        pos = __s;
+    else if ( pos > __s )
+        throw std::range_error("Position outside string bounds");
+    
+    auto utf8 = utf16_convert().to_bytes(c);
     if ( utf8.size() == 1 )
     {
         _base.insert(to_byte_size(pos), n, utf8[0]);
@@ -341,7 +429,14 @@ string::iterator string::insert(iterator pos, const_u4pointer s, size_type e)
 {
     if ( e == 0 )
         return pos;
-    auto utf8 = (e == npos ? converter_type().to_bytes(s) : converter_type().to_bytes(s, s+e));
+    auto utf8 = (e == npos ? utf32_convert().to_bytes(s) : utf32_convert().to_bytes(s, s+e));
+    return iterator(_base.insert(pos.__base(), utf8.begin(), utf8.end()));
+}
+string::iterator string::insert(iterator pos, const char16_t* s, size_type e)
+{
+    if ( e == 0 )
+        return pos;
+    auto utf8 = (e == npos ? utf16_convert().to_bytes(s) : utf16_convert().to_bytes(s, s+e));
     return iterator(_base.insert(pos.__base(), utf8.begin(), utf8.end()));
 }
 string::iterator string::insert(iterator pos, size_type n, value_type c)
@@ -351,7 +446,28 @@ string::iterator string::insert(iterator pos, size_type n, value_type c)
     if ( pos == end() )
         return append(n, c).end();
     
-    auto utf8 = converter_type().to_bytes(c);
+    auto utf8 = utf32_convert().to_bytes(c);
+    if ( utf8.size() == 1 )
+    {
+        return iterator(_base.insert(pos.__base(), n, utf8[0]));
+    }
+    
+    typeof(utf8) buf;
+    buf.reserve(n*utf8.size());
+    
+    for ( size_type i = 0; i < n; i++ )
+        buf.append(utf8);
+    
+    return iterator(_base.insert(pos.__base(), buf.begin(), buf.end()));
+}
+string::iterator string::insert(iterator pos, size_type n, char16_t c)
+{
+    if ( n == 0 )
+        return pos;
+    if ( pos == end() )
+        return append(n, c).end();
+    
+    auto utf8 = utf16_convert().to_bytes(c);
     if ( utf8.size() == 1 )
     {
         return iterator(_base.insert(pos.__base(), n, utf8[0]));
@@ -461,7 +577,7 @@ string & string::replace(const_iterator i1, const_iterator i2, __base::const_ite
 template <>
 string & string::replace(const_iterator i1, const_iterator i2, std::u32string::const_iterator j1, std::u32string::const_iterator j2)
 {
-    auto utf8 = converter_type().to_bytes(&(*j1), &(*j2));
+    auto utf8 = utf32_convert().to_bytes(&(*j1), &(*j2));
     _base.replace(i1.__base(), i2.__base(), utf8);
     return *this;
 }
@@ -482,17 +598,49 @@ string & string::replace(const_iterator i1, const_iterator i2, const string& str
 }
 string & string::replace(size_type pos, size_type n1, const_u4pointer s, size_type n2)
 {
-    _base.replace(to_byte_size(pos), to_byte_size(pos, pos+n1), converter_type().to_bytes(s, s+n2));
+    _base.replace(to_byte_size(pos), to_byte_size(pos, pos+n1), utf32_convert().to_bytes(s, s+n2));
+    return *this;
+}
+string & string::replace(size_type pos, size_type n1, const char16_t* s, size_type n2)
+{
+    _base.replace(to_byte_size(pos), to_byte_size(pos, pos+n1), utf16_convert().to_bytes(s, s+n2));
     return *this;
 }
 string & string::replace(size_type pos, size_type n1, const_u4pointer s)
 {
-    _base.replace(to_byte_size(pos), to_byte_size(pos, pos+n1), converter_type().to_bytes(s));
+    _base.replace(to_byte_size(pos), to_byte_size(pos, pos+n1), utf32_convert().to_bytes(s));
+    return *this;
+}
+string & string::replace(size_type pos, size_type n1, const char16_t* s)
+{
+    _base.replace(to_byte_size(pos), to_byte_size(pos, pos+n1), utf16_convert().to_bytes(s));
     return *this;
 }
 string & string::replace(size_type pos, size_type n1, size_type n2, value_type c)
 {
-    auto utf8 = converter_type().to_bytes(c);
+    auto utf8 = utf32_convert().to_bytes(c);
+    if ( n2 == 1 )
+    {
+        _base.replace(to_byte_size(pos), to_byte_size(pos, pos+n1), utf8);
+    }
+    else if ( utf8.length() == 1 )
+    {
+        _base.replace(to_byte_size(pos), to_byte_size(pos, pos+n1), n2, utf8[0]);
+    }
+    else
+    {
+        typeof(utf8) buf;
+        buf.reserve(utf8.length()*n2);
+        for ( size_type i = 0; i < n2; i++ )
+            buf.append(utf8);
+        _base.replace(to_byte_size(pos), to_byte_size(pos, pos+n1), buf);
+    }
+    
+    return *this;
+}
+string & string::replace(size_type pos, size_type n1, size_type n2, char16_t c)
+{
+    auto utf8 = utf16_convert().to_bytes(c);
     if ( n2 == 1 )
     {
         _base.replace(to_byte_size(pos), to_byte_size(pos, pos+n1), utf8);
@@ -514,17 +662,27 @@ string & string::replace(size_type pos, size_type n1, size_type n2, value_type c
 }
 string & string::replace(const_iterator i1, const_iterator i2, const_u4pointer s, size_type n)
 {
-    _base.replace(i1.__base(), i2.__base(), converter_type().to_bytes(s, s+n));
+    _base.replace(i1.__base(), i2.__base(), utf32_convert().to_bytes(s, s+n));
+    return *this;
+}
+string & string::replace(const_iterator i1, const_iterator i2, const char16_t* s, size_type n)
+{
+    _base.replace(i1.__base(), i2.__base(), utf16_convert().to_bytes(s, s+n));
     return *this;
 }
 string & string::replace(const_iterator i1, const_iterator i2, const_u4pointer s)
 {
-    _base.replace(i1.__base(), i2.__base(), converter_type().to_bytes(s));
+    _base.replace(i1.__base(), i2.__base(), utf32_convert().to_bytes(s));
     return *this;
 }
-string & string::replace(const_iterator i1, const_iterator i2, size_type n, value_type c)
+string & string::replace(const_iterator i1, const_iterator i2, const char16_t* s)
 {
-    auto utf8 = converter_type().to_bytes(c);
+    _base.replace(i1.__base(), i2.__base(), utf16_convert().to_bytes(s));
+    return *this;
+}
+string & string::replace(const_iterator i1, const_iterator i2, size_type n, char16_t c)
+{
+    auto utf8 = utf16_convert().to_bytes(c);
     if ( n == 1 )
     {
         _base.replace(i1.__base(), i2.__base(), utf8);
@@ -599,6 +757,10 @@ string::size_type string::copy(u4pointer s, size_type n, size_type pos) const
     }
     return i;
 }
+string::size_type string::copy(char16_t* s, size_type n, size_type pos) const
+{
+    return utf16_convert().from_bytes(_base.substr(to_byte_size(pos))).copy(s, n);
+}
 string string::substr(size_type pos, size_type n) const
 {
     if ( pos == 0 && n == npos )
@@ -608,9 +770,13 @@ string string::substr(size_type pos, size_type n) const
     
     return string(_base.substr(to_byte_size(pos), to_byte_size(pos, pos+n)));
 }
-std::u32string string::ucs4string() const
+std::u32string string::utf32string() const
 {
-    return converter_type().from_bytes(_base);
+    return utf32_convert().from_bytes(_base);
+}
+std::u16string string::utf16string() const
+{
+    return utf16_convert().from_bytes(_base);
 }
 template <>
 int string::compare(const value_type * s) const noexcept
@@ -843,7 +1009,7 @@ string::__base::size_type string::to_byte_size(size_type __b, size_type __e) con
     
     return r;
 }
-string::size_type string::to_ucs4_size(__base::size_type __n) const noexcept
+string::size_type string::to_utf32_size(__base::size_type __n) const noexcept
 {
     size_type count = 0;
     if ( __n == __base::npos || __n > _base.size() )
@@ -864,7 +1030,7 @@ string::size_type string::to_ucs4_size(__base::size_type __n) const noexcept
     
     return count;
 }
-string::size_type string::to_ucs4_size(__base::size_type __b, __base::size_type __e) const noexcept
+string::size_type string::to_utf32_size(__base::size_type __b, __base::size_type __e) const noexcept
 {
     if ( __e == npos )
         return npos;
@@ -879,18 +1045,18 @@ string::size_type string::to_ucs4_size(__base::size_type __b, __base::size_type 
     }
     return count;
 }
-string::value_type string::utf8_to_ucs4(const xmlChar *utf8)
+string::value_type string::utf8_to_utf32(const xmlChar *utf8)
 {
     if ( utf8 == nullptr )
         return 0;
     
     size_type len = UTF8CharLen(*utf8);
-    return converter_type().from_bytes(reinterpret_cast<const char*>(utf8), reinterpret_cast<const char*>(utf8+len)).at(0);
+    return utf32_convert().from_bytes(reinterpret_cast<const char*>(utf8), reinterpret_cast<const char*>(utf8+len)).at(0);
 }
-string::value_type string::utf8_to_ucs4(const __base::const_iterator p)
+string::value_type string::utf8_to_utf32(const __base::const_iterator p)
 {
     size_type len = UTF8CharLen(*p);
-    return converter_type().from_bytes(&(*p), &(*p)+len).at(0);
+    return utf32_convert().from_bytes(&(*p), &(*p)+len).at(0);
 }
 
 EPUB3_XML_END_NAMESPACE

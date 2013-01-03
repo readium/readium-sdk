@@ -29,8 +29,8 @@ class NavigationTable;
 class Package
 {
 public:
-    typedef std::map<std::string, class Metadata*>          MetadataMap;
-    typedef std::map<std::string, class NavigationTable*>   NavigationMap;
+    typedef std::map<std::string, Metadata*>          MetadataMap;
+    typedef std::map<std::string, NavigationTable*>   NavigationMap;
     
 public:
     Package(Archive * archive, const std::string& path, const std::string& type);
@@ -41,6 +41,7 @@ public:
     virtual std::string UniqueID() const;
     virtual const std::string & Type() const { return _type; }
     virtual std::string Version() const;
+    virtual const std::string& BasePath() const { return _pathBase; }
     
     // to keep these accessible in const packages, we *must* build the tree at allocation time
     // this is open to discussion, naturally
@@ -48,45 +49,45 @@ public:
     const ManifestTable& Manifest() const { return _manifest; }
     const NavigationMap& NavigationTables() const { return _navigation; }
     
-    const SpineItem* FirstSpineItem() const { return _spine; }
-    const SpineItem* SpineItemAt(size_t idx) const;
+    const SpineItem * FirstSpineItem() const { return _spine.get(); }
+    const SpineItem * SpineItemAt(size_t idx) const;
     size_t IndexOfSpineItemWithIDRef(const std::string& idref) const;
     
-    const ManifestItem* ManifestItemWithID(const std::string& ident) const;
+    const ManifestItem * ManifestItemWithID(const std::string& ident) const;
     std::string CFISubpathForManifestItemWithID(const std::string& ident) const;
     
-    const class NavigationTable* NavigationTable(const std::string& title) const;
+    const NavigationTable * NavigationTable(const std::string& title) const;
     
     // note that the CFI is purposely non-const so the package can correct it (cf. epub-cfi §3.5)
-    const ManifestItem* ManifestItemForCFI(CFI& cfi, CFI* pRemainingCFI) const throw (CFI::InvalidCFI);
+    const ManifestItem * ManifestItemForCFI(CFI& cfi, CFI* pRemainingCFI) const throw (CFI::InvalidCFI);
     xmlDocPtr DocumentForCFI(CFI& cfi, CFI* pRemainingCFI) const throw (CFI::InvalidCFI) {
         return ManifestItemForCFI(cfi, pRemainingCFI)->ReferencedDocument();
     }
     
     // array-style operators: indices get spine items, identifiers get manifest items
-    const SpineItem* operator[](size_t idx) const { return SpineItemAt(idx); }
-    const ManifestItem* operator[](const std::string& ident) const { return ManifestItemWithID(ident); }
+    const SpineItem * operator[](size_t idx) const { return SpineItemAt(idx); }
+    const ManifestItem * operator[](const std::string& ident) const { return ManifestItemWithID(ident); }
     
     ArchiveXmlReader* ReaderForRelativePath(const std::string& path) const {
         return new ArchiveXmlReader(_archive->ReaderAtPath(_pathBase + path));
     }
     
 protected:
-    Archive *       _archive;
-    xmlDocPtr       _opf;
-    std::string     _pathBase;
-    std::string     _type;
-    MetadataMap     _metadata;
-    ManifestTable   _manifest;
-    NavigationMap   _navigation;
-    SpineItem*      _spine;
+    Archive *           _archive;
+    xmlDocPtr           _opf;
+    std::string         _pathBase;
+    std::string         _type;
+    MetadataMap         _metadata;
+    ManifestTable       _manifest;
+    NavigationMap       _navigation;
+    Auto<SpineItem>     _spine;
     
     // used to verify/correct CFIs
     uint32_t        _spineCFIIndex;
     
     bool Unpack();
-    const SpineItem* ConfirmOrCorrectSpineItemQualifier(const SpineItem* pItem, CFI::Component* pComponent) const;
-    static NavigationList NavTablesFromManifestItem(const ManifestItem* pItem);
+    const SpineItem * ConfirmOrCorrectSpineItemQualifier(const SpineItem * pItem, CFI::Component* pComponent) const;
+    static NavigationList NavTablesFromManifestItem(const ManifestItem * pItem);
 };
 
 EPUB3_END_NAMESPACE

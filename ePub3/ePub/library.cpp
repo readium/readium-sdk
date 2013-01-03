@@ -17,12 +17,21 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-Shared<Library> Library::_singleton = Shared<Library>();
+Auto<Library> Library::_singleton;
 
 Library::Library(Locator* locator)
 {
     if ( !Load(locator) )
         throw std::invalid_argument("The provided Locator doesn't appear to contain library data.");
+}
+Library::~Library()
+{
+    _packages.clear();
+    for ( auto item : _containers )
+    {
+        delete item.first;
+        delete item.second;
+    }
 }
 bool Library::Load(Locator* locator)
 {
@@ -36,15 +45,15 @@ bool Library::Load(Locator* locator)
         {
             ss << tmp;
             
-            Shared<Locator> thisLoc;
+            Locator* thisLoc;
             std::list<std::string> uidList;
             while ( !ss.eof() )
             {
                 std::getline(ss, tmp, ss.widen(','));
-                if ( thisLoc.get() == nullptr )
+                if ( thisLoc == nullptr )
                 {
                     // first item is a path to a local item
-                    thisLoc.reset(new PathLocator(tmp));
+                    thisLoc = new PathLocator(tmp);
                 }
                 else
                 {
@@ -66,13 +75,13 @@ bool Library::Load(Locator* locator)
     
     return true;
 }
-Shared<Library> Library::MainLibrary(Locator* locator)
+Library* Library::MainLibrary(Locator* locator)
 {
     if ( (bool)_singleton )
-        return _singleton;
+        return _singleton.get();
     
     _singleton.reset(new Library(locator));
-    return _singleton;
+    return _singleton.get();
 }
 Locator Library::LocatorForEPubWithUniqueID(const std::string &uniqueID) const
 {
@@ -82,21 +91,19 @@ Locator Library::LocatorForEPubWithUniqueID(const std::string &uniqueID) const
     
     return *(found->second.first);
 }
-void Library::AddEPubsInContainer(Shared<Container> container, Locator* locator)
+void Library::AddEPubsInContainer(Container* container, Locator* locator)
 {
-    Shared<Locator> ptr(locator);
-    
     // store the container
-    auto existing = _containers.find(ptr);
+    auto existing = _containers.find(locator);
     if ( existing == _containers.end() )
-        _containers[ptr] = container;
+        _containers[locator] = container;
     
     for ( auto pkg : container->Packages() )
     {
-        _packages[pkg->UniqueID()] = {ptr, Shared<Package>(pkg)};
+        _packages.emplace(pkg->UniqueID(), locator, pkg);
     }
 }
-std::string Library::EPubURLForPackage(Shared<const Package> package) const
+std::string Library::EPubURLForPackage(const Package* package) const
 {
     return EPubURLForPackage(package->UniqueID());
 }
@@ -120,15 +127,15 @@ Package* Library::PackageForEPubURL(const std::string &url)
     if ( entry == _packages.end() )
         return nullptr;
     
-    if ( entry->second.second.get() != nullptr )
-        return entry->second.second.get();
+    if ( entry->second.second != nullptr )
+        return entry->second.second;
     
-    AddEPubsInContainerAtPath(entry->second.first.get());
+    AddEPubsInContainerAtPath(entry->second.first);
     
     // returns a package ptr or nullptr
-    return entry->second.second.get();
+    return entry->second.second;
 }
-std::string Library::EPubCFIURLForManifestItem(Shared<const ManifestItem> item)
+std::string Library::EPubCFIURLForManifestItem(const ManifestItem* item)
 {
     return _Str(EPubURLForPackage(item->Package()), item->Package()->CFISubpathForManifestItemWithID(item->Identifier()));
 }
@@ -138,10 +145,10 @@ bool Library::WriteToFile(Locator* locator) const
     for ( auto item : _containers )
     {
         // works like an auto_ptr, scoping the allocation
-        Shared<Container> pContainer = item.second;
+        Container* pContainer = item.second;
         
         if ( pContainer == nullptr )
-            pContainer.reset(new Container(*item.first));
+            pContainer = new Container(*item.first);
         
         stream << item.first->GetPath();
         for ( auto pkg : pContainer->Packages() )

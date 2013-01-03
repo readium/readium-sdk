@@ -86,7 +86,7 @@ xmlNodeSetPtr XPathWrangler::Nodes(const xmlChar *xpath, xmlNodePtr node)
     xmlXPathObjectPtr result = xmlXPathEvalExpression(xpath, _ctx);
     if ( result != nullptr )
     {
-        if ( result->type == XPATH_NODESET )
+        if ( result->type == XPATH_NODESET && result->nodesetval != nullptr )
         {
             nodes = xmlXPathNodeSetCreate(nullptr);
             xmlNodeSetPtr res = result->nodesetval;

@@ -9,8 +9,11 @@
 #ifndef ePub3_xml_base_h
 #define ePub3_xml_base_h
 
-#define EPUB3_XML_BEGIN_NAMESPACE namespace ePub3 { namespace xml {
-#define EPUB3_XML_END_NAMESPACE }};
+#include "../../base.h"
+#include "../../utilities/basic.h"
+
+#define EPUB3_XML_BEGIN_NAMESPACE EPUB3_BEGIN_NAMESPACE namespace xml {
+#define EPUB3_XML_END_NAMESPACE } EPUB3_END_NAMESPACE
 
 #include <exception>
 #include <string>

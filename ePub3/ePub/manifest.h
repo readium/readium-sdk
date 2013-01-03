@@ -18,6 +18,7 @@ EPUB3_BEGIN_NAMESPACE
 
 class Package;
 class ManifestItem;
+
 typedef std::map<std::string, ManifestItem*>    ManifestTable;
 
 // this should just be an enum, but I'm having an inordinately hard time getting the
@@ -93,17 +94,22 @@ private:
 class ManifestItem
 {
 public:
+    typedef std::string     MimeType;
+    
+public:
     ManifestItem() = delete;
     ManifestItem(xmlNodePtr node, const Package* owner);
     ManifestItem(const ManifestItem&) = delete;
     ManifestItem(ManifestItem&&);
     virtual ~ManifestItem();
     
-    Shared<const Package> Package() const { return _owner; }
+    const Package* Package() const { return _owner; }
+    
+    std::string AbsolutePath() const;
     
     const std::string& Identifier() const { return _identifier; }
     const std::string& Href() const { return _href; }
-    const std::string& MediaType() const { return _mediaType; }
+    const MimeType& MediaType() const { return _mediaType; }
     const std::string& MediaOverlayID() const { return _mediaOverlayID; }
     const ManifestItem* MediaOverlay() const;
     const std::string& FallbackID() const { return _fallbackID; }
@@ -115,11 +121,11 @@ public:
     xmlDocPtr ReferencedDocument() const;
     
 protected:
-    Shared<const class Package> _owner;
+    const class Package* _owner;
     
     std::string     _identifier;
     std::string     _href;
-    std::string     _mediaType;
+    MimeType        _mediaType;
     std::string     _mediaOverlayID;
     std::string     _fallbackID;
     ItemProperties  _properties;

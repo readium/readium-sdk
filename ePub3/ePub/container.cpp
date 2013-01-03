@@ -15,9 +15,10 @@
 EPUB3_BEGIN_NAMESPACE
 
 static const char * gContainerFilePath = "META-INF/container.xml";
-static const char * gRootfilesXPath = "ocf:container/ocf:rootfiles/ocf:rootfile";
-static const char * gRootfilePathsXPath = "ocf:container/ocf:rootfiles/ocf:rootfile/@full-path";
-static const char * gVersionXPath = "ocf:container/@version";
+static const char * gEncryptionFilePath = "META-INF/encryption.xml";
+static const char * gRootfilesXPath = "/ocf:container/ocf:rootfiles/ocf:rootfile";
+static const char * gRootfilePathsXPath = "/ocf:container/ocf:rootfiles/ocf:rootfile/@full-path";
+static const char * gVersionXPath = "/ocf:container/@version";
 
 Container::Container(const std::string& path) : _archive(Archive::Open(path))
 {
@@ -50,9 +51,11 @@ Container::Container(const std::string& path) : _archive(Archive::Open(path))
                 continue;
             
             std::string path(reinterpret_cast<const char*>(_path));
-            _packages.push_back(new Package(_archive, path, type));
+            _packages.emplace_back(new Package(_archive, path, type));
         }
     }
+    
+    LoadEncryption();
 }
 Container::Container(Locator locator) : Container(locator.GetPath())
 {
@@ -69,16 +72,10 @@ Container::~Container()
         delete _archive;
     if ( _ocf != nullptr )
         xmlFreeDoc(_ocf);
-    for ( auto ptr : _packages )
-    {
-        delete ptr;
-    }
 }
 Container::PathList Container::PackageLocations() const
 {
-    XPathWrangler::NamespaceList nsList;
-    nsList["ocf"] = "urn:oasis:names:tc:opendocument:xmlns:container";
-    XPathWrangler xpath(_ocf, nsList);
+    XPathWrangler xpath(_ocf, {{"ocf", "urn:oasis:names:tc:opendocument:xmlns:container"}});
     
     PathList output;
     for ( std::string & str : xpath.Strings(reinterpret_cast<const xmlChar*>(gRootfilePathsXPath)) )
@@ -99,6 +96,39 @@ std::string Container::Version() const
         return "1.0";       // guess
     
     return std::move(strings[0]);
+}
+void Container::LoadEncryption()
+{
+    ArchiveReader *pZipReader = _archive->ReaderAtPath(gEncryptionFilePath);
+    if ( pZipReader == nullptr )
+        return;
+    
+    ArchiveXmlReader reader(pZipReader);
+    xmlDocPtr enc = reader.xmlReadDocument(gEncryptionFilePath, "utf-8", XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
+    if ( enc == nullptr )
+        return;
+    
+    XPathWrangler xpath(enc, {{"enc", XMLENCNamespaceURI}, {"ocf", OCFNamespaceURI}});
+    xmlNodeSetPtr nodes = xpath.Nodes("/ocf:encryption/enc:EncryptedData");
+    if ( nodes == nullptr || nodes->nodeNr == 0 )
+        return;     // should be a hard error?
+    
+    for ( size_t i = 0; i < nodes->nodeNr; i++ )
+    {
+        _encryption.emplace_back(new EncryptionInfo(nodes->nodeTab[i]));
+    }
+    
+    xmlXPathFreeNodeSet(nodes);
+}
+const EncryptionInfo* Container::EncryptionInfoForPath(const std::string &path) const
+{
+    for ( auto item : _encryption )
+    {
+        if ( item->Path() == path )
+            return item;
+    }
+    
+    return nullptr;
 }
 
 EPUB3_END_NAMESPACE

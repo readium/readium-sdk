@@ -23,20 +23,15 @@ SpineItem::SpineItem(xmlNodePtr node, Package * owner) : _idref(), _owner(owner)
     if ( str == "false" )
         _linear = false;
 }
-SpineItem::SpineItem(SpineItem&& o) : _idref(std::move(o._idref)), _owner(o._owner), _linear(o._linear), _prev(o._prev), _next(o._next)
+SpineItem::SpineItem(SpineItem&& o) : _idref(std::move(o._idref)), _owner(o._owner), _linear(o._linear), _prev(o._prev), _next(std::move(o._next))
 {
     o._owner = nullptr;
     o._prev = nullptr;
-    o._next = nullptr;
 }
 SpineItem::~SpineItem()
 {
-    if ( _prev != nullptr )
-        _prev->_next = nullptr;
-    if ( _next != nullptr )
-        delete _next;
 }
-const ManifestItem * SpineItem::ManifestItem() const
+const ManifestItem* SpineItem::ManifestItem() const
 {
     return _owner->ManifestItemWithID(Idref());
 }
@@ -53,7 +48,7 @@ const SpineItem* SpineItem::NextStep() const
 }
 SpineItem* SpineItem::PriorStep()
 {
-    SpineItem *p = Previous();
+    SpineItem* p = Previous();
     while ( p != nullptr && p->Linear() == false )
         p = p->Previous();
     return p;
@@ -64,7 +59,7 @@ const SpineItem* SpineItem::PriorStep() const
 }
 SpineItem* SpineItem::at(ssize_t idx) throw (std::out_of_range)
 {
-    SpineItem* result = this;
+    SpineItem* result(this);
     ssize_t i = idx;
     
     if ( i > 0 )

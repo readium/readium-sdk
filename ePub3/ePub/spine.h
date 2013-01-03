@@ -16,9 +16,9 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-class SpineItem;
 class ManifestItem;
 class Package;
+class SpineItem;
 
 // SpineItems form a doubly-linked list
 class SpineItem
@@ -34,12 +34,12 @@ public:
     virtual ~SpineItem();
     
     const std::string& Idref() const { return _idref; }
-    const class ManifestItem* ManifestItem() const;
+    const ManifestItem* ManifestItem() const;
     bool Linear() const { return _linear; }
     
     // these are direct
-    SpineItem* Next() { return _next; }
-    const SpineItem* Next() const { return _next; }
+    SpineItem* Next() { return _next.get(); }
+    const SpineItem* Next() const { return _next.get(); }
     SpineItem* Previous() { return _prev; }
     const SpineItem* Previous() const { return _prev; }
     
@@ -62,14 +62,17 @@ public:
     
 protected:
     std::string _idref;
-    Package *   _owner;
+    Package*  _owner;
     bool        _linear;
     
-    SpineItem*  _prev;
-    SpineItem*  _next;
+    SpineItem*      _prev;
+    Auto<SpineItem> _next;
     
     friend class Package;
-    void SetNextItem(SpineItem* next) { _next = next; _next->_prev = this; }
+    void SetNextItem(SpineItem* next) {
+        _next.reset(next);
+        next->_prev = this;
+    }
 };
 
 EPUB3_END_NAMESPACE

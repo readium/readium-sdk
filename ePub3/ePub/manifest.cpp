@@ -139,6 +139,10 @@ ManifestItem::ManifestItem(ManifestItem&& o) : _owner(o._owner), _identifier(std
 ManifestItem::~ManifestItem()
 {
 }
+std::string ManifestItem::AbsolutePath() const
+{
+    return _Str(_owner->BasePath(), Href());
+}
 const ManifestItem* ManifestItem::MediaOverlay() const
 {
     if ( _owner == nullptr || _mediaOverlayID.empty() )

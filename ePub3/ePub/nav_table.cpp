@@ -89,7 +89,7 @@ void NavigationTable::BuildNavPoints(xmlNodeSetPtr nodes, NavigationList *navLis
         // should be a single <a> or optional <span> tag, followed by an optional <ol>
         xmlNodePtr liNode = nodes->nodeTab[i];
         xmlNodePtr liChild = liNode->children;
-        NavigationPoint *pPoint = nullptr;
+        NavigationPoint* point;
         
         for ( ; liChild != nullptr; liChild = liChild->next )
         {
@@ -99,11 +99,10 @@ void NavigationTable::BuildNavPoints(xmlNodeSetPtr nodes, NavigationList *navLis
             bool builtSubTable = false;
             std::string cName(reinterpret_cast<const char*>(liChild->name));
             
-            if ( cName == "a" && pPoint == nullptr )
+            if ( cName == "a" && point == nullptr )
             {
                 // create navigation points from anchor tags
-                pPoint = new NavigationPoint(liChild);
-                navList->push_back(pPoint);
+                navList->push_back(new NavigationPoint(liChild));
             }
             else if ( cName == "span" )
             {
@@ -116,13 +115,13 @@ void NavigationTable::BuildNavPoints(xmlNodeSetPtr nodes, NavigationList *navLis
                 else
                 {
                     // create a new table either on the input list or in the current point
-                    if ( pPoint == nullptr )
+                    if ( point == nullptr )
                     {
                         navList->push_back(new NavigationTable(liNode));
                     }
                     else
                     {
-                        pPoint->AppendChild(new NavigationTable(liNode));
+                        point->AppendChild(new NavigationTable(liNode));
                     }
                     
                     builtSubTable = true;
@@ -131,13 +130,13 @@ void NavigationTable::BuildNavPoints(xmlNodeSetPtr nodes, NavigationList *navLis
             else if ( cName == "ol" && !builtSubTable )
             {
                 // create a new table either on the input list or in the current point
-                if ( pPoint == nullptr )
+                if ( point == nullptr )
                 {
                     navList->push_back(new NavigationTable(liNode));
                 }
                 else
                 {
-                    pPoint->AppendChild(new NavigationTable(liNode));
+                    point->AppendChild(new NavigationTable(liNode));
                 }
                 
                 builtSubTable = true;

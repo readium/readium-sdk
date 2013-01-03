@@ -35,7 +35,7 @@ protected:
     xmlParserInputBufferPtr _buf;
     
     virtual size_t read(uint8_t * buf, size_t len) = 0;
-    virtual bool close() = 0;
+    virtual bool close() { return false; }
     
     static int read_cb(void * context, char * buffer, int len);
     static int close_cb(void * context);

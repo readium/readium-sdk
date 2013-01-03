@@ -21,7 +21,8 @@ EPUB3_XML_BEGIN_NAMESPACE
 class string;
 typedef std::map<string, string>  NamespaceMap;
 
-extern const size_t utf8_sizes[];
+extern const size_t utf8_sizes[256];
+#define UTF8CharLen(c) utf8_sizes[static_cast<xmlChar>(c)]
 
 class string
 {
@@ -37,15 +38,18 @@ public:
     typedef value_type*                 u4pointer;
     typedef const value_type*           const_u4pointer;
     
-    static value_type utf8_to_ucs4(const xmlChar * utf8);
-    static value_type utf8_to_ucs4(const __base::const_iterator p);
+    static value_type utf8_to_utf32(const xmlChar * utf8);
+    static value_type utf8_to_utf32(const __base::const_iterator p);
     
     template <class _Iter>
     class _iterator
     {
     public:
         typedef std::bidirectional_iterator_tag iterator_category;
-        typedef void                            pointer;
+        typedef u4pointer                       pointer;
+        typedef difference_type                 difference_type;
+        typedef value_type                      value_type;
+        typedef reference                       reference;
         
         inline _iterator() {}
         inline _iterator(const _iterator &o) : _base(o._base) {}
@@ -54,7 +58,14 @@ public:
         inline _iterator(_Iter &&i) : _base(i) {}
         
         inline value_type operator * () const {
-            return string::utf8_to_ucs4(_base);
+            return string::utf8_to_utf32(_base);
+        }
+        
+        inline string::__base utf8char() const {
+            size_type __n = utf8_sizes[(*_base)];
+            __base::value_type __buf[6] = {0};
+            __base::traits_type::copy(__buf, &(*_base), __n);
+            return string::__base(__buf, __n);
         }
         
         inline _iterator & operator ++ () {
@@ -77,6 +88,7 @@ public:
         }
         inline _iterator & operator += (int n) {
             bool adding = (n >= 0);
+            n = abs(n);
             for ( int i = 0; i < n; i++ )
             {
                 if ( adding )
@@ -112,6 +124,11 @@ public:
         inline _iterator operator - (size_type n) {
             return _iterator<_Iter>(*this).operator-=(n);
         }
+        inline difference_type operator - (_iterator i) const {
+            if ( *this < i )
+                return 0;
+            return std::distance(i, *this);
+        }
         
         inline bool operator == (const _iterator<_Iter> &o) const {
             return _base == o._base;
@@ -136,7 +153,11 @@ public:
         friend class string;
         inline _Iter & __base() { return _base; }
         
-        inline void _advance() { _base += utf8_sizes[(*_base)]; }
+        inline void _advance() {
+            string::__base::value_type __c = *_base;
+            string::__base::size_type __n = UTF8CharLen(__c);
+            _base += __n;
+        }
         inline void _retreat() { do { --_base; } while ( (static_cast<const xmlChar>(*_base) & 0xc0) == 0x80 ); }
     };
     
@@ -149,7 +170,7 @@ public:
     typedef _iterator<__base::iterator>        iterator;
     typedef _iterator<__base::const_iterator>  const_iterator;
     
-    static const size_type npos = std::string::npos;
+    static const size_type npos;
     
 #if 0
 #pragma mark - Construction/Destruction
@@ -157,15 +178,21 @@ public:
     
     // Standard
     string() : _base() {}
-    string(const string &o) : string(o, 0) {}
+    string(const string &o) : _base(o._base) {}
     string(string &&o) : _base(std::move(o._base)) {}
-    string(const string & s, size_type i, size_type n=npos) : _base(s._base, to_byte_size(i), to_byte_size(i,n)) {}
+    string(const string & s, size_type i, size_type n=npos) : _base(s._base, s.to_byte_size(i), s.to_byte_size(i,n)) {}
     
     // From char32_t (value_type)
     string(const_u4pointer s);   // NUL-delimited
     string(const_u4pointer s, size_type n);
     string(size_type n, value_type c);
     string(std::initializer_list<value_type> __il) : string(__il.begin(), __il.end()) {}
+    
+    // From char16_t (pure UTF-16)
+    string(const char16_t* s);    // NUL-delimited
+    string(const char16_t* s, size_type n);
+    string(size_type n, char16_t c);
+    string(std::initializer_list<char16_t> __il) : string(__il.begin(), __il.end()) {}
     
     // From std::string
     string(const __base &o) : _base(o) {}
@@ -184,6 +211,9 @@ public:
     
     template <class InputIterator>
     string(InputIterator begin, InputIterator end);
+    
+    template <typename... Args>
+    string(const Args&... args) : _base(_Str(args...)) {}
     
     ~string() {}
     
@@ -242,6 +272,14 @@ public:
     string & operator=(value_type c) { return assign(1, c); }
     string & operator=(std::initializer_list<value_type> l) { return assign(l); }
     
+    // char16_t
+    string & assign(const char16_t* s, size_type n=npos);
+    string & assign(size_type n, char16_t c) { clear(); resize(n, static_cast<value_type>(c)); return *this; }
+    string & assign(std::initializer_list<char16_t> __il) { return assign(__il.begin(), __il.end()); }
+    string & operator=(const char16_t* s) { return assign(s, npos); }
+    string & operator=(char16_t c) { return assign(1, c); }
+    string & operator=(std::initializer_list<char16_t> l) { return assign(l); }
+    
     // std::string
     string & assign(const __base & o) { _base.assign(o); return *this; }
     string & assign(const __base & o, size_type i, size_type n=npos)
@@ -273,6 +311,9 @@ public:
     template <class InputIterator>
     string & append(InputIterator first, InputIterator last);
     
+    template <typename... Args>
+    string & append(const Args&... args) { return append(string(args...)); }
+    
     // standard
     string & append(const string &o) { _base.append(o._base); return *this; }
     string & append(const string &o, size_type i, size_type n=npos);
@@ -287,6 +328,14 @@ public:
     string & operator+=(const_u4pointer s) { return append(s, npos); }
     string & operator+=(value_type c) { return append(1, c); }
     string & operator+=(std::initializer_list<value_type> __il) { return append(__il); }
+    
+    // char16_t
+    string & append(const char16_t* s, size_type n=npos);
+    string & append(size_type n, char16_t c);
+    string & append(std::initializer_list<char16_t> __il) { return append(__il.begin(), __il.end()); }
+    string & operator+=(const char16_t* s) { return append(s, npos); }
+    string & operator+=(char16_t c) { return append(1, c); }
+    string & operator+=(std::initializer_list<char16_t> __il) { return append(__il); }
     
     // std::string
     string & append(const __base & o) { _base.append(o); return *this; }
@@ -318,6 +367,11 @@ public:
     template <class InputIterator>
     iterator insert(iterator p, InputIterator first, InputIterator last);
     
+    template <typename... Args>
+    string & insert(size_type p, const Args&... args) { return insert(p, string(args...)); }
+    template <typename... Args>
+    iterator insert(iterator p, const Args&... args) { return insert(p, string(args...)); }
+    
     // standard
     string & insert(size_type p, const string &s, size_type b=0, size_type e=npos);
     iterator insert(iterator p, const string & s, size_type b=0, size_type e=npos);
@@ -328,6 +382,13 @@ public:
     iterator insert(iterator p, const_u4pointer s, size_type e=npos);
     iterator insert(iterator p, size_type n, value_type c);
     iterator insert(iterator p, std::initializer_list<value_type> __il) { return insert(p, __il.begin(), __il.end()); }
+    
+    // char16_t
+    string & insert(size_type p, const char16_t* s, size_type e=npos);
+    string & insert(size_type p, size_type n, char16_t c);
+    iterator insert(iterator p, const char16_t* s, size_type e=npos);
+    iterator insert(iterator p, size_type n, char16_t c);
+    iterator insert(iterator p, std::initializer_list<char16_t> __il) { return insert(p, __il.begin(), __il.end()); }
     
     // std::string
     string & insert(size_type p, const __base &s, size_type b=0, size_type e=npos) throw (InvalidUTF8Sequence);
@@ -365,6 +426,15 @@ public:
     template <class InputIterator>
     string & replace(const_iterator i1, const_iterator i2, InputIterator j1, InputIterator j2);
     
+    template <typename... Args>
+    string & replace(size_type pos1, size_type n1, const Args&... args) {
+        return replace(pos1, n1, string(args...));
+    }
+    template <typename... Args>
+    string & replace(const_iterator i1, const_iterator i2, Args&... args) {
+        return replace(i1, i2, string(args...));
+    }
+    
     // standard
     string & replace(size_type pos1, size_type n1, const string & str);
     string & replace(size_type pos1, size_type n1, const string & str, size_type pos2, size_type n2);
@@ -378,6 +448,17 @@ public:
     string & replace(const_iterator i1, const_iterator i2, const_u4pointer s);
     string & replace(const_iterator i1, const_iterator i2, size_type n, value_type c);
     string & replace(const_iterator i1, const_iterator i2, std::initializer_list<value_type> __il) {
+        return replace(i1, i2, __il.begin(), __il.end());
+    }
+    
+    // char16_t
+    string & replace(size_type pos, size_type n1, const char16_t* s, size_type n2);
+    string & replace(size_type pos, size_type n1, const char16_t* s);
+    string & replace(size_type pos, size_type n1, size_type n2, char16_t c);
+    string & replace(const_iterator i1, const_iterator i2, const char16_t* s, size_type n);
+    string & replace(const_iterator i1, const_iterator i2, const char16_t* s);
+    string & replace(const_iterator i1, const_iterator i2, size_type n, char16_t c);
+    string & replace(const_iterator i1, const_iterator i2, std::initializer_list<char16_t> __il) {
         return replace(i1, i2, __il.begin(), __il.end());
     }
     
@@ -419,6 +500,7 @@ public:
 #endif
     
     size_type copy(u4pointer s, size_type n, size_type pos=0) const;
+    size_type copy(char16_t* s, size_type n, size_type pos=0) const;
     size_type copyC(char * s, size_type n, size_type pos=0) const { return _base.copy(s, n, pos); }
     size_type copyXML(xmlChar * s, size_type n, size_type pos=0) const { return _base.copy(reinterpret_cast<char*>(s), n, pos); }
     
@@ -429,11 +511,16 @@ public:
         _base.swap(str._base);
     }
     
-    std::u32string ucs4string() const;
-    inline const_u4pointer ucs4() const { return ucs4string().c_str(); }
+    std::u32string utf32string() const;
+    inline const_u4pointer utf32() const { return utf32string().c_str(); }
+    
+    std::u16string utf16string() const;
+    inline const char16_t* utf16() const { return utf16string().c_str(); }
     
     __base::const_pointer c_str() const noexcept { return _base.c_str(); }
     __base::const_pointer data() const noexcept { return _base.data(); }
+    
+    const __base& stl_str() const { return _base; }
     
     const xmlChar * utf8() const { return reinterpret_cast<const xmlChar *>(c_str()); }
     
@@ -444,117 +531,208 @@ public:
 #endif
     
     size_type find(const string& str, size_type pos=0) const noexcept {
-        return to_ucs4_size(_base.find(str._base, to_byte_size(pos)));
+        return to_utf32_size(_base.find(str._base, to_byte_size(pos)));
     }
     size_type find(const __base& str, size_type pos=0) const noexcept {
-        return to_ucs4_size(_base.find(str, to_byte_size(pos)));
+        return to_utf32_size(_base.find(str, to_byte_size(pos)));
     }
     template <typename _CharT>
     size_type find(const _CharT * s, size_type pos, size_type n) const noexcept {
-        return to_ucs4_size(_base.find(_Convert<_CharT>::toUTF8(s, 0, n), to_byte_size(pos)));
+        return to_utf32_size(_base.find(_Convert<_CharT>::toUTF8(s, 0, n), to_byte_size(pos)));
     }
     template <typename _CharT>
     size_type find(const _CharT * s, size_type pos = 0) const noexcept {
-        return to_ucs4_size(_base.find(_Convert<_CharT>::toUTF8(s), to_byte_size(pos)));
+        return to_utf32_size(_base.find(_Convert<_CharT>::toUTF8(s), to_byte_size(pos)));
     }
     template <typename _CharT>
     size_type find(_CharT c, size_type pos = 0) const noexcept {
-        return to_ucs4_size(_base.find(_Convert<_CharT>::toUTF8(c), to_byte_size(pos)));
+        return to_utf32_size(_base.find(_Convert<_CharT>::toUTF8(c), to_byte_size(pos)));
     }
     
     size_type rfind(const string& str, size_type pos=0) const noexcept {
-        return to_ucs4_size(_base.rfind(str._base, to_byte_size(pos)));
+        return to_utf32_size(_base.rfind(str._base, to_byte_size(pos)));
     }
     size_type rfind(const __base& str, size_type pos=0) const noexcept {
-        return to_ucs4_size(_base.rfind(str, to_byte_size(pos)));
+        return to_utf32_size(_base.rfind(str, to_byte_size(pos)));
     }
     template <typename _CharT>
     size_type rfind(const _CharT * s, size_type pos, size_type n) const noexcept {
-        return to_ucs4_size(_base.rfind(_Convert<_CharT>::toUTF8(s, 0, n), to_byte_size(pos)));
+        return to_utf32_size(_base.rfind(_Convert<_CharT>::toUTF8(s, 0, n), to_byte_size(pos)));
     }
     template <typename _CharT>
     size_type rfind(const _CharT * s, size_type pos = 0) const noexcept {
-        return to_ucs4_size(_base.rfind(_Convert<_CharT>::toUTF8(s), to_byte_size(pos)));
+        return to_utf32_size(_base.rfind(_Convert<_CharT>::toUTF8(s), to_byte_size(pos)));
     }
     template <typename _CharT>
     size_type rfind(_CharT c, size_type pos = 0) const noexcept {
-        return to_ucs4_size(_base.rfind(_Convert<_CharT>::toUTF8(c), to_byte_size(pos)));
+        return to_utf32_size(_base.rfind(_Convert<_CharT>::toUTF8(c), to_byte_size(pos)));
     }
     
+    template <class _ForwardIterator1, class _ForwardIterator2, class _BinaryPredicate>
+    _ForwardIterator1
+    find_first_of(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
+                  _ForwardIterator2 __first2, _ForwardIterator2 __last2, _BinaryPredicate __pred) const noexcept
+    {
+        for (; __first1 != __last1; ++__first1)
+            for (_ForwardIterator2 __j = __first2; __j != __last2; ++__j)
+                if (__pred(*__first1, *__j))
+                    return __first1;
+        return __last1;
+    }
+    
+    template <class _Traits>
+    struct _LIBCPP_HIDDEN __traits_eq
+    {
+        typedef typename _Traits::char_type char_type;
+        _LIBCPP_INLINE_VISIBILITY
+        bool operator()(const char_type& __x, const char_type& __y) noexcept {
+            return _Traits::eq(__x, __y);
+        }
+    };
+    
     size_type find_first_of(const string& str, size_type pos=0) const noexcept {
-        return to_ucs4_size(_base.find_first_of(str._base, to_byte_size(pos)));
+        auto __r = find_first_of(begin()+pos, end(), str.begin(), str.end(), __traits_eq<traits_type>());
+        if ( __r == end() )
+            return npos;
+        return __r - begin();
     }
     size_type find_first_of(const __base& str, size_type pos=0) const noexcept {
-        return to_ucs4_size(_base.find_first_of(str, to_byte_size(pos)));
+        auto __r = find_first_of(begin()+pos, end(), const_iterator(str.begin()), const_iterator(str.end()), __traits_eq<traits_type>());
+        if ( __r == end() )
+            return npos;
+        return __r - begin();
     }
     template <typename _CharT>
     size_type find_first_of(const _CharT * s, size_type pos, size_type n) const noexcept {
-        return to_ucs4_size(_base.find_first_of(_Convert<_CharT>::toUTF8(s, 0, n), to_byte_size(pos)));
+        return find_first_of(_Convert<_CharT>::toUTF8(s, 0, n), pos);
     }
     template <typename _CharT>
     size_type find_first_of(const _CharT * s, size_type pos = 0) const noexcept {
-        return to_ucs4_size(_base.find_first_of(_Convert<_CharT>::toUTF8(s), to_byte_size(pos)));
+        return find_first_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
     size_type find_first_of(_CharT c, size_type pos = 0) const noexcept {
-        return to_ucs4_size(_base.find_first_of(_Convert<_CharT>::toUTF8(c), to_byte_size(pos)));
+        auto __r = std::find_first_of(begin()+pos, end(), &c, ((&c) + sizeof(_CharT)));
+        if ( __r == end() )
+            return npos;
+        return __r - begin();
     }
     
     size_type find_last_of(const string& str, size_type pos=0) const noexcept {
-        return to_ucs4_size(_base.find_last_of(str._base, to_byte_size(pos)));
+        size_type __sz = size();
+        if ( pos < __sz )
+            ++pos;
+        else
+            pos = __sz;
+        const_iterator __p = begin();
+        for ( const_iterator __ps = __p + pos; __ps != __p; )
+        {
+            size_type __r = str.find(*--__ps);
+            if ( __r != npos )
+                return __ps - begin();
+        }
+        return npos;
     }
     size_type find_last_of(const __base& str, size_type pos=0) const noexcept {
-        return to_ucs4_size(_base.find_last_of(str, to_byte_size(pos)));
+        size_type __sz = size();
+        if ( pos < __sz )
+            ++pos;
+        else
+            pos = __sz;
+        const_iterator __p = begin();
+        for ( const_iterator __ps = __p + pos; __ps != __p; )
+        {
+            size_type __r = str.find((--__ps).utf8char());
+            if ( __r != npos )
+                return __ps - begin();
+        }
+        return npos;
     }
     template <typename _CharT>
     size_type find_last_of(const _CharT * s, size_type pos, size_type n) const noexcept {
-        return to_ucs4_size(_base.find_last_of(_Convert<_CharT>::toUTF8(s, 0, n), to_byte_size(pos)));
+        return find_last_of(_Convert<_CharT>::toUTF8(s, 0, n), pos);
     }
     template <typename _CharT>
     size_type find_last_of(const _CharT * s, size_type pos = 0) const noexcept {
-        return to_ucs4_size(_base.find_last_of(_Convert<_CharT>::toUTF8(s), to_byte_size(pos)));
+        return find_last_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
     size_type find_last_of(_CharT c, size_type pos = 0) const noexcept {
-        return to_ucs4_size(_base.find_last_of(_Convert<_CharT>::toUTF8(c), to_byte_size(pos)));
+        return rfind(c, pos);
     }
     
     size_type find_first_not_of(const string& str, size_type pos=0) const noexcept {
-        return to_ucs4_size(_base.find_first_not_of(str._base, to_byte_size(pos)));
+        size_type __sz = size();
+        if ( pos < __sz )
+        {
+            const_iterator __p = begin();
+            const_iterator __pe = end();
+            for ( const_iterator __ps = __p + pos; __ps != __pe; ++__ps )
+                if ( str.find(*__ps) == npos )
+                    return static_cast<size_type>(__ps - __p);
+        }
+        return npos;
     }
     size_type find_first_not_of(const __base& str, size_type pos=0) const noexcept {
-        return to_ucs4_size(_base.find_first_not_of(str, to_byte_size(pos)));
+        size_type __sz = size();
+        if ( pos < __sz )
+        {
+            const_iterator __p = begin();
+            const_iterator __pe = end();
+            for ( const_iterator __ps = __p + pos; __ps != __pe; ++__ps )
+                if ( str.find(__ps.utf8char()) == npos )
+                    return static_cast<size_type>(__ps - __p);
+        }
+        return npos;
     }
     template <typename _CharT>
     size_type find_first_not_of(const _CharT * s, size_type pos, size_type n) const noexcept {
-        return to_ucs4_size(_base.find_first_not_of(_Convert<_CharT>::toUTF8(s, 0, n), to_byte_size(pos)));
+        return find_first_not_of(_Convert<_CharT>::toUTF8(s, 0, n), pos);
     }
     template <typename _CharT>
     size_type find_first_not_of(const _CharT * s, size_type pos = 0) const noexcept {
-        return to_ucs4_size(_base.find_first_not_of(_Convert<_CharT>::toUTF8(s), to_byte_size(pos)));
+        return find_first_not_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
     size_type find_first_not_of(_CharT c, size_type pos = 0) const noexcept {
-        return to_ucs4_size(_base.find_first_not_of(_Convert<_CharT>::toUTF8(c), to_byte_size(pos)));
+        return find_first_not_of(_Convert<_CharT>::toUTF8(c), pos);
     }
     
     size_type find_last_not_of(const string& str, size_type pos=0) const noexcept {
-        return to_ucs4_size(_base.find_last_not_of(str._base, to_byte_size(pos)));
+        size_type __sz = size();
+        if ( pos < __sz )
+            ++pos;
+        else
+            pos = __sz;
+        const_iterator __p = begin();
+        for ( const_iterator __ps = __p + pos; __ps != __p; )
+            if ( str.find(*--__ps) == npos )
+                return static_cast<size_type>(__ps - __p);
+        return npos;
     }
     size_type find_last_not_of(const __base& str, size_type pos=0) const noexcept {
-        return to_ucs4_size(_base.find_last_not_of(str, to_byte_size(pos)));
+        size_type __sz = size();
+        if ( pos < __sz )
+            ++pos;
+        else
+            pos = __sz;
+        const_iterator __p = begin();
+        for ( const_iterator __ps = __p + pos; __ps != __p; )
+            if ( str.find((--__ps).utf8char()) == npos )
+                return static_cast<size_type>(__ps - __p);
+        return npos;
     }
     template <typename _CharT>
     size_type find_last_not_of(const _CharT * s, size_type pos, size_type n) const noexcept {
-        return to_ucs4_size(_base.find_last_not_of(_Convert<_CharT>::toUTF8(s, 0, n), to_byte_size(pos)));
+        return find_last_not_of(_Convert<_CharT>::toUTF8(s, 0, n), pos);
     }
     template <typename _CharT>
     size_type find_last_not_of(const _CharT * s, size_type pos = 0) const noexcept {
-        return to_ucs4_size(_base.find_last_not_of(_Convert<_CharT>::toUTF8(s), to_byte_size(pos)));
+        return find_last_not_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
     size_type find_last_not_of(_CharT c, size_type pos = 0) const noexcept {
-        return to_ucs4_size(_base.find_last_not_of(_Convert<_CharT>::toUTF8(c), to_byte_size(pos)));
+        return find_last_not_of(_Convert<_CharT>::toUTF8(c), pos);
     }
     
 #if 0
@@ -576,7 +754,8 @@ public:
     // there exist specializations for char32_t
     template <typename _CharT>
     int compare(const _CharT * s) const noexcept {
-        return _base.compare(_Convert<_CharT>::toUTF8(s));
+        auto str(_Convert<_CharT>::toUTF8(s));
+        return _base.compare(str);
     }
     template <typename _CharT>
     int compare(size_type pos1, size_type n1, const _CharT * s) const {
@@ -631,15 +810,15 @@ protected:
     
     __base::size_type to_byte_size(size_type __n) const noexcept;
     __base::size_type to_byte_size(size_type __b, size_type __e) const noexcept;
-    size_type to_ucs4_size(__base::size_type __n) const noexcept;
-    size_type to_ucs4_size(__base::size_type __b, __base::size_type __e) const noexcept;
+    size_type to_utf32_size(__base::size_type __n) const noexcept;
+    size_type to_utf32_size(__base::size_type __b, __base::size_type __e) const noexcept;
     
     static inline constexpr __base::const_pointer _bchar(const xmlChar * c) noexcept { return (__base::const_pointer)(c); }
     static inline constexpr __base::pointer _bchar(xmlChar * c) noexcept { return (__base::pointer)(c); }
     
     template <class _CharT>
     class _Convert {
-        typedef std::wstring_convert<std::codecvt_utf8<_CharT> > _cvt;
+        typedef std::wstring_convert<std::codecvt_utf8<_CharT>, _CharT > _cvt;
     public:
         typedef typename _cvt::byte_string byte_string;
         typedef typename _cvt::wide_string wide_string;
@@ -685,6 +864,8 @@ public:
     typedef std::string byte_string;
     typedef std::string wide_string;
     static byte_string toUTF8(const char *p, size_type pos=0, size_type n=npos) {
+        if ( n == std::string::npos )
+            return std::string(p+pos);
         return std::string(p+pos, n);
     }
     static byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
@@ -694,6 +875,8 @@ public:
         return std::string(n, c);
     }
     static wide_string fromUTF8(const char * utf8, size_type pos=0, size_type n=npos) {
+        if ( n == std::string::npos )
+            return std::string(utf8+pos);
         return std::string(utf8+pos, n);
     }
     static wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
@@ -707,6 +890,8 @@ public:
     typedef std::string byte_string;
     typedef std::string wide_string;
     static byte_string toUTF8(const xmlChar *p, size_type pos=0, size_type n=npos) {
+        if ( n == std::string::npos )
+            return std::string(reinterpret_cast<const char*>(p)+pos);
         return std::string(reinterpret_cast<const char*>(p)+pos, n);
     }
     static byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
@@ -716,6 +901,8 @@ public:
         return std::string(n, static_cast<char>(c));
     }
     static wide_string fromUTF8(const xmlChar * utf8, size_type pos=0, size_type n=npos) {
+        if ( n == std::string::npos )
+            return std::string(reinterpret_cast<const char*>(utf8)+pos);
         return std::string(reinterpret_cast<const char*>(utf8)+pos, n);
     }
     static wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
@@ -805,6 +992,12 @@ inline std::string operator + (std::string& lhs, const xmlChar *rhs) {
 }
 inline std::string operator + (std::string &lhs, const string &rhs) {
     return std::operator+(lhs, reinterpret_cast<const char*>(rhs.c_str()));
+}
+
+template <class _CharT, class _Traits>
+inline std::basic_ostream<_CharT, _Traits>&
+operator<<(std::basic_ostream<_CharT, _Traits>& __os, const string& __str) {
+    return __os << __str.stl_str();
 }
 
 template <class T>

@@ -4,6 +4,11 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>UnitTests.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
 		<key>ePub3.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -12,6 +17,11 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>AB61CE491694845700299BB1</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>ABA72C231655382E003125FF</key>
 		<dict>
 			<key>primary</key>

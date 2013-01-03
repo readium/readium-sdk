@@ -28,7 +28,7 @@ int InputBuffer::read_cb(void *context, char *buffer, int len)
 }
 int InputBuffer::close_cb(void *context)
 {
-    InputBuffer * p = reinterpret_cast<InputBuffer*>(context);
+    InputBuffer * p = static_cast<InputBuffer*>(context);
     return (p->close() ? 0 : -1);
 }
 xmlDocPtr InputBuffer::xmlReadDocument(const char * url, const char * encoding, int options)

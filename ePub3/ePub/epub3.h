@@ -22,7 +22,7 @@
 #define PLSNamespaceURI "http://www.w3.org/2005/01/pronunciation-lexicon"
 #define SSMLNamespaceURI "http://www.w3.org/2001/10/synthesis"
 #define SVGNamespaceURI "http://www.w3.org/2000/svg"
-#define OCSNamespaceURI "urn:oasis:names:tc:opendocument:xmlns:container"
+#define OCFNamespaceURI "urn:oasis:names:tc:opendocument:xmlns:container"
 #define XMLENCNamespaceURI "http://www.w3.org/2001/04/xmlenc#"
 #define XMLDSigNamespaceURI "http://www.w3.org/2000/09/xmldsig#"
 

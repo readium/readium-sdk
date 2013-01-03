@@ -25,10 +25,7 @@ template <class _Tp>
 using Shared = std::shared_ptr<_Tp>;
 
 template <class _Tp>
-using Unique = std::unique_ptr<_Tp>;
-
-template <class _Tp>
-using Auto = std::auto_ptr<_Tp>;
+using Auto = std::unique_ptr<_Tp>;
 
 template <class _Tp>
 using Weak = std::weak_ptr<_Tp>;

@@ -34,7 +34,7 @@ Package::Package(Archive* archive, const std::string& path, const std::string& t
     if ( _opf == nullptr )
         throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": No OPF file at " + path);
     
-    if ( Unpack() )
+    if ( !Unpack() )
         throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": Not a valid OPF file at " + path);
     
     size_t loc = path.find_last_of('/');
@@ -54,6 +54,19 @@ Package::Package(Package&& o) : _archive(o._archive), _opf(o._opf), _pathBase(st
 }
 Package::~Package()
 {
+    for ( auto item : _metadata )
+    {
+        delete item.second;
+    }
+    for ( auto item : _manifest )
+    {
+        delete item.second;
+    }
+    for ( auto item : _navigation )
+    {
+        delete item.second;
+    }
+    
     // our Container owns the archive
     if ( _opf != nullptr )
         xmlFreeDoc(_opf);
@@ -72,7 +85,7 @@ std::string Package::Version() const
 }
 const SpineItem* Package::SpineItemAt(size_t idx) const
 {
-    const SpineItem * item = _spine;
+    const SpineItem* item = _spine.get();
     for ( size_t i = 0; i < idx && item != nullptr; i++ )
     {
         item = item->Next();
@@ -81,7 +94,7 @@ const SpineItem* Package::SpineItemAt(size_t idx) const
 }
 size_t Package::IndexOfSpineItemWithIDRef(const std::string &idref) const
 {
-    const SpineItem * item = _spine;
+    const SpineItem* item = _spine.get();
     for ( size_t i = 0; item != nullptr; i++, item = item->Next() )
     {
         if ( item->Idref() == idref )
@@ -106,7 +119,7 @@ std::string Package::CFISubpathForManifestItemWithID(const std::string &ident) c
     
     return _Str(_spineCFIIndex, "/", sz*2, "[", ident, "]!/");
 }
-const class NavigationTable* Package::NavigationTable(const std::string &title) const
+const NavigationTable* Package::NavigationTable(const std::string &title) const
 {
     auto found = _navigation.find(title);
     if ( found == _navigation.end() )
@@ -200,17 +213,23 @@ bool Package::Unpack()
         for ( int i = 0; i < manifestNodes->nodeNr; i++ )
         {
             ManifestItem *p = new ManifestItem(manifestNodes->nodeTab[i], this);
-            _manifest[p->Identifier()] = p;
+            _manifest.emplace(p->Identifier(), p);
         }
         
-        SpineItem * cur = nullptr;
+        SpineItem* cur = nullptr;
         for ( int i = 0; i < spineNodes->nodeNr; i++ )
         {
-            SpineItem *next = new SpineItem(spineNodes->nodeTab[i], this);
+            SpineItem* next = new SpineItem(spineNodes->nodeTab[i], this);
             if ( cur != nullptr )
+            {
                 cur->SetNextItem(next);
+            }
             else
-                _spine = cur = next;
+            {
+                _spine.reset(next);
+            }
+            
+            cur = next;
         }
     }
     catch (...)
@@ -238,7 +257,7 @@ bool Package::Unpack()
         for ( int i = 0; i < metadataNodes->nodeNr; i++ )
         {
             xmlNodePtr node = metadataNodes->nodeTab[i];
-            class Metadata *p = nullptr;
+            class Metadata* p = nullptr;
             
             if ( node->ns != nullptr && xmlStrcmp(node->ns->href, BAD_CAST DCNamespace) == 0 )
             {
@@ -296,18 +315,18 @@ bool Package::Unpack()
         for ( auto table : tables )
         {
             // have to dynamic_cast these guys to get the right pointer type
-            _navigation[table->Title()] = dynamic_cast<class NavigationTable*>(table);
+            _navigation.emplace(table->Title(), dynamic_cast<class NavigationTable*>(table));
         }
     }
     
     return true;
 }
-const SpineItem* Package::ConfirmOrCorrectSpineItemQualifier(const SpineItem *pItem, CFI::Component *pComponent) const
+const SpineItem* Package::ConfirmOrCorrectSpineItemQualifier(const SpineItem* pItem, CFI::Component *pComponent) const
 {
     if ( pComponent->HasQualifier() && pItem->Idref() != pComponent->qualifier )
     {
         // find the item with the qualifier
-        pItem = _spine;
+        pItem = _spine.get();
         uint32_t idx = 2;
         
         while ( pItem != nullptr )
@@ -318,12 +337,14 @@ const SpineItem* Package::ConfirmOrCorrectSpineItemQualifier(const SpineItem *pI
                 pComponent->nodeIndex = idx;
                 break;
             }
+            
+            pItem = pItem->Next();
         }
     }
     
     return pItem;
 }
-NavigationList Package::NavTablesFromManifestItem(const ManifestItem *pItem)
+NavigationList Package::NavTablesFromManifestItem(const ManifestItem* pItem)
 {
     if ( pItem == nullptr )
         return NavigationList();
@@ -342,10 +363,7 @@ NavigationList Package::NavTablesFromManifestItem(const ManifestItem *pItem)
     for ( size_t i = 0; i < nodes->nodeNr; i++ )
     {
         xmlNodePtr navNode = nodes->nodeTab[i];
-        
-        auto p = new class NavigationTable(navNode);
-        if ( p != nullptr )
-            tables.push_back(p);
+        tables.push_back(new class NavigationTable(navNode));
     }
     
     xmlXPathFreeNodeSet(nodes);

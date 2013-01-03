@@ -15,6 +15,7 @@
 EPUB3_BEGIN_NAMESPACE
 
 class NavigationElement;
+
 typedef std::vector<NavigationElement*> NavigationList;
 
 // abstract base for polymorphic navigation table/point classes
@@ -24,7 +25,7 @@ public:
     explicit NavigationElement() = default;
     explicit NavigationElement(const NavigationElement&) = default;
     explicit NavigationElement(NavigationElement&& o) : _children(std::move(o._children)) {}
-    virtual ~NavigationElement() { for (auto child : _children) { delete child; } }
+    virtual ~NavigationElement() { for ( auto __p : _children ) { delete __p; } }
     
     virtual const std::string& Title() const = 0;
     virtual void SetTitle(const std::string& str) = 0;

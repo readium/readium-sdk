@@ -11,6 +11,8 @@
 
 #include "epub3.h"
 #include "locator.h"
+#include "encryption.h"
+#include "package.h"
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 #include <string>
@@ -19,13 +21,13 @@
 EPUB3_BEGIN_NAMESPACE
 
 class Archive;
-class Package;
 
 class Container
 {
 public:
-    typedef std::vector<std::string>    PathList;
-    typedef std::vector<Package*>       PackageList;
+    typedef std::vector<std::string>        PathList;
+    typedef std::vector<Package*>           PackageList;
+    typedef std::vector<EncryptionInfo*>    EncryptionList;
     
 public:
     Container(const std::string& path);
@@ -37,13 +39,17 @@ public:
     virtual PathList PackageLocations() const;
     virtual const PackageList& Packages() const { return _packages; }
     virtual std::string Version() const;
+    virtual const EncryptionList& EncryptionData() const { return _encryption; }
+    
+    virtual const EncryptionInfo* EncryptionInfoForPath(const std::string& path) const;
     
 protected:
-    Archive *   _archive;
-    xmlDocPtr   _ocf;
-    PackageList _packages;
+    Archive *       _archive;
+    xmlDocPtr       _ocf;
+    PackageList     _packages;
+    EncryptionList  _encryption;
     
-    static void SetupXPath(xmlXPathContextPtr ctx);
+    void LoadEncryption();
 };
 
 EPUB3_END_NAMESPACE
