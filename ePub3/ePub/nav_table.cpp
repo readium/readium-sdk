@@ -89,7 +89,7 @@ void NavigationTable::BuildNavPoints(xmlNodeSetPtr nodes, NavigationList *navLis
         // should be a single <a> or optional <span> tag, followed by an optional <ol>
         xmlNodePtr liNode = nodes->nodeTab[i];
         xmlNodePtr liChild = liNode->children;
-        NavigationPoint* point;
+        NavigationPoint* point = nullptr;
         
         for ( ; liChild != nullptr; liChild = liChild->next )
         {

@@ -92,6 +92,16 @@ const SpineItem* Package::SpineItemAt(size_t idx) const
     }
     return item;
 }
+const SpineItem* Package::SpineItemWithIDRef(const std::string &idref) const
+{
+    for ( const SpineItem* item = _spine.get(); item != nullptr; item = item->Next() )
+    {
+        if ( item->Idref() == idref )
+            return item;
+    }
+    
+    return nullptr;
+}
 size_t Package::IndexOfSpineItemWithIDRef(const std::string &idref) const
 {
     const SpineItem* item = _spine.get();
@@ -117,7 +127,18 @@ std::string Package::CFISubpathForManifestItemWithID(const std::string &ident) c
     if ( sz == size_t(-1) )
         throw std::invalid_argument(_Str("Identifier '", ident, "' was not found in the spine."));
     
-    return _Str(_spineCFIIndex, "/", sz*2, "[", ident, "]!/");
+    return _Str(_spineCFIIndex, "/", sz*2, "[", ident, "]!");
+}
+const std::vector<const ManifestItem*> Package::ManifestItemsWithProperties(ItemProperties properties) const
+{
+    std::vector<const ManifestItem*> result;
+    for ( auto item : _manifest )
+    {
+        if ( item.second->HasProperty(properties) )
+            result.push_back(item.second);
+    }
+    
+    return result;
 }
 const NavigationTable* Package::NavigationTable(const std::string &title) const
 {
@@ -125,6 +146,17 @@ const NavigationTable* Package::NavigationTable(const std::string &title) const
     if ( found == _navigation.end() )
         return nullptr;
     return found->second;
+}
+const CFI Package::CFIForManifestItem(const ManifestItem *item) const
+{
+    CFI result;
+    result._components.emplace_back(_spineCFIIndex);
+    result._components.emplace_back(_Str(IndexOfSpineItemWithIDRef(item->Identifier())*2, "[", item->Identifier(), "]!"));
+    return result;
+}
+const CFI Package::CFIForSpineItem(const SpineItem *item) const
+{
+    return CFIForManifestItem(item->ManifestItem());
 }
 const ManifestItem* Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRemainingCFI) const throw (CFI::InvalidCFI)
 {
@@ -159,6 +191,9 @@ const ManifestItem* Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRemaining
         
         // we know it's not null, because SpineItem::at() throws an exception if out of range
         result = ManifestItemWithID(item->Idref());
+        
+        if ( pRemainingCFI != nullptr )
+            pRemainingCFI->Assign(cfi, 2);
     }
     catch (std::out_of_range& e)
     {

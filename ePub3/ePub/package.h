@@ -51,12 +51,18 @@ public:
     
     const SpineItem * FirstSpineItem() const { return _spine.get(); }
     const SpineItem * SpineItemAt(size_t idx) const;
+    const SpineItem * SpineItemWithIDRef(const std::string& idref) const;
     size_t IndexOfSpineItemWithIDRef(const std::string& idref) const;
     
     const ManifestItem * ManifestItemWithID(const std::string& ident) const;
     std::string CFISubpathForManifestItemWithID(const std::string& ident) const;
     
+    const std::vector<const ManifestItem*> ManifestItemsWithProperties(ItemProperties properties) const;
+    
     const NavigationTable * NavigationTable(const std::string& title) const;
+    
+    const CFI CFIForManifestItem(const ManifestItem* item) const;
+    const CFI CFIForSpineItem(const SpineItem* item) const;
     
     // note that the CFI is purposely non-const so the package can correct it (cf. epub-cfi §3.5)
     const ManifestItem * ManifestItemForCFI(CFI& cfi, CFI* pRemainingCFI) const throw (CFI::InvalidCFI);
@@ -72,6 +78,10 @@ public:
         return new ArchiveXmlReader(_archive->ReaderAtPath(_pathBase + path));
     }
     
+//#ifdef TESTING
+    uint32_t SpineCFIIndex() const { return _spineCFIIndex; }
+//#endif
+    
 protected:
     Archive *           _archive;
     xmlDocPtr           _opf;
@@ -83,7 +93,7 @@ protected:
     Auto<SpineItem>     _spine;
     
     // used to verify/correct CFIs
-    uint32_t        _spineCFIIndex;
+    uint32_t            _spineCFIIndex;
     
     bool Unpack();
     const SpineItem * ConfirmOrCorrectSpineItemQualifier(const SpineItem * pItem, CFI::Component* pComponent) const;

@@ -10,6 +10,7 @@
 #define ePub3_basic_h
 
 #include "../base.h"
+//#include "alphanum.hpp"
 #include <sstream>
 #include <memory>
 

@@ -14,6 +14,8 @@
 		AB61CE5E1694CBDC00299BB1 /* container_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB61CE5D1694CBDC00299BB1 /* container_tests.cpp */; };
 		AB61CE5F1694D4A900299BB1 /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = ABB190241656DB2200CFC651 /* libxml2.dylib */; };
 		AB61CE611694DE9F00299BB1 /* package_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB61CE601694DE9F00299BB1 /* package_tests.cpp */; };
+		AB61CE6316973A3400299BB1 /* cfi_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB61CE6216973A3400299BB1 /* cfi_tests.cpp */; };
+		AB61CE65169743CF00299BB1 /* alphanum.hpp in Headers */ = {isa = PBXBuildFile; fileRef = AB61CE64169743CF00299BB1 /* alphanum.hpp */; };
 		AB6AC71C1683BFC9000DE924 /* libcurl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AB6AC71B1683BFC9000DE924 /* libcurl.dylib */; };
 		AB6AC7221684B6AD000DE924 /* filter.h in Headers */ = {isa = PBXBuildFile; fileRef = AB6AC7201684B6AD000DE924 /* filter.h */; };
 		AB6AC7251684B93C000DE924 /* font_obfuscation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB6AC7231684B93C000DE924 /* font_obfuscation.cpp */; };
@@ -168,6 +170,8 @@
 		AB61CE55169485BD00299BB1 /* string_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = string_tests.cpp; sourceTree = "<group>"; };
 		AB61CE5D1694CBDC00299BB1 /* container_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = container_tests.cpp; sourceTree = "<group>"; };
 		AB61CE601694DE9F00299BB1 /* package_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = package_tests.cpp; sourceTree = "<group>"; };
+		AB61CE6216973A3400299BB1 /* cfi_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cfi_tests.cpp; sourceTree = "<group>"; };
+		AB61CE64169743CF00299BB1 /* alphanum.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = alphanum.hpp; sourceTree = "<group>"; };
 		AB6AC71916836CE5000DE924 /* basic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = basic.h; sourceTree = "<group>"; };
 		AB6AC71A16836D24000DE924 /* base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = base.h; sourceTree = "<group>"; };
 		AB6AC71B1683BFC9000DE924 /* libcurl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcurl.dylib; path = usr/lib/libcurl.dylib; sourceTree = SDKROOT; };
@@ -341,6 +345,7 @@
 				AB61CE55169485BD00299BB1 /* string_tests.cpp */,
 				AB61CE5D1694CBDC00299BB1 /* container_tests.cpp */,
 				AB61CE601694DE9F00299BB1 /* package_tests.cpp */,
+				AB61CE6216973A3400299BB1 /* cfi_tests.cpp */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -349,6 +354,7 @@
 			isa = PBXGroup;
 			children = (
 				AB6AC71916836CE5000DE924 /* basic.h */,
+				AB61CE64169743CF00299BB1 /* alphanum.hpp */,
 			);
 			path = utilities;
 			sourceTree = "<group>";
@@ -687,6 +693,7 @@
 				AB6AC7261684B93C000DE924 /* font_obfuscation.h in Headers */,
 				AB6AC72A168E05A3000DE924 /* encryption.h in Headers */,
 				AB6AC737169225E3000DE924 /* signatures.h in Headers */,
+				AB61CE65169743CF00299BB1 /* alphanum.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -764,6 +771,7 @@
 				AB61CE56169485BD00299BB1 /* string_tests.cpp in Sources */,
 				AB61CE5E1694CBDC00299BB1 /* container_tests.cpp in Sources */,
 				AB61CE611694DE9F00299BB1 /* package_tests.cpp in Sources */,
+				AB61CE6316973A3400299BB1 /* cfi_tests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

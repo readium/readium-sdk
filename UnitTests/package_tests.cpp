@@ -15,7 +15,7 @@
 
 using namespace ePub3;
 
-TEST_CASE("", "Package should have a Unique ID, Type, Version, and a Base Path")
+TEST_CASE("Package should have a Unique ID, Type, Version, and a Base Path", "")
 {
     Container c(EPUB_PATH);
     Package* pkg = c.Packages()[0];
@@ -26,7 +26,7 @@ TEST_CASE("", "Package should have a Unique ID, Type, Version, and a Base Path")
     REQUIRE_FALSE(pkg->BasePath().empty());
 }
 
-TEST_CASE("", "Package should have multiple manifest items, and they should be indexable by identifier string")
+TEST_CASE("Package should have multiple manifest items, and they should be indexable by identifier string", "")
 {
     Container c(EPUB_PATH);
     auto pkg = c.Packages()[0];
@@ -45,4 +45,48 @@ TEST_CASE("", "Package should have multiple manifest items, and they should be i
     
     auto fetched = pkg->ManifestItemWithID(randomItem->Identifier());
     REQUIRE(fetched == randomItem);
+}
+
+TEST_CASE("Package should have multiple spine items", "")
+{
+    Container c(EPUB_PATH);
+    auto pkg = c.Packages()[0];
+    auto spine = pkg->FirstSpineItem();
+    REQUIRE(spine != nullptr);
+    
+    size_t count = spine->Count();
+    REQUIRE(count > 1);
+    
+    size_t idx = arc4random() % count;
+    REQUIRE(pkg->SpineItemAt(idx) == (*pkg)[idx]);
+}
+
+TEST_CASE("Package should be able to create and resolve basic CFIs", "")
+{
+    Container c(EPUB_PATH);
+    auto pkg = c.Packages()[0];
+    size_t spineIdx = arc4random() % pkg->FirstSpineItem()->Count();
+    auto spineItem = pkg->SpineItemAt(spineIdx);
+    
+    // create a mutable CFI
+    CFI cfi(pkg->CFIForSpineItem(spineItem));
+    REQUIRE_FALSE(cfi.Empty());
+    
+    std::string str(_Str("/", pkg->SpineCFIIndex(), "/", spineIdx*2, "[", spineItem->Idref(), "]!"));
+    REQUIRE(cfi.String() == _Str("epubcfi(", str, ")"));
+    REQUIRE(cfi == _Str("epubcfi(", str, ")"));
+    
+    const ManifestItem* manifestItem = pkg->ManifestItemForCFI(cfi, nullptr);
+    REQUIRE(manifestItem != nullptr);
+    REQUIRE(manifestItem == spineItem->ManifestItem());
+    
+    // subpath returned does not have a leading forward-slash
+    REQUIRE(pkg->CFISubpathForManifestItemWithID(manifestItem->Identifier()) == str.substr(1));
+    
+    CFI fragment("/4/2,1:22,1:28");
+    cfi += fragment;
+    
+    CFI remainder;
+    (void) pkg->ManifestItemForCFI(cfi, &remainder);
+    REQUIRE(remainder == fragment);
 }

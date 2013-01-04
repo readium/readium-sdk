@@ -33,13 +33,17 @@ public:
     // It will also reach back into _prev and nullify its _next
     virtual ~SpineItem();
     
+    // O(n) count of items
+    // Would be nice if the compiler could unroll it...
+    inline size_t Count() const { return (_next == nullptr ? 1 : 1 + _next->Count()); }
+    
     const std::string& Idref() const { return _idref; }
     const ManifestItem* ManifestItem() const;
     bool Linear() const { return _linear; }
     
     // these are direct
-    SpineItem* Next() { return _next.get(); }
-    const SpineItem* Next() const { return _next.get(); }
+    SpineItem* Next() { return _next; }
+    const SpineItem* Next() const { return _next; }
     SpineItem* Previous() { return _prev; }
     const SpineItem* Previous() const { return _prev; }
     
@@ -62,16 +66,17 @@ public:
     
 protected:
     std::string _idref;
-    Package*  _owner;
+    Package*    _owner;
     bool        _linear;
     
-    SpineItem*      _prev;
-    Auto<SpineItem> _next;
+    SpineItem* _prev;
+    SpineItem* _next;
     
     friend class Package;
     void SetNextItem(SpineItem* next) {
-        _next.reset(next);
+        next->_next = _next;
         next->_prev = this;
+        _next = next;
     }
 };
 

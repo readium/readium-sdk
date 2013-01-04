@@ -17,11 +17,12 @@ EPUB3_BEGIN_NAMESPACE
 class CFI
 {
 public:
-    CFI() = default;
+    CFI() : _components(), _rangeStart(), _rangeEnd(), _options(0) {}
     CFI(const CFI& base, const CFI& start, const CFI& end);
     CFI(const std::string& str);
-    CFI(const CFI& o) : _components(o._components) {}
-    CFI(CFI&& o) : _components(std::move(o._components)) {}
+    CFI(const CFI& o) : _components(o._components), _rangeStart(o._rangeStart), _rangeEnd(o._rangeEnd), _options(o._options) {}
+    CFI(const CFI& o, size_t fromIndex);
+    CFI(CFI&& o) : _components(std::move(o._components)), _rangeStart(std::move(o._rangeStart)), _rangeEnd(std::move(o._rangeEnd)), _options(o._options) {}
     virtual ~CFI() {}
     
     std::string String() const { return Stringify(_components.begin(), _components.end()); }
@@ -34,14 +35,22 @@ public:
     bool operator != (const CFI& o) const;
     bool operator != (const std::string& str) const;
     
-    CFI& operator=(const CFI& o) { _components = o._components; return *this; }
-    CFI& operator=(CFI&& o) { _components = std::move(o._components); return *this; }
-    CFI& operator=(const std::string& str);
+    CFI& Assign(const CFI& o) { _components = o._components; _rangeStart = o._rangeStart; _rangeEnd = o._rangeEnd; _options = o._options; return *this; }
+    CFI& Assign(CFI&& o) { _components = std::move(o._components); _rangeStart = std::move(o._rangeStart); _rangeEnd = std::move(o._rangeEnd); _options = o._options; return *this; }
+    CFI& Assign(const CFI& o, size_t fromIndex);
+    CFI& Assign(const std::string& str);
+    
+    CFI& operator=(const CFI& o) { return Assign(o); }
+    CFI& operator=(CFI&& o) { return Assign(o); }
+    CFI& operator=(const std::string& str) { return Assign(str); }
     
     CFI& Append(const CFI& cfi);
     CFI& Append(const std::string& str);
-    CFI& operator+(const CFI& cfi) { return Append(cfi); }
-    CFI& operator+(const std::string& str) { return Append(str); }
+    CFI& operator+=(const CFI& cfi) { return Append(cfi); }
+    CFI& operator+=(const std::string& str) { return Append(str); }
+    
+    CFI operator+(const CFI& cfi) const { return CFI(*this).Append(cfi); }
+    CFI operator+(const std::string& str) const { return CFI(*this).Append(str); }
     
     class InvalidCFI : public std::logic_error
     {
@@ -49,6 +58,13 @@ public:
         InvalidCFI(const std::string& str) : std::logic_error(str) {}
         InvalidCFI(const char * str) : std::logic_error(str) {}
         virtual ~InvalidCFI() {}
+    };
+    class RangedCFIAppendAttempt : public std::logic_error
+    {
+    public:
+        RangedCFIAppendAttempt(const std::string& str) : std::logic_error(str) {}
+        RangedCFIAppendAttempt(const char * str) : std::logic_error(str) {}
+        virtual ~RangedCFIAppendAttempt() {}
     };
     
 protected:
@@ -63,13 +79,23 @@ protected:
             Indirector       = 1<<4,
             TextQualifier    = 1<<5,
             
-            SpatialTemporalOffset = TemporalOffset|SpatialOffset,
+            SpatialTemporalOffset   = TemporalOffset|SpatialOffset,
+            OffsetsMask             = CharacterOffset|TemporalOffset|SpatialOffset,
         };
         
         struct Point
         {
             float x;
             float y;
+            
+            // impementations are out-of-line, since Xcode does weird things if operator < is defined inline
+            bool operator > (const Point& o) const;
+            bool operator < (const Point& o) const;
+            bool operator >= (const Point& o) const;
+            bool operator <= (const Point& o) const;
+            bool operator == (const Point& o) const;
+            bool operator != (const Point& o) const;
+                
         };
         
         uint8_t     flags;
@@ -82,6 +108,7 @@ protected:
         
         Component() = default;
         Component(const std::string& str);
+        Component(uint32_t __nodeIdx) : flags(0), nodeIndex(__nodeIdx), qualifier(), characterOffset(0), temporalOffset(), spatialOffset(), textQualifier() {}
         Component(const Component& o) = default;
         Component(Component&& o) : flags(o.flags), nodeIndex(o.nodeIndex), qualifier(std::move(o.qualifier)), characterOffset(o.characterOffset), temporalOffset(o.temporalOffset), spatialOffset(o.spatialOffset), textQualifier(std::move(o.textQualifier)) {}
         ~Component() = default;
