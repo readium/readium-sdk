@@ -1,0 +1,11 @@
+The Readium SDK is available under two licenses.  In order to encourage
+tangible contributions from commercial parties, we have chosen to release the source
+code under a copyleft license for the time being, while making a separate,
+commercially-exploitable license available to anyone who commits significant
+resources and signs a contribution and copyright assignment agreement.
+
+Under the terms of the GPL, anyone may fork and modify this project, and may
+distribute their modifications in source and binary form under version 3 or later of
+the GPL.  Note, however, that for any such modifications to be contributed back to
+the main project their copyright must be assigned to the Readium Foundation.  Only
+code whose copyright has been thus assigned will be considered for inclusion.
