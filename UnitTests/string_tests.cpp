@@ -47,7 +47,7 @@ TEST_CASE("string conversions", "Strings should convert between multibyte encodi
         REQUIRE(pos->compare(c_utf8)  == 0);
         REQUIRE(pos->compare(c_utf16) == 0);
         REQUIRE(pos->compare(c_utf32) == 0);
-    }
+    }œ
 }
 
 TEST_CASE("string searching", "Searches for UTF characters/substrings should return UTF-32 char indices")
