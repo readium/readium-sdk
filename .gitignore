@@ -49,6 +49,7 @@ build/
 # 99% of projects do NOT use those, so they do NOT want to version control this file.
 #  ..but if you're in the 1%, comment out the line "*.pbxuser"
 
+xcuserdata
 *.pbxuser
 *.mode1v3
 *.mode2v3
