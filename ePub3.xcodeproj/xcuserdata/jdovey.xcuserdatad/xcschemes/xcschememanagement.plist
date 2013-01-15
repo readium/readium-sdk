@@ -9,6 +9,11 @@
 			<key>orderHint</key>
 			<integer>1</integer>
 		</dict>
+		<key>ePub3 Static.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
 		<key>ePub3.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -18,6 +23,11 @@
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
 		<key>AB61CE491694845700299BB1</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>ABA4B92016A5B08900161B77</key>
 		<dict>
 			<key>primary</key>
 			<true/>
