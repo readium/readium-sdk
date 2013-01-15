@@ -42,7 +42,9 @@ class NavigationTable;
 class Package
 {
 public:
+    // indexed by name
     typedef std::map<std::string, Metadata*>          MetadataMap;
+    // indexed by title
     typedef std::map<std::string, NavigationTable*>   NavigationMap;
     
 public:

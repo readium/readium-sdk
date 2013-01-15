@@ -609,18 +609,20 @@ public:
             return npos;
         return __r - begin();
     }
-    size_type find_first_of(const __base& str, size_type pos=0) const noexcept {
+    size_type find_first_of(const __base& str, size_type pos=0) const throw (InvalidUTF8Sequence) {
+        validate_utf8(str.substr(pos));
         auto __r = find_first_of(begin()+pos, end(), const_iterator(str.begin()), const_iterator(str.end()), __traits_eq<traits_type>());
         if ( __r == end() )
             return npos;
         return __r - begin();
     }
     template <typename _CharT>
-    size_type find_first_of(const _CharT * s, size_type pos, size_type n) const noexcept {
+    size_type find_first_of(const _CharT * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {
         return find_first_of(_Convert<_CharT>::toUTF8(s, 0, n), pos);
     }
     template <typename _CharT>
-    size_type find_first_of(const _CharT * s, size_type pos = 0) const noexcept {
+    size_type find_first_of(const _CharT * s, size_type pos = 0) const throw (InvalidUTF8Sequence) {
+        validate_utf8(s+pos, npos);
         return find_first_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
@@ -646,7 +648,8 @@ public:
         }
         return npos;
     }
-    size_type find_last_of(const __base& str, size_type pos=0) const noexcept {
+    size_type find_last_of(const __base& str, size_type pos=0) const throw (InvalidUTF8Sequence) {
+        validate_utf8(str.substr(pos));
         size_type __sz = size();
         if ( pos < __sz )
             ++pos;
@@ -662,11 +665,11 @@ public:
         return npos;
     }
     template <typename _CharT>
-    size_type find_last_of(const _CharT * s, size_type pos, size_type n) const noexcept {
+    size_type find_last_of(const _CharT * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {
         return find_last_of(_Convert<_CharT>::toUTF8(s, 0, n), pos);
     }
     template <typename _CharT>
-    size_type find_last_of(const _CharT * s, size_type pos = 0) const noexcept {
+    size_type find_last_of(const _CharT * s, size_type pos = 0) const throw (InvalidUTF8Sequence) {
         return find_last_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
@@ -686,7 +689,8 @@ public:
         }
         return npos;
     }
-    size_type find_first_not_of(const __base& str, size_type pos=0) const noexcept {
+    size_type find_first_not_of(const __base& str, size_type pos=0) const throw (InvalidUTF8Sequence) {
+        validate_utf8(str.substr(pos));
         size_type __sz = size();
         if ( pos < __sz )
         {
@@ -699,11 +703,11 @@ public:
         return npos;
     }
     template <typename _CharT>
-    size_type find_first_not_of(const _CharT * s, size_type pos, size_type n) const noexcept {
+    size_type find_first_not_of(const _CharT * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {
         return find_first_not_of(_Convert<_CharT>::toUTF8(s, 0, n), pos);
     }
     template <typename _CharT>
-    size_type find_first_not_of(const _CharT * s, size_type pos = 0) const noexcept {
+    size_type find_first_not_of(const _CharT * s, size_type pos = 0) const throw (InvalidUTF8Sequence) {
         return find_first_not_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
@@ -723,7 +727,7 @@ public:
                 return static_cast<size_type>(__ps - __p);
         return npos;
     }
-    size_type find_last_not_of(const __base& str, size_type pos=0) const noexcept {
+    size_type find_last_not_of(const __base& str, size_type pos=0) const throw (InvalidUTF8Sequence) {
         size_type __sz = size();
         if ( pos < __sz )
             ++pos;
@@ -736,11 +740,11 @@ public:
         return npos;
     }
     template <typename _CharT>
-    size_type find_last_not_of(const _CharT * s, size_type pos, size_type n) const noexcept {
+    size_type find_last_not_of(const _CharT * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {
         return find_last_not_of(_Convert<_CharT>::toUTF8(s, 0, n), pos);
     }
     template <typename _CharT>
-    size_type find_last_not_of(const _CharT * s, size_type pos = 0) const noexcept {
+    size_type find_last_not_of(const _CharT * s, size_type pos = 0) const throw (InvalidUTF8Sequence) {
         return find_last_not_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
@@ -816,6 +820,10 @@ public:
     
 protected:
     __base      _base;
+    
+    void validate_utf8(const __base &s) const throw (InvalidUTF8Sequence);
+    void validate_utf8(const char *s, size_type sz) const throw (InvalidUTF8Sequence);
+    void validate_utf8(const xmlChar *s, size_type sz) const throw (InvalidUTF8Sequence);
     
     void throw_unless_insertable(const __base &s, size_type b, size_type e) const throw (InvalidUTF8Sequence);
     void throw_unless_insertable(const char * s, size_type b, size_type e) const throw (InvalidUTF8Sequence);

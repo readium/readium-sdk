@@ -302,6 +302,8 @@ bool Package::Unpack()
         if ( metadataNodes == nullptr )
             throw false;
         
+        std::map<std::string, class Metadata*> metadataByID;
+        
         for ( int i = 0; i < metadataNodes->nodeNr; i++ )
         {
             xmlNodePtr node = metadataNodes->nodeTab[i];
@@ -324,7 +326,11 @@ bool Package::Unpack()
             }
             
             if ( p != nullptr )
-                _metadata[p->Identifier()] = p;
+            {
+                _metadata[p->Name()] = p;
+                if ( !p->Identifier().empty() )
+                    metadataByID[p->Identifier()] = p;
+            }
         }
         
         for ( int i = 0; i < refineNodes->nodeNr; i++ )
@@ -334,8 +340,8 @@ bool Package::Unpack()
             if ( ident.empty() )
                 continue;
             
-            auto found = _metadata.find(ident);
-            if ( found == _metadata.end() )
+            auto found = metadataByID.find(ident);
+            if ( found == metadataByID.end() )
                 continue;
             
             found->second->AddExtension(node);

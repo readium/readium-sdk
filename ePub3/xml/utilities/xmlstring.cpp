@@ -792,6 +792,86 @@ std::u16string string::utf16string() const
     return utf16_convert().from_bytes(_base);
 }
 template <>
+string::size_type string::find_first_of<char>(const char * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {
+    validate_utf8(s+pos, npos);
+    return find_first_of(_Convert<char>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_first_of<char>(const char * s, size_type pos) const throw (InvalidUTF8Sequence) {
+    validate_utf8(s+pos, npos);
+    return find_first_of(_Convert<char>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_first_of<xmlChar>(const xmlChar * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {
+    validate_utf8(s+pos, npos);
+    return find_first_of(_Convert<xmlChar>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_first_of<xmlChar>(const xmlChar * s, size_type pos) const throw (InvalidUTF8Sequence) {
+    validate_utf8(s+pos, npos);
+    return find_first_of(_Convert<xmlChar>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_last_of<char>(const char * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {
+    validate_utf8(s+pos, npos);
+    return find_last_of(_Convert<char>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_last_of<char>(const char * s, size_type pos) const throw (InvalidUTF8Sequence) {
+    validate_utf8(s+pos, npos);
+    return find_last_of(_Convert<char>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_last_of<xmlChar>(const xmlChar * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {
+    validate_utf8(s+pos, npos);
+    return find_last_of(_Convert<xmlChar>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_last_of<xmlChar>(const xmlChar * s, size_type pos) const throw (InvalidUTF8Sequence) {
+    validate_utf8(s+pos, npos);
+    return find_last_of(_Convert<xmlChar>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_first_not_of<char>(const char * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {
+    validate_utf8(s+pos, npos);
+    return find_first_not_of(_Convert<char>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_first_not_of<char>(const char * s, size_type pos) const throw (InvalidUTF8Sequence) {
+    validate_utf8(s+pos, npos);
+    return find_first_not_of(_Convert<char>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_first_not_of<xmlChar>(const xmlChar * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {
+    validate_utf8(s+pos, npos);
+    return find_first_not_of(_Convert<xmlChar>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_first_not_of<xmlChar>(const xmlChar * s, size_type pos) const throw (InvalidUTF8Sequence) {
+    validate_utf8(s+pos, npos);
+    return find_first_not_of(_Convert<xmlChar>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_last_not_of<char>(const char * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {
+    validate_utf8(s+pos, npos);
+    return find_last_not_of(_Convert<char>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_last_not_of<char>(const char * s, size_type pos) const throw (InvalidUTF8Sequence) {
+    validate_utf8(s+pos, npos);
+    return find_last_not_of(_Convert<char>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_last_not_of<xmlChar>(const xmlChar * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {
+    validate_utf8(s+pos, npos);
+    return find_last_not_of(_Convert<xmlChar>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_last_not_of<xmlChar>(const xmlChar * s, size_type pos) const throw (InvalidUTF8Sequence) {
+    validate_utf8(s+pos, npos);
+    return find_last_not_of(_Convert<xmlChar>::toUTF8(s), pos);
+}
+template <>
 int string::compare(const value_type * s) const noexcept
 {
     if ( s == nullptr )
@@ -945,6 +1025,26 @@ int string::compare(size_type pos1, size_type n1, const std::u32string& str,
     if ( sz > len )
         return 1;
     return 0;
+}
+void string::validate_utf8(const __base &s) const throw (InvalidUTF8Sequence)
+{
+    validate_utf8(s.c_str(), s.size());
+}
+void string::validate_utf8(const char *s, size_type sz) const throw (InvalidUTF8Sequence)
+{
+    if ( sz == npos )
+        sz = strlen(s);
+    
+    size_type t = 0;
+    while ( t < sz )
+        t += UTF8CharLen(s[t]);
+    
+    if ( t > sz )
+        throw InvalidUTF8Sequence(std::string("Invalid UTF-8 byte sequence: ") + s);
+}
+void string::validate_utf8(const xmlChar *s, size_type sz) const throw (InvalidUTF8Sequence)
+{
+    validate_utf8(reinterpret_cast<const char*>(s), sz == npos ? xmlStrlen(s) : sz);
 }
 void string::throw_unless_insertable(const __base &s, size_type b, size_type e) const throw (InvalidUTF8Sequence)
 {
