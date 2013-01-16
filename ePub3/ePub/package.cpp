@@ -215,6 +215,7 @@ const ManifestItem* Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRemaining
     
     return result;
 }
+
 bool Package::Unpack()
 {
     // very basic sanity check

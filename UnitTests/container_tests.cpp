@@ -24,7 +24,7 @@
 
 using namespace ePub3;
 
-#define EPUB_PATH "/Users/jdovey/Desktop/ePubsForMike/Dune-glossary.epub"
+#define EPUB_PATH "TestData/childrens-literature-20120722.epub"
 
 TEST_CASE("opening a container", "The container should open without problem")
 {
@@ -47,6 +47,6 @@ TEST_CASE("", "container should contain at least one package")
 
 TEST_CASE("", "Version should be 1.0")
 {
-    Container container("/Users/jdovey/Desktop/ePubsForMike/Dune-glossary.epub");
+    Container container(EPUB_PATH);
     REQUIRE(container.Version() == "1.0");
 }

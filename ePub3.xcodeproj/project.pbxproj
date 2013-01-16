@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		850B1AE916A75AC600619C3C /* TestData in CopyFiles */ = {isa = PBXBuildFile; fileRef = 850B1AE816A75AB000619C3C /* TestData */; };
 		AB61CE4E1694845700299BB1 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB61CE4D1694845700299BB1 /* main.cpp */; };
 		AB61CE501694845700299BB1 /* UnitTests.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = AB61CE4F1694845700299BB1 /* UnitTests.1 */; };
 		AB61CE56169485BD00299BB1 /* string_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB61CE55169485BD00299BB1 /* string_tests.cpp */; };
@@ -272,10 +273,20 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		AB61CE481694845700299BB1 /* CopyFiles */ = {
+		850B1AE716A75A6D00619C3C /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				850B1AE916A75AC600619C3C /* TestData in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AB61CE481694845700299BB1 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 8;
+			dstPath = usr/share/man/man1;
 			dstSubfolderSpec = 0;
 			files = (
 				AB61CE501694845700299BB1 /* UnitTests.1 in CopyFiles */,
@@ -285,6 +296,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		850B1AE816A75AB000619C3C /* TestData */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TestData; sourceTree = "<group>"; };
 		AB61CE4A1694845700299BB1 /* UnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = UnitTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB61CE4D1694845700299BB1 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		AB61CE4F1694845700299BB1 /* UnitTests.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = UnitTests.1; sourceTree = "<group>"; };
@@ -561,6 +573,7 @@
 		ABA72C191655382E003125FF = {
 			isa = PBXGroup;
 			children = (
+				850B1AE816A75AB000619C3C /* TestData */,
 				ABA72C261655382E003125FF /* ePub3 */,
 				AB61CE4C1694845700299BB1 /* UnitTests */,
 				ABA72C251655382E003125FF /* Products */,
@@ -883,6 +896,7 @@
 				AB61CE461694845700299BB1 /* Sources */,
 				AB61CE471694845700299BB1 /* Frameworks */,
 				AB61CE481694845700299BB1 /* CopyFiles */,
+				850B1AE716A75A6D00619C3C /* CopyFiles */,
 			);
 			buildRules = (
 			);
