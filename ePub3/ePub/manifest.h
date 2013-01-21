@@ -31,6 +31,7 @@ EPUB3_BEGIN_NAMESPACE
 
 class Package;
 class ManifestItem;
+class ArchiveReader;
 
 typedef std::map<std::string, ManifestItem*>    ManifestTable;
 
@@ -128,10 +129,17 @@ public:
     const std::string& FallbackID() const { return _fallbackID; }
     const ManifestItem* Fallback() const;
     
+    // strips any query/fragment from the href before returning
+    std::string BaseHref() const;
+    
     bool HasProperty(const std::string& property) const { return _properties.HasProperty(ItemProperties(property)); }
     bool HasProperty(ItemProperties::value_type prop) const { return _properties.HasProperty(prop); }
     
+    // one-shot document loader
     xmlDocPtr ReferencedDocument() const;
+    
+    // stream the data
+    ArchiveReader* Reader() const;
     
 protected:
     const class Package* _owner;

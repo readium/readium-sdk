@@ -89,7 +89,10 @@ public:
     const SpineItem * operator[](size_t idx) const { return SpineItemAt(idx); }
     const ManifestItem * operator[](const std::string& ident) const { return ManifestItemWithID(ident); }
     
-    ArchiveXmlReader* ReaderForRelativePath(const std::string& path) const {
+    ArchiveReader* ReaderForRelativePath(const std::string& path) const {
+        return _archive->ReaderAtPath(_pathBase + path);
+    }
+    ArchiveXmlReader* XmlReaderForRelativePath(const std::string& path) const {
         return new ArchiveXmlReader(_archive->ReaderAtPath(_pathBase + path));
     }
     
