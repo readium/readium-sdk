@@ -1,5 +1,5 @@
 //
-//  xmlstring.cpp
+//  utfstring.cpp
 //  ePub3
 //
 //  Created by Jim Dovey on 2012-11-22.
@@ -19,11 +19,11 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "xmlstring.h"
+#include "utfstring.h"
 #include <locale>
 #include <codecvt>
 
-EPUB3_XML_BEGIN_NAMESPACE
+EPUB3_BEGIN_NAMESPACE
 
 const size_t utf8_sizes[256] = {
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, // 0x00-0x1F
@@ -40,6 +40,7 @@ typedef std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> utf32_conver
 typedef std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> utf16_convert;
 
 const string::size_type string::npos = string::__base::npos;
+const string string::EmptyString = string();
 
 string::string(const_u4pointer s)
 {
@@ -201,6 +202,12 @@ xmlChar * string::xmlAt(size_type pos)
     __base::size_type bpos = to_byte_size(pos);
     const char * p = &_base.at(bpos);
     return const_cast<xmlChar*>(reinterpret_cast<const xmlChar *>(p));
+}
+string::__base string::utf8At(size_type pos) const
+{
+    __base::size_type bpos = to_byte_size(pos);
+    size_t charLen = utf8_sizes[_base[bpos]];
+    return _base.substr(bpos, charLen);
 }
 template <>
 string & string::assign(iterator first, iterator last)
@@ -1172,4 +1179,4 @@ string::value_type string::utf8_to_utf32(const __base::const_iterator p)
     return utf32_convert().from_bytes(&(*p), &(*p)+len).at(0);
 }
 
-EPUB3_XML_END_NAMESPACE
+EPUB3_END_NAMESPACE

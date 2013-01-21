@@ -24,7 +24,7 @@
 
 #include "base.h"
 #include "ns.h"
-#include "xmlstring.h"
+#include "utfstring.h"
 #include <libxml/xpath.h>
 #include <string>
 #include <list>

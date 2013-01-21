@@ -20,7 +20,6 @@
 //
 
 #include "metadata.h"
-#include <map>
 
 EPUB3_BEGIN_NAMESPACE
 

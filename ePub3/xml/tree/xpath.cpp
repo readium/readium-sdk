@@ -124,7 +124,7 @@ bool XPathEvaluator::RegisterFunction(const string &name, const string &namespac
     
     if ( xmlXPathRegisterFuncNS(_ctx, name.utf8(), namespaceURI.utf8(), XPathEvaluator::_XMLFunctionWrapper) == 0 )
     {
-        _functions[namespaceURI + xml("::") + name] = fn;
+        _functions[namespaceURI + "::" + name] = fn;
         return true;
     }
     return false;
@@ -133,7 +133,7 @@ void XPathEvaluator::PerformFunction(xmlXPathParserContextPtr ctx, const string 
 {
     string key;
     if ( uri.length() > 0 )
-        key = uri + xml("::") + name;
+        key = uri + "::" + name;
     else
         key = name;
     

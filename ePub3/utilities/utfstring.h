@@ -1,5 +1,5 @@
 //
-//  xmlstring.h
+//  utfstring.h
 //  ePub3
 //
 //  Created by Jim Dovey on 2012-11-22.
@@ -22,20 +22,22 @@
 #ifndef __ePub3_xml_string__
 #define __ePub3_xml_string__
 
-#include "base.h"
+#include "basic.h"
 #include <string>
 #include <iterator>
 #include <initializer_list>
 #include <locale>
 #include <codecvt>
+#include <map>
+#include <libxml/xmlstring.h>
 
-EPUB3_XML_BEGIN_NAMESPACE
+EPUB3_BEGIN_NAMESPACE
 
 class string;
 typedef std::map<string, string>  NamespaceMap;
 
 extern const size_t utf8_sizes[256];
-#define UTF8CharLen(c) utf8_sizes[static_cast<xmlChar>(c)]
+#define UTF8CharLen(c) ePub3::utf8_sizes[static_cast<xmlChar>(c)]
 
 class string
 {
@@ -53,6 +55,11 @@ public:
     
     static value_type utf8_to_utf32(const xmlChar * utf8);
     static value_type utf8_to_utf32(const __base::const_iterator p);
+    
+    template <typename _CharT>
+    static __base utf8_of(_CharT ch) { return _Convert<_CharT>::toUTF8(ch); }
+    
+    static const string EmptyString;
     
     template <class _Iter>
     class _iterator
@@ -174,10 +181,10 @@ public:
         inline void _retreat() { do { --_base; } while ( (static_cast<const xmlChar>(*_base) & 0xc0) == 0x80 ); }
     };
     
-    class InvalidUTF8Sequence : exception {
+    class InvalidUTF8Sequence : std::invalid_argument {
     public:
-        InvalidUTF8Sequence(const std::string & str) : exception(str) {}
-        InvalidUTF8Sequence(const char * str) : exception(str) {}
+        InvalidUTF8Sequence(const std::string & str) : invalid_argument(str) {}
+        InvalidUTF8Sequence(const char * str) : invalid_argument(str) {}
     };
     
     typedef _iterator<__base::iterator>        iterator;
@@ -239,6 +246,9 @@ public:
     size_type max_size() const noexcept { return _base.max_size()/sizeof(value_type); }
     size_type capacity() const noexcept { return _base.capacity(); }
     
+    size_type utf8_size() const noexcept { return _base.size(); }
+    size_type utf8_length() const noexcept { return utf8_size(); }
+    
     void resize(size_type n, value_type c);
     void resize(size_type n);
     
@@ -262,6 +272,8 @@ public:
     
     const xmlChar * xmlAt(size_type pos) const;
     xmlChar * xmlAt(size_type pos);
+    
+    __base utf8At(size_type pos) const;
     
 #if 0
 #pragma mark - Assign
@@ -940,7 +952,7 @@ public:
 constexpr inline const xmlChar * operator "" _xc(const char * __s, size_t __n) noexcept {
     return (const xmlChar *)__s;
 }
-static inline constexpr const xmlChar * xml(const char * __s) noexcept {
+static inline constexpr const xmlChar * _xml(const char * __s) noexcept {
     return (const xmlChar*)(__s);
 }
 
@@ -1030,6 +1042,6 @@ inline bool string::_iterator<T>::operator<=(const _iterator<T> &o) const {
     return _base <= o._base;
 }
 
-EPUB3_XML_END_NAMESPACE
+EPUB3_END_NAMESPACE
 
 #endif /* defined(__ePub3_xml_string__) */

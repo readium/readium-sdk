@@ -22,8 +22,8 @@
 #ifndef __ePub3_xml_schema__
 #define __ePub3_xml_schema__
 
-#include "base.h"
-#include "xmlstring.h"
+#include "../utilities/base.h"
+#include "utfstring.h"
 #include <string>
 #include <libxml/xmlschemastypes.h>
 

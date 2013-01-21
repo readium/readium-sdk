@@ -19,10 +19,10 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "../ePub3/xml/utilities/xmlstring.h"
+#include "../ePub3/utilities/utfstring.h"
 #include "catch.hpp"
 
-using ePub3::xml::string;
+using ePub3::string;
 
 TEST_CASE("string conversions", "Strings should convert between multibyte encodings properly")
 {

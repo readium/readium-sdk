@@ -23,11 +23,15 @@
 #define __ePub3__metadata__
 
 #include "epub3.h"
+#include "../utilities/iri.h"
 #include <vector>
+#include <map>
 #include <string>
 #include <libxml/tree.h>
 
 EPUB3_BEGIN_NAMESPACE
+
+
 
 enum class Direction
 {
