@@ -135,8 +135,8 @@ bool IDNToASCII(const char16* src, int src_len, CanonOutputW* output) {
         output->Resize(output->capacity() * 2);
     }
 #else
-    static std::basic_regex<char16> invalidCharFinder(u"[^a-zA-Z0-9\\-]");
-    if ( std::regex_match(string16(src, src_len), invalidCharFinder) )
+    static std::basic_regex<char> invalidCharFinder("[^a-zA-Z0-9\\-]");
+    if ( std::regex_match(ePub3::string(src, src_len).stl_str(), invalidCharFinder) )
         return false;       // contains an invalid character somewhere, and we can't convert it
     
     if ( src_len > output->capacity() )
@@ -177,6 +177,7 @@ bool IDNToUnicode(const char16* src, int src_len, CanonOutputW* output)
         output->Resize(src_len);
     string16::traits_type::copy(output->data(), src, src_len);
 #endif
+    return true;
 }
 
 bool ReadUTFChar(const char* str, int* begin, int length, unsigned* code_point_out)

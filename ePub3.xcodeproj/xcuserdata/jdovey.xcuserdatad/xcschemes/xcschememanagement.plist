@@ -9,10 +9,10 @@
 			<key>orderHint</key>
 			<integer>1</integer>
 		</dict>
-		<key>ePub3 Static.xcscheme</key>
+		<key>ePub3-iOS.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>2</integer>
+			<integer>3</integer>
 		</dict>
 		<key>ePub3.xcscheme</key>
 		<dict>
@@ -28,6 +28,11 @@
 			<true/>
 		</dict>
 		<key>ABA4B92016A5B08900161B77</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>ABA4BADF16ADF5A600161B77</key>
 		<dict>
 			<key>primary</key>
 			<true/>

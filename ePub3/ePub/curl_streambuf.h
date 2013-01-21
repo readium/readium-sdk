@@ -23,7 +23,7 @@
 #define ePub3_curl_streambuf_h
 
 #include "epub3.h"
-#include <curl/easy.h>
+#include <curl/curl.h>
 
 EPUB3_BEGIN_NAMESPACE
 
