@@ -24,7 +24,7 @@
 #include "catch.hpp"
 #include <cstdlib>
 
-#define EPUB_PATH "/Users/jdovey/Desktop/ePubsForMike/Dune-glossary.epub"
+#define EPUB_PATH "TestData/childrens-literature-20120722.epub"
 
 using namespace ePub3;
 

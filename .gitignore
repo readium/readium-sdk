@@ -74,6 +74,7 @@ build/
 # offensive ones to commit"
 #
 
+xcuserdata
 xcdebugger
 UserInterfaceState.xcuserstate
 
