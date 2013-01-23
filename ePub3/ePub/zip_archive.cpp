@@ -134,25 +134,25 @@ Archive & ZipArchive::operator = (ZipArchive &&o)
 }
 bool ZipArchive::ContainsItem(const std::string & path) const
 {
-    return (zip_name_locate(_zip, path.c_str(), 0) >= 0);
+    return (zip_name_locate(_zip, Sanitized(path).c_str(), 0) >= 0);
 }
 bool ZipArchive::DeleteItem(const std::string & path)
 {
-    int idx = zip_name_locate(_zip, path.c_str(), 0);
+    int idx = zip_name_locate(_zip, Sanitized(path).c_str(), 0);
     if ( idx >= 0 )
         return (zip_delete(_zip, idx) >= 0);
     return false;
 }
 bool ZipArchive::CreateFolder(const std::string & path)
 {
-    return (zip_add_dir(_zip, path.c_str()) >= 0);
+    return (zip_add_dir(_zip, Sanitized(path).c_str()) >= 0);
 }
 ArchiveReader* ZipArchive::ReaderAtPath(const std::string & path) const
 {
     if (_zip == nullptr)
         return nullptr;
     
-    struct zip_file* file = zip_fopen(_zip, path.c_str(), 0);
+    struct zip_file* file = zip_fopen(_zip, Sanitized(path).c_str(), 0);
     if (file == nullptr)
         return nullptr;
     
@@ -163,11 +163,11 @@ ArchiveWriter* ZipArchive::WriterAtPath(const std::string & path, bool compresse
     if (_zip == nullptr)
         return nullptr;
     
-    int idx = zip_name_locate(_zip, path.c_str(), (create ? ZIP_CREATE : 0));
+    int idx = zip_name_locate(_zip, Sanitized(path).c_str(), (create ? ZIP_CREATE : 0));
     if (idx == -1)
         return nullptr;
     
-    ZipWriter* writer = new ZipWriter(_zip, path, compressed);
+    ZipWriter* writer = new ZipWriter(_zip, Sanitized(path), compressed);
     if ( zip_replace(_zip, idx, writer->ZipSource()) == -1 )
     {
         delete writer;
@@ -179,9 +179,15 @@ ArchiveWriter* ZipArchive::WriterAtPath(const std::string & path, bool compresse
 ArchiveItemInfo ZipArchive::InfoAtPath(const std::string & path) const
 {
     struct zip_stat sbuf;
-    if ( zip_stat(_zip, path.c_str(), 0, &sbuf) < 0 )
+    if ( zip_stat(_zip, Sanitized(path).c_str(), 0, &sbuf) < 0 )
         throw std::runtime_error(std::string("zip_stat("+path+") - " + zip_strerror(_zip)));
     return ZipItemInfo(sbuf);
+}
+std::string ZipArchive::Sanitized(const std::string& path) const
+{
+    if ( path.find('/') == 0 )
+        return path.substr(1);
+    return path;
 }
 
 void ZipWriter::DataBlob::Append(const void *data, size_t len)

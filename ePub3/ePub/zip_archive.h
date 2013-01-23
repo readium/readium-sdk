@@ -63,6 +63,8 @@ protected:
     
     typedef std::list<zip_source*>  ZipSourceList;
     ZipSourceList   _liveSources;
+    
+    std::string Sanitized(const std::string& path) const;
 };
 
 EPUB3_END_NAMESPACE
