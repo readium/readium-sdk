@@ -31,19 +31,19 @@ Glossary::Glossary(xmlNodePtr node) : _ident("Glossary")
 }
 const Glossary::Entry Glossary::Lookup(const Term &term) const
 {
-    auto f = _lookup.find(Lowercase(term));
+    auto f = _lookup.find(term.tolower());
     if ( f == _lookup.end() )
         return Entry();
     return f->second;
 }
 bool Glossary::AddDefinition(const Term &term, const Definition &definition)
 {
-    _lookup[Lowercase(term)] = {term, definition};
+    _lookup[term.tolower()] = {term, definition};
     return true;
 }
 bool Glossary::AddDefinition(const Term &term, Definition &&definition)
 {
-    _lookup[Lowercase(term)] = {term, definition};
+    _lookup[term.tolower()] = {term, definition};
     return true;
 }
 bool Glossary::Parse(xmlNodePtr node)
@@ -79,7 +79,7 @@ bool Glossary::Parse(xmlNodePtr node)
             Definition def(reinterpret_cast<const char*>(xmlNodeGetContent(child)));
             for ( auto term : terms )
             {
-                _lookup[Lowercase(term)] = { term, def };
+                _lookup[term.tolower()] = { term, def };
             }
             
             // now clear the terms list
@@ -88,13 +88,6 @@ bool Glossary::Parse(xmlNodePtr node)
     }
     
     return true;
-}
-Glossary::Term Glossary::Lowercase(const Term &term)
-{
-    Term t;
-    t.reserve(term.size());
-    std::transform(term.begin(), term.end(), t.begin(), ::tolower);
-    return t;
 }
 
 EPUB3_END_NAMESPACE

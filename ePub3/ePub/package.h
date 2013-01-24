@@ -32,6 +32,8 @@
 #include "cfi.h"
 #include "nav_element.h"
 #include "archive_xml.h"
+#include "utfstring.h"
+#include "iri.h"
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -42,80 +44,101 @@ class NavigationTable;
 class Package
 {
 public:
-    // indexed by name
-    typedef std::map<std::string, Metadata*>          MetadataMap;
+    // indexed by property IRI
+    typedef std::map<IRI, Metadata*>            MetadataMap;
     // indexed by title
-    typedef std::map<std::string, NavigationTable*>   NavigationMap;
+    typedef std::map<string, NavigationTable*>  NavigationMap;
+    // indexed by prefix
+    typedef std::map<string, string>            PropertyVocabularyMap;
+    
+    typedef std::vector<IRI>                    PropertyList;
+    
+    class UnknownPrefix : public std::domain_error
+    {
+    public:
+                    UnknownPrefix(const string &str)    : std::domain_error(str.stl_str()) {}
+                    UnknownPrefix(const char* str)      : std::domain_error(str) {}
+        virtual     ~UnknownPrefix() {}
+    };
     
 public:
-    Package(Archive * archive, const std::string& path, const std::string& type);
-    Package(const Package&) = delete;
-    Package(Package&&);
-    virtual ~Package();
+                            Package() = delete;
+                            Package(Archive * archive, const string& path, const string& type);
+                            Package(const Package&) = delete;
+                            Package(Package&&);
+    virtual                 ~Package();
     
-    virtual std::string UniqueID() const;
-    virtual const std::string & Type() const { return _type; }
-    virtual std::string Version() const;
-    virtual const std::string& BasePath() const { return _pathBase; }
+    virtual string          UniqueID()              const;
+    virtual const string&   Type()                  const       { return _type; }
+    virtual string          Version()               const;
+    virtual const string&   BasePath()              const       { return _pathBase; }
     
     // to keep these accessible in const packages, we *must* build the tree at allocation time
     // this is open to discussion, naturally
-    const MetadataMap& Metadata() const { return _metadata; }
-    const ManifestTable& Manifest() const { return _manifest; }
-    const NavigationMap& NavigationTables() const { return _navigation; }
+    const MetadataMap&      Metadata()              const       { return _metadata; }
+    const ManifestTable&    Manifest()              const       { return _manifest; }
+    const NavigationMap&    NavigationTables()      const       { return _navigation; }
     
-    const SpineItem * FirstSpineItem() const { return _spine.get(); }
-    const SpineItem * SpineItemAt(size_t idx) const;
-    const SpineItem * SpineItemWithIDRef(const std::string& idref) const;
-    size_t IndexOfSpineItemWithIDRef(const std::string& idref) const;
+    const SpineItem *       FirstSpineItem()        const { return _spine.get(); }
+    const SpineItem *       SpineItemAt(size_t idx) const;
+    const SpineItem *       SpineItemWithIDRef(const string& idref)         const;
+    size_t                  IndexOfSpineItemWithIDRef(const string& idref)  const;
     
-    const ManifestItem * ManifestItemWithID(const std::string& ident) const;
-    std::string CFISubpathForManifestItemWithID(const std::string& ident) const;
+    const ManifestItem *    ManifestItemWithID(const string& ident)         const;
+    string                  CFISubpathForManifestItemWithID(const string& ident) const;
     
-    const std::vector<const ManifestItem*> ManifestItemsWithProperties(ItemProperties properties) const;
+    const std::vector<const ManifestItem*> ManifestItemsWithProperties(PropertyList properties) const;
     
-    const NavigationTable * NavigationTable(const std::string& title) const;
+    const NavigationTable * NavigationTable(const string& title)            const;
     
-    const CFI CFIForManifestItem(const ManifestItem* item) const;
-    const CFI CFIForSpineItem(const SpineItem* item) const;
+    const CFI               CFIForManifestItem(const ManifestItem* item)    const;
+    const CFI               CFIForSpineItem(const SpineItem* item)          const;
     
     // note that the CFI is purposely non-const so the package can correct it (cf. epub-cfi §3.5)
-    const ManifestItem * ManifestItemForCFI(CFI& cfi, CFI* pRemainingCFI) const throw (CFI::InvalidCFI);
-    xmlDocPtr DocumentForCFI(CFI& cfi, CFI* pRemainingCFI) const throw (CFI::InvalidCFI) {
+    const ManifestItem *    ManifestItemForCFI(CFI& cfi, CFI* pRemainingCFI) const throw (CFI::InvalidCFI);
+    xmlDocPtr               DocumentForCFI(CFI& cfi, CFI* pRemainingCFI) const throw (CFI::InvalidCFI) {
         return ManifestItemForCFI(cfi, pRemainingCFI)->ReferencedDocument();
     }
     
     // array-style operators: indices get spine items, identifiers get manifest items
-    const SpineItem * operator[](size_t idx) const { return SpineItemAt(idx); }
-    const ManifestItem * operator[](const std::string& ident) const { return ManifestItemWithID(ident); }
+    const SpineItem *       operator[](size_t idx)          const   { return SpineItemAt(idx); }
+    const ManifestItem *    operator[](const string& ident) const   { return ManifestItemWithID(ident); }
     
-    ArchiveReader* ReaderForRelativePath(const std::string& path) const {
-        return _archive->ReaderAtPath(_pathBase + path);
+    ArchiveReader*          ReaderForRelativePath(const string& path) const {
+        return _archive->ReaderAtPath((_pathBase + path).stl_str());
     }
-    ArchiveXmlReader* XmlReaderForRelativePath(const std::string& path) const {
-        return new ArchiveXmlReader(_archive->ReaderAtPath(_pathBase + path));
+    ArchiveXmlReader*       XmlReaderForRelativePath(const string& path) const {
+        return new ArchiveXmlReader(ReaderForRelativePath(path));
     }
     
-//#ifdef TESTING
-    uint32_t SpineCFIIndex() const { return _spineCFIIndex; }
-//#endif
+    void                    RegisterPrefixIRIStem(const string& prefix, const string& iriStem);
+    IRI                     MakePropertyIRI(const string& reference, const string& prefix="")   const   throw (UnknownPrefix);
+    IRI                     PropertyIRIFromAttributeValue(const string& attrValue)              const   throw (UnknownPrefix, std::invalid_argument);
+    
+    uint32_t                SpineCFIIndex()                 const   { return _spineCFIIndex; }
     
 protected:
-    Archive *           _archive;
-    xmlDocPtr           _opf;
-    std::string         _pathBase;
-    std::string         _type;
-    MetadataMap         _metadata;
-    ManifestTable       _manifest;
-    NavigationMap       _navigation;
-    Auto<SpineItem>     _spine;
+    Archive *               _archive;
+    xmlDocPtr               _opf;
+    string                  _pathBase;
+    string                  _type;
+    MetadataMap             _metadata;
+    ManifestTable           _manifest;
+    NavigationMap           _navigation;
+    Auto<SpineItem>         _spine;
+    
+    PropertyVocabularyMap   _vocabularyLookup;
+    
+    // used to initialize each package's vocabulary map
+    static const PropertyVocabularyMap gReservedVocabularies;
     
     // used to verify/correct CFIs
-    uint32_t            _spineCFIIndex;
+    uint32_t                _spineCFIIndex;
     
-    bool Unpack();
-    const SpineItem * ConfirmOrCorrectSpineItemQualifier(const SpineItem * pItem, CFI::Component* pComponent) const;
-    static NavigationList NavTablesFromManifestItem(const ManifestItem * pItem);
+    bool                    Unpack();
+    void                    InstallPrefixesFromAttributeValue(const string& attrValue);
+    const SpineItem *       ConfirmOrCorrectSpineItemQualifier(const SpineItem * pItem, CFI::Component* pComponent) const;
+    static NavigationList   NavTablesFromManifestItem(const ManifestItem * pItem);
 };
 
 EPUB3_END_NAMESPACE

@@ -36,13 +36,13 @@ const ItemProperties::PropertyMap ItemProperties::PropertyLookupTable = {
     { "switch", ItemProperties::ContainsSwitch }
 };
 
-ItemProperties::ItemProperties(const std::string& attrStr) : _p(None)
+ItemProperties::ItemProperties(const string& attrStr) : _p(None)
 {
     // I prefer the explicit syntax when I'm actually calling an implementation in an operator
     //  because it's clearer what's happening than '*this = attrStr'
     this->operator=(attrStr);
 }
-ItemProperties& ItemProperties::operator=(const std::string& attrStr)
+ItemProperties& ItemProperties::operator=(const string& attrStr)
 {
     if ( attrStr.empty() )
     {
@@ -51,14 +51,11 @@ ItemProperties& ItemProperties::operator=(const std::string& attrStr)
     }
     
     // ensure the attributes string is lowercase
-    std::string lowAttrs;
-    lowAttrs.reserve(attrStr.length());
-    // reads from (const) attrStr and writes to (pre-allocated) lowAttr
-    std::transform(attrStr.begin(), attrStr.end(), lowAttrs.begin(), ::tolower);
+    string lowAttrs = attrStr.tolower();
     
     // NB: this is a C++11 raw-string literal. R"" means 'raw string', and the X(...)X bit are delimiters.
     std::regex re(R"X(\w+)X", std::regex::icase);
-    auto pos = std::sregex_iterator(lowAttrs.begin(), lowAttrs.end(), re);
+    auto pos = std::sregex_iterator(lowAttrs.stl_str().begin(), lowAttrs.stl_str().end(), re);
     auto end = std::sregex_iterator();
     
     for ( ; pos != end; pos++ )
@@ -71,12 +68,12 @@ ItemProperties& ItemProperties::operator=(const std::string& attrStr)
     
     return *this;
 }
-std::string ItemProperties::str() const
+string ItemProperties::str() const
 {
     if ( _p == None )
         return "";
     
-    std::vector<std::string> vec;
+    std::vector<string> vec;
     value_type test = 1;
     
     while ( test < AllPropertiesMask )
@@ -86,25 +83,25 @@ std::string ItemProperties::str() const
             switch ( test )
             {
                 case CoverImage:
-                    vec.push_back("cover-image");
+                    vec.emplace_back("cover-image");
                     break;
                 case ContainsMathML:
-                    vec.push_back("mathml");
+                    vec.emplace_back("mathml");
                     break;
                 case Navigation:
-                    vec.push_back("nav");
+                    vec.emplace_back("nav");
                     break;
                 case HasRemoteResources:
-                    vec.push_back("remote-resources");
+                    vec.emplace_back("remote-resources");
                     break;
                 case HasScriptedContent:
-                    vec.push_back("scripted");
+                    vec.emplace_back("scripted");
                     break;
                 case ContainsSVG:
-                    vec.push_back("svg");
+                    vec.emplace_back("svg");
                     break;
                 case ContainsSwitch:
-                    vec.push_back("switch");
+                    vec.emplace_back("switch");
                     break;
                 default:
                     break;
@@ -152,9 +149,9 @@ ManifestItem::ManifestItem(ManifestItem&& o) : _owner(o._owner), _identifier(std
 ManifestItem::~ManifestItem()
 {
 }
-std::string ManifestItem::AbsolutePath() const
+string ManifestItem::AbsolutePath() const
 {
-    return _Str(_owner->BasePath(), Href());
+    return _Str(_owner->BasePath(), BaseHref());
 }
 const ManifestItem* ManifestItem::MediaOverlay() const
 {
@@ -170,21 +167,21 @@ const ManifestItem* ManifestItem::Fallback() const
     
     return _owner->ManifestItemWithID(_fallbackID);
 }
-std::string ManifestItem::BaseHref() const
+string ManifestItem::BaseHref() const
 {
     // get base part of href
-    std::string path;
+    string path;
     size_t s = _href.find_first_of("#?");
-    if ( s == std::string::npos )
+    if ( s == string::npos )
         path = _href;
     else
-        path.assign(_href.begin(), _href.begin()+s);
+        path = path.substr(0, s);
     return path;
 }
 xmlDocPtr ManifestItem::ReferencedDocument() const
 {
     // TODO: handle remote URLs
-    std::string path(BaseHref());
+    string path(BaseHref());
     
     ArchiveXmlReader * reader = _owner->XmlReaderForRelativePath(path);
     if ( reader == nullptr )

@@ -116,15 +116,15 @@ void Library::AddEPubsInContainer(Container* container, Locator* locator)
         _packages.emplace(pkg->UniqueID(), locator, pkg);
     }
 }
-std::string Library::EPubURLForPackage(const Package* package) const
+string Library::EPubURLForPackage(const Package* package) const
 {
     return EPubURLForPackage(package->UniqueID());
 }
-std::string Library::EPubURLForPackage(const std::string &identifier) const
+string Library::EPubURLForPackage(const string &identifier) const
 {
     return _Str("epub3://", identifier, "/");
 }
-Package* Library::PackageForEPubURL(const std::string &url)
+Package* Library::PackageForEPubURL(const string &url)
 {
     // get the uid
     auto loc = url.find("epub3://");
@@ -135,7 +135,7 @@ Package* Library::PackageForEPubURL(const std::string &url)
     if ( loc == std::string::npos )
         return nullptr;
     
-    std::string ident(url.substr(loc, url.size()-loc-1));
+    string ident(url.substr(loc, url.size()-loc-1));
     auto entry = _packages.find(ident);
     if ( entry == _packages.end() )
         return nullptr;
@@ -148,7 +148,7 @@ Package* Library::PackageForEPubURL(const std::string &url)
     // returns a package ptr or nullptr
     return entry->second.second;
 }
-std::string Library::EPubCFIURLForManifestItem(const ManifestItem* item)
+string Library::EPubCFIURLForManifestItem(const ManifestItem* item)
 {
     return _Str(EPubURLForPackage(item->Package()), item->Package()->CFISubpathForManifestItemWithID(item->Identifier()));
 }

@@ -314,18 +314,20 @@ public:
     string & operator=(__base &&o) { return assign(o); }
     
     // char
-    string & assign(const char * s, size_type n=npos) { _base.assign(s, n); return *this; }
+    string & assign(const char * s, size_type n) { _base.assign(s, n); return *this; }
+    string & assign(const char * s) { _base.assign(s); return *this; }
     string & assign(size_type n, char c) { _base.assign(n, c); return *this; }
     string & assign(std::initializer_list<__base::value_type> __il) { _base.assign(__il); return *this; }
-    string & operator=(const char * s) { return assign(s, npos); }
+    string & operator=(const char * s) { return assign(s, __base::traits_type::length(s)); }
     string & operator=(char c) { return assign(1, c); }
     string & operator=(std::initializer_list<__base::value_type> __il) { return assign(__il); }
     
     // xmlChar
-    string & assign(const xmlChar * s, size_type n=npos) { _base.assign(reinterpret_cast<const char *>(s), n); return *this; }
+    string & assign(const xmlChar * s, size_type n) { _base.assign(reinterpret_cast<const char *>(s), n); return *this; }
+    string & assign(const xmlChar * s) { _base.assign(reinterpret_cast<const char *>(s), xmlStrlen(s)); return *this; }
     string & assign(size_type n, xmlChar c) { _base.assign(n, static_cast<char>(c)); return *this; }
     string & assign(std::initializer_list<xmlChar> __il) { return assign(__il.begin(), __il.end()); }
-    string & operator=(const xmlChar *s) { return assign(s, npos); }
+    string & operator=(const xmlChar *s) { return assign(s, xmlStrlen(s)); }
     string & operator=(xmlChar c) { return assign(1, c); }
     string & operator=(std::initializer_list<xmlChar> __il) { return assign(__il); }
     
@@ -370,18 +372,20 @@ public:
     string & operator+=(__base &&o) { return append(o); }
     
     // char
-    string & append(const char * s, size_type n=npos) { _base.append(s, n); return *this; }
+    string & append(const char * s, size_type n) { _base.append(s, n); return *this; }
+    string & append(const char * s) { _base.append(s); return *this; }
     string & append(size_type n, char c) { _base.append(n, c); return *this; }
     string & append(std::initializer_list<__base::value_type> __il) { _base.append(__il); return *this; }
-    string & operator+=(const char * s) { return append(s, npos); }
+    string & operator+=(const char * s) { return append(s); }
     string & operator+=(char c) { return append(1, c); }
     string & operator+=(std::initializer_list<__base::value_type> __il) { return append(__il); }
     
     // xmlChar
-    string & append(const xmlChar * s, size_type n=npos) { _base.append(reinterpret_cast<const char *>(s), n); return *this; }
+    string & append(const xmlChar * s, size_type n) { _base.append(reinterpret_cast<const char *>(s), n); return *this; }
+    string & append(const xmlChar * s) { _base.append(reinterpret_cast<const char *>(s), xmlStrlen(s)); return *this; }
     string & append(size_type n, xmlChar c) { _base.append(n, static_cast<char>(c)); return *this; }
     string & append(std::initializer_list<xmlChar> __il) { return append(__il.begin(), __il.end()); }
-    string & operator+=(const xmlChar *s) { return append(s, npos); }
+    string & operator+=(const xmlChar *s) { return append(s, xmlStrlen(s)); }
     string & operator+=(xmlChar c) { return append(1, c); }
     string & operator+=(std::initializer_list<xmlChar> __il) { return append(__il); }
     
@@ -548,8 +552,15 @@ public:
     const __base& stl_str() const { return _base; }
     
     const xmlChar * utf8() const { return reinterpret_cast<const xmlChar *>(c_str()); }
+    const xmlChar * xml_str() const { return reinterpret_cast<const xmlChar*>(c_str()); }
     
     __base::allocator_type get_allocator() const noexcept { return _base.get_allocator(); }
+    
+    string& tolower();
+    const string tolower() const;
+    
+    string& toupper();
+    const string toupper() const;
     
 #if 0
 #pragma mark - Searching
@@ -574,10 +585,10 @@ public:
         return to_utf32_size(_base.find(_Convert<_CharT>::toUTF8(c), to_byte_size(pos)));
     }
     
-    size_type rfind(const string& str, size_type pos=0) const noexcept {
+    size_type rfind(const string& str, size_type pos=npos) const noexcept {
         return to_utf32_size(_base.rfind(str._base, to_byte_size(pos)));
     }
-    size_type rfind(const __base& str, size_type pos=0) const noexcept {
+    size_type rfind(const __base& str, size_type pos=npos) const noexcept {
         return to_utf32_size(_base.rfind(str, to_byte_size(pos)));
     }
     template <typename _CharT>
@@ -585,11 +596,11 @@ public:
         return to_utf32_size(_base.rfind(_Convert<_CharT>::toUTF8(s, 0, n), to_byte_size(pos)));
     }
     template <typename _CharT>
-    size_type rfind(const _CharT * s, size_type pos = 0) const noexcept {
+    size_type rfind(const _CharT * s, size_type pos = npos) const noexcept {
         return to_utf32_size(_base.rfind(_Convert<_CharT>::toUTF8(s), to_byte_size(pos)));
     }
     template <typename _CharT>
-    size_type rfind(_CharT c, size_type pos = 0) const noexcept {
+    size_type rfind(_CharT c, size_type pos = npos) const noexcept {
         return to_utf32_size(_base.rfind(_Convert<_CharT>::toUTF8(c), to_byte_size(pos)));
     }
     
@@ -645,7 +656,7 @@ public:
         return __r - begin();
     }
     
-    size_type find_last_of(const string& str, size_type pos=0) const noexcept {
+    size_type find_last_of(const string& str, size_type pos=npos) const noexcept {
         size_type __sz = size();
         if ( pos < __sz )
             ++pos;
@@ -660,7 +671,7 @@ public:
         }
         return npos;
     }
-    size_type find_last_of(const __base& str, size_type pos=0) const throw (InvalidUTF8Sequence) {
+    size_type find_last_of(const __base& str, size_type pos=npos) const throw (InvalidUTF8Sequence) {
         validate_utf8(str.substr(pos));
         size_type __sz = size();
         if ( pos < __sz )
@@ -681,11 +692,11 @@ public:
         return find_last_of(_Convert<_CharT>::toUTF8(s, 0, n), pos);
     }
     template <typename _CharT>
-    size_type find_last_of(const _CharT * s, size_type pos = 0) const throw (InvalidUTF8Sequence) {
+    size_type find_last_of(const _CharT * s, size_type pos = npos) const throw (InvalidUTF8Sequence) {
         return find_last_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
-    size_type find_last_of(_CharT c, size_type pos = 0) const noexcept {
+    size_type find_last_of(_CharT c, size_type pos = npos) const noexcept {
         return rfind(c, pos);
     }
     
@@ -727,7 +738,7 @@ public:
         return find_first_not_of(_Convert<_CharT>::toUTF8(c), pos);
     }
     
-    size_type find_last_not_of(const string& str, size_type pos=0) const noexcept {
+    size_type find_last_not_of(const string& str, size_type pos=npos) const noexcept {
         size_type __sz = size();
         if ( pos < __sz )
             ++pos;
@@ -739,7 +750,7 @@ public:
                 return static_cast<size_type>(__ps - __p);
         return npos;
     }
-    size_type find_last_not_of(const __base& str, size_type pos=0) const throw (InvalidUTF8Sequence) {
+    size_type find_last_not_of(const __base& str, size_type pos=npos) const throw (InvalidUTF8Sequence) {
         size_type __sz = size();
         if ( pos < __sz )
             ++pos;
@@ -756,11 +767,11 @@ public:
         return find_last_not_of(_Convert<_CharT>::toUTF8(s, 0, n), pos);
     }
     template <typename _CharT>
-    size_type find_last_not_of(const _CharT * s, size_type pos = 0) const throw (InvalidUTF8Sequence) {
+    size_type find_last_not_of(const _CharT * s, size_type pos = npos) const throw (InvalidUTF8Sequence) {
         return find_last_not_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
-    size_type find_last_not_of(_CharT c, size_type pos = 0) const noexcept {
+    size_type find_last_not_of(_CharT c, size_type pos = npos) const noexcept {
         return find_last_not_of(_Convert<_CharT>::toUTF8(c), pos);
     }
     
@@ -978,42 +989,42 @@ static inline constexpr const char * ascii(const xmlChar * __x) {
 inline string operator + (const string & lhs, const string & rhs) {
     string s(lhs);
     s.append(rhs);
-    return std::move(s);
+    return s;
 }
 inline string operator + (const string & lhs, const std::string & rhs) {
     string s(lhs);
     s.append(rhs);
-    return std::move(s);
+    return s;
 }
 inline string operator * (const string & lhs, const string::value_type * rhs) {
     string s(lhs);
     s.append(rhs);
-    return std::move(s);
+    return s;
 }
 inline string operator * (const string & lhs, string::value_type rhs) {
     string s(lhs);
     s.append(1, rhs);
-    return std::move(s);
+    return s;
 }
 inline string operator + (const string & lhs, const char * rhs) {
     string s(lhs);
     s.append(rhs);
-    return std::move(s);
+    return s;
 }
 inline string operator + (const string & lhs, char rhs) {
     string s(lhs);
     s.append(1, rhs);
-    return std::move(s);
+    return s;
 }
 inline string operator + (const string & lhs, const xmlChar * rhs) {
     string s(lhs);
     s.append(rhs);
-    return std::move(s);
+    return s;
 }
 inline string operator + (const string & lhs, xmlChar rhs) {
     string s(lhs);
     s.append(1, rhs);
-    return std::move(s);
+    return s;
 }
 
 // to std::string (UTF-8, signed char)

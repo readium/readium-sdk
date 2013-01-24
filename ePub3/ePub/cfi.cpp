@@ -27,10 +27,10 @@ EPUB3_BEGIN_NAMESPACE
 CFI::CFI(const CFI& base, const CFI& start, const CFI& end) : _components(base._components), _rangeStart(start._components), _rangeEnd(end._components), _options(RangeTriplet)
 {
 }
-CFI::CFI(const std::string& str) : CFI()
+CFI::CFI(const string& str) : CFI()
 {
     if ( CompileCFI(str) == false )
-        throw InvalidCFI(std::string("Invalid CFI string: ") + str);
+        throw InvalidCFI(std::string("Invalid CFI string: ") + str.stl_str());
 }
 bool CFI::operator==(const ePub3::CFI &o) const
 {
@@ -51,7 +51,7 @@ bool CFI::operator!=(const ePub3::CFI &o) const
 {
     return !(this->operator==(o));
 }
-bool CFI::operator==(const std::string &str) const
+bool CFI::operator==(const string &str) const
 {
     // what's the best approach? There are three:
     // 1. Convert this to string, compare strings
@@ -61,14 +61,22 @@ bool CFI::operator==(const std::string &str) const
     // for now I'm going with 1, although 3 is obviously the best choice
     return String() == str;
 }
-bool CFI::operator!=(const std::string &str) const
+bool CFI::operator!=(const string &str) const
 {
     return !(this->operator==(str));
 }
-CFI& CFI::Assign(const std::string &str)
+CFI& CFI::Assign(const string &str)
 {
     CFI tmp(str);
     return Assign(std::move(tmp));
+}
+CFI& CFI::Assign(const CFI& o)
+{
+    _components = o._components;
+    _rangeStart = o._rangeStart;
+    _rangeEnd = o._rangeEnd;
+    _options = o._options;
+    return *this;
 }
 CFI& CFI::Assign(const ePub3::CFI &o, size_t fromIndex)
 {
@@ -91,6 +99,14 @@ CFI& CFI::Assign(const ePub3::CFI &o, size_t fromIndex)
     
     return *this;
 }
+CFI& CFI::Assign(CFI&& o)
+{
+    _components = std::move(o._components);
+    _rangeStart = std::move(o._rangeStart);
+    _rangeEnd = std::move(o._rangeEnd);
+    _options = o._options;
+    return *this;
+}
 CFI& CFI::Append(const ePub3::CFI& cfi)
 {
     if ( IsRangeTriplet() )
@@ -109,7 +125,7 @@ CFI& CFI::Append(const ePub3::CFI& cfi)
     
     return *this;
 }
-CFI& CFI::Append(const std::string &str)
+CFI& CFI::Append(const string &str)
 {
     if ( IsRangeTriplet() )
     {
@@ -135,14 +151,14 @@ size_t CFI::TotalComponents() const
         result += _rangeStart.size() + _rangeEnd.size();
     return result;
 }
-std::string CFI::SubCFIFromIndex(size_t index) const
+string CFI::SubCFIFromIndex(size_t index) const
 {
     if ( index >= TotalComponents() )
         throw std::range_error((std::stringstream() << "Index " << index << " is out of bounds.").str());
     
     return Stringify(_components.begin()+index, _components.end());
 }
-std::string CFI::Stringify(ComponentList::const_iterator start, ComponentList::const_iterator end) const
+string CFI::Stringify(ComponentList::const_iterator start, ComponentList::const_iterator end) const
 {
     std::stringstream builder;
     builder << "epubcfi(";
@@ -196,29 +212,36 @@ void CFI::AppendComponents(std::stringstream& builder, ComponentList::const_iter
         ++pos;
     }
 }
-CFI::StringList CFI::CFIComponentStrings(const std::string &cfi, const std::string& delimiter)
+CFI::StringList CFI::CFIComponentStrings(const string &cfi, const string& delimiter)
 {
     CFI::StringList components;
-    std::string breaks = delimiter + "[";
-    std::string tmp;
-    std::string::size_type pos = 0, loc = 0;
+    string breaks = delimiter + "[";
+    string tmp;
+    string::size_type pos = 0, loc = 0;
     
     while ( pos < cfi.size() )
     {
         loc = cfi.find_first_of(breaks, pos);
         if ( loc > pos )
         {
-            if ( loc == std::string::npos )
+            if ( loc == string::npos )
+            {
                 tmp.append(cfi, pos, cfi.size()-pos);
+                if ( !tmp.empty() )
+                    components.push_back(tmp);
+                break;
+            }
             else
+            {
                 tmp.append(cfi, pos, loc-pos);
+            }
             pos = loc;
         }
         
         if ( cfi[loc] == '[' )
         {
             loc = cfi.find_first_of(']', loc);
-            if ( loc == std::string::npos )
+            if ( loc == string::npos )
                 throw std::range_error((std::stringstream() << "CFI '" << cfi << "' has an unterminated qualifier").str());
             
             ++loc;
@@ -231,7 +254,7 @@ CFI::StringList CFI::CFIComponentStrings(const std::string &cfi, const std::stri
                 components.push_back(tmp);
             tmp.clear();
             
-            if ( loc == std::string::npos )
+            if ( loc == string::npos )
                 break;
             loc++;
         }
@@ -241,15 +264,15 @@ CFI::StringList CFI::CFIComponentStrings(const std::string &cfi, const std::stri
     
     return components;
 }
-bool CFI::CompileCFI(const std::string &str)
+bool CFI::CompileCFI(const string &str)
 {
     // strip the 'epubcfi(...)' wrapping
-    std::string cfi(str);
+    string cfi(str);
     if ( str.find("epubcfi(") == 0 )
     {
         cfi = cfi.substr(8, (str.size()-1)-8);
     }
-    else if ( str[0] != '/' )
+    else if ( str.size() == 0 || str[0] != '/' )
     {
         // invalid CFI
         return false;
@@ -333,16 +356,16 @@ bool CFI::CompileComponentsToList(const StringList &strings, ComponentList *list
 #pragma mark - CFI Component
 #endif
 
-CFI::Component::Component(const std::string& str) : Component()
+CFI::Component::Component(const string& str) : Component()
 {
     Parse(str);
 }
-void CFI::Component::Parse(const std::string &str)
+void CFI::Component::Parse(const string &str)
 {
     if ( str.empty() )
         throw std::invalid_argument("Empty string supplied to CFI::Component");
     
-    std::istringstream iss(str);
+    std::istringstream iss(str.stl_str());
     
     // read an integer
     iss >> nodeIndex;
@@ -489,7 +512,7 @@ CFI::Component& CFI::Component::operator=(ePub3::CFI::Component &&o)
     
     return *this;
 }
-CFI::Component& CFI::Component::operator=(const std::string &str)
+CFI::Component& CFI::Component::operator=(const string &str)
 {
     flags = 0;
     nodeIndex = 0;
@@ -527,6 +550,5 @@ bool CFI::Component::Point::operator!=(const ePub3::CFI::Component::Point &o) co
 {
     return x != o.x || y != o.y;
 }
-
 
 EPUB3_END_NAMESPACE

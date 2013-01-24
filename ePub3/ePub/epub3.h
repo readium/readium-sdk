@@ -24,6 +24,7 @@
 
 #include "../base.h"
 #include "../utilities/basic.h"
+#include "../utilities/utfstring.h"
 
 // this chunk will go away once we have the C++ XML interface complete
 #include <string>
@@ -41,7 +42,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-static inline std::string _getProp(xmlNodePtr node, const char *name, const char *nsURI = nullptr)
+static inline string _getProp(xmlNodePtr node, const char *name, const char *nsURI = nullptr)
 {
     if ( node == nullptr )
         return "";
@@ -57,8 +58,8 @@ static inline std::string _getProp(xmlNodePtr node, const char *name, const char
     }
     
     if ( ch == nullptr )
-        return "";
-    return reinterpret_cast<const char*>(ch);
+        return string::EmptyString;
+    return ch;
 }
 
 EPUB3_END_NAMESPACE

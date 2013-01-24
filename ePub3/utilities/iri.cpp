@@ -68,6 +68,24 @@ IRI& IRI::operator=(IRI &&o)
     o._url = nullptr;
     return *this;
 }
+bool IRI::operator==(const IRI &o) const
+{
+    if ( IsURN() )
+        return _urnComponents == o._urnComponents;
+    return *_url == *o._url;
+}
+bool IRI::operator!=(const IRI& o) const
+{
+    if ( IsURN() )
+        return _urnComponents != o._urnComponents;
+    return *_url != *o._url;
+}
+bool IRI::operator<(const IRI& o) const
+{
+    if ( IsURN() )
+        return _urnComponents < o._urnComponents;
+    return *_url < *o._url;
+}
 IRI::IRICredentials IRI::Credentials() const
 {
     string u, p;

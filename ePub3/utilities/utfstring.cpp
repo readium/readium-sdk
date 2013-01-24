@@ -279,7 +279,7 @@ string & string::append(const string &o, size_type i, size_type n)
 {
     if ( n == npos )
         return append(o.begin()+i, o.end());
-    return append(o.begin(), o.begin()+i+n);
+    return append(o.begin()+i, o.begin()+i+n);
 }
 string & string::append(const_u4pointer s, size_type n)
 {
@@ -788,7 +788,8 @@ string string::substr(size_type pos, size_type n) const
     if ( n == npos )
         return string(_base.substr(to_byte_size(pos)));
     
-    return string(_base.substr(to_byte_size(pos), to_byte_size(pos, pos+n)));
+    __base::size_type bpos = to_byte_size(pos), bn = to_byte_size(pos, pos+n) - bpos;
+    return string(_base.substr(bpos, bn));
 }
 std::u32string string::utf32string() const
 {
@@ -797,6 +798,36 @@ std::u32string string::utf32string() const
 std::u16string string::utf16string() const
 {
     return utf16_convert().from_bytes(_base);
+}
+string& string::tolower()
+{
+    std::u32string out;
+    out.resize(size());
+    std::transform(begin(), end(), out.begin(), ::towlower);
+    assign(out.c_str(), out.size());
+    return *this;
+}
+const string string::tolower() const
+{
+    std::u32string out;
+    out.resize(size());
+    std::transform(begin(), end(), out.begin(), ::towlower);
+    return string(out.c_str(), out.size());
+}
+string& string::toupper()
+{
+    std::u32string out;
+    out.resize(size());
+    std::transform(begin(), end(), out.begin(), ::towupper);
+    assign(out.c_str(), out.size());
+    return *this;
+}
+const string string::toupper() const
+{
+    std::u32string out;
+    out.resize(size());
+    std::transform(begin(), end(), out.begin(), ::towupper);
+    return string(out.c_str(), out.size());
 }
 template <>
 string::size_type string::find_first_of<char>(const char * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {

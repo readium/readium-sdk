@@ -23,8 +23,8 @@
 #define __ePub3__spine__
 
 #include "epub3.h"
+#include "utfstring.h"
 #include <vector>
-#include <string>
 #include <libxml/tree.h>
 
 EPUB3_BEGIN_NAMESPACE
@@ -37,48 +37,48 @@ class SpineItem;
 class SpineItem
 {
 public:
-    SpineItem() = delete;
-    SpineItem(xmlNodePtr node, Package * owner);
-    SpineItem(const SpineItem&) = delete;
-    SpineItem(SpineItem&&);
+                        SpineItem()                                     = delete;
+                        SpineItem(xmlNodePtr node, Package * owner);
+                        SpineItem(const SpineItem&)                     = delete;
+                        SpineItem(SpineItem&&);
     
     // NB: deleting a spine item will delete its next, etc.
     // It will also reach back into _prev and nullify its _next
-    virtual ~SpineItem();
+    virtual             ~SpineItem();
     
     // O(n) count of items
     // Would be nice if the compiler could unroll it...
-    inline size_t Count() const { return (_next == nullptr ? 1 : 1 + _next->Count()); }
+    inline size_t       Count()             const       { return (_next == nullptr ? 1 : 1 + _next->Count()); }
     
-    const std::string& Idref() const { return _idref; }
-    const ManifestItem* ManifestItem() const;
-    bool Linear() const { return _linear; }
+    const string&       Idref()             const       { return _idref; }
+    const ManifestItem* ManifestItem()      const;
+    bool                Linear()            const       { return _linear; }
     
     // these are direct
-    SpineItem* Next() { return _next; }
-    const SpineItem* Next() const { return _next; }
-    SpineItem* Previous() { return _prev; }
-    const SpineItem* Previous() const { return _prev; }
+    SpineItem*          Next()                          { return _next; }
+    const SpineItem*    Next()              const       { return _next; }
+    SpineItem*          Previous()                      { return _prev; }
+    const SpineItem*    Previous()          const       { return _prev; }
     
     // these will skip past non-linear spine items
-    SpineItem* NextStep();
-    const SpineItem* NextStep() const;
-    SpineItem* PriorStep();
-    const SpineItem* PriorStep() const;
+    SpineItem*          NextStep();
+    const SpineItem*    NextStep()          const;
+    SpineItem*          PriorStep();
+    const SpineItem*    PriorStep()         const;
     
     // index is relative to receiving item
     // invariants:
     //   item.at(0)  == &item
     //   item.at(1)  == item._next
     //   item.at(-1) == item._prev
-    SpineItem* at(ssize_t idx) throw (std::out_of_range);
-    const SpineItem* at(ssize_t idx) const throw (std::out_of_range);
+    SpineItem*          at(ssize_t idx)                 throw (std::out_of_range);
+    const SpineItem*    at(ssize_t idx)         const   throw (std::out_of_range);
     
-    SpineItem* operator[](ssize_t idx) throw (std::out_of_range) { return at(idx); }
-    const SpineItem* operator[](ssize_t idx) const throw (std::out_of_range) { return at(idx); }
+    SpineItem*          operator[](ssize_t idx)         throw (std::out_of_range) { return at(idx); }
+    const SpineItem*    operator[](ssize_t idx) const   throw (std::out_of_range) { return at(idx); }
     
 protected:
-    std::string _idref;
+    string      _idref;
     Package*    _owner;
     bool        _linear;
     

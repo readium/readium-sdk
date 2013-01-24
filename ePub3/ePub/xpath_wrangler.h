@@ -25,17 +25,18 @@
 #define __ePub3__xpath_wrangler__
 
 #include "epub3.h"
+#include "utfstring.h"
 #include <libxml/xpath.h>
 #include <map>
 #include <vector>
-#include <string>
 
 EPUB3_BEGIN_NAMESPACE
 
 class XPathWrangler
 {
 public:
-    typedef std::map<std::string, std::string>  NamespaceList;
+    typedef std::map<string, string>    NamespaceList;
+    typedef std::vector<string>         StringList;
     
 public:
     XPathWrangler(xmlDocPtr doc, const NamespaceList & namespaces = NamespaceList());
@@ -43,18 +44,11 @@ public:
     XPathWrangler(XPathWrangler&& o);
     ~XPathWrangler();
     
-    std::vector<std::string> Strings(const xmlChar *xpath, xmlNodePtr node=nullptr);
-    std::vector<std::string> Strings(const char *xpath, xmlNodePtr node=nullptr) {
-        return Strings(reinterpret_cast<const xmlChar*>(xpath), node);
-    }
+    StringList      Strings(const string& xpath, xmlNodePtr node=nullptr);
+    xmlNodeSetPtr   Nodes(const string& xpath, xmlNodePtr node=nullptr);
     
-    xmlNodeSetPtr Nodes(const xmlChar *xpath, xmlNodePtr node=nullptr);
-    xmlNodeSetPtr Nodes(const char *xpath, xmlNodePtr node=nullptr) {
-        return Nodes(reinterpret_cast<const xmlChar*>(xpath), node);
-    }
-    
-    void RegisterNamespaces(const NamespaceList& namespaces);
-    void NameDefaultNamespace(const std::string& name);
+    void            RegisterNamespaces(const NamespaceList& namespaces);
+    void            NameDefaultNamespace(const string& name);
     
 protected:
     xmlXPathContextPtr  _ctx;

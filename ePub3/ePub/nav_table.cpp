@@ -22,14 +22,14 @@
 #include "nav_table.h"
 #include "xpath_wrangler.h"
 
+EPUB3_BEGIN_NAMESPACE
+
 // upside: nice syntax for checking
 // downside: operator[] always creates a new item
-static std::map<std::string, bool> AllowedRootNodeNames = {
+static std::map<string, bool> AllowedRootNodeNames = {
     { "nav", true },
     { "li", true },
 };
-
-EPUB3_BEGIN_NAMESPACE
 
 NavigationTable::NavigationTable(xmlNodePtr node)
 {
@@ -41,12 +41,12 @@ bool NavigationTable::Parse(xmlNodePtr node)
     if ( node == nullptr )
         return false;
     
-    std::string name(reinterpret_cast<const char*>(node->name));
-    if ( AllowedRootNodeNames[name] == false )
+    string name(node->name);
+    if ( AllowedRootNodeNames.find(name) == AllowedRootNodeNames.end() )
         return false;
     
     _type = _getProp(node, "type", ePub3NamespaceURI);
-    if ( _type.empty() )
+    if ( name == "nav" && _type.empty() )
         return false;
     
     XPathWrangler xpath(node->doc, {{"epub", ePub3NamespaceURI}}); // goddamn I love C++11 initializer list constructors

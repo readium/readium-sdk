@@ -63,8 +63,7 @@ Container::Container(const std::string& path) : _archive(Archive::Open(path))
             if ( _path == nullptr )
                 continue;
             
-            std::string path(reinterpret_cast<const char*>(_path));
-            _packages.emplace_back(new Package(_archive, path, type));
+            _packages.push_back(new Package(_archive, _path, type));
         }
     }
     
@@ -91,20 +90,18 @@ Container::PathList Container::PackageLocations() const
     XPathWrangler xpath(_ocf, {{"ocf", "urn:oasis:names:tc:opendocument:xmlns:container"}});
     
     PathList output;
-    for ( std::string & str : xpath.Strings(reinterpret_cast<const xmlChar*>(gRootfilePathsXPath)) )
+    for ( string& str : xpath.Strings(gRootfilePathsXPath) )
     {
-        output.push_back(std::move(str));
+        output.emplace_back(std::move(str));
     }
     
     return output;
 }
-std::string Container::Version() const
+string Container::Version() const
 {
-    XPathWrangler::NamespaceList nsList;
-    nsList["ocf"] = "urn:oasis:names:tc:opendocument:xmlns:container";
-    XPathWrangler xpath(_ocf, nsList);
+    XPathWrangler xpath(_ocf, {{"ocf", "urn:oasis:names:tc:opendocument:xmlns:container"}});
     
-    std::vector<std::string> strings = xpath.Strings(reinterpret_cast<const xmlChar*>(gVersionXPath));
+    std::vector<string> strings = xpath.Strings(gVersionXPath);
     if ( strings.empty() )
         return "1.0";       // guess
     
@@ -133,7 +130,7 @@ void Container::LoadEncryption()
     
     xmlXPathFreeNodeSet(nodes);
 }
-const EncryptionInfo* Container::EncryptionInfoForPath(const std::string &path) const
+const EncryptionInfo* Container::EncryptionInfoForPath(const string &path) const
 {
     for ( auto item : _encryption )
     {

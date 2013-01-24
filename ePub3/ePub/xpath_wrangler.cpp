@@ -22,7 +22,7 @@
 #include "xpath_wrangler.h"
 #include <libxml/xpathInternals.h>
 
-#define XMLCHAR(cppstr) reinterpret_cast<const xmlChar *>(cppstr.c_str())
+#define XMLCHAR(utfstr) utfstr.xml_str()
 
 static void * _nsHashCopier(void * data, xmlChar * name)
 {
@@ -60,26 +60,28 @@ XPathWrangler::~XPathWrangler()
         _ctx = nullptr;
     }
 }
-std::vector<std::string> XPathWrangler::Strings(const xmlChar *xpath, xmlNodePtr node)
+XPathWrangler::StringList XPathWrangler::Strings(const string& xpath, xmlNodePtr node)
 {
-    std::vector<std::string> strings;
+    StringList strings;
     _ctx->node = (node == nullptr ? xmlDocGetRootElement(_ctx->doc) : node);
     
-    xmlXPathObjectPtr result = xmlXPathEvalExpression(xpath, _ctx);
+    xmlXPathObjectPtr result = xmlXPathEvalExpression(xpath.xml_str(), _ctx);
     if ( result != nullptr )
     {
         switch ( result->type )
         {
             case XPATH_STRING:
                 // a single string
-                strings.push_back(reinterpret_cast<char*>(result->stringval));
+                strings.emplace_back(result->stringval);
                 break;
             case XPATH_NODESET:
+                if ( result->nodesetval == nullptr )
+                    break;
+                
                 // a list of strings (I hope)
                 for ( int i = 0; i < result->nodesetval->nodeNr; i++ )
                 {
-                    std::string s(reinterpret_cast<char*>(xmlNodeGetContent(result->nodesetval->nodeTab[i])));
-                    strings.push_back(s);
+                    strings.emplace_back(xmlNodeGetContent(result->nodesetval->nodeTab[i]));
                 }
                 break;
             default:
@@ -91,12 +93,12 @@ std::vector<std::string> XPathWrangler::Strings(const xmlChar *xpath, xmlNodePtr
     
     return std::move(strings);
 }
-xmlNodeSetPtr XPathWrangler::Nodes(const xmlChar *xpath, xmlNodePtr node)
+xmlNodeSetPtr XPathWrangler::Nodes(const string& xpath, xmlNodePtr node)
 {
     _ctx->node = (node == nullptr ? xmlDocGetRootElement(_ctx->doc) : node);
     
     xmlNodeSetPtr nodes = nullptr;
-    xmlXPathObjectPtr result = xmlXPathEvalExpression(xpath, _ctx);
+    xmlXPathObjectPtr result = xmlXPathEvalExpression(xpath.xml_str(), _ctx);
     if ( result != nullptr )
     {
         if ( result->type == XPATH_NODESET && result->nodesetval != nullptr )
@@ -127,11 +129,11 @@ void XPathWrangler::RegisterNamespaces(const NamespaceList &namespaces)
         xmlXPathRegisterNs(_ctx, XMLCHAR(item.first), XMLCHAR(item.second));
     }
 }
-void XPathWrangler::NameDefaultNamespace(const std::string &name)
+void XPathWrangler::NameDefaultNamespace(const string& name)
 {
     xmlNsPtr defNs = xmlSearchNs(_ctx->doc, xmlDocGetRootElement(_ctx->doc), nullptr);
     if ( defNs != nullptr )
-        xmlXPathRegisterNs(_ctx, reinterpret_cast<const xmlChar*>(name.c_str()), defNs->href);
+        xmlXPathRegisterNs(_ctx, name.xml_str(), defNs->href);
 }
 
 EPUB3_END_NAMESPACE

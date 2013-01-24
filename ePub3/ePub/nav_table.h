@@ -31,28 +31,28 @@ EPUB3_BEGIN_NAMESPACE
 class NavigationTable : public NavigationElement
 {
 public:
-    NavigationTable() = delete;
-    NavigationTable(xmlNodePtr node);   // requires a HTML <nav> node
-    NavigationTable(const std::string& type) : NavigationElement(), _type(type), _title() {}
-    NavigationTable(std::string&& type) : NavigationElement(), _type(type), _title() {}
-    NavigationTable(const NavigationTable&) = delete;
-    NavigationTable(NavigationTable&& o) : NavigationElement(o), _type(std::move(o._type)), _title(std::move(o._title)) {}
-    virtual ~NavigationTable() {}
+                            NavigationTable()                               = delete;
+                            NavigationTable(xmlNodePtr node);   // requires a HTML <nav> node
+                            NavigationTable(const string& type) : NavigationElement(), _type(type), _title() {}
+                            NavigationTable(std::string&& type) : NavigationElement(), _type(type), _title() {}
+                            NavigationTable(const NavigationTable&)         = delete;
+                            NavigationTable(NavigationTable&& o) : NavigationElement(o), _type(std::move(o._type)), _title(std::move(o._title)) {}
+    virtual                 ~NavigationTable() {}
     
-    const std::string& Type() const { return _type; }
-    void SetType(const std::string& str) { _type = str; }
-    void SetType(std::string&& str) { _type = str; }
+    const string&           Type()                      const   { return _type; }
+    void                    SetType(const string& str)          { _type = str; }
+    void                    SetType(string&& str)               { _type = str; }
     
-    virtual const std::string& Title() const { return _title; }
-    virtual void SetTitle(const std::string& str) { _title = str; }
-    virtual void SetTitle(std::string&& str) { _title = str; }
+    virtual const string&   Title()                     const   { return _title; }
+    virtual void            SetTitle(const string& str)         { _title = str; }
+    virtual void            SetTitle(string&& str)              { _title = str; }
     
 protected:
-    std::string     _type;
-    std::string     _title;     // optional
+    string      _type;
+    string      _title;     // optional
     
-    bool Parse(xmlNodePtr node);
-    static void BuildNavPoints(xmlNodeSetPtr nodes, NavigationList* navList);
+    bool                    Parse(xmlNodePtr node);
+    static void             BuildNavPoints(xmlNodeSetPtr nodes, NavigationList* navList);
 };
 
 EPUB3_END_NAMESPACE

@@ -28,6 +28,7 @@
 #include "glossary.h"
 #include <sstream>
 #include <list>
+#include <regex>
 #include <libxml/xpathInternals.h>
 
 static const char * OPFNamespace = "http://www.idpf.org/2007/opf";
@@ -35,22 +36,27 @@ static const char * DCNamespace = "http://purl.org/dc/elements/1.1/";
 
 EPUB3_BEGIN_NAMESPACE
 
-Package::Package(Archive* archive, const std::string& path, const std::string& type) : _archive(archive), _opf(nullptr), _type(type)
+const Package::PropertyVocabularyMap Package::gReservedVocabularies({
+    { "dcterms", "http://purl.org/dc/terms/" },
+    { "marc", "http://id.loc.gov/vocabulary/" },
+    { "media", "http://www.idpf.org/epub/vocab/overlays/#" },
+    { "onix", "http://www.editeur.org/ONIX/book/codelists/current.html#" },
+    { "xsd", "http://www.w3.org/2001/XMLSchema#" }
+});
+
+Package::Package(Archive* archive, const string& path, const string& type) : _archive(archive), _opf(nullptr), _type(type), _vocabularyLookup(gReservedVocabularies)
 {
     if ( _archive == nullptr )
-        throw std::invalid_argument("Path does not point to a recognised archive file: " + path);
+        throw std::invalid_argument("Path does not point to a recognised archive file: " + path.stl_str());
     
     // TODO: Initialize lazily? Doing so would make initialization faster, but require
     // PackageLocations() to become non-const, like Packages().
-    ArchiveXmlReader reader(_archive->ReaderAtPath(path));
+    ArchiveXmlReader reader(_archive->ReaderAtPath(path.stl_str()));
     _opf = reader.xmlReadDocument(path.c_str(), "utf-8", XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
     if ( _opf == nullptr )
-        throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": No OPF file at " + path);
+        throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": No OPF file at " + path.stl_str());
     
-    if ( !Unpack() )
-        throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": Not a valid OPF file at " + path);
-    
-    size_t loc = path.find_last_of('/');
+    size_t loc = path.rfind("/");
     if ( loc == std::string::npos )
     {
         _pathBase = '/';
@@ -59,8 +65,11 @@ Package::Package(Archive* archive, const std::string& path, const std::string& t
     {
         _pathBase = path.substr(0, loc+1);
     }
+    
+    if ( !Unpack() )
+        throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": Not a valid OPF file at " + path.stl_str());
 }
-Package::Package(Package&& o) : _archive(o._archive), _opf(o._opf), _pathBase(std::move(o._pathBase)), _type(std::move(o._type)), _metadata(std::move(o._metadata)), _manifest(std::move(o._manifest)), _spine(std::move(o._spine))
+Package::Package(Package&& o) : _archive(o._archive), _opf(o._opf), _pathBase(std::move(o._pathBase)), _type(std::move(o._type)), _metadata(std::move(o._metadata)), _manifest(std::move(o._manifest)), _spine(std::move(o._spine)), _vocabularyLookup(std::move(o._vocabularyLookup))
 {
     o._archive = nullptr;
     o._opf = nullptr;
@@ -84,15 +93,15 @@ Package::~Package()
     if ( _opf != nullptr )
         xmlFreeDoc(_opf);
 }
-std::string Package::UniqueID() const
+string Package::UniqueID() const
 {
     XPathWrangler xpath(_opf, {{"opf", OPFNamespace}, {"dc", DCNamespace}});
-    std::vector<std::string> strings = xpath.Strings("//*[@id=/opf:package/@unique-identifier]/text()");
+    XPathWrangler::StringList strings = xpath.Strings("//*[@id=/opf:package/@unique-identifier]/text()");
     if ( strings.empty() )
-        return "";
+        return string::EmptyString;
     return strings[0];
 }
-std::string Package::Version() const
+string Package::Version() const
 {
     return _getProp(xmlDocGetRootElement(_opf), "version");
 }
@@ -105,7 +114,7 @@ const SpineItem* Package::SpineItemAt(size_t idx) const
     }
     return item;
 }
-const SpineItem* Package::SpineItemWithIDRef(const std::string &idref) const
+const SpineItem* Package::SpineItemWithIDRef(const string &idref) const
 {
     for ( const SpineItem* item = _spine.get(); item != nullptr; item = item->Next() )
     {
@@ -115,7 +124,7 @@ const SpineItem* Package::SpineItemWithIDRef(const std::string &idref) const
     
     return nullptr;
 }
-size_t Package::IndexOfSpineItemWithIDRef(const std::string &idref) const
+size_t Package::IndexOfSpineItemWithIDRef(const string &idref) const
 {
     const SpineItem* item = _spine.get();
     for ( size_t i = 0; item != nullptr; i++, item = item->Next() )
@@ -126,7 +135,7 @@ size_t Package::IndexOfSpineItemWithIDRef(const std::string &idref) const
     
     return size_t(-1);
 }
-const ManifestItem* Package::ManifestItemWithID(const std::string &ident) const
+const ManifestItem* Package::ManifestItemWithID(const string &ident) const
 {
     auto found = _manifest.find(ident);
     if ( found == _manifest.end() )
@@ -134,7 +143,7 @@ const ManifestItem* Package::ManifestItemWithID(const std::string &ident) const
     
     return found->second;
 }
-std::string Package::CFISubpathForManifestItemWithID(const std::string &ident) const
+string Package::CFISubpathForManifestItemWithID(const string &ident) const
 {
     size_t sz = IndexOfSpineItemWithIDRef(ident);
     if ( sz == size_t(-1) )
@@ -142,7 +151,7 @@ std::string Package::CFISubpathForManifestItemWithID(const std::string &ident) c
     
     return _Str(_spineCFIIndex, "/", sz*2, "[", ident, "]!");
 }
-const std::vector<const ManifestItem*> Package::ManifestItemsWithProperties(ItemProperties properties) const
+const std::vector<const ManifestItem*> Package::ManifestItemsWithProperties(PropertyList properties) const
 {
     std::vector<const ManifestItem*> result;
     for ( auto item : _manifest )
@@ -150,10 +159,9 @@ const std::vector<const ManifestItem*> Package::ManifestItemsWithProperties(Item
         if ( item.second->HasProperty(properties) )
             result.push_back(item.second);
     }
-    
     return result;
 }
-const NavigationTable* Package::NavigationTable(const std::string &title) const
+const NavigationTable* Package::NavigationTable(const string &title) const
 {
     auto found = _navigation.find(title);
     if ( found == _navigation.end() )
@@ -215,16 +223,38 @@ const ManifestItem* Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRemaining
     
     return result;
 }
-
+void Package::RegisterPrefixIRIStem(const string &prefix, const string &iriStem)
+{
+    _vocabularyLookup[prefix] = iriStem;
+}
+IRI Package::MakePropertyIRI(const string &reference, const string& prefix) const throw (UnknownPrefix)
+{
+    auto found = _vocabularyLookup.find(prefix);
+    if ( found == _vocabularyLookup.end() )
+        throw UnknownPrefix(_Str("Unknown prefix '", prefix, "'"));
+    return IRI(found->second + reference);
+}
+IRI Package::PropertyIRIFromAttributeValue(const string &attrValue) const throw (UnknownPrefix, std::invalid_argument)
+{
+    static std::regex re("^(?:(.+?):)?(.+)$");
+    std::smatch pieces;
+    if ( std::regex_match(attrValue.stl_str(), pieces, re) == false )
+        throw std::invalid_argument(_Str("Attribute '", attrValue, "' doesn't look like a property name to me"));
+    
+    // there are two captures, at indices 1 and 2
+    return MakePropertyIRI(pieces[2], pieces[1]);
+}
 bool Package::Unpack()
 {
     // very basic sanity check
     xmlNodePtr root = xmlDocGetRootElement(_opf);
-    std::string rootName(reinterpret_cast<const char*>(root->name));
-    std::transform(rootName.begin(), rootName.end(), rootName.begin(), ::tolower);
+    string rootName(reinterpret_cast<const char*>(root->name));
+    rootName.tolower();
     
     if ( rootName != "package" )
         return false;       // not an OPF file, innit?
+    
+    InstallPrefixesFromAttributeValue(_getProp(root, "prefix", ePub3NamespaceURI));
     
     // go through children to determine the CFI index of the <spine> tag
     static const xmlChar* kSpineName = BAD_CAST "spine";
@@ -303,7 +333,7 @@ bool Package::Unpack()
         if ( metadataNodes == nullptr )
             throw false;
         
-        std::map<std::string, class Metadata*> metadataByID;
+        std::map<string, class Metadata*> metadataByID;
         
         for ( int i = 0; i < metadataNodes->nodeNr; i++ )
         {
@@ -313,12 +343,12 @@ bool Package::Unpack()
             if ( node->ns != nullptr && xmlStrcmp(node->ns->href, BAD_CAST DCNamespace) == 0 )
             {
                 // definitely a main node
-                p = new class Metadata(node);
+                p = new class Metadata(node, this);
             }
             else if ( xmlGetProp(node, BAD_CAST "refines") == nullptr )
             {
                 // not refining anything, so it's a main node
-                p = new class Metadata(node);
+                p = new class Metadata(node, this);
             }
             else
             {
@@ -328,7 +358,7 @@ bool Package::Unpack()
             
             if ( p != nullptr )
             {
-                _metadata[p->Name()] = p;
+                _metadata[p->Property()] = p;
                 if ( !p->Identifier().empty() )
                     metadataByID[p->Identifier()] = p;
             }
@@ -337,7 +367,7 @@ bool Package::Unpack()
         for ( int i = 0; i < refineNodes->nodeNr; i++ )
         {
             xmlNodePtr node = refineNodes->nodeTab[i];
-            std::string ident = _getProp(node, "refines");
+            string ident = _getProp(node, "refines");
             if ( ident.empty() )
                 continue;
             
@@ -345,7 +375,7 @@ bool Package::Unpack()
             if ( found == metadataByID.end() )
                 continue;
             
-            found->second->AddExtension(node);
+            found->second->AddExtension(node, this);
         }
     }
     catch (...)
@@ -375,6 +405,24 @@ bool Package::Unpack()
     }
     
     return true;
+}
+void Package::InstallPrefixesFromAttributeValue(const ePub3::string &attrValue)
+{
+    if ( attrValue.empty() )
+        return;
+    
+    static std::regex re(R"X(^(.+?): *(.+?)\s+)X");
+    auto pos = std::sregex_iterator(attrValue.stl_str().begin(), attrValue.stl_str().end(), re);
+    auto end = std::sregex_iterator();
+    
+    for ( ; pos != end; ++pos )
+    {
+        if ( pos->size() == 3 )     // entire match plus two captures
+        {
+            const std::smatch& match = *pos;
+            RegisterPrefixIRIStem(match[1].str(), match[2].str());
+        }
+    }
 }
 const SpineItem* Package::ConfirmOrCorrectSpineItemQualifier(const SpineItem* pItem, CFI::Component *pComponent) const
 {

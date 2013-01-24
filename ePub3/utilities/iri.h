@@ -38,13 +38,18 @@ public:
     // create a simple URL
     IRI(const string& scheme, const string& host, const string& path, const string& query="", const string& fragment="");
     
-    IRI(const IRI& o) : _urnComponents(o._urnComponents), _url(o._url) {}
-    IRI(IRI&& o) : _urnComponents(std::move(o._urnComponents)), _url(std::move(o._url)) {}
+    IRI(const IRI& o) : _urnComponents(o._urnComponents), _url(new GURL(*o._url)) {}
+    IRI(IRI&& o) : _urnComponents(std::move(o._urnComponents)), _url(o._url) { o._url = nullptr; }
     
     virtual ~IRI();
     
     IRI&            operator=(const IRI& o);
     IRI&            operator=(IRI&& o);
+    
+    bool            operator==(const IRI& o)                const;
+    bool            operator!=(const IRI& o)                const;
+    
+    bool            operator<(const IRI& o)                 const;
     
     bool            IsURN() const { return _urnComponents.size() > 1; }
     bool            IsRelative() const { return !_url->has_host(); }

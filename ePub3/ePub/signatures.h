@@ -36,31 +36,31 @@ class SignatureReference {};
 class DigitalSignature
 {
 public:
-    typedef std::string     algorithm_type;
+    typedef string          algorithm_type;
     
 public:
-    DigitalSignature() = default;
-    DigitalSignature(xmlNodePtr signatureNode);
-    DigitalSignature(const DigitalSignature&) = delete;
-    DigitalSignature(DigitalSignature&& o) : _signedInfo(std::move(o._signedInfo)), _keyInfo(std::move(o._keyInfo)), _object(std::move(o._object)) {}
-    virtual ~DigitalSignature() {}
+                DigitalSignature()                                  = default;
+                DigitalSignature(xmlNodePtr signatureNode);
+                DigitalSignature(const DigitalSignature&)           = delete;
+                DigitalSignature(DigitalSignature&& o) : _signedInfo(std::move(o._signedInfo)), _keyInfo(std::move(o._keyInfo)), _object(std::move(o._object)) {}
+    virtual     ~DigitalSignature() {}
     
-    DigitalSignature& operator=(const DigitalSignature&) = delete;
-    virtual DigitalSignature& operator=(DigitalSignature&&);
+    DigitalSignature&           operator=(const DigitalSignature&)  = delete;
+    virtual DigitalSignature&   operator=(DigitalSignature&&);
     
-    class SignedInfo* SignedInfo() { return _signedInfo.get(); }
-    void SetSignedInfo(class SignedInfo& __i) { _signedInfo.reset(&__i); }
-    const class SignedInfo* SignedInfo() const { return _signedInfo.get(); }
+    class SignedInfo*           SignedInfo()                                { return _signedInfo.get(); }
+    void                        SetSignedInfo(class SignedInfo& __i)        { _signedInfo.reset(&__i); }
+    const class SignedInfo*     SignedInfo()                        const   { return _signedInfo.get(); }
     
-    class KeyInfo* KeyInfo() { return _keyInfo.get(); }
-    void SetKeyInfo(class KeyInfo& __i) { _keyInfo.reset(&__i); }
-    const class KeyInfo* KeyInfo() const { return _keyInfo.get(); }
+    class KeyInfo*              KeyInfo()                                   { return _keyInfo.get(); }
+    void                        SetKeyInfo(class KeyInfo& __i)              { _keyInfo.reset(&__i); }
+    const class KeyInfo*        KeyInfo()                           const   { return _keyInfo.get(); }
     
-    class SignatureObject* SignatureObject() { return _object.get(); }
-    void SetSignatureObject(class SignatureObject& __i) { _object.reset(&__i); }
-    const class SignatureObject* SignatureObject() const { return _object.get(); }
+    class SignatureObject*      SignatureObject()                           { return _object.get(); }
+    void                        SetSignatureObject(class SignatureObject& __i) { _object.reset(&__i); }
+    const class SignatureObject* SignatureObject()                  const   { return _object.get(); }
     
-    bool Validate() const;
+    bool                        Validate()                          const;
     
 protected:
     Auto<class SignedInfo>        _signedInfo;

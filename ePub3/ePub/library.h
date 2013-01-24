@@ -27,6 +27,7 @@
 #include "Package.h"
 #include "cfi.h"
 #include "locator.h"
+#include "utfstring.h"
 #include <map>
 #include <atomic>
 
@@ -50,7 +51,7 @@ EPUB3_BEGIN_NAMESPACE
 class Library
 {
 public:
-    typedef std::string     EPubIdentifier;
+    typedef string     EPubIdentifier;
     
 protected:
     Library() = default;
@@ -74,16 +75,16 @@ public:
     }
     
     // returns an epub3:// url for the package with a given identifier
-    std::string EPubURLForPackage(const Package* package) const;
-    std::string EPubURLForPackage(const std::string& identifier) const;
+    string EPubURLForPackage(const Package* package) const;
+    string EPubURLForPackage(const string& identifier) const;
     
     // may load a container/package, so non-const
-    Package* PackageForEPubURL(const std::string& url);
+    Package* PackageForEPubURL(const string& url);
     
-    std::string EPubCFIURLForManifestItem(const ManifestItem* item);
+    string EPubCFIURLForManifestItem(const ManifestItem* item);
     
     // may instantiate a Container & store it, so non-const
-    const ManifestItem* ManifestItemForCFI(const std::string& urlWithCFI);
+    const ManifestItem* ManifestItemForCFI(const string& urlWithCFI);
     
     // file format is sort-of CSV
     // each line starts with a container locator's string representation followed by a

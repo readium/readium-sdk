@@ -58,7 +58,7 @@ bool FontObfuscator::BuildKey()
             ss << ' ';
         
         // we use a C++11 regex to remove all whitespace in the value
-        ss << regex_replace(pkg->UniqueID(), re, "");
+        ss << regex_replace(pkg->UniqueID().stl_str(), re, "");
     }
     
     // hash the accumulated string (using OpenSSL syntax for portability)

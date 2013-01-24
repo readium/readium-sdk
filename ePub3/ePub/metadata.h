@@ -24,6 +24,7 @@
 
 #include "epub3.h"
 #include "../utilities/iri.h"
+#include "../utilities/utfstring.h"
 #include <vector>
 #include <map>
 #include <string>
@@ -31,7 +32,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-
+class Package;
 
 enum class Direction
 {
@@ -66,53 +67,57 @@ public:
         Rights,
         Source,
         Subject,
-        Type
+        Type,
+        
+        Custom          = UCHAR_MAX     // non-DCMES metadata value
     };
     
     class Extension
     {
     public:
-        Extension() = delete;
-        Extension(xmlNodePtr node);
-        Extension(const Extension&) = delete;
-        Extension(Extension&&);
-        virtual ~Extension();
+                    Extension()                         = delete;
+                    Extension(xmlNodePtr node, const Package* owner);
+                    Extension(const Extension&)         = delete;
+                    Extension(Extension&&);
+        virtual     ~Extension();
         
-        std::string Property() const;
-        std::string Scheme() const;
-        std::string Value() const;
-        std::string Identifier() const;
-        std::string Language() const;
+        IRI         Property()          const       { return _property; }
+        string      Scheme()            const;
+        string      Value()             const;
+        string      Identifier()        const;
+        string      Language()          const;
         
     protected:
         xmlNodePtr  _node;
+        IRI         _property;
     };
     
     typedef std::vector<Extension>  ExtensionList;
     
 public:
-    Metadata() = delete;
-    Metadata(xmlNodePtr node);
-    Metadata(const Metadata&) = delete;
-    Metadata(Metadata&&);
-    virtual ~Metadata();
+                    Metadata()                          = delete;
+                    Metadata(xmlNodePtr node, const Package* owner);
+                    Metadata(const Metadata&)           = delete;
+                    Metadata(Metadata&&);
+    virtual         ~Metadata();
     
-    DCType Type() const { return _type; }
-    std::string Name() const;
-    std::string Identifier() const;
-    std::string Value() const;
-    std::string Language() const;
+    DCType          Type()          const           { return _type; }
+    IRI             Property()      const           { return _property; }
+    string          Identifier()    const;
+    string          Value()         const;
+    string          Language()      const;
     
-    const ExtensionList& Extensions() const { return _ext; }
+    const ExtensionList&    Extensions()    const   { return _ext; }
     
-    void AddExtension(xmlNodePtr node);
+    void            AddExtension(xmlNodePtr node, const Package* owner);
     
 protected:
     xmlNodePtr      _node;
     DCType          _type;
     ExtensionList   _ext;
+    IRI             _property;
     
-    bool Decode();
+    bool            Decode(const Package* owner);
     
 };
 

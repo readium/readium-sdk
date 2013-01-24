@@ -38,7 +38,7 @@ protected:
     static bool FontTypeSniffer(const ManifestItem* item, const EncryptionInfo* encInfo) {
         if ( encInfo->Algorithm() != FontObfuscationAlgorithmID )
             return false;
-        return std::regex_match(item->MediaType(), TypeCheck);
+        return std::regex_match(item->MediaType().stl_str(), TypeCheck);
     }
     
 public:

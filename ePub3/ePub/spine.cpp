@@ -27,13 +27,7 @@ EPUB3_BEGIN_NAMESPACE
 SpineItem::SpineItem(xmlNodePtr node, Package * owner) : _idref(), _owner(owner), _linear(true)
 {
     _idref = _getProp(node, "idref");
-    
-    std::string str = _getProp(node, "linear");
-    if ( str.empty() )
-        return;
-    
-    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
-    if ( str == "false" )
+    if ( _getProp(node, "linear").tolower() == U"false" )
         _linear = false;
 }
 SpineItem::SpineItem(SpineItem&& o) : _idref(std::move(o._idref)), _owner(o._owner), _linear(o._linear), _prev(o._prev), _next(std::move(o._next))
