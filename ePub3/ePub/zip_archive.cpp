@@ -34,7 +34,7 @@ public:
     virtual ~ZipReader() { if (_file != nullptr) zip_fclose(_file); }
     
     virtual bool operator !() const { return _file == nullptr || _file->bytes_left == 0; }
-    virtual ssize_t read(void* p, size_t len) { return zip_fread(_file, p, len); }
+    virtual ssize_t read(void* p, size_t len) const { return zip_fread(_file, p, len); }
     
 private:
     struct zip_file * _file;
