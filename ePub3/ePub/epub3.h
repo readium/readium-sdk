@@ -45,9 +45,9 @@ EPUB3_BEGIN_NAMESPACE
 static inline string _getProp(xmlNodePtr node, const char *name, const char *nsURI = nullptr)
 {
     if ( node == nullptr )
-        return "";
+        return string::EmptyString;
     
-    const xmlChar * ch = nullptr;
+    xmlChar * ch = nullptr;
     if ( nsURI == nullptr )
     {
         ch = xmlGetProp(node, reinterpret_cast<const xmlChar*>(name));
@@ -59,7 +59,10 @@ static inline string _getProp(xmlNodePtr node, const char *name, const char *nsU
     
     if ( ch == nullptr )
         return string::EmptyString;
-    return ch;
+    
+    string result(ch);
+    xmlFree(ch);
+    return result;
 }
 
 EPUB3_END_NAMESPACE

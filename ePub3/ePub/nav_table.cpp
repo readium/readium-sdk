@@ -103,13 +103,13 @@ void NavigationTable::BuildNavPoints(xmlNodeSetPtr nodes, NavigationList *navLis
         xmlNodePtr liNode = nodes->nodeTab[i];
         xmlNodePtr liChild = liNode->children;
         NavigationPoint* point = nullptr;
+        bool builtSubTable = false;
         
         for ( ; liChild != nullptr; liChild = liChild->next )
         {
             if ( liChild->type != XML_ELEMENT_NODE )
                 continue;
             
-            bool builtSubTable = false;
             std::string cName(reinterpret_cast<const char*>(liChild->name));
             
             if ( cName == "a" && point == nullptr )
@@ -123,7 +123,7 @@ void NavigationTable::BuildNavPoints(xmlNodeSetPtr nodes, NavigationList *navLis
                 if ( builtSubTable )
                 {
                     // apply title to an existing item (back of the list)
-                    navList->back()->SetTitle(reinterpret_cast<const char*>(xmlNodeGetContent(liChild)));
+                    navList->back()->SetTitle(xmlNodeGetContent(liChild));
                 }
                 else
                 {

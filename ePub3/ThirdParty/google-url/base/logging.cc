@@ -443,7 +443,7 @@ LogMessage::~LogMessage() {
 # else
       if ( log_assert_handler != nullptr )
       {
-          log_assert_handler(stream_.str(), stream_.pcount());
+          log_assert_handler(stream_.str());
       }
       else
       {

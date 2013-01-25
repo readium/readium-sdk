@@ -46,7 +46,7 @@ enum class Direction
 class Metadata
 {
 public:
-    enum class DCType : uint8_t
+    enum class DCType : uint32_t
     {
         Invalid,
         
@@ -81,7 +81,7 @@ public:
                     Extension(Extension&&);
         virtual     ~Extension();
         
-        IRI         Property()          const       { return _property; }
+        const IRI&  Property()          const       { return _property; }
         string      Scheme()            const;
         string      Value()             const;
         string      Identifier()        const;
@@ -92,7 +92,7 @@ public:
         IRI         _property;
     };
     
-    typedef std::vector<Extension>  ExtensionList;
+    typedef std::vector<Extension*>  ExtensionList;
     
 public:
                     Metadata()                          = delete;
@@ -101,23 +101,34 @@ public:
                     Metadata(Metadata&&);
     virtual         ~Metadata();
     
-    DCType          Type()          const           { return _type; }
-    IRI             Property()      const           { return _property; }
-    string          Identifier()    const;
-    string          Value()         const;
-    string          Language()      const;
+    DCType                  Type()          const           { return _type; }
+    const IRI&              Property()      const           { return _property; }
+    string                  Identifier()    const;
+    string                  Value()         const;
+    string                  Language()      const;
     
-    const ExtensionList&    Extensions()    const   { return _ext; }
+    const ExtensionList&    Extensions()    const           { return _extensions; }
+    const Extension*        ExtensionWithProperty(const IRI& property) const;
     
-    void            AddExtension(xmlNodePtr node, const Package* owner);
+    void                    AddExtension(xmlNodePtr node, const Package* owner);
+    
+    static const IRI        IRIForDCType(DCType type);
+    
+public:
+    // Some things to help with debugging
+    typedef std::vector<std::pair<string, string>>   ValueMap;
+    
+    const ValueMap          DebugValues()   const;
     
 protected:
-    xmlNodePtr      _node;
     DCType          _type;
-    ExtensionList   _ext;
+    xmlNodePtr      _node;
+    ExtensionList   _extensions;
     IRI             _property;
     
     bool            Decode(const Package* owner);
+    
+    static std::map<string, DCType> NameToIDMap;
     
 };
 

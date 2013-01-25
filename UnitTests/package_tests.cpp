@@ -28,15 +28,28 @@
 
 using namespace ePub3;
 
-TEST_CASE("Package should have a Unique ID, Type, Version, and a Base Path", "")
+TEST_CASE("Package should have a Unique ID, Package ID, Type, Version, and a Base Path", "")
 {
     Container c(EPUB_PATH);
-    Package* pkg = c.Packages()[0];
+    const Package* pkg = c.Packages()[0];
     
-    REQUIRE_FALSE(pkg->UniqueID().empty());
-    REQUIRE_FALSE(pkg->Type().empty());
-    REQUIRE_FALSE(pkg->Version().empty());
-    REQUIRE_FALSE(pkg->BasePath().empty());
+    REQUIRE(pkg->UniqueID() == "http://www.gutenberg.org/ebooks/25545@2010-02-17T04:39:13Z");
+    REQUIRE(pkg->PackageID() == "http://www.gutenberg.org/ebooks/25545");
+    REQUIRE(pkg->Type() == "application/oebps-package+xml");
+    REQUIRE(pkg->Version() == "3.0");
+    REQUIRE(pkg->BasePath() == "EPUB/");
+}
+
+TEST_CASE("Our test package should only have TOC and PageList navigation tables", "")
+{
+    Container c(EPUB_PATH);
+    const Package* pkg = c.Packages()[0];
+    
+    REQUIRE(pkg->TableOfContents() != nullptr);
+    REQUIRE(pkg->ListOfFigures() == nullptr);
+    REQUIRE(pkg->ListOfIllustrations() == nullptr);
+    REQUIRE(pkg->ListOfTables() == nullptr);
+    REQUIRE(pkg->PageList() != nullptr);
 }
 
 TEST_CASE("Package should have multiple manifest items, and they should be indexable by identifier string", "")

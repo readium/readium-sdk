@@ -29,7 +29,7 @@ public:
     typedef const std::pair<string, string> IRICredentials;
     
 public:
-    IRI() = default;
+    IRI() : _urnComponents(), _url(nullptr), _pureIRI() {}
     
     // create from an IRI or URI string of any (valid) kind
     IRI(const string& iriStr);
@@ -38,8 +38,8 @@ public:
     // create a simple URL
     IRI(const string& scheme, const string& host, const string& path, const string& query="", const string& fragment="");
     
-    IRI(const IRI& o) : _urnComponents(o._urnComponents), _url(new GURL(*o._url)) {}
-    IRI(IRI&& o) : _urnComponents(std::move(o._urnComponents)), _url(o._url) { o._url = nullptr; }
+    IRI(const IRI& o) : _urnComponents(o._urnComponents), _url(new GURL(*o._url)), _pureIRI(o._pureIRI) {}
+    IRI(IRI&& o) : _urnComponents(std::move(o._urnComponents)), _url(o._url), _pureIRI(std::move(o._pureIRI)) { o._url = nullptr; }
     
     virtual ~IRI();
     
