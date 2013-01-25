@@ -149,7 +149,7 @@ public:
     virtual ~ArchiveReader() {}
     
     virtual bool operator !() const { return true; }
-    virtual ssize_t read(void *p, size_t len) { return 0; }
+    virtual ssize_t read(void *p, size_t len) const { return 0; }
     
 protected:
     ArchiveReader() = default;
