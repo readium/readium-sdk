@@ -26,6 +26,8 @@ EPUB3_BEGIN_NAMESPACE
 
 SpineItem::SpineItem(xmlNodePtr node, Package * owner) : _idref(), _owner(owner), _linear(true)
 {
+    _prev = nullptr;
+    _next = nullptr;
     _idref = _getProp(node, "idref");
     if ( _getProp(node, "linear").tolower() == U"false" )
         _linear = false;
