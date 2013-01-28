@@ -58,7 +58,7 @@ bool Library::Load(Locator* locator)
         {
             ss << tmp;
             
-            Locator* thisLoc;
+            Locator* thisLoc = nullptr;
             std::list<std::string> uidList;
             while ( !ss.eof() )
             {

@@ -195,6 +195,7 @@
 		ABA4BB5C16ADF65F00161B77 /* libcurl-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ABA4BAD516ADF22A00161B77 /* libcurl-ios.a */; };
 		ABA4BB5D16ADF66700161B77 /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = ABB190241656DB2200CFC651 /* libxml2.dylib */; };
 		ABA4BB5E16ADF66700161B77 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = ABB1901F1656868100CFC651 /* libz.dylib */; };
+		ABA4BB6016B1942100161B77 /* metadata_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA4BB5F16B1942100161B77 /* metadata_tests.cpp */; };
 		ABAB94B016652C200018D451 /* element.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAB94AE16652C200018D451 /* element.cpp */; };
 		ABAB94B116652C200018D451 /* element.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAB94AF16652C200018D451 /* element.h */; };
 		ABAB94B516653EE80018D451 /* dtd.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAB94B316653EE80018D451 /* dtd.h */; };
@@ -451,6 +452,7 @@
 		ABA4BAE016ADF5A600161B77 /* libePub3-iOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libePub3-iOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABA4BAE216ADF5A600161B77 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		ABA4BAE616ADF5A600161B77 /* ePub3-iOS-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ePub3-iOS-Prefix.pch"; sourceTree = "<group>"; };
+		ABA4BB5F16B1942100161B77 /* metadata_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = metadata_tests.cpp; sourceTree = "<group>"; };
 		ABA72C241655382E003125FF /* ePub3.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = ePub3.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABA72C281655382E003125FF /* ePub3-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ePub3-Prefix.pch"; sourceTree = "<group>"; };
 		ABA72C291655382E003125FF /* ePub3Proj.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = ePub3Proj.xcconfig; sourceTree = "<group>"; };
@@ -601,6 +603,7 @@
 				AB61CE5D1694CBDC00299BB1 /* container_tests.cpp */,
 				AB61CE601694DE9F00299BB1 /* package_tests.cpp */,
 				AB61CE6216973A3400299BB1 /* cfi_tests.cpp */,
+				ABA4BB5F16B1942100161B77 /* metadata_tests.cpp */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -1238,6 +1241,7 @@
 				AB61CE5E1694CBDC00299BB1 /* container_tests.cpp in Sources */,
 				AB61CE611694DE9F00299BB1 /* package_tests.cpp in Sources */,
 				AB61CE6316973A3400299BB1 /* cfi_tests.cpp in Sources */,
+				ABA4BB6016B1942100161B77 /* metadata_tests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

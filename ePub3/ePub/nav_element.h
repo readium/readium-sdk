@@ -39,7 +39,7 @@ public:
     explicit            NavigationElement()                             = default;
     explicit            NavigationElement(const NavigationElement&)     = default;
     explicit            NavigationElement(NavigationElement&& o) : _children(std::move(o._children)) {}
-    virtual             ~NavigationElement()            { for ( auto __p : _children ) { delete __p; } }
+    virtual             ~NavigationElement() {}
     
     virtual const string&   Title()                     const   = 0;
     virtual void            SetTitle(const string& str)         = 0;

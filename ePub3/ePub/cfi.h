@@ -161,8 +161,9 @@ protected:
     ComponentList   _rangeStart;
     ComponentList   _rangeEnd;
     
-    // Package should be able to work with components
-    friend class Package;
+    // PackageBase should be able to work with components
+    friend class    PackageBase;
+    friend class    Package;
     
     size_t              TotalComponents()                   const;
     string              SubCFIFromIndex(size_t index)       const;

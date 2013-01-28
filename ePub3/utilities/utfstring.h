@@ -420,22 +420,22 @@ public:
     iterator insert(iterator p, std::initializer_list<char16_t> __il) { return insert(p, __il.begin(), __il.end()); }
     
     // std::string
-    string & insert(size_type p, const __base &s, size_type b=0, size_type e=npos) throw (InvalidUTF8Sequence);
-    string & insert(size_type p, __base::iterator b, __base::iterator e) throw (InvalidUTF8Sequence);
-    iterator insert(iterator p, const __base & s, size_type b=0, size_type e=npos) throw (InvalidUTF8Sequence);
+    string & insert(size_type p, const __base &s, size_type b=0, size_type e=npos);
+    string & insert(size_type p, __base::iterator b, __base::iterator e);
+    iterator insert(iterator p, const __base & s, size_type b=0, size_type e=npos);
     
     // char
-    string & insert(size_type p, const char * s, size_type b=0, size_type e=npos) throw (InvalidUTF8Sequence);
+    string & insert(size_type p, const char * s, size_type b=0, size_type e=npos);
     string & insert(size_type p, size_type n, char c);
-    iterator insert(iterator p, const char * s, size_type b=0, size_type e=npos) throw (InvalidUTF8Sequence);
+    iterator insert(iterator p, const char * s, size_type b=0, size_type e=npos);
     iterator insert(iterator p, size_type n, char c);
     iterator insert(iterator p, std::initializer_list<char> __il) { return insert(p, __il.begin(), __il.end()); }
     
     // xmlChar
-    string & insert(size_type p, const xmlChar * s, size_type b=0, size_type e=npos) throw (InvalidUTF8Sequence)
+    string & insert(size_type p, const xmlChar * s, size_type b=0, size_type e=npos)
         { return insert(p, reinterpret_cast<const char*>(s), b, e); }
     string & insert(size_type p, size_type n, xmlChar c) { return insert(p, n, static_cast<char>(c)); }
-    iterator insert(iterator p, const xmlChar * s, size_type b=0, size_type e=npos) throw (InvalidUTF8Sequence)
+    iterator insert(iterator p, const xmlChar * s, size_type b=0, size_type e=npos)
         { return insert(p, reinterpret_cast<const char*>(s), b, e); }
     iterator insert(iterator p, size_type n, xmlChar c) { return insert(p, n, static_cast<char>(c)); }
     iterator insert(iterator p, std::initializer_list<xmlChar> __il) { return insert(p, __il.begin(), __il.end()); }
@@ -632,7 +632,7 @@ public:
             return npos;
         return __r - begin();
     }
-    size_type find_first_of(const __base& str, size_type pos=0) const throw (InvalidUTF8Sequence) {
+    size_type find_first_of(const __base& str, size_type pos=0) const {
         validate_utf8(str.substr(pos));
         auto __r = find_first_of(begin()+pos, end(), const_iterator(str.begin()), const_iterator(str.end()), __traits_eq<traits_type>());
         if ( __r == end() )
@@ -640,11 +640,11 @@ public:
         return __r - begin();
     }
     template <typename _CharT>
-    size_type find_first_of(const _CharT * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {
+    size_type find_first_of(const _CharT * s, size_type pos, size_type n) const {
         return find_first_of(_Convert<_CharT>::toUTF8(s, 0, n), pos);
     }
     template <typename _CharT>
-    size_type find_first_of(const _CharT * s, size_type pos = 0) const throw (InvalidUTF8Sequence) {
+    size_type find_first_of(const _CharT * s, size_type pos = 0) const {
         validate_utf8(s+pos, npos);
         return find_first_of(_Convert<_CharT>::toUTF8(s), pos);
     }
@@ -671,7 +671,7 @@ public:
         }
         return npos;
     }
-    size_type find_last_of(const __base& str, size_type pos=npos) const throw (InvalidUTF8Sequence) {
+    size_type find_last_of(const __base& str, size_type pos=npos) const {
         validate_utf8(str.substr(pos));
         size_type __sz = size();
         if ( pos < __sz )
@@ -688,11 +688,11 @@ public:
         return npos;
     }
     template <typename _CharT>
-    size_type find_last_of(const _CharT * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {
+    size_type find_last_of(const _CharT * s, size_type pos, size_type n) const {
         return find_last_of(_Convert<_CharT>::toUTF8(s, 0, n), pos);
     }
     template <typename _CharT>
-    size_type find_last_of(const _CharT * s, size_type pos = npos) const throw (InvalidUTF8Sequence) {
+    size_type find_last_of(const _CharT * s, size_type pos = npos) const {
         return find_last_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
@@ -712,7 +712,7 @@ public:
         }
         return npos;
     }
-    size_type find_first_not_of(const __base& str, size_type pos=0) const throw (InvalidUTF8Sequence) {
+    size_type find_first_not_of(const __base& str, size_type pos=0) const {
         validate_utf8(str.substr(pos));
         size_type __sz = size();
         if ( pos < __sz )
@@ -726,11 +726,11 @@ public:
         return npos;
     }
     template <typename _CharT>
-    size_type find_first_not_of(const _CharT * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {
+    size_type find_first_not_of(const _CharT * s, size_type pos, size_type n) const {
         return find_first_not_of(_Convert<_CharT>::toUTF8(s, 0, n), pos);
     }
     template <typename _CharT>
-    size_type find_first_not_of(const _CharT * s, size_type pos = 0) const throw (InvalidUTF8Sequence) {
+    size_type find_first_not_of(const _CharT * s, size_type pos = 0) const {
         return find_first_not_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
@@ -750,7 +750,7 @@ public:
                 return static_cast<size_type>(__ps - __p);
         return npos;
     }
-    size_type find_last_not_of(const __base& str, size_type pos=npos) const throw (InvalidUTF8Sequence) {
+    size_type find_last_not_of(const __base& str, size_type pos=npos) const {
         size_type __sz = size();
         if ( pos < __sz )
             ++pos;
@@ -763,11 +763,11 @@ public:
         return npos;
     }
     template <typename _CharT>
-    size_type find_last_not_of(const _CharT * s, size_type pos, size_type n) const throw (InvalidUTF8Sequence) {
+    size_type find_last_not_of(const _CharT * s, size_type pos, size_type n) const {
         return find_last_not_of(_Convert<_CharT>::toUTF8(s, 0, n), pos);
     }
     template <typename _CharT>
-    size_type find_last_not_of(const _CharT * s, size_type pos = npos) const throw (InvalidUTF8Sequence) {
+    size_type find_last_not_of(const _CharT * s, size_type pos = npos) const {
         return find_last_not_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
@@ -844,13 +844,13 @@ public:
 protected:
     __base      _base;
     
-    void validate_utf8(const __base &s) const throw (InvalidUTF8Sequence);
-    void validate_utf8(const char *s, size_type sz) const throw (InvalidUTF8Sequence);
-    void validate_utf8(const xmlChar *s, size_type sz) const throw (InvalidUTF8Sequence);
+    void validate_utf8(const __base &s) const;
+    void validate_utf8(const char *s, size_type sz) const;
+    void validate_utf8(const xmlChar *s, size_type sz) const;
     
-    void throw_unless_insertable(const __base &s, size_type b, size_type e) const throw (InvalidUTF8Sequence);
-    void throw_unless_insertable(const char * s, size_type b, size_type e) const throw (InvalidUTF8Sequence);
-    void throw_unless_insertable(const xmlChar * s, size_type b, size_type e) const throw (InvalidUTF8Sequence);
+    void throw_unless_insertable(const __base &s, size_type b, size_type e) const;
+    void throw_unless_insertable(const char * s, size_type b, size_type e) const;
+    void throw_unless_insertable(const xmlChar * s, size_type b, size_type e) const;
     
     __base::size_type to_byte_size(size_type __n) const noexcept;
     __base::size_type to_byte_size(size_type __b, size_type __e) const noexcept;

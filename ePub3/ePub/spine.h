@@ -49,6 +49,7 @@ public:
     // O(n) count of items
     // Would be nice if the compiler could unroll it...
     inline size_t       Count()             const       { return (_next == nullptr ? 1 : 1 + _next->Count()); }
+    inline size_t       Index()             const       { return (_prev == nullptr ? 0 : _prev->Index() + 1); }
     
     const string&       Idref()             const       { return _idref; }
     const ManifestItem* ManifestItem()      const;
