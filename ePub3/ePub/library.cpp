@@ -113,7 +113,7 @@ void Library::AddEPubsInContainer(Container* container, Locator* locator)
     
     for ( auto pkg : container->Packages() )
     {
-        _packages.emplace(pkg->UniqueID(), locator, pkg);
+        _packages.emplace(pkg->UniqueID(), LookupEntry({locator, pkg}));
     }
 }
 string Library::EPubURLForPackage(const Package* package) const
