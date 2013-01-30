@@ -45,6 +45,8 @@ const Package::PropertyVocabularyMap PackageBase::gReservedVocabularies({
     { "xsd", "http://www.w3.org/2001/XMLSchema#" }
 });
 
+bool Package::gValidateSchema = true;
+
 PackageBase::PackageBase(Archive* archive, const string& path, const string& type) : _archive(archive), _opf(nullptr), _type(type), _vocabularyLookup(gReservedVocabularies)
 {
     if ( _archive == nullptr )
@@ -404,7 +406,8 @@ bool Package::Unpack()
         for ( auto table : tables )
         {
             // have to dynamic_cast these guys to get the right pointer type
-            _navigation.emplace(table->Title(), dynamic_cast<class NavigationTable*>(table));
+            class NavigationTable* navTable = dynamic_cast<class NavigationTable*>(table);
+            _navigation.emplace(navTable->Type(), navTable);
         }
     }
     

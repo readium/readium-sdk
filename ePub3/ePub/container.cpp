@@ -45,28 +45,26 @@ Container::Container(const std::string& path) : _archive(Archive::Open(path))
     if ( _ocf == nullptr )
         throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": No container.xml in " + path);
     
-    XPathWrangler::NamespaceList nsList;
-    nsList["ocf"] = "urn:oasis:names:tc:opendocument:xmlns:container";
-    XPathWrangler xpath(_ocf, nsList);
+    XPathWrangler xpath(_ocf, {{"ocf", "urn:oasis:names:tc:opendocument:xmlns:container"}});
     xmlNodeSetPtr nodes = xpath.Nodes(reinterpret_cast<const xmlChar*>(gRootfilesXPath));
     
-    if ( nodes != nullptr && nodes->nodeNr > 0 )
-    {
-        for ( int i = 0; i < nodes->nodeNr; i++ )
-        {
-            xmlNodePtr n = nodes->nodeTab[i];
-            
-            const xmlChar * _type = xmlGetProp(n, reinterpret_cast<const xmlChar*>("media-type"));
-            std::string type((_type == nullptr ? "" : reinterpret_cast<const char*>(_type)));
-            
-            const xmlChar * _path = xmlGetProp(n, reinterpret_cast<const xmlChar*>("full-path"));
-            if ( _path == nullptr )
-                continue;
-            
-            _packages.push_back(new Package(_archive, _path, type));
-        }
-    }
+    if ( nodes == nullptr || nodes->nodeNr == 0 )
+        throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": No rootfiles in " + path);
     
+    for ( int i = 0; i < nodes->nodeNr; i++ )
+    {
+        xmlNodePtr n = nodes->nodeTab[i];
+        
+        const xmlChar * _type = xmlGetProp(n, reinterpret_cast<const xmlChar*>("media-type"));
+        std::string type((_type == nullptr ? "" : reinterpret_cast<const char*>(_type)));
+        
+        const xmlChar * _path = xmlGetProp(n, reinterpret_cast<const xmlChar*>("full-path"));
+        if ( _path == nullptr )
+            continue;
+        
+        _packages.push_back(new Package(_archive, _path, type));
+    }
+
     LoadEncryption();
 }
 Container::Container(Locator locator) : Container(locator.GetPath())
@@ -96,6 +94,12 @@ Container::PathList Container::PackageLocations() const
     }
     
     return output;
+}
+const Package* Container::DefaultPackage() const
+{
+    if ( _packages.empty() )
+        return nullptr;
+    return _packages[0];
 }
 string Container::Version() const
 {

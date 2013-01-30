@@ -346,7 +346,7 @@ public:
     const class NavigationTable*    ListOfFigures()             const       { return NavigationTable("lof"); }
     const class NavigationTable*    ListOfIllustrations()       const       { return NavigationTable("loi"); }
     const class NavigationTable*    ListOfTables()              const       { return NavigationTable("lot"); }
-    const class NavigationTable*    PageList()                  const       { return NavigationTable("pagelist"); }
+    const class NavigationTable*    PageList()                  const       { return NavigationTable("page-list"); }
     
     const string            Title()                     const;
     const string            Subtitle()                  const;
@@ -372,6 +372,13 @@ public:
     
 protected:
     virtual bool            Unpack();
+    
+    // default is `true`
+    static bool             gValidateSchema;
+    
+public:
+    static bool             ValidatesSchema()                   { return gValidateSchema; }
+    static void             SetValidatesSchema(bool validate)   { gValidateSchema = validate; }
 };
 
 EPUB3_END_NAMESPACE

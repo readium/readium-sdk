@@ -51,6 +51,7 @@ public:
     
     virtual PathList                PackageLocations()      const;
     virtual const PackageList&      Packages()              const   { return _packages; }
+    virtual const Package*          DefaultPackage()        const;
     virtual string                  Version()               const;
     virtual const EncryptionList&   EncryptionData()        const   { return _encryption; }
     
