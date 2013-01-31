@@ -40,10 +40,10 @@ public:
     
 public:
     ContentFilter() = delete;
-    ContentFilter(const ContentFilter& o) : _sniffer(o._sniffer), _next(nullptr), _container(o._container) {}
-    ContentFilter(ContentFilter&& o) : _sniffer(std::move(o._sniffer)), _next(std::move(o._next)), _container(o._container) {}
+    ContentFilter(const ContentFilter& o) : _sniffer(o._sniffer), _next(nullptr) {}
+    ContentFilter(ContentFilter&& o) : _sniffer(std::move(o._sniffer)), _next(std::move(o._next)) {}
     
-    ContentFilter(TypeSnifferFn sniffer, const Container* container) : _sniffer(sniffer), _container(container) {}
+    ContentFilter(TypeSnifferFn sniffer) : _sniffer(sniffer) {}
     virtual ~ContentFilter() {}
     
     virtual bool RequiresCompleteData() const { return false; }
@@ -59,7 +59,6 @@ public:
 protected:
     TypeSnifferFn       _sniffer;
     Auto<ContentFilter> _next;
-    const Container*    _container;
 };
 
 EPUB3_END_NAMESPACE

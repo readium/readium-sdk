@@ -454,7 +454,7 @@ bool Package::Unpack()
                     // user shouldn't have added manual things yet, but for safety we'll look anyway
                     for ( auto ptr : _contentHandlers[mediaType] )
                     {
-                        if ( typeid(ptr) == typeid(MediaHandler*) )
+                        if ( typeid(*ptr) == typeid(MediaHandler) )
                         {
                             throw std::invalid_argument(_Str("Duplicate media handler found for type '", mediaType, "'."));
                         }
@@ -845,6 +845,43 @@ const Package::StringList Package::Subjects() const
         result.emplace_back(item->Value());
     }
     return result;
+}
+const Package::StringList Package::MediaTypesWithDHTMLHandlers() const
+{
+    StringList result;
+    for ( auto pair : _contentHandlers )
+    {
+        for ( auto pHandler : pair.second )
+        {
+            if ( typeid(*pHandler) == typeid(MediaHandler) )
+            {
+                result.emplace_back(pair.first);
+                break;
+            }
+        }
+    }
+    return result;
+}
+const PackageBase::ContentHandlerList Package::HandlersForMediaType(const string& mediaType) const
+{
+    auto found = _contentHandlers.find(mediaType);
+    if ( found == _contentHandlers.end() )
+        return ContentHandlerList();
+    return found->second;
+}
+const MediaHandler* Package::OPFHandlerForMediaType(const string &mediaType) const
+{
+    auto found = _contentHandlers.find(mediaType);
+    if ( found == _contentHandlers.end() )
+        return nullptr;
+    
+    for ( auto ptr : found->second )
+    {
+        if ( typeid(*ptr) == typeid(MediaHandler) )
+            return dynamic_cast<MediaHandler*>(ptr);
+    }
+    
+    return nullptr;
 }
 
 EPUB3_END_NAMESPACE

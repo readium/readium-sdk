@@ -47,13 +47,13 @@ public:
      @param supportedNamespaces A list of namespaces whose content is supported by
      the renderer.
      */
-    SwitchPreprocessor(const NamespaceList& supportedNamespaces) : ContentFilter(SniffSwitchableContent, nullptr), _supportedNamespaces(supportedNamespaces) {}
+    SwitchPreprocessor(const NamespaceList& supportedNamespaces) : ContentFilter(SniffSwitchableContent), _supportedNamespaces(supportedNamespaces) {}
     
     /**
      The default constructor indicates that no additional content is supported, and
      the resulting filter will only preserve the content of epub:default tags.
      */
-    SwitchPreprocessor() : ContentFilter(SniffSwitchableContent, nullptr), _supportedNamespaces() {}
+    SwitchPreprocessor() : ContentFilter(SniffSwitchableContent), _supportedNamespaces() {}
     
     ///
     /// The standard copy constructor.

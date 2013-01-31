@@ -31,6 +31,9 @@
 		AB95448316BAD32000EFD2FD /* switch_preprocessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB95448116BAD32000EFD2FD /* switch_preprocessor.cpp */; };
 		AB95448416BAD32000EFD2FD /* switch_preprocessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB95448116BAD32000EFD2FD /* switch_preprocessor.cpp */; };
 		AB95448516BAD32000EFD2FD /* switch_preprocessor.h in Headers */ = {isa = PBXBuildFile; fileRef = AB95448216BAD32000EFD2FD /* switch_preprocessor.h */; };
+		AB95448816BAF11000EFD2FD /* object_preprocessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB95448616BAF11000EFD2FD /* object_preprocessor.cpp */; };
+		AB95448916BAF11000EFD2FD /* object_preprocessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB95448616BAF11000EFD2FD /* object_preprocessor.cpp */; };
+		AB95448A16BAF11000EFD2FD /* object_preprocessor.h in Headers */ = {isa = PBXBuildFile; fileRef = AB95448716BAF11000EFD2FD /* object_preprocessor.h */; };
 		AB9B5B31165D816400F11069 /* c14n.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB9B5B2F165D816400F11069 /* c14n.cpp */; };
 		AB9B5B32165D816400F11069 /* c14n.h in Headers */ = {isa = PBXBuildFile; fileRef = AB9B5B30165D816400F11069 /* c14n.h */; };
 		AB9C01D9166E5467009487D9 /* metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB9C01D7166E5467009487D9 /* metadata.cpp */; };
@@ -362,6 +365,8 @@
 		AB95447C16B9730B00EFD2FD /* content_handler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = content_handler.h; sourceTree = "<group>"; };
 		AB95448116BAD32000EFD2FD /* switch_preprocessor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = switch_preprocessor.cpp; sourceTree = "<group>"; };
 		AB95448216BAD32000EFD2FD /* switch_preprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = switch_preprocessor.h; sourceTree = "<group>"; };
+		AB95448616BAF11000EFD2FD /* object_preprocessor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = object_preprocessor.cpp; sourceTree = "<group>"; };
+		AB95448716BAF11000EFD2FD /* object_preprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = object_preprocessor.h; sourceTree = "<group>"; };
 		AB9B5B2F165D816400F11069 /* c14n.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = c14n.cpp; sourceTree = "<group>"; };
 		AB9B5B30165D816400F11069 /* c14n.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = c14n.h; sourceTree = "<group>"; };
 		AB9C01D7166E5467009487D9 /* metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = metadata.cpp; sourceTree = "<group>"; };
@@ -655,6 +660,8 @@
 			children = (
 				AB95448116BAD32000EFD2FD /* switch_preprocessor.cpp */,
 				AB95448216BAD32000EFD2FD /* switch_preprocessor.h */,
+				AB95448616BAF11000EFD2FD /* object_preprocessor.cpp */,
+				AB95448716BAF11000EFD2FD /* object_preprocessor.h */,
 			);
 			name = "Content Preprocessing";
 			sourceTree = "<group>";
@@ -1168,6 +1175,7 @@
 				ABA4BAB116A7518B00161B77 /* url_canon_cpp11.h in Headers */,
 				AB95447F16B9730B00EFD2FD /* content_handler.h in Headers */,
 				AB95448516BAD32000EFD2FD /* switch_preprocessor.h in Headers */,
+				AB95448A16BAF11000EFD2FD /* object_preprocessor.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1379,6 +1387,7 @@
 				ABA4BB5B16ADF64400161B77 /* c14n.cpp in Sources */,
 				AB95447E16B9730B00EFD2FD /* content_handler.cpp in Sources */,
 				AB95448416BAD32000EFD2FD /* switch_preprocessor.cpp in Sources */,
+				AB95448916BAF11000EFD2FD /* object_preprocessor.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1492,6 +1501,7 @@
 				ABA4BAB416AD8EE400161B77 /* logging.cc in Sources */,
 				AB95447D16B9730B00EFD2FD /* content_handler.cpp in Sources */,
 				AB95448316BAD32000EFD2FD /* switch_preprocessor.cpp in Sources */,
+				AB95448816BAF11000EFD2FD /* object_preprocessor.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -11,7 +11,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-static const std::regex_constants::syntax_option_type SwitchRegexFlags = std::regex::icase|std::regex_constants::optimize|std::regex_constants::ECMAScript;
+static const std::regex_constants::syntax_option_type SwitchRegexFlags = std::regex::icase|std::regex::optimize|std::regex::ECMAScript;
 
 std::regex SwitchPreprocessor::CommentedSwitchIdentifier(R"X((?:<!--)(\s*<(?:epub\:)switch.*?)(?:-->)(.*?)(?:<!--)(.*?)(?:-->))X", SwitchRegexFlags);
 std::regex SwitchPreprocessor::SwitchContentExtractor(R"X(<(?:epub\:)?switch.*?>(.*?)</(?:epub\:)?switch.*?>)X", SwitchRegexFlags);
@@ -76,7 +76,7 @@ void * SwitchPreprocessor::FilterData(void *data, size_t len, size_t *outputLen)
                 output += defaultCase[1].str();
         }
         
-        // step forward, and if we het the end let's output the current suffix
+        // step forward, and if we get the end let's output the current suffix
         // this ensures that we don't lose everything following the last match
         auto here = pos++;
         if ( pos == end )

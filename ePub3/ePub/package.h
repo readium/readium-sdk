@@ -362,33 +362,38 @@ public:
         return new ArchiveXmlReader(ReaderForRelativePath(path));
     }
     
-    const class NavigationTable*    TableOfContents()           const       { return NavigationTable("toc"); }
-    const class NavigationTable*    ListOfFigures()             const       { return NavigationTable("lof"); }
-    const class NavigationTable*    ListOfIllustrations()       const       { return NavigationTable("loi"); }
-    const class NavigationTable*    ListOfTables()              const       { return NavigationTable("lot"); }
-    const class NavigationTable*    PageList()                  const       { return NavigationTable("page-list"); }
+    const class NavigationTable*    TableOfContents()       const       { return NavigationTable("toc"); }
+    const class NavigationTable*    ListOfFigures()         const       { return NavigationTable("lof"); }
+    const class NavigationTable*    ListOfIllustrations()   const       { return NavigationTable("loi"); }
+    const class NavigationTable*    ListOfTables()          const       { return NavigationTable("lot"); }
+    const class NavigationTable*    PageList()              const       { return NavigationTable("page-list"); }
     
-    const string            Title()                     const;
-    const string            Subtitle()                  const;
-    const string            FullTitle()                 const;
+    const string            Title()                         const;
+    const string            Subtitle()                      const;
+    const string            FullTitle()                     const;
     
-    typedef std::vector<const string>     AttributionList;
+    typedef std::vector<const string>               AttributionList;
     
     // returns the author names
-    const AttributionList   AuthorNames()               const;
+    const AttributionList   AuthorNames()                   const;
     // returns the file-as names if available, as Authors() if not
-    const AttributionList   AttributionNames()          const;
+    const AttributionList   AttributionNames()              const;
     // returns a formatted string for presentation to the user
-    const string            Authors()                   const;
+    const string            Authors()                       const;
     
-    const string            Language()                  const;
-    const string            Source()                    const;
-    const string            CopyrightOwner()            const;
-    const string            ModificationDate()          const;
-    const string            ISBN()                      const;
+    const string            Language()                      const;
+    const string            Source()                        const;
+    const string            CopyrightOwner()                const;
+    const string            ModificationDate()              const;
+    const string            ISBN()                          const;
     
-    typedef std::vector<const string>     StringList;
-    const StringList        Subjects()                  const;
+    typedef std::vector<const string>               StringList;
+    const StringList        Subjects()                      const;
+    
+    // Returns only the media types which have a handler of class MediaHandler.
+    const StringList            MediaTypesWithDHTMLHandlers()                   const;
+    const ContentHandlerList    HandlersForMediaType(const string& mediaType)   const;
+    const MediaHandler*         OPFHandlerForMediaType(const string& mediaType) const;
     
 protected:
     virtual bool            Unpack();
