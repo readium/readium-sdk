@@ -26,23 +26,49 @@
 #include "xpath_wrangler.h"
 #include "nav_table.h"
 #include "glossary.h"
+#include "iri.h"
+#include "basic.h"
 #include <sstream>
 #include <list>
 #include <regex>
 #include <libxml/xpathInternals.h>
 
-static const char * OPFNamespace = "http://www.idpf.org/2007/opf";
-static const char * DCNamespace = "http://purl.org/dc/elements/1.1/";
-
 EPUB3_BEGIN_NAMESPACE
 
-const Package::PropertyVocabularyMap PackageBase::gReservedVocabularies({
+static const xmlChar * OPFNamespace = "http://www.idpf.org/2007/opf"_xml;
+static const xmlChar * DCNamespace = "http://purl.org/dc/elements/1.1/"_xml;
+static const xmlChar * MediaTypeElementName = "mediaType"_xml;
+
+const PackageBase::PropertyVocabularyMap PackageBase::gReservedVocabularies({
     { "", "http://idpf.org/epub/vocab/package/#" },
     { "dcterms", "http://purl.org/dc/terms/" },
     { "marc", "http://id.loc.gov/vocabulary/" },
     { "media", "http://www.idpf.org/epub/vocab/overlays/#" },
     { "onix", "http://www.editeur.org/ONIX/book/codelists/current.html#" },
     { "xsd", "http://www.w3.org/2001/XMLSchema#" }
+});
+const std::map<const string, bool> PackageBase::CoreMediaTypes({
+    // Image Types
+    {"image/gif", true},                            // GIF Images
+    {"image/jpeg", true},                           // JPEG Images
+    {"image/png", true},                            // PNG Images
+    {"image/svg+xml", true},                        // SVG Documents
+    
+    // Application Types
+    {"application/xhtml+xml", true},                // XHTML Content Documents and the EPUB Navigation Document
+    {"application/x-dtbncx+xml", true},             // The superceded NCX
+    {"application/vnd.ms-opentype", true},          // OpenType fonts
+    {"application/font-woff", true},                // WOFF fonts
+    {"application/smil+xml", true},                 // EPUB Media Overlay documents
+    {"application/pls+xml", true},                  // Text-to-Speech (TTS) Pronunciation lexicons
+    
+    // Audio Types
+    {"audio/mpeg", true},                           // MP3 audio
+    {"audio/mp4", true},                            // AAC LC audio using MP4 container
+    
+    // Text Types
+    {"text/css", true},                             // EPUB Style Sheets
+    {"text/javascript", true}                       // Scripts
 });
 
 bool Package::gValidateSchema = true;
@@ -396,6 +422,98 @@ bool Package::Unpack()
     xmlXPathFreeNodeSet(metadataNodes);
     xmlXPathFreeNodeSet(refineNodes);
     
+    // now any content type bindings
+    xmlNodeSetPtr bindingNodes = nullptr;
+    
+    try
+    {
+        bindingNodes = xpath.Nodes("/opf:package/opf:bindings/*");
+        if ( bindingNodes != nullptr )
+        {
+            for ( int i = 0; i < bindingNodes->nodeNr; i++ )
+            {
+                xmlNodePtr node = bindingNodes->nodeTab[i];
+                if ( xmlStrcasecmp(node->name, MediaTypeElementName) != 0 )
+                    continue;
+                
+                ////////////////////////////////////////////////////////////
+                // ePub Publications 3.0 §3.4.16: The `mediaType` Element
+                
+                // The media-type attribute is required.
+                string mediaType = _getProp(node, "media-type");
+                if ( mediaType.empty() )
+                {
+                    throw std::invalid_argument("mediaType element has missing or empty media-type attribute.");
+                }
+                
+                // Each child mediaType of a bindings element must define a unique
+                // content type in its media-type attribute, and the media type
+                // specified must not be a Core Media Type.
+                if ( _contentHandlers[mediaType].empty() == false )
+                {
+                    // user shouldn't have added manual things yet, but for safety we'll look anyway
+                    for ( auto ptr : _contentHandlers[mediaType] )
+                    {
+                        if ( typeid(ptr) == typeid(MediaHandler*) )
+                        {
+                            throw std::invalid_argument(_Str("Duplicate media handler found for type '", mediaType, "'."));
+                        }
+                    }
+                }
+                if ( CoreMediaTypes.find(mediaType) != CoreMediaTypes.end() )
+                {
+                    throw std::invalid_argument("mediaType element specifies an EPUB Core Media Type.");
+                }
+                
+                // The handler attribute is required
+                string handlerID = _getProp(node, "handler");
+                if ( handlerID.empty() )
+                {
+                    throw std::invalid_argument("mediaType element has missing or empty handler attribute.");
+                }
+                
+                // The required handler attribute must reference the ID [XML] of an
+                // item in the manifest of the default implementation for this media
+                // type. The referenced item must be an XHTML Content Document.
+                const ManifestItem* handlerItem = ManifestItemWithID(handlerID);
+                if ( handlerItem == nullptr )
+                {
+                    throw std::invalid_argument(_Str("mediaType element references non-existent handler with ID '", handlerID, "'."));
+                }
+                if ( handlerItem->MediaType() != "application/xhtml+xml" )
+                {
+                    throw std::invalid_argument(_Str("Media handlers must be XHTML content documents, but referenced item has type '", handlerItem->MediaType(), "'."));
+                }
+                
+                // All XHTML Content Documents designated as handlers must have the
+                // `scripted` property set in their manifest item's `properties`
+                // attribute.
+                if ( handlerItem->HasProperty(ItemProperties::HasScriptedContent) == false )
+                {
+                    throw std::invalid_argument("Media handlers must have the `scripted` property.");
+                }
+                
+                // all good-- install it now
+                _contentHandlers[mediaType].push_back(new MediaHandler(this, mediaType, handlerItem->AbsolutePath()));
+            }
+        }
+    }
+    catch (std::exception& exc)
+    {
+        std::cerr << "Exception processing OPF file: " << exc.what() << std::endl;
+        if ( bindingNodes != nullptr )
+            xmlXPathFreeNodeSet(bindingNodes);
+        return false;
+    }
+    catch (...)
+    {
+        if ( bindingNodes != nullptr )
+            xmlXPathFreeNodeSet(bindingNodes);
+        return false;
+    }
+    
+    xmlXPathFreeNodeSet(bindingNodes);
+    
     // now the navigation tables
     for ( auto item : _manifest )
     {
@@ -437,6 +555,24 @@ string Package::PackageID() const
 string Package::Version() const
 {
     return _getProp(xmlDocGetRootElement(_opf), "version");
+}
+void Package::FireLoadEvent(const IRI &url) const
+{
+    if ( _loadEventHandler == nullptr )
+        throw std::runtime_error(_Str("No load event handler installed to load '", url.URIString(), "'"));
+    
+    if ( url.Path().find(_pathBase) == 0 )
+    {
+        _loadEventHandler(url);
+        return;
+    }
+    
+    IRI fixed(IRI::gEPUBScheme, UniqueID(), _pathBase, url.Query(), url.Fragment());
+    fixed.AddPathComponent(url.Path());
+    IRI::IRICredentials creds(url.Credentials());
+    fixed.SetCredentials(creds.first, creds.second);
+    
+    _loadEventHandler(fixed);
 }
 const PackageBase::MetadataMap Package::MetadataItemsWithDCType(Metadata::DCType type) const
 {

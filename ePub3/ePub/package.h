@@ -36,6 +36,7 @@
 #include "archive_xml.h"
 #include "utfstring.h"
 #include "iri.h"
+#include "content_handler.h"
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -53,16 +54,26 @@ class PackageBase
 public:
     ///
     /// An array of Metadata items, in document order.
-    typedef std::vector<Metadata*>              MetadataMap;
+    typedef std::vector<Metadata*>                  MetadataMap;
     ///
     /// A lookup table for navigation tables, indexed by type.
-    typedef std::map<string, NavigationTable*>  NavigationMap;
+    typedef std::map<string, NavigationTable*>      NavigationMap;
     ///
     /// A lookup table for property vocabulary IRI stubs, indexed by prefix.
-    typedef std::map<string, string>            PropertyVocabularyMap;
+    typedef std::map<string, string>                PropertyVocabularyMap;
     ///
     /// An array of concrete property IRIs.
-    typedef std::vector<IRI>                    PropertyList;
+    typedef std::vector<IRI>                        PropertyList;
+    ///
+    /// An array of content handler objects.
+    typedef std::vector<ContentHandler*>            ContentHandlerList;
+    ///
+    /// A map of media-type to content-handler lists.
+    typedef std::map<string, ContentHandlerList>    ContentHandlerMap;
+    
+    ///
+    /// The list of Core Media Types from [OPF 3.0 §5.1](http://idpf.org/epub/30/spec/epub30-publications.html#sec-core-media-types).
+    static const std::map<const string, bool>       CoreMediaTypes;
     
     /**
      This exception is thrown when a property vocabulary prefix is unknown to a
@@ -265,6 +276,7 @@ protected:
     MetadataMap             _metadata;          ///< All metadata from the package, in document order.
     ManifestTable           _manifest;          ///< All manifest items, indexed by unique identifier.
     NavigationMap           _navigation;        ///< All navigation tables, indexed by type.
+    ContentHandlerMap       _contentHandlers;   ///< All installed content handlers, indexed by media-type.
     Auto<SpineItem>         _spine;             ///< The first item in the spine (SpineItems are a linked list).
     
     PropertyVocabularyMap   _vocabularyLookup;  ///< A lookup table for property prefix->IRI-stem mappings.
@@ -302,6 +314,9 @@ protected:
 class Package : public PackageBase
 {
 public:
+    typedef std::function<void(const IRI& url)>         LoadEventHandler;
+    
+public:
                             Package()                                   = delete;
                             Package(Archive * archive, const string& path, const string& type);
                             Package(const Package&)                     = delete;
@@ -316,6 +331,11 @@ public:
     virtual const string&   Type()                  const       { return _type; }
     // opf version
     virtual string          Version()               const;
+    
+    virtual void            SetLoadHandler(LoadEventHandler handler) { _loadEventHandler = handler; }
+    virtual void            FireLoadEvent(const IRI& url) const;
+    
+    virtual void            AddMediaHandler(ContentHandler* handler) { _contentHandlers[handler->MediaType()].push_back(handler); }
     
     const MetadataMap       MetadataItemsWithDCType(Metadata::DCType type) const;
     const MetadataMap       MetadataItemsWithProperty(const IRI& iri) const;
@@ -379,6 +399,9 @@ protected:
 public:
     static bool             ValidatesSchema()                   { return gValidateSchema; }
     static void             SetValidatesSchema(bool validate)   { gValidateSchema = validate; }
+    
+protected:
+    LoadEventHandler        _loadEventHandler;
 };
 
 EPUB3_END_NAMESPACE

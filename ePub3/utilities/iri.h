@@ -28,6 +28,8 @@ class IRI
 public:
     typedef const std::pair<string, string> IRICredentials;
     
+    static string gEPUBScheme;
+    
 public:
     IRI() : _urnComponents(), _url(nullptr), _pureIRI() {}
     

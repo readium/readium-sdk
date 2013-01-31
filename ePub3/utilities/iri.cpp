@@ -17,6 +17,7 @@ EPUB3_BEGIN_NAMESPACE
 
 string IRI::gPathSeparator('/');
 string IRI::gURNScheme("urn");
+string IRI::gEPUBScheme("epub3");
 string IRI::gReservedCharacters("!*'();:@&=+$,/?%#[]");
 
 inline const url_parse::Component ComponentForString(const string& str)

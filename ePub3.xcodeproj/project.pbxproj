@@ -25,6 +25,9 @@
 		AB6AC72A168E05A3000DE924 /* encryption.h in Headers */ = {isa = PBXBuildFile; fileRef = AB6AC728168E05A3000DE924 /* encryption.h */; };
 		AB6AC736169225E3000DE924 /* signatures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB6AC734169225E2000DE924 /* signatures.cpp */; };
 		AB6AC737169225E3000DE924 /* signatures.h in Headers */ = {isa = PBXBuildFile; fileRef = AB6AC735169225E3000DE924 /* signatures.h */; };
+		AB95447D16B9730B00EFD2FD /* content_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB95447B16B9730B00EFD2FD /* content_handler.cpp */; };
+		AB95447E16B9730B00EFD2FD /* content_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB95447B16B9730B00EFD2FD /* content_handler.cpp */; };
+		AB95447F16B9730B00EFD2FD /* content_handler.h in Headers */ = {isa = PBXBuildFile; fileRef = AB95447C16B9730B00EFD2FD /* content_handler.h */; };
 		AB9B5B31165D816400F11069 /* c14n.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB9B5B2F165D816400F11069 /* c14n.cpp */; };
 		AB9B5B32165D816400F11069 /* c14n.h in Headers */ = {isa = PBXBuildFile; fileRef = AB9B5B30165D816400F11069 /* c14n.h */; };
 		AB9C01D9166E5467009487D9 /* metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB9C01D7166E5467009487D9 /* metadata.cpp */; };
@@ -352,6 +355,8 @@
 		AB6AC728168E05A3000DE924 /* encryption.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = encryption.h; sourceTree = "<group>"; };
 		AB6AC734169225E2000DE924 /* signatures.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = signatures.cpp; sourceTree = "<group>"; };
 		AB6AC735169225E3000DE924 /* signatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = signatures.h; sourceTree = "<group>"; };
+		AB95447B16B9730B00EFD2FD /* content_handler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = content_handler.cpp; sourceTree = "<group>"; };
+		AB95447C16B9730B00EFD2FD /* content_handler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = content_handler.h; sourceTree = "<group>"; };
 		AB9B5B2F165D816400F11069 /* c14n.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = c14n.cpp; sourceTree = "<group>"; };
 		AB9B5B30165D816400F11069 /* c14n.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = c14n.h; sourceTree = "<group>"; };
 		AB9C01D7166E5467009487D9 /* metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = metadata.cpp; sourceTree = "<group>"; };
@@ -943,6 +948,8 @@
 				ABF2D99E1667F7860036B8CA /* xpath_wrangler.h */,
 				ABA38A8D16767CA400CB8EDB /* cfi.cpp */,
 				ABA38A8E16767CA400CB8EDB /* cfi.h */,
+				AB95447B16B9730B00EFD2FD /* content_handler.cpp */,
+				AB95447C16B9730B00EFD2FD /* content_handler.h */,
 				AB6AC727168E05A2000DE924 /* encryption.cpp */,
 				AB6AC728168E05A3000DE924 /* encryption.h */,
 				AB6AC734169225E2000DE924 /* signatures.cpp */,
@@ -1144,6 +1151,7 @@
 				ABA4BAA716A7414000161B77 /* url_util.h in Headers */,
 				ABA4BAA916A7414000161B77 /* url_util_internal.h in Headers */,
 				ABA4BAB116A7518B00161B77 /* url_canon_cpp11.h in Headers */,
+				AB95447F16B9730B00EFD2FD /* content_handler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1353,6 +1361,7 @@
 				ABA4BB5916ADF64400161B77 /* schema.cpp in Sources */,
 				ABA4BB5A16ADF64400161B77 /* ns.cpp in Sources */,
 				ABA4BB5B16ADF64400161B77 /* c14n.cpp in Sources */,
+				AB95447E16B9730B00EFD2FD /* content_handler.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1464,6 +1473,7 @@
 				ABA4BAA516A7414000161B77 /* url_util.cc in Sources */,
 				ABA4BAAF16A7518B00161B77 /* url_canon_cpp11.cc in Sources */,
 				ABA4BAB416AD8EE400161B77 /* logging.cc in Sources */,
+				AB95447D16B9730B00EFD2FD /* content_handler.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
