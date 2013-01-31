@@ -50,7 +50,7 @@ public:
         std::memcpy(_key, o._key, KeySize);
     }
     
-    virtual void * FilterData(void * data, size_t len);
+    virtual void * FilterData(void * data, size_t len, size_t *outputLen);
     
 protected:
     uint8_t     _key[KeySize];
