@@ -13,10 +13,10 @@ EPUB3_BEGIN_NAMESPACE
 
 static const std::regex_constants::syntax_option_type SwitchRegexFlags = std::regex::icase|std::regex::optimize|std::regex::ECMAScript;
 
-std::regex SwitchPreprocessor::CommentedSwitchIdentifier(R"X((?:<!--)(\s*<(?:epub\:)switch.*?)(?:-->)(.*?)(?:<!--)(.*?)(?:-->))X", SwitchRegexFlags);
-std::regex SwitchPreprocessor::SwitchContentExtractor(R"X(<(?:epub\:)?switch.*?>(.*?)</(?:epub\:)?switch.*?>)X", SwitchRegexFlags);
-std::regex SwitchPreprocessor::CaseContentExtractor(R"X(<(?:epub\:)?case\s+required-namespace="(.*?)">(.*?)</(?:epub\:)?case.*?>)X", SwitchRegexFlags);
-std::regex SwitchPreprocessor::DefaultContentExtractor(R"X(<(?:epub\:)?default.*?>(.*?)</(?:epub\:)?default.*?>)X", SwitchRegexFlags);
+std::regex SwitchPreprocessor::CommentedSwitchIdentifier(R"X((?:<!--)(\s*<(?:epub:)switch(?:.|\n|\r)*?<(?:epub:)default(?:.|\n|\r)*?>\s*)(?:-->)((?:.|\n|\r)*?)(?:<!--)(\s*</(?:epub:)default>(?:.|\n|\r)*?)(?:-->))X", SwitchRegexFlags);
+std::regex SwitchPreprocessor::SwitchContentExtractor(R"X(<(?:epub:)?switch(?:.|\n|\r)*?>((?:.|\n|\r)*?)</(?:epub:)?switch(?:.|\n|\r)*?>)X", SwitchRegexFlags);
+std::regex SwitchPreprocessor::CaseContentExtractor(R"X(<(?:epub:)?case\s+required-namespace="(.*?)">((?:.|\n|\r)*?)</(?:epub:)?case(?:.|\n|\r)*?>)X", SwitchRegexFlags);
+std::regex SwitchPreprocessor::DefaultContentExtractor(R"X(<(?:epub:)?default(?:.|\n|\r)*?>((?:.|\n|\r)*?)</(?:epub:)?default(?:.|\n|\r)*?>)X", SwitchRegexFlags);
 
 bool SwitchPreprocessor::SniffSwitchableContent(const ManifestItem *item, const EncryptionInfo *encInfo __unused)
 {
@@ -27,7 +27,7 @@ void * SwitchPreprocessor::FilterData(void *data, size_t len, size_t *outputLen)
     char* input = reinterpret_cast<char*>(data);
     
     // handle partially-commented switch statements
-    std::string str = std::regex_replace(reinterpret_cast<const char*>(data), CommentedSwitchIdentifier, "$`$1$2$3$'");
+    std::string str = std::regex_replace(reinterpret_cast<const char*>(data), CommentedSwitchIdentifier, "$1$2$3");
     
     // str now contains a non-commented value (or the input if no switch statements were commented out)
     auto pos = std::sregex_iterator(str.begin(), str.end(), SwitchContentExtractor);
@@ -65,6 +65,8 @@ void * SwitchPreprocessor::FilterData(void *data, size_t len, size_t *outputLen)
                     output += cpos->str(2);
                     break;
                 }
+                
+                ++cpos;
             }
         }
         
@@ -72,7 +74,7 @@ void * SwitchPreprocessor::FilterData(void *data, size_t len, size_t *outputLen)
         {
             // no matching case statements, so find the epub:default
             std::smatch defaultCase;
-            if ( std::regex_match(switchContents, defaultCase, DefaultContentExtractor) )
+            if ( std::regex_search(switchContents, defaultCase, DefaultContentExtractor) )
                 output += defaultCase[1].str();
         }
         
