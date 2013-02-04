@@ -202,6 +202,23 @@ GURL& GURL::operator=(const GURL& other) {
   return *this;
 }
 
+GURL& GURL::operator=(GURL&& other) {
+  spec_ = std::move(other.spec_);
+  is_valid_ = other.is_valid_;
+  other.is_valid_ = false;
+  parsed_ = std::move(other.parsed_);
+  delete inner_url_;
+  inner_url_ = nullptr;
+  if (other.inner_url_)
+  {
+    inner_url_ = other.inner_url_;
+    other.inner_url_ = nullptr;
+  }
+  // Valid filesystem urls should always have an inner_url_.
+  DCHECK(!is_valid_ || !SchemeIsFileSystem() || inner_url_);
+  return *this;
+}
+
 const std::string& GURL::spec() const {
   if (is_valid_ || spec_.empty())
     return spec_;
@@ -331,6 +348,24 @@ GURL GURL::ReplaceComponents(
                                  *result.parsed_.inner_parsed(), true);
   }
   return result;
+}
+
+bool GURL::ReplaceComponentsInline(const url_canon::Replacements<char> &replacements)
+{
+    GURL replacement(ReplaceComponents(replacements));
+    if ( !replacement.is_valid() )
+        return false;
+    this->operator=(std::move(replacement));
+    return true;
+}
+
+bool GURL::ReplaceComponentsInline(const url_canon::Replacements<char16> &replacements)
+{
+    GURL replacement(ReplaceComponents(replacements));
+    if ( !replacement.is_valid() )
+        return false;
+    this->operator=(std::move(replacement));
+    return true;
 }
 
 GURL GURL::GetOrigin() const {

@@ -61,7 +61,7 @@ inline bool DoLowerCaseEqualsASCII(Iter a_begin, Iter a_end, const char* b) {
   return *b == 0;
 }
 
-const int kNumStandardURLSchemes = 8;
+const int kNumStandardURLSchemes = 9;
 const char* kStandardURLSchemes[kNumStandardURLSchemes] = {
   "http",
   "https",
@@ -71,6 +71,7 @@ const char* kStandardURLSchemes[kNumStandardURLSchemes] = {
   "ws",  // WebSocket.
   "wss",  // WebSocket secure.
   kFileSystemScheme,
+  "epub3",
 };
 
 // List of the currently installed standard schemes. This list is lazily

@@ -56,17 +56,17 @@ protected:
 class MediaHandler : public ContentHandler
 {
 public:
-                        MediaHandler(const Package* pkg, const string& mediaType, const string& handlerPath) : ContentHandler(mediaType, pkg), _handlerPath(handlerPath) {}
+                        MediaHandler(const Package* pkg, const string& mediaType, const string& handlerPath);
                         MediaHandler() = delete;
-                        MediaHandler(const MediaHandler& o) : ContentHandler(o), _handlerPath(o._handlerPath) {}
-                        MediaHandler(MediaHandler&& o) : ContentHandler(std::move(o)), _handlerPath(std::move(o._handlerPath)) {}
+                        MediaHandler(const MediaHandler& o) : ContentHandler(o), _handlerIRI(o._handlerIRI) {}
+                        MediaHandler(MediaHandler&& o) : ContentHandler(std::move(o)), _handlerIRI(std::move(o._handlerIRI)) {}
     virtual             ~MediaHandler() {}
     
     virtual void        operator()(const string& src, const ParameterList& parameters = ParameterList())    const;
     virtual IRI         Target(const string& src, const ParameterList& parameters)                          const;
     
 protected:
-    const string        _handlerPath;
+    const IRI           _handlerIRI;
 };
 
 class CustomRenderer : public ContentHandler

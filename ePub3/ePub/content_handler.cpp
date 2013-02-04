@@ -25,6 +25,9 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+MediaHandler::MediaHandler(const Package* pkg, const string& mediaType, const string& handlerPath) : ContentHandler(mediaType, pkg), _handlerIRI(IRI::gEPUBScheme, pkg->PackageID(), handlerPath)
+{
+}
 void MediaHandler::operator()(const string& src, const ParameterList& parameters) const
 {
     if ( _owner == nullptr )
@@ -34,13 +37,14 @@ void MediaHandler::operator()(const string& src, const ParameterList& parameters
 }
 IRI MediaHandler::Target(const string& src, const ParameterList& parameters) const
 {
-    IRI result(_handlerPath);       // this will already include any fragment, we just have to add the query
+    IRI result(_handlerIRI);       // this will already include any fragment, we just have to add the query
     
     std::stringstream ss;
     ss << "src=" << src;
     for ( auto pair : parameters )
     {
-        ss << IRI::URLEncodeComponent(pair.first) << "=" << IRI::URLEncodeComponent(pair.second);
+        string str = _Str('&', IRI::URLEncodeComponent(pair.first), '=', IRI::URLEncodeComponent(pair.second));
+        ss << str;
     }
     
     result.SetQuery(ss.str());

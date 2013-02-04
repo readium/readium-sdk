@@ -189,6 +189,11 @@ class GURL {
       const url_canon::Replacements<char>& replacements) const;
   GURL_API GURL ReplaceComponents(
       const url_canon::Replacements<char16>& replacements) const;
+      
+  GURL_API bool ReplaceComponentsInline(
+      const url_canon::Replacements<char>& replacements);
+  GURL_API bool ReplaceComponentsInline(
+      const url_canon::Replacements<char16>& replacements);
 
   // A helper function that is equivalent to replacing the path with a slash
   // and clearing out everything after that. We sometimes need to know just the

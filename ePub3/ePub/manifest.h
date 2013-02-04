@@ -24,6 +24,7 @@
 
 #include "epub3.h"
 #include "utfstring.h"
+#include "iri.h"
 #include <map>
 #include <libxml/tree.h>
 
@@ -57,6 +58,7 @@ public:
     
 public:
                     ItemProperties(const string& attrStr);
+                    ItemProperties(const IRI& iri);
                     ItemProperties(value_type v = None) : _p(v) {}
                     ItemProperties(const ItemProperties& o) : _p(o._p) {}
                     ItemProperties(ItemProperties&& o) : _p(o._p) {}
@@ -134,6 +136,7 @@ public:
     
     bool                HasProperty(const string& property) const   { return _properties.HasProperty(ItemProperties(property)); }
     bool                HasProperty(ItemProperties::value_type prop)    const   { return _properties.HasProperty(prop); }
+    bool                HasProperty(const std::vector<IRI>& properties)  const;
     
     // one-shot document loader
     xmlDocPtr           ReferencedDocument()                const;

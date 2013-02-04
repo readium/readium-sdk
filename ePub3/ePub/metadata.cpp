@@ -97,9 +97,12 @@ bool Metadata::Decode(const Package* owner)
     }
     else if ( xmlStrcasecmp(_node->name, MetaTagName) == 0 )
     {
+        _type = DCType::Custom;
         string property = _getProp(_node, "property");
-        if ( !property.empty() )
-            _property = owner->PropertyIRIFromAttributeValue(property);
+        if ( property.empty() )
+            return false;
+        
+        _property = owner->PropertyIRIFromAttributeValue(property);
     }
     
     return true;

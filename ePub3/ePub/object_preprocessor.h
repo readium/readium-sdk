@@ -64,7 +64,16 @@ public:
      
      The entire `object` element will be replaced wholesale with two elements: an
      `iframe` containing the handler and a `form` containing a `button` element
-     which will open the handler full-screen.
+     which will open the handler full-screen.  The `iframe` will be sandboxed, and
+     will look similar to the following:
+     
+         <iframe src="src.xml" srcdoc="src.xml" id="some_id"
+                 sandbox="allow-forms allow-scripts allow-same-origin"
+                 seamless="seamless">
+         </iframe>
+     
+     Note that the XHTML vocabulary of HTML5 is used, and that both a `srcdoc`
+     attribute for HTML5 and a `src` for older renderers is included.
      
      If the source `object` tag has an `id` attribute, that id will be attached to
      the new `iframe` element.  Additionally, the id will be suffixed with `-form`

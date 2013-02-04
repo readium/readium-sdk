@@ -323,13 +323,20 @@ public:
                             Package(Package&& o) : PackageBase(std::move(o)) {}
     virtual                 ~Package() {}
     
-    // the full Unique Identifier, built from the package unique-id and the modification date.
+    ///
+    /// The full Unique Identifier, built from the package unique-id and the modification date.
     virtual string          UniqueID()              const;
-    // the package unique-id on its own
+    ///
+    /// A version of the UniqueID which is suitable for use as a hostname.
+    virtual string          URLSafeUniqueID()       const;
+    ///
+    /// The package's unique-id on its own, without the revision modifier.
     virtual string          PackageID()             const;
-    // MIME type
+    ///
+    /// MIME type of this package document (usually `application/oebps-package+xml`).
     virtual const string&   Type()                  const       { return _type; }
-    // opf version
+    ///
+    /// OPF version of this package document.
     virtual string          Version()               const;
     
     virtual void            SetLoadHandler(LoadEventHandler handler) { _loadEventHandler = handler; }

@@ -15,7 +15,7 @@ EPUB3_BEGIN_NAMESPACE
 #define INCREMENT_IF_VALID(x) if ((x) != 0) { (x)++; }
 #define DECREMENT_IF_VALID(x) if ((x) != 0) { (x)--; }
 
-string IRI::gPathSeparator('/');
+string IRI::gPathSeparator("/");
 string IRI::gURNScheme("urn");
 string IRI::gEPUBScheme("epub3");
 string IRI::gReservedCharacters("!*'();:@&=+$,/?%#[]");
@@ -25,28 +25,28 @@ inline const url_parse::Component ComponentForString(const string& str)
     return url_parse::Component(0, str.empty() ? -1 : static_cast<int>(str.utf8_size()));
 }
 
-IRI::IRI(const string& iriStr) : _url(new GURL(iriStr.utf16string())), _pureIRI(iriStr)
+IRI::IRI(const string& iriStr) : _url(new GURL(iriStr.stl_str())), _pureIRI(iriStr)
 {
 }
-IRI::IRI(const string& nameID, const string& namespacedString) : _urnComponents{gURNScheme, nameID, namespacedString}, _url(new GURL()), _pureIRI(_Str("urn:", nameID, ":", namespacedString))
+IRI::IRI(const string& nameID, const string& namespacedString) : _urnComponents{gURNScheme, nameID, namespacedString}, _pureIRI(_Str("urn:", nameID, ":", namespacedString)), _url(new GURL(_pureIRI.stl_str()))
 {
 }
-IRI::IRI(const string& scheme, const string& host, const string& path, const string& query, const string& fragment) : _urnComponents(), _url(new GURL())
+IRI::IRI(const string& scheme, const string& host, const string& path, const string& query, const string& fragment) : _urnComponents(), _url(nullptr)
 {
-    url_canon::Replacements<char> rep;
-    rep.SetScheme(scheme.c_str(), ComponentForString(scheme));
-    rep.SetHost(host.c_str(), ComponentForString(host));
-    rep.SetPath(path.c_str(), ComponentForString(path));
-    rep.SetQuery(query.c_str(), ComponentForString(query));
-    rep.SetRef(fragment.c_str(), ComponentForString(fragment));
+    _pureIRI = _Str(scheme, "://", host);
+    if ( path.empty() )
+        _pureIRI += '/';
+    else if ( path.find(gPathSeparator) != 0 )
+        _pureIRI += ("/" + path);
+    else
+        _pureIRI += path;
     
-    _url->ReplaceComponents(rep);
-    
-    _pureIRI = _Str(scheme, "://", host, path);
     if ( !query.empty() )
         _pureIRI += _Str("?", query);
     if ( !fragment.empty() )
         _pureIRI += _Str("#", fragment);
+    
+    _url = new GURL(_pureIRI.stl_str());
 }
 IRI::~IRI()
 {
@@ -56,6 +56,7 @@ IRI::~IRI()
 IRI& IRI::operator=(const IRI& o)
 {
     _urnComponents = o._urnComponents;
+    _pureIRI = o._pureIRI;
     if ( _url != nullptr )
         *_url = *o._url;
     else
@@ -65,6 +66,7 @@ IRI& IRI::operator=(const IRI& o)
 IRI& IRI::operator=(IRI &&o)
 {
     _urnComponents = std::move(o._urnComponents);
+    _pureIRI = std::move(o._pureIRI);
     _url = o._url;
     o._url = nullptr;
     return *this;
@@ -109,13 +111,13 @@ const string IRI::Path(bool urlEncoded) const
     
     url_canon::RawCanonOutputW<256> output;
     url_util::DecodeURLEscapeSequences(encodedPath.c_str(), static_cast<int>(encodedPath.size()), &output);
-    return output.data();
+    return string(output.data(), output.length());
 }
 void IRI::SetScheme(const string& scheme)
 {
     url_canon::Replacements<char> rep;
     rep.SetScheme(scheme.c_str(), ComponentForString(scheme));
-    _url->ReplaceComponents(rep);
+    _url->ReplaceComponentsInline(rep);
     
     // can't keep the IRI up to date
     _pureIRI.clear();
@@ -124,7 +126,7 @@ void IRI::SetHost(const string& host)
 {
     url_canon::Replacements<char> rep;
     rep.SetHost(host.c_str(), ComponentForString(host));
-    _url->ReplaceComponents(rep);
+    _url->ReplaceComponentsInline(rep);
     
     // can't keep the IRI up to date
     _pureIRI.clear();
@@ -135,7 +137,7 @@ void IRI::SetCredentials(const string& user, const string& pass)
     url_parse::Component invalid(0, -1);
     rep.SetUsername(user.c_str(), ComponentForString(user));
     rep.SetPassword(pass.c_str(), ComponentForString(pass));
-    _url->ReplaceComponents(rep);
+    _url->ReplaceComponentsInline(rep);
     
     // can't keep the IRI up to date
     _pureIRI.clear();
@@ -149,7 +151,7 @@ void IRI::AddPathComponent(const string& component)
     
     url_canon::Replacements<char> rep;
     rep.SetPath(path.c_str(), url_parse::Component(0, static_cast<int>(path.size())));
-    _url->ReplaceComponents(rep);
+    _url->ReplaceComponentsInline(rep);
     
     if ( !_pureIRI.empty() && !_url->has_query() && !_url->has_ref() )
     {
@@ -167,7 +169,7 @@ void IRI::SetQuery(const string& query)
 {
     url_canon::Replacements<char> rep;
     rep.SetQuery(query.c_str(), ComponentForString(query));
-    _url->ReplaceComponents(rep);
+    _url->ReplaceComponentsInline(rep);
     
     if ( _pureIRI.empty() )
         return;
@@ -197,7 +199,7 @@ void IRI::SetFragment(const string& fragment)
 {
     url_canon::Replacements<char> rep;
     rep.SetRef(fragment.c_str(), ComponentForString(fragment));
-    _url->ReplaceComponents(rep);
+    _url->ReplaceComponentsInline(rep);
     
     string::size_type pos = _pureIRI.rfind('#');
     if ( pos != string::npos )
@@ -212,24 +214,9 @@ void IRI::SetFragment(const string& fragment)
 }
 string IRI::URLEncodeComponent(const string& str)
 {
-    std::stringstream ss;
-    for ( string::size_type lastPos = 0, pos = str.find_first_of(gReservedCharacters);
-          lastPos != string::npos;
-          lastPos = pos, pos = str.find_first_of(gReservedCharacters, 0) )
-    {
-        ss << str.substr(lastPos, pos == string::npos ? pos : pos-lastPos);
-        
-        if ( pos == string::npos )
-            break;
-        
-        // percent-encode each character-- we know they're all 7-bit ASCII
-        char buf[3];
-        string::value_type ch = str[pos];
-        snprintf(buf, 3, "%%%02X", ch );
-        ss << buf;
-    }
-    
-    return ss.str();
+    url_canon::RawCanonOutput<256> output;
+    url_util::EncodeURIComponent(str.c_str(), static_cast<int>(str.utf8_size()), &output);
+    return string(output.data(), output.length());
 }
 string IRI::PercentEncodeUCS(const string& str)
 {

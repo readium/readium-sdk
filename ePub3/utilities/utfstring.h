@@ -231,10 +231,10 @@ public:
     
     template <class InputIterator>
     string(InputIterator begin, InputIterator end);
-    
+    /*
     template <typename... Args>
     string(const Args&... args) : _base(_Str(args...)) {}
-    
+    */
     ~string() {}
     
 #if 0

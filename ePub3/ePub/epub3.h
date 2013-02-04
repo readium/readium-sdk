@@ -48,13 +48,14 @@ static inline string _getProp(xmlNodePtr node, const char *name, const char *nsU
         return string::EmptyString;
     
     xmlChar * ch = nullptr;
-    if ( nsURI == nullptr )
-    {
-        ch = xmlGetProp(node, reinterpret_cast<const xmlChar*>(name));
-    }
-    else
+    if ( nsURI != nullptr )
     {
         ch = xmlGetNsProp(node, reinterpret_cast<const xmlChar*>(name), reinterpret_cast<const xmlChar*>(nsURI));
+    }
+    
+    if ( ch == nullptr )
+    {
+        ch = xmlGetProp(node, reinterpret_cast<const xmlChar*>(name));
     }
     
     if ( ch == nullptr )

@@ -13,7 +13,7 @@ static const std::regex reEscaper(R"X(\\\.\(\)\[\]\$\^\*\+\?\:\=\|)X", std::rege
 
 EPUB3_BEGIN_NAMESPACE
 
-static std::regex ParamMatcher(R"X(<param[^>]+(name|value)="([^"]*)"[^>]*?(value|name)="([^"]*)".*?>)X", std::regex::ECMAScript|std::regex::optimize|std::regex::icase);
+static std::regex ParamMatcher(R"X(<param[^>]+(name|value)="([^"]*)"[^>]*?(value|name)="([^"]*)"(.|\n|\r)*?>)X", std::regex::ECMAScript|std::regex::optimize|std::regex::icase);
 static std::regex SourceFinder("data=\"([^\"]*)\"", std::regex::ECMAScript|std::regex::optimize|std::regex::icase);
 static std::regex IDFinder("id=\"([^\"]*)\"", std::regex::ECMAScript|std::regex::optimize|std::regex::icase);
 
@@ -32,7 +32,7 @@ ObjectPreprocessor::ObjectPreprocessor(const Package* pkg, const string& buttonT
     }
     
     std::stringstream ss;
-    ss << R"X(<object\s+?([^>]*?media-type="()X";
+    ss << R"X(<object\s+?([^>]*?(?:media-)?type="()X";
     
     auto pos = mediaTypes.begin();
     auto end = mediaTypes.end();
@@ -40,15 +40,16 @@ ObjectPreprocessor::ObjectPreprocessor(const Package* pkg, const string& buttonT
     while ( pos != end )
     {
         auto here = pos++;
-        std::string str = std::regex_replace(here->stl_str(), reEscaper, R"X($`\\$&$')X");    // yes, double-backslash, so it doesn't escape '$'
+        std::string str = std::regex_replace(here->stl_str(), reEscaper, R"X($`\\$&$')X");    // yes, double-backslash, so it doesn't escape whatever '$&' is (i.e. the character which needs to be escaped)
         if ( pos == end )
             ss << str;
         else
             ss << str << "|";
     }
     
-    ss << R"X()"[^>]*?)>(.*?)</object>)X";
-    _objectMatcher = std::regex(ss.str(), std::regex::icase|std::regex::optimize|std::regex::ECMAScript);
+    ss << R"X()"[^>]*?)>((?:.|\n|\r)*?)</object>)X";
+    std::string reStr = ss.str();
+    _objectMatcher = std::regex(reStr, std::regex::icase|std::regex::optimize|std::regex::ECMAScript);
     
     for ( auto mediaType : mediaTypes )
     {
@@ -98,21 +99,23 @@ void* ObjectPreprocessor::FilterData(void *data, size_t len, size_t *outputLen)
         
         while ( cpos != cend )
         {
-            if ( cpos->length() < 4 )
-                continue;
+            if ( cpos->length() >= 4 )
+            {
+                string name, value;
+                if ( cpos->str(1) == "name" )
+                    name = cpos->str(2);
+                else
+                    value = cpos->str(2);
+                
+                if ( cpos->str(3) == "value" )
+                    value = cpos->str(4);
+                else
+                    name = cpos->str(4);
+                
+                params[name] = value;
+            }
             
-            string name, value;
-            if ( cpos->str(1) == "name" )
-                name = cpos->str(2);
-            else
-                value = cpos->str(2);
-            
-            if ( cpos->str(3) == "value" )
-                value = cpos->str(4);
-            else
-                name = cpos->str(4);
-            
-            params[name] = value;
+            ++cpos;
         }
         
         // now determine the target-- this is an absolute URL
@@ -132,7 +135,7 @@ void* ObjectPreprocessor::FilterData(void *data, size_t len, size_t *outputLen)
             output += " id=\"" + objectID + "\"";
         
         // enable sandbox and allow some stuff, and use seamless presentation
-        output += " sandbox=\"allow-forms allow-scripts allow-same-origin\" seamless></iframe>";
+        output += " sandbox=\"allow-forms allow-scripts allow-same-origin\" seamless=\"seamless\"></iframe>";
         
         // now add the form & button
         output += "<form action=\"" + url + "\" method=\"get\"";

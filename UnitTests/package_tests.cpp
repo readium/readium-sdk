@@ -21,10 +21,13 @@
 
 #include "../ePub3/ePub/container.h"
 #include "../ePub3/ePub/package.h"
+#include "../ePub3/ePub/content_handler.h"
 #include "catch.hpp"
 #include <cstdlib>
 
 #define EPUB_PATH "TestData/childrens-literature-20120722.epub"
+#define BINDINGS_EPUB_PATH "TestData/widget-figure-gallery-20121022.epub"
+static const char* kMediaType = "application/x-epub-figure-gallery";
 
 using namespace ePub3;
 
@@ -115,4 +118,21 @@ TEST_CASE("Package should be able to create and resolve basic CFIs", "")
     CFI remainder;
     (void) pkg->ManifestItemForCFI(cfi, &remainder);
     REQUIRE(remainder == fragment);
+}
+
+TEST_CASE("Package should parse bindings correctly.", "")
+{
+    Container c(BINDINGS_EPUB_PATH);
+    const Package* pkg = c.Packages()[0];
+    const Package::StringList handledTypes = pkg->MediaTypesWithDHTMLHandlers();
+    
+    REQUIRE(handledTypes.size() == 1);
+    REQUIRE(handledTypes[0] == kMediaType);
+    
+    const MediaHandler* handler = pkg->OPFHandlerForMediaType(kMediaType);
+    REQUIRE(handler != nullptr);
+    REQUIRE(handler->MediaType() == kMediaType);
+    
+    IRI target = handler->Target("test.xml", ContentHandler::ParameterList());
+    REQUIRE(target.URIString() == _Str("epub3://", pkg->PackageID(), "/EPUB/figure-gallery-widget/figure-gallery-impl.xhtml?src=test.xml"));
 }

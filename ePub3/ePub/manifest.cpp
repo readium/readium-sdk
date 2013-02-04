@@ -42,6 +42,14 @@ ItemProperties::ItemProperties(const string& attrStr) : _p(None)
     //  because it's clearer what's happening than '*this = attrStr'
     this->operator=(attrStr);
 }
+ItemProperties::ItemProperties(const IRI& iri) : _p(None)
+{
+    string attr(iri.Fragment());
+    if ( attr.empty() )
+        attr = iri.LastPathComponent();
+    
+    this->operator=(attr);
+}
 ItemProperties& ItemProperties::operator=(const string& attrStr)
 {
     if ( attrStr.empty() )
@@ -177,6 +185,20 @@ string ManifestItem::BaseHref() const
     else
         path = path.substr(0, s);
     return path;
+}
+bool ManifestItem::HasProperty(const std::vector<IRI>& properties) const
+{
+    for ( const IRI& iri : properties )
+    {
+        string attr(iri.Fragment());
+        if ( attr.empty() )
+            attr = iri.LastPathComponent();
+        
+        if ( HasProperty(attr) )
+            return true;
+    }
+    
+    return false;
 }
 xmlDocPtr ManifestItem::ReferencedDocument() const
 {

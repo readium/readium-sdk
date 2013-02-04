@@ -3,7 +3,20 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2013-02-01.
-//  Copyright (c) 2013 The Readium Foundation. All rights reserved.
+//  Copyright (c) 2013 The Readium Foundation.
+//
+//  The Readium SDK is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 #include "../ePub3/ePub/switch_preprocessor.h"
@@ -306,7 +319,7 @@ TEST_CASE("Default processor should render epub:default only", "")
     output[outLen] = '\0';
     
     INFO("Output:\n" << output);
-    REQUIRE(strncmp(output, gDefault, std::max(sizeof(gDefault), outLen)) == 0);
+    REQUIRE(strncmp(output, gDefault, std::min(sizeof(gDefault), outLen)) == 0);
     
     if ( output != input )
         delete [] output;
@@ -323,7 +336,7 @@ TEST_CASE("Processors should be able to support a mix of supported and unsupport
     output[outLen] = '\0';
     
     INFO("CML output:\n" << output);
-    REQUIRE(strncmp(output, gCMLOnly, std::max(sizeof(gCMLOnly), outLen)) == 0);
+    REQUIRE(strncmp(output, gCMLOnly, std::min(sizeof(gCMLOnly), outLen)) == 0);
     
     if ( output != input )
         delete [] output;
@@ -334,7 +347,7 @@ TEST_CASE("Processors should be able to support a mix of supported and unsupport
     output[outLen] = '\0';
     
     INFO("MathML output:\n" << output);
-    REQUIRE(strncmp(output, gMathMLOnly, std::max(sizeof(gMathMLOnly), outLen)) == 0);
+    REQUIRE(strncmp(output, gMathMLOnly, std::min(sizeof(gMathMLOnly), outLen)) == 0);
     
     if ( output != input )
         delete [] output;
@@ -351,7 +364,7 @@ TEST_CASE("Processors should be able to support multiple supported namespaces", 
     output[outLen] = '\0';
     
     INFO("Output:\n" << output);
-    REQUIRE(strncmp(output, gCMLAndMathML, std::max(sizeof(gCMLAndMathML), outLen)) == 0);
+    REQUIRE(strncmp(output, gCMLAndMathML, std::min(sizeof(gCMLAndMathML), outLen)) == 0);
     
     if ( output != input )
         delete [] output;
@@ -368,7 +381,7 @@ TEST_CASE("Processors should gracefully handle comments around non-default switc
     output[outLen] = '\0';
     
     INFO("Output:\n" << output);
-    REQUIRE(strncmp(output, gCommentedDefaultOutput, std::max(sizeof(gCommentedDefaultOutput), outLen)) == 0);
+    REQUIRE(strncmp(output, gCommentedDefaultOutput, std::min(sizeof(gCommentedDefaultOutput), outLen)) == 0);
     
     if ( output != input )
         delete [] output;
@@ -385,7 +398,7 @@ TEST_CASE("Processors should NOT uncomment switch constructs which have been com
     output[outLen] = '\0';
     
     INFO("Output:\n" << output);
-    REQUIRE(strncmp(output, gTotallyCommentedOutput, std::max(sizeof(gTotallyCommentedOutput), outLen)) == 0);
+    REQUIRE(strncmp(output, gTotallyCommentedOutput, std::min(sizeof(gTotallyCommentedOutput), outLen)) == 0);
     
     if ( output != input )
         delete [] output;

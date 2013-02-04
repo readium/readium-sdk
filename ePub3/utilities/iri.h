@@ -89,6 +89,12 @@ protected:
     
 };
 
+template <class _CharT, class _Traits>
+inline std::basic_ostream<_CharT, _Traits>&
+operator<<(std::basic_ostream<_CharT, _Traits>& __os, const IRI& iri) {
+    return __os << iri.URIString();
+}
+
 EPUB3_END_NAMESPACE
 
 #endif /* defined(__ePub3__iri__) */

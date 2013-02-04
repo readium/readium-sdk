@@ -191,24 +191,25 @@ IRI PackageBase::PropertyIRIFromAttributeValue(const string &attrValue) const
         throw std::invalid_argument(_Str("Attribute '", attrValue, "' doesn't look like a property name to me"));
     
     // there are two captures, at indices 1 and 2
-    return MakePropertyIRI(pieces[2], pieces[1]);
+    return MakePropertyIRI(pieces.str(2), pieces.str(1));
 }
 void PackageBase::InstallPrefixesFromAttributeValue(const ePub3::string &attrValue)
 {
     if ( attrValue.empty() )
         return;
     
-    static std::regex re(R"X(^(.+?): *(.+?)\s+)X");
+    static std::regex re(R"X((\w+):\s*(.+?)(?:\s+|$))X", std::regex::ECMAScript|std::regex::optimize);
     auto pos = std::sregex_iterator(attrValue.stl_str().begin(), attrValue.stl_str().end(), re);
     auto end = std::sregex_iterator();
     
-    for ( ; pos != end; ++pos )
+    while ( pos != end )
     {
         if ( pos->size() == 3 )     // entire match plus two captures
         {
-            const std::smatch& match = *pos;
-            RegisterPrefixIRIStem(match[1].str(), match[2].str());
+            RegisterPrefixIRIStem(pos->str(1), pos->str(2));
         }
+        
+        ++pos;
     }
 }
 const SpineItem* PackageBase::ConfirmOrCorrectSpineItemQualifier(const SpineItem* pItem, CFI::Component *pComponent) const
@@ -374,7 +375,12 @@ bool Package::Unpack()
                 // definitely a main node
                 p = new class Metadata(node, this);
             }
-            else if ( xmlGetProp(node, BAD_CAST "refines") == nullptr )
+            else if ( _getProp(node, "name").size() > 0 )
+            {
+                // it's an ePub2 item-- ignore it
+                continue;
+            }
+            else if ( _getProp(node, "refines").empty() )
             {
                 // not refining anything, so it's a main node
                 p = new class Metadata(node, this);
@@ -544,6 +550,29 @@ string Package::UniqueID() const
     
     return _Str(packageID, "@", modDate);
 }
+string Package::URLSafeUniqueID() const
+{
+    string packageID = PackageID();
+    if ( packageID.empty() )
+        return string::EmptyString;
+    
+    string modDate = ModificationDate();
+    if ( modDate.empty() )
+        return packageID;
+    
+    // only include the first ten characters of the modification date (the date part)
+    modDate = modDate.substr(0, 10);
+    
+    // trim the uniqueID if necessary to get the whole thing below 256 characters in length
+    string::size_type maxLen = 255, totalLen = packageID.size() + 1 + modDate.size();
+    if ( totalLen > maxLen )
+    {
+        string::size_type diff = totalLen - maxLen;
+        packageID = packageID.substr(0, packageID.size() - diff);
+    }
+    
+    return _Str(packageID, '_', modDate);
+}
 string Package::PackageID() const
 {
     XPathWrangler xpath(_opf, {{"opf", OPFNamespace}, {"dc", DCNamespace}});
@@ -583,6 +612,9 @@ const PackageBase::MetadataMap Package::MetadataItemsWithProperty(const IRI &iri
     MetadataMap result;
     for ( auto item : _metadata )
     {
+        if ( item->Type() == Metadata::DCType::Invalid )
+            continue;
+        
         if ( item->Property() == iri )
         {
             result.push_back(item);
@@ -689,7 +721,7 @@ const string Package::Title() const
     const MetadataMap items = MetadataItemsWithDCType(Metadata::DCType::Title);
     if ( items.empty() )
         return string::EmptyString;
-    return items[0];
+    return items[0]->Value();
 }
 const string Package::Subtitle() const
 {
@@ -713,7 +745,7 @@ const string Package::FullTitle() const
 {
     MetadataMap items = MetadataItemsWithDCType(Metadata::DCType::Title);
     if ( items.size() == 1 )
-        return items[0];
+        return items[0]->Value();
     
     IRI displaySeqIRI(MakePropertyIRI("display-seq"));  // http://idpf.org/epub/vocab/package/#display-seq
     std::vector<string> titles(items.size());
