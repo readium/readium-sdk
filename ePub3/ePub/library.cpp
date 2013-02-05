@@ -96,7 +96,7 @@ Library* Library::MainLibrary(Locator* locator)
     _singleton.reset(new Library(locator));
     return _singleton.get();
 }
-Locator Library::LocatorForEPubWithUniqueID(const std::string &uniqueID) const
+Locator Library::LocatorForEPubWithUniqueID(const string& uniqueID) const
 {
     auto found = _packages.find(uniqueID);
     if ( found == _packages.end() )

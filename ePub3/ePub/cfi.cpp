@@ -365,7 +365,8 @@ void CFI::Component::Parse(const string &str)
     if ( str.empty() )
         throw std::invalid_argument("Empty string supplied to CFI::Component");
     
-    std::istringstream iss(str.stl_str());
+    std::string utf8 = str.stl_str();
+    std::istringstream iss(utf8);
     
     // read an integer
     iss >> nodeIndex;
@@ -391,13 +392,13 @@ void CFI::Component::Parse(const string &str)
                 if ( characterOffset != 0 )
                 {
                     // this is a text qualifier
-                    textQualifier = str.substr(pos, end-pos);
+                    textQualifier = utf8.substr(pos, end-pos);
                     flags |= TextQualifier;
                 }
                 else
                 {
                     // it's a position qualifier
-                    qualifier = str.substr(pos, end-pos);
+                    qualifier = utf8.substr(pos, end-pos);
                     flags |= Qualifier;
                 }
                 

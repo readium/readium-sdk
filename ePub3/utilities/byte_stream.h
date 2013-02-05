@@ -1,30 +1,32 @@
 //
-//  base.h
+//  byte_stream.h
 //  ePub3
 //
-//  Created by Jim Dovey on 2012-12-20.
+//  Created by Jim Dovey on 2013-02-05.
 //  Copyright (c) 2012-2013 The Readium Foundation.
-//  
+//
 //  The Readium SDK is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
 //  the Free Software Foundation, either version 3 of the License, or
 //  (at your option) any later version.
-//  
+//
 //  This program is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
 //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
-//  
+//
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef ePub3_base_h
-#define ePub3_base_h
+#ifndef __ePub3__byte_stream__
+#define __ePub3__byte_stream__
 
-#include "_config.h"
+#include "epub3.h"
+#include "ring_buffer.h"
 
-#define EPUB3_BEGIN_NAMESPACE namespace ePub3 {
-#define EPUB3_END_NAMESPACE };
+EPUB3_BEGIN_NAMESPACE
 
-#endif
+EPUB3_END_NAMESPACE
+
+#endif /* defined(__ePub3__byte_stream__) */

@@ -32,6 +32,9 @@ TEST_CASE("CFIs should be constructable from valid strings", "")
     REQUIRE_NOTHROW(CFI("/6/4[chap01]!/4/52/3:22"));
     REQUIRE_NOTHROW(CFI("/6/4[chap01]!/4/52,/3:22,/5:12"));
     REQUIRE_NOTHROW(CFI("epubcfi(/6/4[chap01]!/4/52,/3:22,/5:12)"));
+    REQUIRE_NOTHROW(CFI(u8"epubcfi(/6/16[夏目漱石]!)"));        // utf-8
+    REQUIRE_NOTHROW(CFI(u"epubcfi(/6/16[夏目漱石]!)"));         // utf-16
+    REQUIRE_NOTHROW(CFI(U"epubcfi(/6/16[夏目漱石]!)"));         // utf-32
     
     // invalid strings
     REQUIRE_THROWS_AS(CFI("6/4"), CFI::InvalidCFI);

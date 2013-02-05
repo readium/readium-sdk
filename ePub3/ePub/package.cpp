@@ -915,5 +915,29 @@ const MediaHandler* Package::OPFHandlerForMediaType(const string &mediaType) con
     
     return nullptr;
 }
+const Package::StringList Package::AllMediaTypes() const
+{
+    std::map<string, bool>   set;
+    for ( auto pair : _manifest )
+    {
+        set[pair.second->MediaType()] = true;
+    }
+    
+    StringList types;
+    for ( auto pair : set )
+    {
+        types.push_back(pair.first);
+    }
+    
+    return types;
+}
+void Package::SetMediaSupport(const MediaSupportList &list)
+{
+    _mediaSupport = list;
+}
+void Package::SetMediaSupport(MediaSupportList &&list)
+{
+    _mediaSupport = list;
+}
 
 EPUB3_END_NAMESPACE

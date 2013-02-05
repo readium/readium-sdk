@@ -37,6 +37,7 @@
 #include "utfstring.h"
 #include "iri.h"
 #include "content_handler.h"
+#include "media_support_info.h"
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -314,7 +315,22 @@ protected:
 class Package : public PackageBase
 {
 public:
+    /**
+     Callback type for load events.
+     
+     The Package object just calls this function when a URL should be loaded-- the
+     function should handle all the actual loading/display mechanism itself.
+     @param url The url of the item to load.
+     */
     typedef std::function<void(const IRI& url)>         LoadEventHandler;
+    
+    /**
+     A list of media types (i.e. MIME types) used in the package's manifest.
+     
+     Each type is paired with an instance of MediaSupportInfo which describes the
+     support for that media type.
+     */
+    typedef std::map<string, MediaSupportInfo>          MediaSupportList;
     
 public:
                             Package()                                   = delete;
@@ -402,6 +418,12 @@ public:
     const ContentHandlerList    HandlersForMediaType(const string& mediaType)   const;
     const MediaHandler*         OPFHandlerForMediaType(const string& mediaType) const;
     
+    ///
+    /// Returns a list of all media types seen in the manifest.
+    const StringList        AllMediaTypes()                 const;
+    virtual void            SetMediaSupport(const MediaSupportList& list);
+    virtual void            SetMediaSupport(MediaSupportList&& list);
+    
 protected:
     virtual bool            Unpack();
     
@@ -414,6 +436,7 @@ public:
     
 protected:
     LoadEventHandler        _loadEventHandler;
+    MediaSupportList        _mediaSupport;
 };
 
 EPUB3_END_NAMESPACE

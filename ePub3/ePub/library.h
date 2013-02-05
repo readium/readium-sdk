@@ -67,7 +67,7 @@ public:
     static Library* MainLibrary(Locator* locator = new NullLocator());
     virtual ~Library();
     
-    Locator LocatorForEPubWithUniqueID(const std::string& uniqueID) const;
+    Locator LocatorForEPubWithUniqueID(const string& uniqueID) const;
     
     void AddEPubsInContainer(Container* container, Locator* locator = new NullLocator());
     void AddEPubsInContainerAtPath(Locator* locator) {
