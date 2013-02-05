@@ -81,7 +81,7 @@ PackageBase::PackageBase(Archive* archive, const string& path, const string& typ
     // TODO: Initialize lazily? Doing so would make initialization faster, but require
     // PackageLocations() to become non-const, like Packages().
     ArchiveXmlReader reader(_archive->ReaderAtPath(path.stl_str()));
-    _opf = reader.xmlReadDocument(path.c_str(), "utf-8", XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
+    _opf = reader.xmlReadDocument(path.c_str(), nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
     if ( _opf == nullptr )
         throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": No OPF file at " + path.stl_str());
     

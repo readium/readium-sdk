@@ -41,7 +41,7 @@ Container::Container(const std::string& path) : _archive(Archive::Open(path))
     // TODO: Initialize lazily? Doing so would make initialization faster, but require
     // PackageLocations() to become non-const, like Packages().
     ArchiveXmlReader reader(_archive->ReaderAtPath(gContainerFilePath));
-    _ocf = reader.xmlReadDocument(gContainerFilePath, "utf-8", XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
+    _ocf = reader.xmlReadDocument(gContainerFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
     if ( _ocf == nullptr )
         throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": No container.xml in " + path);
     
@@ -118,7 +118,7 @@ void Container::LoadEncryption()
         return;
     
     ArchiveXmlReader reader(pZipReader);
-    xmlDocPtr enc = reader.xmlReadDocument(gEncryptionFilePath, "utf-8", XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
+    xmlDocPtr enc = reader.xmlReadDocument(gEncryptionFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
     if ( enc == nullptr )
         return;
     
