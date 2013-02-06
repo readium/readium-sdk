@@ -21,22 +21,38 @@
 
 #include "../ePub3/ePub/container.h"
 #include "../ePub3/ePub/package.h"
+#include "../ePub3/ePub/content_handler.h"
 #include "catch.hpp"
 #include <cstdlib>
 
-#define EPUB_PATH "/Users/jdovey/Desktop/ePubsForMike/Dune-glossary.epub"
+#define EPUB_PATH "TestData/childrens-literature-20120722.epub"
+#define BINDINGS_EPUB_PATH "TestData/widget-figure-gallery-20121022.epub"
+static const char* kMediaType = "application/x-epub-figure-gallery";
 
 using namespace ePub3;
 
-TEST_CASE("Package should have a Unique ID, Type, Version, and a Base Path", "")
+TEST_CASE("Package should have a Unique ID, Package ID, Type, Version, and a Base Path", "")
 {
     Container c(EPUB_PATH);
-    Package* pkg = c.Packages()[0];
+    const Package* pkg = c.Packages()[0];
     
-    REQUIRE_FALSE(pkg->UniqueID().empty());
-    REQUIRE_FALSE(pkg->Type().empty());
-    REQUIRE_FALSE(pkg->Version().empty());
-    REQUIRE_FALSE(pkg->BasePath().empty());
+    REQUIRE(pkg->UniqueID() == "http://www.gutenberg.org/ebooks/25545@2010-02-17T04:39:13Z");
+    REQUIRE(pkg->PackageID() == "http://www.gutenberg.org/ebooks/25545");
+    REQUIRE(pkg->Type() == "application/oebps-package+xml");
+    REQUIRE(pkg->Version() == "3.0");
+    REQUIRE(pkg->BasePath() == "EPUB/");
+}
+
+TEST_CASE("Our test package should only have TOC and PageList navigation tables", "")
+{
+    Container c(EPUB_PATH);
+    const Package* pkg = c.Packages()[0];
+    
+    REQUIRE(pkg->TableOfContents() != nullptr);
+    REQUIRE(pkg->ListOfFigures() == nullptr);
+    REQUIRE(pkg->ListOfIllustrations() == nullptr);
+    REQUIRE(pkg->ListOfTables() == nullptr);
+    REQUIRE(pkg->PageList() != nullptr);
 }
 
 TEST_CASE("Package should have multiple manifest items, and they should be indexable by identifier string", "")
@@ -46,9 +62,9 @@ TEST_CASE("Package should have multiple manifest items, and they should be index
     auto manifest = pkg->Manifest();
     REQUIRE_FALSE(manifest.empty());
     
-    size_t idx = arc4random() % manifest.size();
+    int idx = static_cast<int>(arc4random() % manifest.size());
     const ManifestItem* randomItem = nullptr;
-    for ( auto pos = manifest.begin(); idx != 0; ++pos, --idx )
+    for ( auto pos = manifest.begin(); idx >= 0; ++pos, --idx )
     {
         randomItem = pos->second;
     }
@@ -102,4 +118,21 @@ TEST_CASE("Package should be able to create and resolve basic CFIs", "")
     CFI remainder;
     (void) pkg->ManifestItemForCFI(cfi, &remainder);
     REQUIRE(remainder == fragment);
+}
+
+TEST_CASE("Package should parse bindings correctly.", "")
+{
+    Container c(BINDINGS_EPUB_PATH);
+    const Package* pkg = c.Packages()[0];
+    const Package::StringList handledTypes = pkg->MediaTypesWithDHTMLHandlers();
+    
+    REQUIRE(handledTypes.size() == 1);
+    REQUIRE(handledTypes[0] == kMediaType);
+    
+    const MediaHandler* handler = pkg->OPFHandlerForMediaType(kMediaType);
+    REQUIRE(handler != nullptr);
+    REQUIRE(handler->MediaType() == kMediaType);
+    
+    IRI target = handler->Target("test.xml", ContentHandler::ParameterList());
+    REQUIRE(target.URIString() == _Str("epub3://", pkg->PackageID(), "/EPUB/figure-gallery-widget/figure-gallery-impl.xhtml?src=test.xml"));
 }

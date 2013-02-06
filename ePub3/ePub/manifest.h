@@ -23,16 +23,18 @@
 #define __ePub3__manifest__
 
 #include "epub3.h"
+#include "utfstring.h"
+#include "iri.h"
 #include <map>
-#include <string>
 #include <libxml/tree.h>
 
 EPUB3_BEGIN_NAMESPACE
 
 class Package;
 class ManifestItem;
+class ArchiveReader;
 
-typedef std::map<std::string, ManifestItem*>    ManifestTable;
+typedef std::map<string, ManifestItem*>    ManifestTable;
 
 // this should just be an enum, but I'm having an inordinately hard time getting the
 // compiler to let me use it as such
@@ -55,51 +57,52 @@ public:
     typedef unsigned int    value_type;
     
 public:
-    ItemProperties(const std::string& attrStr);
-    ItemProperties(value_type v = None) : _p(v) {}
-    ItemProperties(const ItemProperties& o) : _p(o._p) {}
-    ItemProperties(ItemProperties&& o) : _p(o._p) {}
-    ~ItemProperties() {}
+                    ItemProperties(const string& attrStr);
+                    ItemProperties(const IRI& iri);
+                    ItemProperties(value_type v = None) : _p(v) {}
+                    ItemProperties(const ItemProperties& o) : _p(o._p) {}
+                    ItemProperties(ItemProperties&& o) : _p(o._p) {}
+                    ~ItemProperties() {}
     
-    bool HasProperty(unsigned int p) const { return (_p & p) == p; }
-    bool HasProperty(const ItemProperties& p) const { return HasProperty(p._p); }
+    bool            HasProperty(unsigned int p)             const   { return (_p & p) == p; }
+    bool            HasProperty(const ItemProperties& p)    const   { return HasProperty(p._p); }
     
-    bool operator==(const ItemProperties& o) const { return _p == o._p; }
-    bool operator==(value_type v) const { return _p == v; }
+    bool            operator==(const ItemProperties& o)     const   { return _p == o._p; }
+    bool            operator==(value_type v)                const   { return _p == v; }
     
-    bool operator!=(const ItemProperties& o) const { return _p != o._p; }
-    bool operator!=(value_type v) const { return _p != v; }
+    bool            operator!=(const ItemProperties& o)     const   { return _p != o._p; }
+    bool            operator!=(value_type v)                const   { return _p != v; }
     
-    ItemProperties& operator=(const ItemProperties& o) { _p = o._p; return *this; }
-    ItemProperties& operator=(value_type v) { _p = v; return *this; }
-    ItemProperties& operator=(const std::string& attrStr);
+    ItemProperties& operator=(const ItemProperties& o)              { _p = o._p; return *this; }
+    ItemProperties& operator=(value_type v)                         { _p = v; return *this; }
+    ItemProperties& operator=(const string& attrStr);
     
-    ItemProperties operator|(const ItemProperties& o) const { return ItemProperties(_p | o._p); }
-    ItemProperties operator|(value_type v) const { return ItemProperties(_p | v); }
+    ItemProperties  operator|(const ItemProperties& o)      const   { return ItemProperties(_p | o._p); }
+    ItemProperties  operator|(value_type v)                 const   { return ItemProperties(_p | v); }
     
-    ItemProperties operator&(const ItemProperties& o) const { return ItemProperties(_p & o._p); }
-    ItemProperties operator&(value_type v) const { return ItemProperties(_p & v); }
+    ItemProperties  operator&(const ItemProperties& o)      const   { return ItemProperties(_p & o._p); }
+    ItemProperties  operator&(value_type v)                 const   { return ItemProperties(_p & v); }
     
-    ItemProperties operator~() const { return ItemProperties(~_p); }
-    ItemProperties operator^(const ItemProperties& o) const { return ItemProperties(_p ^ o._p); }
-    ItemProperties operator^(value_type v) const { return ItemProperties(_p ^ v); }
+    ItemProperties  operator~()                             const   { return ItemProperties(~_p); }
+    ItemProperties  operator^(const ItemProperties& o)      const   { return ItemProperties(_p ^ o._p); }
+    ItemProperties  operator^(value_type v)                 const   { return ItemProperties(_p ^ v); }
     
-    ItemProperties& operator|=(const ItemProperties& o) { _p |= o._p; return *this; }
-    ItemProperties& operator|=(value_type v) { _p |= v; return *this; }
+    ItemProperties& operator|=(const ItemProperties& o)             { _p |= o._p; return *this; }
+    ItemProperties& operator|=(value_type v)                        { _p |= v; return *this; }
     
-    ItemProperties& operator&=(const ItemProperties& o) { _p &= o._p; return *this; }
-    ItemProperties& operator&=(value_type v) { _p &= v; return *this; }
+    ItemProperties& operator&=(const ItemProperties& o)             { _p &= o._p; return *this; }
+    ItemProperties& operator&=(value_type v)                        { _p &= v; return *this; }
     
-    ItemProperties& operator^=(const ItemProperties& o) { _p ^= o._p; return *this; }
-    ItemProperties& operator^=(value_type v) { _p ^= v; return *this; }
+    ItemProperties& operator^=(const ItemProperties& o)             { _p ^= o._p; return *this; }
+    ItemProperties& operator^=(value_type v)                        { _p ^= v; return *this; }
     
-    operator value_type () const { return _p; }
-    std::string str() const;
+    operator        value_type ()                           const   { return _p; }
+    string          str()                                   const;
     
 private:
     value_type _p;
     
-    typedef std::map<std::string, value_type> PropertyMap;
+    typedef std::map<string, value_type> PropertyMap;
     static const PropertyMap PropertyLookupTable;
     
 };
@@ -107,41 +110,49 @@ private:
 class ManifestItem
 {
 public:
-    typedef std::string     MimeType;
+    typedef string                  MimeType;
     
 public:
-    ManifestItem() = delete;
-    ManifestItem(xmlNodePtr node, const Package* owner);
-    ManifestItem(const ManifestItem&) = delete;
-    ManifestItem(ManifestItem&&);
-    virtual ~ManifestItem();
+                        ManifestItem()                                      = delete;
+                        ManifestItem(xmlNodePtr node, const Package* owner);
+                        ManifestItem(const ManifestItem&)                   = delete;
+                        ManifestItem(ManifestItem&&);
+    virtual             ~ManifestItem();
     
-    const Package* Package() const { return _owner; }
+    const Package*      Package()                           const   { return _owner; }
     
-    std::string AbsolutePath() const;
+    string              AbsolutePath()                      const;
     
-    const std::string& Identifier() const { return _identifier; }
-    const std::string& Href() const { return _href; }
-    const MimeType& MediaType() const { return _mediaType; }
-    const std::string& MediaOverlayID() const { return _mediaOverlayID; }
-    const ManifestItem* MediaOverlay() const;
-    const std::string& FallbackID() const { return _fallbackID; }
-    const ManifestItem* Fallback() const;
+    const string&       Identifier()                        const   { return _identifier; }
+    const string&       Href()                              const   { return _href; }
+    const MimeType&     MediaType()                         const   { return _mediaType; }
+    const string&       MediaOverlayID()                    const   { return _mediaOverlayID; }
+    const ManifestItem* MediaOverlay()                      const;
+    const string&       FallbackID()                        const   { return _fallbackID; }
+    const ManifestItem* Fallback()                          const;
     
-    bool HasProperty(const std::string& property) const { return _properties.HasProperty(ItemProperties(property)); }
-    bool HasProperty(ItemProperties::value_type prop) const { return _properties.HasProperty(prop); }
+    // strips any query/fragment from the href before returning
+    string              BaseHref()                          const;
     
-    xmlDocPtr ReferencedDocument() const;
+    bool                HasProperty(const string& property) const   { return _properties.HasProperty(ItemProperties(property)); }
+    bool                HasProperty(ItemProperties::value_type prop)    const   { return _properties.HasProperty(prop); }
+    bool                HasProperty(const std::vector<IRI>& properties)  const;
+    
+    // one-shot document loader
+    xmlDocPtr           ReferencedDocument()                const;
+    
+    // stream the data
+    ArchiveReader*      Reader()                            const;
     
 protected:
-    const class Package* _owner;
+    const class Package*    _owner;
     
-    std::string     _identifier;
-    std::string     _href;
-    MimeType        _mediaType;
-    std::string     _mediaOverlayID;
-    std::string     _fallbackID;
-    ItemProperties  _properties;
+    string                  _identifier;
+    string                  _href;
+    MimeType                _mediaType;
+    string                  _mediaOverlayID;
+    string                  _fallbackID;
+    ItemProperties          _properties;
 };
 
 EPUB3_END_NAMESPACE

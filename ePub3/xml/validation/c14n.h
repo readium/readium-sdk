@@ -24,7 +24,7 @@
 
 #include "base.h"
 #include "io.h"
-#include "xmlstring.h"
+#include "utfstring.h"
 #include <sstream>
 
 EPUB3_XML_BEGIN_NAMESPACE

@@ -20,11 +20,14 @@
 //
 
 #include "url_locator.h"
-#include "curl_streambuf.h"
+# include "curl_streambuf.h"
 
 EPUB3_BEGIN_NAMESPACE
 
 URLLocator::URLLocator(const std::string& url) : Locator(), _url(url)
+{
+}
+URLLocator::URLLocator(const IRI& url) : Locator(), _url(url)
 {
 }
 URLLocator::URLLocator(const URLLocator& o) : Locator(o), _url(o._url)
@@ -41,7 +44,7 @@ std::istream& URLLocator::ReadStream()
     if ( _reader == nullptr )
     {
         curlbuf* buf = new curlbuf;
-        buf->open(_url, std::ios_base::in);
+        buf->open(_url.URIString().stl_str(), std::ios_base::in);
         _inbuf.reset(buf);
         _reader = new std::istream(buf);
     }
@@ -52,7 +55,7 @@ std::ostream& URLLocator::WriteStream()
     if ( _writer == nullptr )
     {
         curlbuf *buf = new curlbuf;
-        buf->open(_url, std::ios_base::out);
+        buf->open(_url.URIString().stl_str(), std::ios_base::out);
         _outbuf.reset(buf);
         _writer = new std::ostream(buf);
     }
@@ -64,17 +67,7 @@ bool URLLocator::CanReduceToPath() const
 }
 std::string URLLocator::GetPath() const
 {
-    if ( !CanReduceToPath() )
-        return "";
-    
-    // we *know* it starts with 'file://' now
-    auto loc = _url.find_first_of('/', 7);
-    if ( loc == std::string::npos )
-        return "";
-    
-    // either 'file://localhost/something' or 'file:///something'
-    // in first case, loc is 16, in second 7, both yield '/something'
-    return _url.substr(loc);
+    return _url.Path(false).stl_str();
 }
 template <typename... Args>
 bool URLLocator::SetOption(CURLoption opt, const Args&... args)
@@ -90,10 +83,7 @@ bool URLLocator::SupportsURLScheme(const std::string& url)
 }
 std::string URLLocator::scheme() const
 {
-    auto loc = _url.find_first_of(':');
-    if ( loc == std::string::npos )
-        return "";
-    return _url.substr(0, loc);
+    return _url.Scheme().stl_str();
 }
 
 EPUB3_END_NAMESPACE

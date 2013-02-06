@@ -23,11 +23,16 @@
 #define __ePub3__metadata__
 
 #include "epub3.h"
+#include "../utilities/iri.h"
+#include "../utilities/utfstring.h"
 #include <vector>
+#include <map>
 #include <string>
 #include <libxml/tree.h>
 
 EPUB3_BEGIN_NAMESPACE
+
+class Package;
 
 enum class Direction
 {
@@ -41,7 +46,7 @@ enum class Direction
 class Metadata
 {
 public:
-    enum class DCType : uint8_t
+    enum class DCType : uint32_t
     {
         Invalid,
         
@@ -62,53 +67,68 @@ public:
         Rights,
         Source,
         Subject,
-        Type
+        Type,
+        
+        Custom          = UCHAR_MAX     // non-DCMES metadata value
     };
     
     class Extension
     {
     public:
-        Extension() = delete;
-        Extension(xmlNodePtr node);
-        Extension(const Extension&) = delete;
-        Extension(Extension&&);
-        virtual ~Extension();
+                    Extension()                         = delete;
+                    Extension(xmlNodePtr node, const Package* owner);
+                    Extension(const Extension&)         = delete;
+                    Extension(Extension&&);
+        virtual     ~Extension();
         
-        std::string Property() const;
-        std::string Scheme() const;
-        std::string Value() const;
-        std::string Identifier() const;
-        std::string Language() const;
+        const IRI&  Property()          const       { return _property; }
+        string      Scheme()            const;
+        string      Value()             const;
+        string      Identifier()        const;
+        string      Language()          const;
         
     protected:
         xmlNodePtr  _node;
+        IRI         _property;
     };
     
-    typedef std::vector<Extension>  ExtensionList;
+    typedef std::vector<Extension*>  ExtensionList;
     
 public:
-    Metadata() = delete;
-    Metadata(xmlNodePtr node);
-    Metadata(const Metadata&) = delete;
-    Metadata(Metadata&&);
-    virtual ~Metadata();
+                    Metadata()                          = delete;
+                    Metadata(xmlNodePtr node, const Package* owner);
+                    Metadata(const Metadata&)           = delete;
+                    Metadata(Metadata&&);
+    virtual         ~Metadata();
     
-    DCType Type() const { return _type; }
-    std::string Name() const;
-    std::string Identifier() const;
-    std::string Value() const;
-    std::string Language() const;
+    DCType                  Type()          const           { return _type; }
+    const IRI&              Property()      const           { return _property; }
+    string                  Identifier()    const;
+    string                  Value()         const;
+    string                  Language()      const;
     
-    const ExtensionList& Extensions() const { return _ext; }
+    const ExtensionList&    Extensions()    const           { return _extensions; }
+    const Extension*        ExtensionWithProperty(const IRI& property) const;
     
-    void AddExtension(xmlNodePtr node);
+    void                    AddExtension(xmlNodePtr node, const Package* owner);
+    
+    static const IRI        IRIForDCType(DCType type);
+    
+public:
+    // Some things to help with debugging
+    typedef std::vector<std::pair<string, string>>   ValueMap;
+    
+    const ValueMap          DebugValues()   const;
     
 protected:
-    xmlNodePtr      _node;
     DCType          _type;
-    ExtensionList   _ext;
+    xmlNodePtr      _node;
+    ExtensionList   _extensions;
+    IRI             _property;
     
-    bool Decode();
+    bool            Decode(const Package* owner);
+    
+    static std::map<string, DCType> NameToIDMap;
     
 };
 

@@ -26,9 +26,9 @@
 #include "locator.h"
 #include "encryption.h"
 #include "package.h"
+#include "utfstring.h"
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
-#include <string>
 #include <vector>
 
 EPUB3_BEGIN_NAMESPACE
@@ -38,23 +38,24 @@ class Archive;
 class Container
 {
 public:
-    typedef std::vector<std::string>        PathList;
+    typedef std::vector<string>             PathList;
     typedef std::vector<Package*>           PackageList;
     typedef std::vector<EncryptionInfo*>    EncryptionList;
     
 public:
-    Container(const std::string& path);
-    Container(Locator locator);
-    Container(const Container&) = delete;
-    Container(Container&& o);
-    virtual ~Container();
+                Container(const std::string& path);
+                Container(Locator locator);
+                Container(const Container&)                 = delete;
+                Container(Container&& o);
+    virtual     ~Container();
     
-    virtual PathList PackageLocations() const;
-    virtual const PackageList& Packages() const { return _packages; }
-    virtual std::string Version() const;
-    virtual const EncryptionList& EncryptionData() const { return _encryption; }
+    virtual PathList                PackageLocations()      const;
+    virtual const PackageList&      Packages()              const   { return _packages; }
+    virtual const Package*          DefaultPackage()        const;
+    virtual string                  Version()               const;
+    virtual const EncryptionList&   EncryptionData()        const   { return _encryption; }
     
-    virtual const EncryptionInfo* EncryptionInfoForPath(const std::string& path) const;
+    virtual const EncryptionInfo*   EncryptionInfoForPath(const string& path)  const;
     
 protected:
     Archive *       _archive;
@@ -62,7 +63,7 @@ protected:
     PackageList     _packages;
     EncryptionList  _encryption;
     
-    void LoadEncryption();
+    void        LoadEncryption();
 };
 
 EPUB3_END_NAMESPACE

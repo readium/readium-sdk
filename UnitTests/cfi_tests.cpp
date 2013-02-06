@@ -32,6 +32,9 @@ TEST_CASE("CFIs should be constructable from valid strings", "")
     REQUIRE_NOTHROW(CFI("/6/4[chap01]!/4/52/3:22"));
     REQUIRE_NOTHROW(CFI("/6/4[chap01]!/4/52,/3:22,/5:12"));
     REQUIRE_NOTHROW(CFI("epubcfi(/6/4[chap01]!/4/52,/3:22,/5:12)"));
+    REQUIRE_NOTHROW(CFI(u8"epubcfi(/6/16[夏目漱石]!)"));        // utf-8
+    REQUIRE_NOTHROW(CFI(u"epubcfi(/6/16[夏目漱石]!)"));         // utf-16
+    REQUIRE_NOTHROW(CFI(U"epubcfi(/6/16[夏目漱石]!)"));         // utf-32
     
     // invalid strings
     REQUIRE_THROWS_AS(CFI("6/4"), CFI::InvalidCFI);
@@ -56,15 +59,15 @@ TEST_CASE("Location CFIs should be appendable using valid CFIs and strings; Rang
     CFI base("/6/4!");
     
     REQUIRE_NOTHROW(base + CFI("/2/3:5"));
-    REQUIRE_NOTHROW(base + "/2/3:5");
+    REQUIRE_NOTHROW(base + string("/2/3:5"));
     REQUIRE_THROWS_AS(base + CFI(":25"), CFI::InvalidCFI);
-    REQUIRE_THROWS_AS(base + ":25", CFI::InvalidCFI);
+    REQUIRE_THROWS_AS(base + string(":25"), CFI::InvalidCFI);
     
     REQUIRE_NOTHROW(base += CFI("/2,/3:5,/3:8"));
     REQUIRE(base.IsRangeTriplet());
     
     REQUIRE_THROWS_AS(base + CFI("/5/3:2"), CFI::RangedCFIAppendAttempt);
-    REQUIRE_THROWS_AS(base + "/5/3:2", CFI::RangedCFIAppendAttempt);
+    REQUIRE_THROWS_AS(base + string("/5/3:2"), CFI::RangedCFIAppendAttempt);
 }
 
 TEST_CASE("Location and Range CFIs should be reassignable by CFI or string, even between types", "")

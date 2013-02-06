@@ -22,8 +22,8 @@
 #ifndef __ePub3_xml_ns__
 #define __ePub3_xml_ns__
 
-#include "base.h"
-#include "xmlstring.h"
+#include "../utilities/base.h"
+#include "utfstring.h"
 #include <vector>
 #include <libxml/tree.h>
 

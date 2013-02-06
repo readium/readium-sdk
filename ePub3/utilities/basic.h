@@ -24,6 +24,7 @@
 
 #include "../base.h"
 //#include "alphanum.hpp"
+#include <libxml/xmlstring.h>
 #include <sstream>
 #include <memory>
 
@@ -61,6 +62,15 @@ static inline std::string _Str(const Args&... args)
 {
     std::stringstream s;
     return __format(s, args...).str();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// C++11 user-defined literals
+
+// const xmlChar * xmlString = "this is an xmlChar* string"_xml;
+inline constexpr const xmlChar* operator "" _xml (char const *s, std::size_t len)
+{
+    return (const xmlChar*)s;
 }
 
 EPUB3_END_NAMESPACE

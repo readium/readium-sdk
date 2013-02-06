@@ -38,23 +38,27 @@ protected:
     static bool FontTypeSniffer(const ManifestItem* item, const EncryptionInfo* encInfo) {
         if ( encInfo->Algorithm() != FontObfuscationAlgorithmID )
             return false;
-        return std::regex_match(item->MediaType(), TypeCheck);
+        return std::regex_match(item->MediaType().stl_str(), TypeCheck);
     }
     
 public:
     FontObfuscator() = delete;
-    FontObfuscator(const Container* container) : ContentFilter(FontTypeSniffer, container) {
+    FontObfuscator(const Container* container) : ContentFilter(FontTypeSniffer) {
         BuildKey();
+    }
+    FontObfuscator(const FontObfuscator& o) : ContentFilter(o) {
+        std::memcpy(_key, o._key, KeySize);
     }
     FontObfuscator(FontObfuscator&& o) : ContentFilter(std::move(o)) {
         std::memcpy(_key, o._key, KeySize);
     }
     
-    virtual void * FilterData(void * data, size_t len);
+    virtual void * FilterData(void * data, size_t len, size_t *outputLen);
     
 protected:
-    uint8_t     _key[KeySize];
-    size_t      _bytesFiltered;     // NOT copied
+    const Container*    _container;
+    uint8_t             _key[KeySize];
+    size_t              _bytesFiltered;     // NOT copied
     
     bool BuildKey();
 };

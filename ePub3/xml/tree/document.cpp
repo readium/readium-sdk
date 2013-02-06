@@ -200,7 +200,7 @@ Node * Document::AddComment(const string &comment, bool beforeRoot)
 {
     return AddNode(Wrapped<Node, _xmlNode>(xmlNewDocComment(xml(), comment.utf8())), beforeRoot);
 }
-Node * Document::AddProcessingInstruction(const ePub3::xml::string &name, const ePub3::xml::string &content, bool beforeRoot)
+Node * Document::AddProcessingInstruction(const ePub3::string &name, const ePub3::string &content, bool beforeRoot)
 {
     return AddNode(Wrapped<Node, _xmlNode>(xmlNewDocPI(xml(), name.utf8(), content.utf8())), beforeRoot);
 }

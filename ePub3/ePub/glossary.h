@@ -30,8 +30,8 @@ EPUB3_BEGIN_NAMESPACE
 class Glossary : public NavigationElement
 {
 public:
-    typedef std::string                 Term;
-    typedef std::string                 Definition;     // this will change to 'attributed string' or similar
+    typedef string                      Term;
+    typedef string                      Definition;     // this will change to 'attributed string' or similar
     typedef std::pair<Term, Definition> Entry;          // lookup table uses lowercased terms as keys; value contains case-correct version
     
 protected:
@@ -42,31 +42,30 @@ protected:
     typedef std::map<Term, Entry>       LookupTable;
     
 public:
-    Glossary(xmlNodePtr node);  // must be a <dl> node with epub:type="glossary"
-    Glossary(const std::string& identifier) : _ident(identifier) {}
-    Glossary(std::string&& identifier) : _ident(identifier) {}
-    Glossary(Glossary&& o) : _ident(std::move(o._ident)), _lookup(std::move(o._lookup)) {}
-    virtual ~Glossary() {}
+                Glossary(xmlNodePtr node);  // must be a <dl> node with epub:type="glossary"
+                Glossary(const string& identifier) : _ident(identifier) {}
+                Glossary(string&& identifier) : _ident(identifier) {}
+                Glossary(Glossary&& o) : _ident(std::move(o._ident)), _lookup(std::move(o._lookup)) {}
+    virtual     ~Glossary() {}
     
-    Glossary() = delete;
-    Glossary(const Glossary&) = delete;
+                Glossary() = delete;
+                Glossary(const Glossary&) = delete;
     
-    virtual const std::string& Title() const { return _ident; }
-    virtual void SetTitle(const std::string& str) { _ident = str; }
-    virtual void SetTitle(std::string&& str) { _ident = str; }
+    virtual const string&   Title()                     const   { return _ident; }
+    virtual void            SetTitle(const string& str)         { _ident = str; }
+    virtual void            SetTitle(string&& str)              { _ident = str; }
     
-    virtual const Entry Lookup(const Term& term) const;
+    virtual const Entry     Lookup(const Term& term)    const;
     
     // Q: *can* these fail?
-    virtual bool AddDefinition(const Term& term, const Definition& definition);
-    virtual bool AddDefinition(const Term& term, Definition&& definition);
+    virtual bool            AddDefinition(const Term& term, const Definition& definition);
+    virtual bool            AddDefinition(const Term& term, Definition&& definition);
     
 protected:
-    std::string _ident;
+    string _ident;
     LookupTable _lookup;
     
-    bool Parse(xmlNodePtr node);
-    static Term Lowercase(const Term& term);
+    bool                    Parse(xmlNodePtr node);
 };
 
 EPUB3_END_NAMESPACE

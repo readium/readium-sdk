@@ -23,8 +23,9 @@
 #define __ePub3__url_locator__
 
 #include "locator.h"
-#include <curl/curl.h>
+#include "../utilities/iri.h"
 #include <map>
+#include <curl/curl.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -33,6 +34,7 @@ class URLLocator : public Locator
 public:
     URLLocator() = delete;
     URLLocator(const std::string& url);
+    URLLocator(const IRI& url);
     URLLocator(const URLLocator& o);
     URLLocator(URLLocator&& o);
     virtual ~URLLocator();
@@ -46,14 +48,14 @@ public:
     virtual std::string GetPath() const;
     
     virtual std::string StringRepresentation() const { return _Str("<", _url, ">"); }
-    
+
     template <typename... Args>
     bool SetOption(CURLoption opt, const Args&... args);
-    
+
     static bool SupportsURLScheme(const std::string& url);
     
 protected:
-    std::string                     _url;
+    IRI                             _url;
     std::shared_ptr<std::streambuf> _inbuf;
     std::shared_ptr<std::streambuf> _outbuf;
     

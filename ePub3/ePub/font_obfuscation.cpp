@@ -35,7 +35,7 @@ EPUB3_BEGIN_NAMESPACE
 
 const std::regex FontObfuscator::TypeCheck("application/x-font-.*");
 
-void * FontObfuscator::FilterData(void *data, size_t len)
+void * FontObfuscator::FilterData(void *data, size_t len, size_t *outputLen)
 {
     uint8_t *buf = static_cast<uint8_t*>(data);
     for ( int i = 0; i < len && (i + _bytesFiltered) < 1040; i++)
@@ -45,6 +45,7 @@ void * FontObfuscator::FilterData(void *data, size_t len)
     }
     
     _bytesFiltered += len;
+    *outputLen = len;
     return buf;
 }
 bool FontObfuscator::BuildKey()
@@ -58,7 +59,7 @@ bool FontObfuscator::BuildKey()
             ss << ' ';
         
         // we use a C++11 regex to remove all whitespace in the value
-        ss << regex_replace(pkg->UniqueID(), re, "");
+        ss << regex_replace(pkg->UniqueID().stl_str(), re, "");
     }
     
     // hash the accumulated string (using OpenSSL syntax for portability)

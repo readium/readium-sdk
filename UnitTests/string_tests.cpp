@@ -19,10 +19,10 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "../ePub3/xml/utilities/xmlstring.h"
+#include "../ePub3/utilities/utfstring.h"
 #include "catch.hpp"
 
-using ePub3::xml::string;
+using ePub3::string;
 
 TEST_CASE("string conversions", "Strings should convert between multibyte encodings properly")
 {
@@ -66,5 +66,6 @@ TEST_CASE("string charset searching", "find_first_of with a set containing utf-8
     REQUIRE(str.size() == 2);
     REQUIRE(str.find_first_of(char16_t(0x2033)) == 1);
     REQUIRE(str.find_first_of(u8"\u2033") == 1);
+    REQUIRE_THROWS_AS(str.find_first_of(str.stl_str().substr(0, 2)), string::InvalidUTF8Sequence);
     REQUIRE(str.find_first_of("#$%") == string::npos);
 }

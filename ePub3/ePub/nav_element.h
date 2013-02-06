@@ -23,6 +23,7 @@
 #define ePub3_nav_element_h
 
 #include "epub3.h"
+#include "utfstring.h"
 #include <vector>
 
 EPUB3_BEGIN_NAMESPACE
@@ -35,18 +36,18 @@ typedef std::vector<NavigationElement*> NavigationList;
 class NavigationElement
 {
 public:
-    explicit NavigationElement() = default;
-    explicit NavigationElement(const NavigationElement&) = default;
-    explicit NavigationElement(NavigationElement&& o) : _children(std::move(o._children)) {}
-    virtual ~NavigationElement() { for ( auto __p : _children ) { delete __p; } }
+    explicit            NavigationElement()                             = default;
+    explicit            NavigationElement(const NavigationElement&)     = default;
+    explicit            NavigationElement(NavigationElement&& o) : _children(std::move(o._children)) {}
+    virtual             ~NavigationElement() {}
     
-    virtual const std::string& Title() const = 0;
-    virtual void SetTitle(const std::string& str) = 0;
-    virtual void SetTitle(std::string&& str) = 0;
+    virtual const string&   Title()                     const   = 0;
+    virtual void            SetTitle(const string& str)         = 0;
+    virtual void            SetTitle(string&& str)              = 0;
     
-    const NavigationList& Children() const { return _children; }
+    const NavigationList&   Children()                  const   { return _children; }
     
-    void AppendChild(NavigationElement* e) { _children.push_back(e); }
+    void                    AppendChild(NavigationElement* e)   { _children.push_back(e); }
     
 protected:
     NavigationList  _children;

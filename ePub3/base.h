@@ -22,6 +22,8 @@
 #ifndef ePub3_base_h
 #define ePub3_base_h
 
+#include "_config.h"
+
 #define EPUB3_BEGIN_NAMESPACE namespace ePub3 {
 #define EPUB3_END_NAMESPACE };
 

@@ -20,14 +20,16 @@
 //
 
 #include "metadata.h"
-#include <map>
+#include "package.h"
 
 EPUB3_BEGIN_NAMESPACE
 
 static const xmlChar * DCMES_uri = (const xmlChar*)"http://purl.org/dc/elements/1.1/";
+static const xmlChar * MetaTagName = (const xmlChar*)"meta";
 
 // C++11 FTW
-static std::map<std::string, Metadata::DCType> NameToIDMap = {
+std::map<string, Metadata::DCType> Metadata::NameToIDMap = {
+    {"meta", Metadata::DCType::Custom},
     {"identifier", Metadata::DCType::Identifier},
     {"title", Metadata::DCType::Title},
     {"language", Metadata::DCType::Language},
@@ -45,85 +47,140 @@ static std::map<std::string, Metadata::DCType> NameToIDMap = {
     {"type", Metadata::DCType::Type}
 };
 
-Metadata::Metadata(xmlNodePtr node) : _node(node)
+static std::map<Metadata::DCType, string> IDToNameMap = {
+    {Metadata::DCType::Identifier, "identifier"},
+    {Metadata::DCType::Title, "title"},
+    {Metadata::DCType::Language, "language"},
+    {Metadata::DCType::Contributor, "contributor"},
+    {Metadata::DCType::Coverage, "coverage"},
+    {Metadata::DCType::Creator, "creator"},
+    {Metadata::DCType::Date, "date"},
+    {Metadata::DCType::Description, "description"},
+    {Metadata::DCType::Format, "format"},
+    {Metadata::DCType::Publisher, "publisher"},
+    {Metadata::DCType::Relation, "relation"},
+    {Metadata::DCType::Rights, "rights"},
+    {Metadata::DCType::Source, "source"},
+    {Metadata::DCType::Subject, "subject"},
+    {Metadata::DCType::Type, "type"}
+};
+
+Metadata::Metadata(xmlNodePtr node, const Package* owner) : _node(node), _type(DCType::Invalid), _extensions(), _property()
 {
     if ( _node == nullptr )
         throw std::invalid_argument("NUL node pointer supplied");
-    if ( !Decode() )
+    if ( !Decode(owner) )
         throw std::domain_error("Node does not appear to be a valid metadata item");
 }
-Metadata::Metadata(Metadata&& o) : _node(o._node), _type(o._type), _ext(std::move(o._ext))
+Metadata::Metadata(Metadata&& o) : _node(o._node), _type(o._type), _extensions(std::move(o._extensions)), _property(std::move(o._property))
 {
     o._node = nullptr;
 }
 Metadata::~Metadata()
 {
+    for ( auto item : _extensions )
+    {
+        delete item;
+    }
 }
-bool Metadata::Decode()
+bool Metadata::Decode(const Package* owner)
 {
     xmlNsPtr ns = _node->ns;
-    if ( xmlStrcasecmp(ns->href, DCMES_uri) != 0 )
-        return false;
-    
-    _type = NameToIDMap[reinterpret_cast<const char*>(_node->name)];
-    if ( _type == DCType::Invalid )
-        return false;
+    if ( ns != nullptr && xmlStrcasecmp(ns->href, DCMES_uri) == 0 )
+    {
+        _type = NameToIDMap[_node->name];
+        if ( _type == DCType::Invalid )
+            return false;
+        
+        // special property IRI, not actually in the spec, but useful for comparisons and printouts
+        _property = IRI(string(DCMES_uri) + _node->name);
+    }
+    else if ( xmlStrcasecmp(_node->name, MetaTagName) == 0 )
+    {
+        _type = DCType::Custom;
+        string property = _getProp(_node, "property");
+        if ( property.empty() )
+            return false;
+        
+        _property = owner->PropertyIRIFromAttributeValue(property);
+    }
     
     return true;
 }
-std::string Metadata::Name() const
-{
-    return reinterpret_cast<const char*>(_node->name);
-}
-std::string Metadata::Identifier() const
+string Metadata::Identifier() const
 {
     return _getProp(_node, "id");
 }
-std::string Metadata::Value() const
+string Metadata::Value() const
 {
-    return reinterpret_cast<const char*>(xmlNodeGetContent(_node));
+    return xmlNodeGetContent(_node);
 }
-std::string Metadata::Language() const
+string Metadata::Language() const
 {
     const xmlChar * ch = xmlNodeGetLang(_node);
     if ( ch == nullptr )
-        return "";
-    return reinterpret_cast<const char*>(ch);
+        return string::EmptyString;
+    return ch;
 }
-void Metadata::AddExtension(xmlNodePtr node)
+void Metadata::AddExtension(xmlNodePtr node, const Package* owner)
 {
-    try { _ext.push_back(Extension(node)); }
-    catch (...) { }
+    try { _extensions.push_back(new Extension(node, owner)); }
+    catch (std::exception& e) { fprintf(stderr, "ARGH: %s\n", e.what()); }
+}
+const Metadata::Extension* Metadata::ExtensionWithProperty(const IRI &property) const
+{
+    for ( auto extension : _extensions )
+    {
+        if ( extension->Property() == property )
+            return extension;
+    }
+    return nullptr;
+}
+const IRI Metadata::IRIForDCType(DCType type)
+{
+    auto found = IDToNameMap.find(type);
+    if ( found == IDToNameMap.end() )
+        return IRI();
+    return IRI(DCMES_uri + found->second);
+}
+const Metadata::ValueMap Metadata::DebugValues() const
+{
+    ValueMap values({{Property().IRIString(), Value()}});
+    for ( const Extension* extension : _extensions )
+    {
+        values.emplace_back(_Str("  ", extension->Property().IRIString()), extension->Value());
+    }
+    return values;
 }
 
-Metadata::Extension::Extension(xmlNodePtr node) : _node(node)
+Metadata::Extension::Extension(xmlNodePtr node, const Package* owner) : _node(node)
 {
     if ( _node == nullptr )
         throw std::invalid_argument("NUL node pointer supplied");
+    
+    string property = _getProp(_node, "property");
+    if ( !property.empty() )
+        _property = owner->PropertyIRIFromAttributeValue(property);
 }
-Metadata::Extension::Extension(Extension&& o) : _node(o._node)
+Metadata::Extension::Extension(Extension&& o) : _node(o._node), _property(std::move(o._property))
 {
 }
 Metadata::Extension::~Extension()
 {
 }
-std::string Metadata::Extension::Property() const
-{
-    return _getProp(_node, "property");
-}
-std::string Metadata::Extension::Scheme() const
+string Metadata::Extension::Scheme() const
 {
     return _getProp(_node, "scheme");
 }
-std::string Metadata::Extension::Value() const
+string Metadata::Extension::Value() const
 {
     return reinterpret_cast<const char*>(xmlNodeGetContent(_node));
 }
-std::string Metadata::Extension::Identifier() const
+string Metadata::Extension::Identifier() const
 {
     return _getProp(_node, "id");
 }
-std::string Metadata::Extension::Language() const
+string Metadata::Extension::Language() const
 {
     return reinterpret_cast<const char*>(xmlNodeGetLang(_node));
 }
