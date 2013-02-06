@@ -214,9 +214,7 @@
 		ABA88FC416C1534900F2014B /* byte_stream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA88FC116C1534900F2014B /* byte_stream.cpp */; };
 		ABA88FC516C1534900F2014B /* byte_stream.h in Headers */ = {isa = PBXBuildFile; fileRef = ABA88FC216C1534900F2014B /* byte_stream.h */; };
 		ABA88FCA16C16C3500F2014B /* ring_buffer.h in Headers */ = {isa = PBXBuildFile; fileRef = ABA88FC716C16C3500F2014B /* ring_buffer.h */; };
-		ABA88FCD16C1772600F2014B /* rw_lock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA88FCB16C1772600F2014B /* rw_lock.cpp */; };
-		ABA88FCE16C1772600F2014B /* rw_lock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA88FCB16C1772600F2014B /* rw_lock.cpp */; };
-		ABA88FCF16C1772600F2014B /* rw_lock.h in Headers */ = {isa = PBXBuildFile; fileRef = ABA88FCC16C1772600F2014B /* rw_lock.h */; };
+		ABA88FD216C2B4ED00F2014B /* ring_buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA88FD116C2B4ED00F2014B /* ring_buffer.cpp */; };
 		ABAB94B016652C200018D451 /* element.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAB94AE16652C200018D451 /* element.cpp */; };
 		ABAB94B116652C200018D451 /* element.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAB94AF16652C200018D451 /* element.h */; };
 		ABAB94B516653EE80018D451 /* dtd.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAB94B316653EE80018D451 /* dtd.h */; };
@@ -491,9 +489,8 @@
 		ABA88FC116C1534900F2014B /* byte_stream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = byte_stream.cpp; sourceTree = "<group>"; };
 		ABA88FC216C1534900F2014B /* byte_stream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = byte_stream.h; sourceTree = "<group>"; };
 		ABA88FC716C16C3500F2014B /* ring_buffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ring_buffer.h; sourceTree = "<group>"; };
-		ABA88FCB16C1772600F2014B /* rw_lock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rw_lock.cpp; sourceTree = "<group>"; };
-		ABA88FCC16C1772600F2014B /* rw_lock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rw_lock.h; sourceTree = "<group>"; };
 		ABA88FD016C17AC600F2014B /* _config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = _config.h; sourceTree = "<group>"; };
+		ABA88FD116C2B4ED00F2014B /* ring_buffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ring_buffer.cpp; sourceTree = "<group>"; };
 		ABAB94AE16652C200018D451 /* element.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = element.cpp; sourceTree = "<group>"; };
 		ABAB94AF16652C200018D451 /* element.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = element.h; sourceTree = "<group>"; };
 		ABAB94B316653EE80018D451 /* dtd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dtd.h; sourceTree = "<group>"; };
@@ -656,9 +653,8 @@
 				ABA4BA1416A5F28100161B77 /* utfstring.h */,
 				ABA4BA0D16A5F1B100161B77 /* iri.cpp */,
 				ABA4BA0E16A5F1B100161B77 /* iri.h */,
-				ABA88FCB16C1772600F2014B /* rw_lock.cpp */,
-				ABA88FCC16C1772600F2014B /* rw_lock.h */,
 				ABA88FC716C16C3500F2014B /* ring_buffer.h */,
+				ABA88FD116C2B4ED00F2014B /* ring_buffer.cpp */,
 				ABA88FC116C1534900F2014B /* byte_stream.cpp */,
 				ABA88FC216C1534900F2014B /* byte_stream.h */,
 			);
@@ -1211,7 +1207,6 @@
 				ABA88FC016C062BF00F2014B /* media_support_info.h in Headers */,
 				ABA88FC516C1534900F2014B /* byte_stream.h in Headers */,
 				ABA88FCA16C16C3500F2014B /* ring_buffer.h in Headers */,
-				ABA88FCF16C1772600F2014B /* rw_lock.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1428,7 +1423,6 @@
 				AB95448916BAF11000EFD2FD /* object_preprocessor.cpp in Sources */,
 				ABA88FBF16C062BF00F2014B /* media_support_info.cpp in Sources */,
 				ABA88FC416C1534900F2014B /* byte_stream.cpp in Sources */,
-				ABA88FCE16C1772600F2014B /* rw_lock.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1545,7 +1539,7 @@
 				AB95448816BAF11000EFD2FD /* object_preprocessor.cpp in Sources */,
 				ABA88FBE16C062BF00F2014B /* media_support_info.cpp in Sources */,
 				ABA88FC316C1534900F2014B /* byte_stream.cpp in Sources */,
-				ABA88FCD16C1772600F2014B /* rw_lock.cpp in Sources */,
+				ABA88FD216C2B4ED00F2014B /* ring_buffer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -24,43 +24,97 @@
 
 #include "epub3.h"
 #include "basic.h"
-#include "rw_lock.h"
-#include <array>
 #include <mutex>
 
 EPUB3_BEGIN_NAMESPACE
 
 /**
- This class implements a ring buffer with a statically-allocated buffer.
+ This class implements a ring buffer.
  
  The function of a ring buffer is that when data is removed, only a read-position
  marker is updated; this means that any remaining data is not copied or moved.  Note
- also that this implementation uses a statically-allocated buffer of a constant size
- (the default is 4096 bytes), and that the buffer cannot grow.  This means that you
- must pay attention to the amount of space available in the ring buffer when reading
- data from any persistent storage to be placed herein: only read as much as you can
- store here.
+ also that the buffer cannot grow.  This means that you must pay attention to the
+ amount of space available in the ring buffer when reading data from any persistent
+ storage to be placed herein: only read as much as you can store here.
  
- The ring buffer is used as a component in the ByteStream classes to enable
+ It is STRONGLY ADVISED that any use of a RingBuffer class be appropiately wrapped
+ in calls to its lock() and unlock() methods.  Note that the lock used is a 
+ `std::recursive_mutex`, so it is safe to lock it in a nested manner, so long as
+ every lock() call is balanced by an unlock().  The RingBuffer class satisfies the
+ BasicLockable and Lockable concepts, so it can be locked directly through a
+ `std::lock_guard` or `std::unique_lock`, and can be used with a
+ `std::condition_variable`, e.g.:
+ 
+     void func(RingBuffer& buf)
+     {
+         std::lock_guard<RingBuffer> _(buf);
+         ...
+     }
+ 
+ The ring buffer is used as a component in the AsyncByteStream classes to enable
  asynchronous reading/writing behaviour.
  */
-template <size_t _Bufsize=4096>
 class RingBuffer
 {
 public:
     ///
     /// Constructs a new RingBuffer instance.
-                    RingBuffer()                        noexcept : _numBytes(0), _readPos(0), _writePos(0), _lock() {}
+                    RingBuffer(std::size_t size=4096);
     ///
     /// Destructor.
-    virtual         ~RingBuffer()                       noexcept    {}
+    virtual         ~RingBuffer();
     
     ///
-    /// RingBuffer instances cannot be copied (locking issues).
-                    RingBuffer(const RingBuffer&)       = delete;
+    /// Copy constructor (identical input class).
+    /// @note This locks its argument before accessing.
+                    RingBuffer(const RingBuffer& o);
     ///
-    /// RingBuffer instances cannot be moved (buffer would have to be copied anyway).
-                    RingBuffer(RingBuffer&&)            = delete;
+    /// Move constructor.
+    /// @note This locks its argument before accessing.
+                    RingBuffer(RingBuffer&& o);
+    
+    /**
+     @defgroup Assignment Assignment Operators
+     @{
+     */
+    
+    /**
+     Copy operator.
+     @note This locks its parameter before copying.
+     */
+    RingBuffer&     operator=(const RingBuffer& o);
+    /**
+     Move operator.
+     @note This locks its parameter before copying.
+     */
+    RingBuffer&     operator=(RingBuffer&& o);
+    
+    /**
+     @defgroup Locking Locking Operations
+     @note The functions here are named such that the RingBuffer class satisfies the
+     C++11 Lockable concept. As a result, this object can be used as the `_Mutex`
+     template parameter in `std::lock_guard` and `std::unique_lock`.
+     @{
+     */
+    
+    /**
+     Locks the receiver, preventing any modification.
+     */
+    void            lock()                      { _lock.lock(); }
+    
+    /**
+     Attempts to lock the receiver as per lock().
+     @return `true` if the lock was acquired, `false` if it was already locked by
+     another thread.
+     */
+    bool            try_lock()                  { return _lock.try_lock(); }
+    
+    /**
+     Unlocks the receiver, permitting modifications to take place.
+     */
+    void            unlock()                    { _lock.unlock(); }
+    
+    /** @} */
     
     /**
      @defgroup Metadata Buffer Metadata
@@ -71,7 +125,7 @@ public:
      Obtain the total capacity of a ring buffer.
      @result The maximum number of bytes the buffer can hold.
      */
-    std::size_t     Capacity()              const noexcept  { return _Bufsize; }
+    std::size_t     Capacity()              const noexcept  { return _capacity; }
     
     /**
      @return `true` is there is data in the buffer, `false` otherwise.
@@ -86,17 +140,17 @@ public:
     /**
      @return `true` if there is room to write data to the buffer.
      */
-    bool            HasSpace()              const noexcept  { return _numBytes != _Bufsize; }
+    bool            HasSpace()              const noexcept  { return _numBytes != _capacity; }
     
     /**
      @return The maximum number of bytes that may currently be written to the buffer.
      */
-    std::size_t     SpaceAvailable()        const noexcept  { return _Bufsize - _numBytes; }
+    std::size_t     SpaceAvailable()        const noexcept  { return _capacity - _numBytes; }
     
     /** @} */
     
     /**
-     @defgroup Accessors Content Access
+     @defgroup Accessors Content Accessors
      @{
      */
     
@@ -107,150 +161,41 @@ public:
      enough bytes are available, a smaller amount will be copied.
      @result The number of bytes actually copied into `buf`.
      */
-    std::size_t     PeekBytes(uint8_t* buf, std::size_t len)    noexcept;
-    
-    /**
-     Reads data from the buffer and removes it, making the space available for writing.
-     @param buf A buffer of at least `len` bytes into which the data will be copied.
-     @param len The number of bytes to copy. This can be an ideal value; if not
-     enough bytes are available, a smaller amount will be copied.
-     @result The number of bytes actually copied into `buf`.
-     */
-    std::size_t     ReadBytes(uint8_t* buf, std::size_t len)    noexcept;
+    std::size_t     ReadBytes(uint8_t* buf, std::size_t len);
     
     /**
      Writes data into the buffer.
+     @note This method acquires the instance's modification lock.
      @param  buf A buffer of at least `len` bytes from which data will be copied.
      @param len The number of bytes to copy. This can be an ideal value; if not
      enough space available, a smaller amount will be copied.
      @result The number of bytes actually copied into the ring buffer.
      */
-    std::size_t     WriteBytes(const uint8_t* buf, std::size_t len) noexcept;
+    std::size_t     WriteBytes(const uint8_t* buf, std::size_t len);
+    
+    /**
+     Removes bytes from the buffer.
+     @note This method acquire's the instance's modification lock.
+     @param len The number of bytes to remove. When `len > _numBytes` the result is
+     undefined.
+     */
+    void            RemoveBytes(std::size_t len)    noexcept;
     
     /** @} */
     
 protected:
-    /**
-     Implements the copy-out function without regard to locks or updates.
-     @param buf The buffer into which to copy the output bytes.
-     @param len The number of bytes to copy. It is assumed that this number is
-     `<=` _numBytes.
-     */
-    void                    read_nolock(uint8_t* buf, std::size_t len) noexcept;
+    std::size_t             _capacity;  ///< The allocated capacity (in bytes) of the backing store.
+    uint8_t*                _buffer;    ///< The buffer backing store.
     
-    /**
-     Implements the copy-in function without regard to locks. Updates write position.
-     @param buf The buffer from which to copy the output bytes.
-     @param len The number of bytes to copy. It is assumed that this number is
-     `<=` SpaceAvailable().
-     */
-    void                    write_nolock(uint8_t* buf, std::size_t len) noexcept;
+    std::size_t             _numBytes;  ///< The number of bytes available to read.
+    std::size_t             _readPos;   ///< The current read position.
+    std::size_t             _writePos;  ///< The current write position.
     
-    /**
-     Removes a range of bytes without regard to locks. Updates read position.
-     
-     May also update the write position if all data has been read from the buffer.
-     @param len The number of bytes to remove. It is assumed that this number is
-     `<=` _numBytes.
-     */
-    void                    remove_nolock(std::size_t len) noexcept {
-        _readPos = ((_readPos + len) % _Bufsize);
-    }
-    
-protected:
-    std::array<uint8_t, _Bufsize>   _buffer;    ///< The static buffer backing store.
-    
-    std::size_t                     _numBytes;  ///< The number of bytes available to read.
-    std::size_t                     _readPos;   ///< The current read position.
-    std::size_t                     _writePos;  ///< The current write position.
-    
-    RWLock                          _lock;
+    std::recursive_mutex    _lock;      ///< An access lock, used to prevent modifications.
     
 };
 
-template <std::size_t _Bufsize>
-std::size_t RingBuffer<_Bufsize>::PeekBytes(uint8_t* buf, std::size_t len) noexcept
-{
-    readlock_guard _(_lock);
-    
-    std::size_t copied = std::min(len, _numBytes);
-    if ( copied != 0 )
-    {
-        read_nolock(buf, copied);
-    }
-    
-    return copied;
-}
-template <std::size_t _Bufsize>
-std::size_t RingBuffer<_Bufsize>::ReadBytes(uint8_t *buf, std::size_t len) noexcept
-{
-    readlock_guard _(_lock);
-    
-    std::size_t copied = std::min(len, _numBytes);
-    if ( copied != 0 )
-    {
-        read_nolock(buf, copied);
-        remove_nolock(copied);
-    }
-    
-    return copied;
-}
-template <std::size_t _Bufsize>
-std::size_t RingBuffer<_Bufsize>::WriteBytes(const uint8_t *buf, std::size_t len) noexcept
-{
-    std::lock_guard<RWLock> _(_lock);
-    
-    std::size_t copied = std::min(len, SpaceAvailable());
-    if ( copied != 0 )
-    {
-        write_nolock(buf, copied);
-    }
-    
-    return copied;
-}
-template <std::size_t _Bufsize>
-void RingBuffer<_Bufsize>::read_nolock(uint8_t *buf, std::size_t len) noexcept
-{
-    if ( _readPos < _writePos )
-    {
-        std::memcpy(buf, &_buffer[_readPos], len);
-    }
-    else
-    {
-        std::size_t __t = _Bufsize - _readPos;
-        std::memcpy(buf, &_buffer[_readPos], __t);
-        std::memcpy(&buf[__t], _buffer.data(), len - __t);
-    }
-}
-template <std::size_t _Bufsize>
-void RingBuffer<_Bufsize>::write_nolock(uint8_t *buf, std::size_t len) noexcept
-{
-    if ( _writePos < _readPos )
-    {
-        std::memcpy(&_buffer[_writePos], buf, len);
-        _writePos += len;
-    }
-    else
-    {
-        std::size_t __t = _Bufsize - _writePos;
-        if ( __t >= len )
-        {
-            std::memcpy(&_buffer[_writePos], buf, len);
-            _writePos += len;
-        }
-        else
-        {
-            std::size_t __b = len - __t;
-            std::memcpy(&_buffer[_writePos], buf, __t);
-            std::memcpy(_buffer.data(), &buf[__t], __b);
-            _writePos = __b;
-        }
-    }
-    
-    if ( _writePos == _Bufsize )
-        _writePos = 0;
-    _numBytes += len;
-}
+
 
 EPUB3_END_NAMESPACE
 
