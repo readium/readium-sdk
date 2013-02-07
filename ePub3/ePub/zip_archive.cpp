@@ -253,6 +253,7 @@ ssize_t ZipWriter::_source_callback(void *state, void *data, size_t len, enum zi
             st->size = writer->_data.Size();
             st->comp_method = (writer->_compressed ? ZIP_CM_DEFLATE : ZIP_CM_STORE);
             r = sizeof(struct zip_stat);
+            break;
         }
         case ZIP_SOURCE_ERROR:
         default:

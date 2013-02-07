@@ -62,7 +62,7 @@ TEST_CASE("Package should have multiple manifest items, and they should be index
     auto manifest = pkg->Manifest();
     REQUIRE_FALSE(manifest.empty());
     
-    int idx = static_cast<int>(arc4random() % manifest.size());
+    int idx = static_cast<unsigned int>(arc4random() % manifest.size());
     const ManifestItem* randomItem = nullptr;
     for ( auto pos = manifest.begin(); idx >= 0; ++pos, --idx )
     {
