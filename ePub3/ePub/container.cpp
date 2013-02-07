@@ -24,6 +24,7 @@
 #include "package.h"
 #include "archive_xml.h"
 #include "xpath_wrangler.h"
+#include "byte_stream.h"
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -33,23 +34,23 @@ static const char * gRootfilesXPath = "/ocf:container/ocf:rootfiles/ocf:rootfile
 static const char * gRootfilePathsXPath = "/ocf:container/ocf:rootfiles/ocf:rootfile/@full-path";
 static const char * gVersionXPath = "/ocf:container/@version";
 
-Container::Container(const std::string& path) : _archive(Archive::Open(path))
+Container::Container(const string& path) : _archive(Archive::Open(path.stl_str()))
 {
     if ( _archive == nullptr )
-        throw std::invalid_argument("Path does not point to a recognised archive file: '" + path + "'");
+        throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
     
     // TODO: Initialize lazily? Doing so would make initialization faster, but require
     // PackageLocations() to become non-const, like Packages().
     ArchiveXmlReader reader(_archive->ReaderAtPath(gContainerFilePath));
     _ocf = reader.xmlReadDocument(gContainerFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
     if ( _ocf == nullptr )
-        throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": No container.xml in " + path);
+        throw std::invalid_argument(_Str(__PRETTY_FUNCTION__, ": No container.xml in ", path));
     
     XPathWrangler xpath(_ocf, {{"ocf", "urn:oasis:names:tc:opendocument:xmlns:container"}});
     xmlNodeSetPtr nodes = xpath.Nodes(reinterpret_cast<const xmlChar*>(gRootfilesXPath));
     
     if ( nodes == nullptr || nodes->nodeNr == 0 )
-        throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": No rootfiles in " + path);
+        throw std::invalid_argument(_Str(__PRETTY_FUNCTION__, ": No rootfiles in ", path));
     
     for ( int i = 0; i < nodes->nodeNr; i++ )
     {
@@ -66,9 +67,6 @@ Container::Container(const std::string& path) : _archive(Archive::Open(path))
     }
 
     LoadEncryption();
-}
-Container::Container(Locator locator) : Container(locator.GetPath())
-{
 }
 Container::Container(Container&& o) : _archive(o._archive), _ocf(o._ocf), _packages(std::move(o._packages))
 {
@@ -143,6 +141,10 @@ const EncryptionInfo* Container::EncryptionInfoForPath(const string &path) const
     }
     
     return nullptr;
+}
+Auto<ByteStream> Container::ReadStreamAtPath(const string &path) const
+{
+    return _archive->ByteStreamAtPath(path.stl_str());
 }
 
 EPUB3_END_NAMESPACE

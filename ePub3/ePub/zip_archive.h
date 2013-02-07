@@ -49,9 +49,11 @@ public:
     Archive & operator = (ZipArchive &&o);
     
     virtual bool ContainsItem(const std::string & path) const;
-    virtual bool DeleteItem(const std::string & path);;
+    virtual bool DeleteItem(const std::string & path);
     
     virtual bool CreateFolder(const std::string & path);
+    
+    virtual Auto<ByteStream> ByteStreamAtPath(const std::string& path) const;
     
     virtual ArchiveReader* ReaderAtPath(const std::string & path) const;
     virtual ArchiveWriter* WriterAtPath(const std::string & path, bool compress=true, bool create=true);

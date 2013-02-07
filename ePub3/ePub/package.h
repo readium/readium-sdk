@@ -44,6 +44,7 @@ EPUB3_BEGIN_NAMESPACE
 class Archive;
 class Metadata;
 class NavigationTable;
+class ByteStream;
 
 /**
  The PackageBase class implements the low-level components and all storage of an OPF
@@ -265,6 +266,13 @@ public:
      */
     IRI                     PropertyIRIFromAttributeValue(const string& attrValue)              const;
     
+    /**
+     Returns a ByteStream for reading from the specified file in the package's Archive.
+     @param path The path of the item to read.
+     @result An auto-pointer to a new ByteStream instance.
+     */
+    Auto<ByteStream>        ReadStreamForItemAtPath(const string& path)                         const;
+    
     /// Returns the CFI node index for the `<spine>` element within the package
     /// document.
     uint32_t                SpineCFIIndex()                 const   { return _spineCFIIndex; }
@@ -378,12 +386,13 @@ public:
     const SpineItem *       operator[](size_t idx)          const   { return SpineItemAt(idx); }
     const ManifestItem *    operator[](const string& ident) const   { return ManifestItemWithID(ident); }
     
-    ArchiveReader*          ReaderForRelativePath(const string& path) const {
+    ArchiveReader*          ReaderForRelativePath(const string& path)       const {
         return _archive->ReaderAtPath((_pathBase + path).stl_str());
     }
-    ArchiveXmlReader*       XmlReaderForRelativePath(const string& path) const {
+    ArchiveXmlReader*       XmlReaderForRelativePath(const string& path)    const {
         return new ArchiveXmlReader(ReaderForRelativePath(path));
     }
+    Auto<ByteStream>        ReadStreamForRelativePath(const string& path)   const;
     
     const class NavigationTable*    TableOfContents()       const       { return NavigationTable("toc"); }
     const class NavigationTable*    ListOfFigures()         const       { return NavigationTable("lof"); }

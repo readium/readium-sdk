@@ -8,6 +8,7 @@
 
 #include "iri.h"
 #include "url_util.h"
+#include "cfi.h"
 #include <regex>
 
 EPUB3_BEGIN_NAMESPACE
@@ -113,6 +114,17 @@ const string IRI::Path(bool urlEncoded) const
     url_util::DecodeURLEscapeSequences(encodedPath.c_str(), static_cast<int>(encodedPath.size()), &output);
     return string(output.data(), output.length());
 }
+const CFI IRI::ContentFragmentIdentifier() const
+{
+    if ( !_url->has_ref() )
+        return CFI();
+    
+    string ref = Fragment();
+    if ( ref.find("epubcfi(") != 0 )
+        return CFI();
+    
+    return CFI(ref);
+}
 void IRI::SetScheme(const string& scheme)
 {
     url_canon::Replacements<char> rep;
@@ -211,6 +223,12 @@ void IRI::SetFragment(const string& fragment)
         _pureIRI.append(1, '#');
         _pureIRI.append(fragment);
     }
+}
+void IRI::SetContentFragmentIdentifier(const CFI &cfi)
+{
+    if ( cfi.Empty() )
+        return;
+    SetFragment(cfi.String());
 }
 string IRI::URLEncodeComponent(const string& str)
 {

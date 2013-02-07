@@ -28,6 +28,7 @@
 #include "glossary.h"
 #include "iri.h"
 #include "basic.h"
+#include "byte_stream.h"
 #include <sstream>
 #include <list>
 #include <regex>
@@ -192,6 +193,10 @@ IRI PackageBase::PropertyIRIFromAttributeValue(const string &attrValue) const
     
     // there are two captures, at indices 1 and 2
     return MakePropertyIRI(pieces.str(2), pieces.str(1));
+}
+Auto<ByteStream> PackageBase::ReadStreamForItemAtPath(const string &path) const
+{
+    return _archive->ByteStreamAtPath(path.stl_str());
 }
 void PackageBase::InstallPrefixesFromAttributeValue(const ePub3::string &attrValue)
 {
@@ -701,6 +706,10 @@ const ManifestItem* Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRemaining
     }
     
     return result;
+}
+Auto<ByteStream> Package::ReadStreamForRelativePath(const string &path) const
+{
+    return _archive->ByteStreamAtPath(path.stl_str());
 }
 const string Package::Title() const
 {

@@ -20,6 +20,8 @@
 //
 
 #include "byte_stream.h"
+#include <libzip/zip.h>
+#include <libzip/zipint.h>          // for internals of zip_file
 #include <sys/stat.h>
 
 EPUB3_BEGIN_NAMESPACE
@@ -113,6 +115,10 @@ void AsyncByteStream::InitAsyncHandler()
     });
 }
 
+#if 0
+#pragma mark -
+#endif
+
 FileByteStream::FileByteStream(const string& path, std::ios::openmode mode) : ByteStream(), _file(nullptr)
 {
     Open(path, mode);
@@ -133,12 +139,12 @@ ByteStream::size_type FileByteStream::BytesAvailable() const noexcept
     if ( ::fstat(::fileno(const_cast<FILE*>(_file)), &sb) != 0 )
         return 0;
     
-    return sb.st_size - ::ftell(const_cast<FILE*>(_file));
+    return (sb.st_size - ::ftell(const_cast<FILE*>(_file)));
 }
 ByteStream::size_type FileByteStream::SpaceAvailable() const noexcept
 {
     // essentially unlimited, it seems
-    return std::numeric_limits<size_type>::max();
+    return (std::numeric_limits<size_type>::max());
 }
 bool FileByteStream::IsOpen() const noexcept
 {
@@ -256,6 +262,73 @@ ByteStream::size_type FileByteStream::Seek(size_type by, std::ios::seekdir dir)
     return ::ftell(_file);
 }
 
+#if 0
+#pragma mark -
+#endif
+
+ZipFileByteStream::ZipFileByteStream(struct zip* archive, const string& path, int flags) : ZipFileByteStream()
+{
+    Open(archive, path, flags);
+}
+ZipFileByteStream::~ZipFileByteStream()
+{
+    Close();
+}
+ByteStream::size_type ZipFileByteStream::BytesAvailable() const noexcept
+{
+    if ( _file == nullptr )
+        return 0;
+    return _file->bytes_left;
+}
+ByteStream::size_type ZipFileByteStream::SpaceAvailable() const noexcept
+{
+    // no write support just now
+    return 0;
+}
+bool ZipFileByteStream::IsOpen() const noexcept
+{
+    return _file != nullptr;
+}
+bool ZipFileByteStream::Open(struct zip *archive, const string &path, int flags)
+{
+    if ( _file != nullptr )
+        Close();
+    
+    _file = zip_fopen(archive, path.c_str(), flags);
+    return ( _file != nullptr );
+}
+void ZipFileByteStream::Close()
+{
+    if ( _file == nullptr )
+        return;
+
+    zip_fclose(_file);
+    _file = nullptr;
+}
+ByteStream::size_type ZipFileByteStream::ReadBytes(void *buf, size_type len)
+{
+    if ( _file == nullptr )
+        return 0;
+    
+    ssize_t numRead = zip_fread(_file, buf, len);
+    if ( numRead < 0 )
+    {
+        Close();
+        return 0;
+    }
+    
+    return numRead;
+}
+ByteStream::size_type ZipFileByteStream::WriteBytes(const void *buf, size_type len)
+{
+    // no write support at this moment
+    return 0;
+}
+
+#if 0
+#pragma mark -
+#endif
+
 bool AsyncFileByteStream::Open(const string &path, std::ios::openmode mode)
 {
     if ( __F::Open(path, mode) == false )
@@ -265,6 +338,24 @@ bool AsyncFileByteStream::Open(const string &path, std::ios::openmode mode)
     return true;
 }
 void AsyncFileByteStream::Close()
+{
+    __A::Close();
+    __F::Close();
+}
+
+#if 0
+#pragma mark -
+#endif
+
+bool AsyncZipFileByteStream::Open(struct zip *archive, const string &path, int flags)
+{
+    if ( __F::Open(archive, path, flags) == false )
+        return false;
+    
+    InitAsyncHandler();
+    return true;
+}
+void AsyncZipFileByteStream::Close()
 {
     __A::Close();
     __F::Close();

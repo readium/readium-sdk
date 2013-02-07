@@ -21,34 +21,40 @@
 
 #include "library.h"
 #include "container.h"
-#include "url_locator.h"
-#include "path_locator.h"
+#include "manifest.h"
+#include "package.h"
+#include "zip_archive.h"
 #include <sstream>
+#include <fstream>
 #include <list>
 
 // file format is CSV, unencrypted
 
 EPUB3_BEGIN_NAMESPACE
 
-Auto<Library> Library::_singleton;
+Auto<Library> Library::_singleton(nullptr);
 
-Library::Library(Locator* locator)
+Library::Library(const string& path)
 {
-    if ( !Load(locator) )
+    if ( !Load(path) )
         throw std::invalid_argument("The provided Locator doesn't appear to contain library data.");
 }
 Library::~Library()
 {
-    _packages.clear();
-    for ( auto item : _containers )
+    for ( auto& item : _packages )
     {
-        delete item.first;
-        delete item.second;
+        if ( item.second.second != nullptr )
+            delete item.second.second;
+    }
+    for ( auto& item : _containers )
+    {
+        if ( item.second != nullptr )
+            delete item.second;
     }
 }
-bool Library::Load(Locator* locator)
+bool Library::Load(const string& path)
 {
-    std::istream& stream = locator->ReadStream();
+    std::ifstream stream(path.stl_str());
     
     std::stringstream ss;
     std::string tmp;
@@ -58,26 +64,27 @@ bool Library::Load(Locator* locator)
         {
             ss << tmp;
             
-            Locator* thisLoc = nullptr;
+            string thisPath;
             std::list<std::string> uidList;
             while ( !ss.eof() )
             {
                 std::getline(ss, tmp, ss.widen(','));
-                if ( thisLoc == nullptr )
+                if ( thisPath.empty() )
                 {
                     // first item is a path to a local item
-                    thisLoc = new PathLocator(tmp);
+                    thisPath = tmp;
                 }
                 else
                 {
+                    // remaining items are unique IDs
                     uidList.emplace_back(tmp);
                 }
             }
             
-            _containers[thisLoc] = nullptr;
+            _containers[thisPath] = nullptr;
             for ( auto uid : uidList )
             {
-                _packages[uid] = {thisLoc, nullptr};
+                _packages[uid] = {thisPath, nullptr};
             }
         }
         catch (...)
@@ -88,88 +95,135 @@ bool Library::Load(Locator* locator)
     
     return true;
 }
-Library* Library::MainLibrary(Locator* locator)
+Library* Library::MainLibrary(const string& path)
 {
-    if ( (bool)_singleton )
-        return _singleton.get();
-    
-    _singleton.reset(new Library(locator));
+    static std::once_flag __guard;
+    std::call_once(__guard, [&](){ _singleton.reset(new Library(path)); });
     return _singleton.get();
 }
-Locator Library::LocatorForEPubWithUniqueID(const string& uniqueID) const
+string Library::PathForEPubWithUniqueID(const string &uniqueID) const
 {
     auto found = _packages.find(uniqueID);
     if ( found == _packages.end() )
-        return NullLocator();
+        return string::EmptyString;
     
-    return *(found->second.first);
+    return found->second.first;
 }
-void Library::AddEPubsInContainer(Container* container, Locator* locator)
+string Library::PathForEPubWithPackageID(const string &packageID) const
+{
+    string uniqueIDStart(packageID + "@");
+    for ( auto &pair : _packages )
+    {
+        if ( pair.first == packageID || pair.first.find(uniqueIDStart) == 0 )
+            return pair.second.first;
+    }
+    
+    return string::EmptyString;
+}
+void Library::AddPublicationsInContainer(Container* container, const string& path)
 {
     // store the container
-    auto existing = _containers.find(locator);
+    auto existing = _containers.find(path);
     if ( existing == _containers.end() )
-        _containers[locator] = container;
+        _containers[path] = container;
     
     for ( auto pkg : container->Packages() )
     {
-        _packages.emplace(pkg->UniqueID(), LookupEntry({locator, pkg}));
+        _packages.emplace(pkg->UniqueID(), LookupEntry({path, pkg}));
     }
 }
-string Library::EPubURLForPackage(const Package* package) const
+void Library::AddPublicationsInContainerAtPath(const ePub3::string &path)
 {
-    return EPubURLForPackage(package->UniqueID());
+    Container *p = new Container(path);
+    if ( p != nullptr )
+        AddPublicationsInContainer(p, path);
 }
-string Library::EPubURLForPackage(const string &identifier) const
+IRI Library::EPubURLForPublication(const Package* package) const
 {
-    return _Str("epub3://", identifier, "/");
+    return EPubURLForPublicationID(package->UniqueID());
 }
-Package* Library::PackageForEPubURL(const string &url)
+IRI Library::EPubURLForPublicationID(const string &identifier) const
 {
-    // get the uid
-    auto loc = url.find("epub3://");
-    if ( loc != 0 )
+    return IRI(IRI::gEPUBScheme, identifier, "/");
+}
+Package* Library::PackageForEPubURL(const IRI &url, bool allowLoad)
+{
+    // is it an epub URL?
+    if ( url.Scheme() != IRI::gEPUBScheme )
         return nullptr;
     
-    loc = url.find_first_of("/", 8, url.size()-8);
-    if ( loc == std::string::npos )
-        return nullptr;
-    
-    string ident(url.substr(loc, url.size()-loc-1));
+    string ident = url.Host();
     auto entry = _packages.find(ident);
     if ( entry == _packages.end() )
         return nullptr;
     
-    if ( entry->second.second != nullptr )
+    if ( entry->second.second != nullptr || !allowLoad )
         return entry->second.second;
     
-    AddEPubsInContainerAtPath(entry->second.first);
+    AddPublicationsInContainerAtPath(entry->second.first);
     
     // returns a package ptr or nullptr
     return entry->second.second;
 }
-string Library::EPubCFIURLForManifestItem(const ManifestItem* item)
+IRI Library::EPubCFIURLForManifestItem(const ManifestItem* item) const
 {
-    return _Str(EPubURLForPackage(item->Package()), item->Package()->CFISubpathForManifestItemWithID(item->Identifier()));
+    IRI packageURL = EPubURLForPublication(item->Package());
+    packageURL.SetContentFragmentIdentifier(item->Package()->CFIForManifestItem(item));
+    return packageURL;
 }
-bool Library::WriteToFile(Locator* locator) const
+const ManifestItem* Library::ManifestItemForCFI(const IRI &urlWithCFI, CFI* pRemainingCFI)
 {
-    std::ostream& stream = locator->WriteStream();
+    CFI cfi = urlWithCFI.ContentFragmentIdentifier();
+    if ( cfi.Empty() )
+        return nullptr;
+    
+    const Package* pkg = PackageForEPubURL(urlWithCFI);
+    if ( pkg == nullptr )
+        return nullptr;
+    
+    return pkg->ManifestItemForCFI(cfi, pRemainingCFI);
+}
+Auto<ByteStream> Library::ReadStreamForEPubURL(const IRI &url, CFI *pRemainingCFI)
+{
+    CFI cfi = url.ContentFragmentIdentifier();
+    if ( cfi.Empty() )
+    {
+        // it references a content document directly
+        const Package* pkg = PackageForEPubURL(url);
+        if ( pkg != nullptr )
+            return pkg->ReadStreamForItemAtPath(url.Path());
+    }
+    else
+    {
+        const ManifestItem* item = ManifestItemForCFI(url, pRemainingCFI);
+        if ( item != nullptr )
+            return item->Reader();
+    }
+    
+    return nullptr;
+}
+bool Library::WriteToFile(const string& path) const
+{
+    std::ofstream stream(path.stl_str());
     for ( auto item : _containers )
     {
         // works like an auto_ptr, scoping the allocation
         Container* pContainer = item.second;
         
         if ( pContainer == nullptr )
-            pContainer = new Container(*item.first);
+            pContainer = new Container(item.first);
+        if ( pContainer == nullptr )
+            continue;
         
-        stream << item.first->GetPath();
+        stream << item.first;
         for ( auto pkg : pContainer->Packages() )
         {
             stream << "," << pkg->UniqueID();
         }
         
         stream << std::endl;
+        if ( pContainer != item.second )
+            delete pContainer;
     }
     
     return true;

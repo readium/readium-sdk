@@ -24,12 +24,11 @@
 
 #include "epub3.h"
 #include "container.h"
-#include "Package.h"
+#include "package.h"
 #include "cfi.h"
-#include "locator.h"
 #include "utfstring.h"
+#include "byte_stream.h"
 #include <map>
-#include <atomic>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -51,59 +50,60 @@ EPUB3_BEGIN_NAMESPACE
 class Library
 {
 public:
-    typedef string     EPubIdentifier;
+    typedef string      EPubIdentifier;
     
 protected:
-    Library() = default;
-    Library(const Library&) = default;
-    Library(Library&& o) : _containers(std::move(o._containers)), _packages(std::move(o._packages)) {}
+                        Library() : _containers(), _packages() {}
+                        Library(const Library& o) : _containers(o._containers), _packages(o._packages) {}
+                        Library(Library&& o) : _containers(std::move(o._containers)), _packages(std::move(o._packages)) {}
     
     // load a library from a file generated using WriteToFile()
-    Library(Locator* locator);
-    bool Load(Locator* locator);
+                        Library(const string& path);
+    bool                Load(const string& path);
     
 public:
     // access a singleton instance managed by the class
-    static Library* MainLibrary(Locator* locator = new NullLocator());
-    virtual ~Library();
+    static Library*     MainLibrary(const string& path = "");
+    virtual             ~Library();
     
-    Locator LocatorForEPubWithUniqueID(const string& uniqueID) const;
+    string              PathForEPubWithUniqueID(const string& uniqueID)     const;
+    string              PathForEPubWithPackageID(const string& packageID)   const;
     
-    void AddEPubsInContainer(Container* container, Locator* locator = new NullLocator());
-    void AddEPubsInContainerAtPath(Locator* locator) {
-        return AddEPubsInContainer(new Container(*locator), locator);
-    }
+    void                AddPublicationsInContainer(Container* container, const string& path);
+    void                AddPublicationsInContainerAtPath(const string& path);
     
     // returns an epub3:// url for the package with a given identifier
-    string EPubURLForPackage(const Package* package) const;
-    string EPubURLForPackage(const string& identifier) const;
+    IRI                 EPubURLForPublication(const Package* package)       const;
+    IRI                 EPubURLForPublicationID(const string& identifier)   const;
     
     // may load a container/package, so non-const
-    Package* PackageForEPubURL(const string& url);
+    Package*            PackageForEPubURL(const IRI& url, bool allowLoad=true);
     
-    string EPubCFIURLForManifestItem(const ManifestItem* item);
+    IRI                 EPubCFIURLForManifestItem(const ManifestItem* item) const;
     
     // may instantiate a Container & store it, so non-const
-    const ManifestItem* ManifestItemForCFI(const string& urlWithCFI);
+    const ManifestItem* ManifestItemForCFI(const IRI& urlWithCFI, CFI* pRemainingCFI);
+    
+    Auto<ByteStream>    ReadStreamForEPubURL(const IRI& url, CFI* pRemainingCFI);
     
     // file format is sort-of CSV
     // each line starts with a container locator's string representation followed by a
     //  comma-separated list of package identifiers
-    bool WriteToFile(Locator* locator) const;
+    bool                WriteToFile(const string& path)                     const;
     
 protected:
     // list of known (but not necessarily loaded) containers
-    typedef std::map<Locator*, Container*>          ContainerLookup;
+    typedef std::map<string, Container*>            ContainerLookup;
     
     // if container is loaded, LookupEntry will contain a Package
     // otherwise, the locator is used to load the Container
-    typedef std::pair<Locator*, Package*>           LookupEntry;
+    typedef std::pair<string, Package*>             LookupEntry;
     typedef std::map<EPubIdentifier, LookupEntry>   PackageLookup;
     
-    ContainerLookup _containers;
-    PackageLookup   _packages;
+    ContainerLookup         _containers;
+    PackageLookup           _packages;
     
-    static Auto<Library>  _singleton;
+    static Auto<Library>    _singleton;
 };
 
 EPUB3_END_NAMESPACE

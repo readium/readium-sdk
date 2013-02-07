@@ -15,6 +15,8 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+class CFI;
+
 class IRI
 {
     // would like this to contain const strings, but that proves awkward for now
@@ -65,6 +67,7 @@ public:
     const string    Query() const { return _url->query(); }
     const string    Fragment() const { return _url->ref(); }
     const string    LastPathComponent() const { return _url->ExtractFileName(); }
+    const CFI       ContentFragmentIdentifier() const;
     
     void            SetScheme(const string& scheme);
     void            SetHost(const string& host);
@@ -72,6 +75,7 @@ public:
     void            AddPathComponent(const string& component);
     void            SetQuery(const string& query);
     void            SetFragment(const string& query);
+    void            SetContentFragmentIdentifier(const CFI& cfi);
     
     static string   URLEncodeComponent(const string& str);
     static string   PercentEncodeUCS(const string& str);

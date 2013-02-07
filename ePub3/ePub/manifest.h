@@ -33,6 +33,7 @@ EPUB3_BEGIN_NAMESPACE
 class Package;
 class ManifestItem;
 class ArchiveReader;
+class ByteStream;
 
 typedef std::map<string, ManifestItem*>    ManifestTable;
 
@@ -142,7 +143,7 @@ public:
     xmlDocPtr           ReferencedDocument()                const;
     
     // stream the data
-    ArchiveReader*      Reader()                            const;
+    Auto<ByteStream>    Reader()                            const;
     
 protected:
     const class Package*    _owner;

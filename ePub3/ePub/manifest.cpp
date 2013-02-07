@@ -21,6 +21,7 @@
 
 #include "manifest.h"
 #include "package.h"
+#include "byte_stream.h"
 #include <regex>
 #include <sstream>
 
@@ -218,9 +219,9 @@ xmlDocPtr ManifestItem::ReferencedDocument() const
     
     return result;
 }
-ArchiveReader* ManifestItem::Reader() const
+Auto<ByteStream> ManifestItem::Reader() const
 {
-    return _owner->ReaderForRelativePath(BaseHref());
+    return _owner->ReadStreamForRelativePath(BaseHref());
 }
 
 EPUB3_END_NAMESPACE

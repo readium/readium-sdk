@@ -21,6 +21,7 @@
 
 #include "zip_archive.h"
 #include "zipint.h"
+#include "byte_stream.h"
 #include <unistd.h>
 #include <sys/fcntl.h>
 
@@ -146,6 +147,10 @@ bool ZipArchive::DeleteItem(const std::string & path)
 bool ZipArchive::CreateFolder(const std::string & path)
 {
     return (zip_add_dir(_zip, Sanitized(path).c_str()) >= 0);
+}
+Auto<ByteStream> ZipArchive::ByteStreamAtPath(const std::string &path) const
+{
+    return Auto<ByteStream>(new ZipFileByteStream(_zip, path));
 }
 ArchiveReader* ZipArchive::ReaderAtPath(const std::string & path) const
 {
