@@ -62,7 +62,7 @@ class ZipWriter : public ArchiveWriter
         // offset is always *read* offset
         void *  _buf;
         size_t  _cap;
-        off_t   _off;
+        size_t  _off;
     };
     
 public:
@@ -89,8 +89,8 @@ ZipArchive::ZipItemInfo::ZipItemInfo(struct zip_stat & info)
 {
     SetPath(info.name);
     SetIsCompressed(info.comp_method == ZIP_CM_STORE);
-    SetCompressedSize(info.comp_size);
-    SetUncompressedSize(info.size);
+    SetCompressedSize(static_cast<size_t>(info.comp_size));
+    SetUncompressedSize(static_cast<size_t>(info.size));
 }
 
 std::string ZipArchive::TempFilePath()

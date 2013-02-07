@@ -36,7 +36,7 @@ EPUB3_BEGIN_NAMESPACE
 class ByteStream
 {
 public:
-    typedef std::streamsize         size_type;
+    typedef std::size_t             size_type;
     
     static const size_type          UnknownSize = std::numeric_limits<size_type>::min();
     

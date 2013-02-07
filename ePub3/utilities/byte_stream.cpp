@@ -139,7 +139,7 @@ ByteStream::size_type FileByteStream::BytesAvailable() const noexcept
     if ( ::fstat(::fileno(const_cast<FILE*>(_file)), &sb) != 0 )
         return 0;
     
-    return (sb.st_size - ::ftell(const_cast<FILE*>(_file)));
+    return (static_cast<size_type>(sb.st_size) - static_cast<size_type>(::ftell(const_cast<FILE*>(_file))));
 }
 ByteStream::size_type FileByteStream::SpaceAvailable() const noexcept
 {

@@ -40,7 +40,12 @@
 # include <unistd.h>
 # include <sys/time.h>
 # if __MACH__
-#  include <crt_externs.h>
+#  include <TargetConditionals.h>
+#  if TARGET_OS_IPHONE
+extern const char* _IOSGetProgname(void);
+#  else
+#   include <crt_externs.h>
+#  endif
 #  include <mach/mach_time.h>
 # endif
 typedef pthread_rwlock_t CRITICAL_SECTION;
@@ -129,7 +134,11 @@ bool InitializeLogFileHandle() {
     if ( log_file_name[0] == '\0' )
     {
 #if __MACH__
+# if TARGET_OS_IPHONE
+        strlcpy(log_file_name, _IOSGetProgname(), MAX_PATH);
+# else
         strlcpy(log_file_name, *_NSGetProgname(), MAX_PATH);
+# endif
 #else
         strlcpy(log_file_name, __progname, MAX_PATH);
 #endif
