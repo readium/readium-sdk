@@ -1580,7 +1580,7 @@
 				GCC_PREFIX_HEADER = "ePub3-iOS/ePub3-iOS-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
-					"USING_ICU=1",
+					"USING_ICU=0",
 				);
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,

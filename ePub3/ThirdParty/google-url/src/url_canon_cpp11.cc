@@ -36,6 +36,7 @@
 #include "../../../utilities/utfstring.h"   // for UTF8CharLen
 #include <regex>
 
+#if USING_ICU
 // the only pieces of ICU that we still need
 extern "C" int32_t
 uidna_IDNToASCII(const char16* src, int32_t srcLength,
@@ -49,6 +50,7 @@ uidna_IDNToUnicode(const char16* src, int32_t srcLength,
                    int32_t options,
                    int* parseError,
                    int* status);
+#endif
 
 namespace url_canon {
 
