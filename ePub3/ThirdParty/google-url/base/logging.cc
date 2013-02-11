@@ -42,7 +42,7 @@
 # if __MACH__
 #  include <TargetConditionals.h>
 #  if TARGET_OS_IPHONE
-extern const char* _IOSGetProgname(void);
+extern "C" const char* _IOSGetProgname(void);
 #  else
 #   include <crt_externs.h>
 #  endif
