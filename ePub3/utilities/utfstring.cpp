@@ -799,35 +799,25 @@ std::u16string string::utf16string() const
 {
     return utf16_convert().from_bytes(_base);
 }
-string& string::tolower()
+string& string::tolower(const std::locale& loc)
 {
-    std::u32string out;
-    out.resize(size());
-    std::transform(begin(), end(), out.begin(), ::towlower);
-    assign(out.c_str(), out.size());
+    auto& facet = std::use_facet<std::ctype<char>>(loc);
+    facet.tolower(&(*_base.begin()), &(*_base.end()));
     return *this;
 }
-const string string::tolower() const
+const string string::tolower(const std::locale& loc) const
 {
-    std::u32string out;
-    out.resize(size());
-    std::transform(begin(), end(), out.begin(), ::towlower);
-    return string(out.c_str(), out.size());
+    return string(*this).tolower(loc);
 }
-string& string::toupper()
+string& string::toupper(const std::locale& loc)
 {
-    std::u32string out;
-    out.resize(size());
-    std::transform(begin(), end(), out.begin(), ::towupper);
-    assign(out.c_str(), out.size());
+    auto& facet = std::use_facet<std::ctype<char>>(loc);
+    facet.toupper(&(*_base.begin()), &(*_base.end()));
     return *this;
 }
-const string string::toupper() const
+const string string::toupper(const std::locale& loc) const
 {
-    std::u32string out;
-    out.resize(size());
-    std::transform(begin(), end(), out.begin(), ::towupper);
-    return string(out.c_str(), out.size());
+    return string(*this).toupper(loc);
 }
 template <>
 string::size_type string::find_first_of<char>(const char * s, size_type pos, size_type n) const {

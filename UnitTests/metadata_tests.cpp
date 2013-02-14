@@ -27,6 +27,7 @@
 #include <type_traits>
 
 #define EPUB_PATH "TestData/childrens-literature-20120722.epub"
+#define LOCALIZED_EPUB_PATH "TestData/kusamakura-japanese-vertical-writing-20121124.epub"
 
 using namespace ePub3;
 
@@ -92,4 +93,19 @@ TEST_CASE("Simple string metadata values should be correct", "")
     REQUIRE(pkg->Source() == "http://www.gutenberg.org/files/25545/25545-h/25545-h.htm");
     REQUIRE(pkg->CopyrightOwner() == "Public domain in the USA.");
     REQUIRE(pkg->ModificationDate() == "2010-02-17T04:39:13Z");
+}
+
+TEST_CASE("An appropriately localized value should be returned if available", "")
+{
+    Container c(LOCALIZED_EPUB_PATH);
+    const Package* pkg = c.Packages()[0];
+    
+    REQUIRE(pkg->Title() == u8"草枕");
+    REQUIRE(pkg->Authors() == u8"夏目 漱石");
+    REQUIRE(pkg->Contributors() == u8"柴田 卓治, 伊藤 時也, 総務省, EPUB日本語拡張仕様策定プロジェクト, 持田 怜香, 濱田 麻邑, 川幡 太一, and 村田 真");
+    
+    Package::SetLocale("en_US.UTF-8");
+    REQUIRE(pkg->Title() == "Kusamakura");
+    REQUIRE(pkg->Authors() == "Natsume, Sōseki");
+    REQUIRE(pkg->Contributors() == u8"柴田 卓治, 伊藤 時也, Ministry of Internal Affairs and Communications, Japanese EPUB Specification Settlement Project, Reika Mochida, Mayu Hamada, Taichi Kawabata, and Makoto Murata");
 }

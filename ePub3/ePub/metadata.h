@@ -107,8 +107,12 @@ public:
     string                  Value()         const;
     string                  Language()      const;
     
+    string                  LocalizedValue()                            const;
+    string                  LocalizedValue(const std::locale& locale)   const;
+    
     const ExtensionList&    Extensions()    const           { return _extensions; }
     const Extension*        ExtensionWithProperty(const IRI& property) const;
+    const ExtensionList     AllExtensionsWithProperty(const IRI& property) const;
     
     void                    AddExtension(xmlNodePtr node, const Package* owner);
     
@@ -121,6 +125,7 @@ public:
     const ValueMap          DebugValues()   const;
     
 protected:
+    const Package*  _owner;
     DCType          _type;
     xmlNodePtr      _node;
     ExtensionList   _extensions;

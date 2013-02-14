@@ -556,11 +556,11 @@ public:
     
     __base::allocator_type get_allocator() const noexcept { return _base.get_allocator(); }
     
-    string& tolower();
-    const string tolower() const;
+    string& tolower(const std::locale& loc = std::locale(""));
+    const string tolower(const std::locale& loc = std::locale("")) const;
     
-    string& toupper();
-    const string toupper() const;
+    string& toupper(const std::locale& loc = std::locale(""));
+    const string toupper(const std::locale& loc = std::locale("")) const;
     
 #if 0
 #pragma mark - Searching

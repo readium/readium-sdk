@@ -126,6 +126,35 @@ public:
     virtual const string&   BasePath()              const       { return _pathBase; }
     
     /**
+     @defgroup locales Locale Support
+     @{
+     */
+    
+    /**
+     Returns the current locale.
+     
+     This value is initially set to the current user locale, but it can be
+     explicitly changed (i.e. for testing purposes) by calling
+     SetLocale(const string&) or SetLocale(const std::locale&).
+     @return A reference to the current C++11 locale object.
+     */
+    static std::locale&     Locale();
+    
+    /**
+     Sets the current locale using a standard locale name.
+     @param name A string containing a canonical locale name.
+     */
+    static void             SetLocale(const string& name);
+    
+    /**
+     Sets the current locale to a given `std::locale` instance.
+     @param locale The new locale.
+     */
+    static void             SetLocale(const std::locale& locale);
+    
+    /** @} */
+    
+    /**
      @defgroup TableAccess Raw Table Accessors
      @note To keep these accessible in const packages, we *must* build the tree at
      allocation time.  This is open to discussion, naturally.
@@ -314,6 +343,10 @@ protected:
     ///
     /// Loads navigation tables from a given manifest item (which has the `"nav"` property).
     static NavigationList   NavTablesFromManifestItem(const ManifestItem * pItem);
+    
+    ///
+    /// The current locale instance.  Defaults to the current user locale.
+    static std::locale      gCurrentLocale;
 };
 
 /**
@@ -400,27 +433,30 @@ public:
     const class NavigationTable*    ListOfTables()          const       { return NavigationTable("lot"); }
     const class NavigationTable*    PageList()              const       { return NavigationTable("page-list"); }
     
-    const string            Title()                         const;
-    const string            Subtitle()                      const;
-    const string            FullTitle()                     const;
+    const string            Title(bool localized=true)              const;
+    const string            Subtitle(bool localized=true)           const;
+    const string            FullTitle(bool localized=true)          const;
     
     typedef std::vector<const string>               AttributionList;
     
     // returns the author names
-    const AttributionList   AuthorNames()                   const;
+    const AttributionList   AuthorNames(bool localized=true)        const;
     // returns the file-as names if available, as Authors() if not
-    const AttributionList   AttributionNames()              const;
+    const AttributionList   AttributionNames(bool localized=true)   const;
     // returns a formatted string for presentation to the user
-    const string            Authors()                       const;
+    const string            Authors(bool localized=true)            const;
     
-    const string            Language()                      const;
-    const string            Source()                        const;
-    const string            CopyrightOwner()                const;
-    const string            ModificationDate()              const;
-    const string            ISBN()                          const;
+    const AttributionList   ContributorNames(bool localized=true)   const;
+    const string            Contributors(bool localized=true)       const;
+    
+    const string            Language()                              const;
+    const string            Source(bool localized=true)             const;
+    const string            CopyrightOwner(bool localized=true)     const;
+    const string            ModificationDate()                      const;
+    const string            ISBN()                                  const;
     
     typedef std::vector<const string>               StringList;
-    const StringList        Subjects()                      const;
+    const StringList        Subjects(bool localized=true)           const;
     
     // Returns only the media types which have a handler of class MediaHandler.
     const StringList            MediaTypesWithDHTMLHandlers()                   const;
