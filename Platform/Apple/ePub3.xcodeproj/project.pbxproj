@@ -344,7 +344,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		850B1AE816A75AB000619C3C /* TestData */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TestData; sourceTree = "<group>"; };
+		850B1AE816A75AB000619C3C /* TestData */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TestData; path = ../../TestData; sourceTree = "<group>"; };
 		AB61CE4A1694845700299BB1 /* UnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = UnitTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB61CE4D1694845700299BB1 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		AB61CE4F1694845700299BB1 /* UnitTests.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = UnitTests.1; sourceTree = "<group>"; };
@@ -628,7 +628,8 @@
 				AB95448B16BC28F300EFD2FD /* switch_preproc_tests.cpp */,
 				AB95448D16BC539200EFD2FD /* object_preproc_tests.cpp */,
 			);
-			path = UnitTests;
+			name = UnitTests;
+			path = ../../UnitTests;
 			sourceTree = "<group>";
 		};
 		AB6AC71716836CA5000DE924 /* utilities */ = {
@@ -875,7 +876,8 @@
 			children = (
 				ABA4BAE516ADF5A600161B77 /* Supporting Files */,
 			);
-			path = "ePub3-iOS";
+			name = "ePub3-iOS";
+			path = "../../ePub3-iOS";
 			sourceTree = "<group>";
 		};
 		ABA4BAE516ADF5A600161B77 /* Supporting Files */ = {
@@ -920,7 +922,8 @@
 				AB9B5B2A165D539400F11069 /* Libraries */,
 				ABA72C271655382E003125FF /* Supporting Files */,
 			);
-			path = ePub3;
+			name = ePub3;
+			path = ../../ePub3;
 			sourceTree = "<group>";
 		};
 		ABA72C271655382E003125FF /* Supporting Files */ = {
@@ -1557,7 +1560,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
-					"$(SRCROOT)/ePub3/ThirdParty",
+					"$(SRCROOT)/../../ePub3/ThirdParty",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
@@ -1584,7 +1587,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
-					"$(SRCROOT)/ePub3/ThirdParty",
+					"$(SRCROOT)/../../ePub3/ThirdParty",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
@@ -1661,7 +1664,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
-					"$(SRCROOT)/ePub3/ThirdParty",
+					"$(SRCROOT)/../../ePub3/ThirdParty",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1677,7 +1680,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
-					"$(SRCROOT)/ePub3/ThirdParty",
+					"$(SRCROOT)/../../ePub3/ThirdParty",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
