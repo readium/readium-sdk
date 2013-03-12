@@ -195,7 +195,6 @@
 		ABA4BB5916ADF64400161B77 /* schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB19037165A7E1000CFC651 /* schema.cpp */; };
 		ABA4BB5A16ADF64400161B77 /* ns.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB19047165ADD6900CFC651 /* ns.cpp */; };
 		ABA4BB5B16ADF64400161B77 /* c14n.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB9B5B2F165D816400F11069 /* c14n.cpp */; };
-		ABA4BB5C16ADF65F00161B77 /* libcurl-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ABA4BAD516ADF22A00161B77 /* libcurl-ios.a */; };
 		ABA4BB5D16ADF66700161B77 /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = ABB190241656DB2200CFC651 /* libxml2.dylib */; };
 		ABA4BB5E16ADF66700161B77 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = ABB1901F1656868100CFC651 /* libz.dylib */; };
 		ABA4BB6016B1942100161B77 /* metadata_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA4BB5F16B1942100161B77 /* metadata_tests.cpp */; };
@@ -451,17 +450,6 @@
 		ABA4BAAD16A7518B00161B77 /* url_canon_cpp11.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = url_canon_cpp11.cc; sourceTree = "<group>"; };
 		ABA4BAAE16A7518B00161B77 /* url_canon_cpp11.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = url_canon_cpp11.h; sourceTree = "<group>"; };
 		ABA4BAB516ADAF6E00161B77 /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
-		ABA4BABE16ADF10D00161B77 /* COPYING */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
-		ABA4BABF16ADF10D00161B77 /* curl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = curl.h; sourceTree = "<group>"; };
-		ABA4BAC016ADF10D00161B77 /* curlbuild.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = curlbuild.h; sourceTree = "<group>"; };
-		ABA4BAC116ADF10D00161B77 /* curlrules.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = curlrules.h; sourceTree = "<group>"; };
-		ABA4BAC216ADF10D00161B77 /* curlver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = curlver.h; sourceTree = "<group>"; };
-		ABA4BAC316ADF10D00161B77 /* easy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = easy.h; sourceTree = "<group>"; };
-		ABA4BAC616ADF10D00161B77 /* mprintf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mprintf.h; sourceTree = "<group>"; };
-		ABA4BAC716ADF10D00161B77 /* multi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = multi.h; sourceTree = "<group>"; };
-		ABA4BAC816ADF10D00161B77 /* stdcheaders.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdcheaders.h; sourceTree = "<group>"; };
-		ABA4BAC916ADF10D00161B77 /* typecheck-gcc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "typecheck-gcc.h"; sourceTree = "<group>"; };
-		ABA4BAD516ADF22A00161B77 /* libcurl-ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "libcurl-ios.a"; sourceTree = "<group>"; };
 		ABA4BAE016ADF5A600161B77 /* libePub3-iOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libePub3-iOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABA4BAE216ADF5A600161B77 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		ABA4BAE616ADF5A600161B77 /* ePub3-iOS-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ePub3-iOS-Prefix.pch"; sourceTree = "<group>"; };
@@ -589,7 +577,6 @@
 			files = (
 				ABA4BB5D16ADF66700161B77 /* libxml2.dylib in Frameworks */,
 				ABA4BB5E16ADF66700161B77 /* libz.dylib in Frameworks */,
-				ABA4BB5C16ADF65F00161B77 /* libcurl-ios.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -724,7 +711,6 @@
 		ABA4BA1916A740D200161B77 /* ThirdParty */ = {
 			isa = PBXGroup;
 			children = (
-				ABA4BABD16ADF10D00161B77 /* curl */,
 				ABA4BA1A16A7414000161B77 /* google-url */,
 				ABB18FAB1656863300CFC651 /* libzip */,
 			);
@@ -843,24 +829,6 @@
 				ABA4BA5816A7414000161B77 /* using_icu.vsprops */,
 			);
 			path = build;
-			sourceTree = "<group>";
-		};
-		ABA4BABD16ADF10D00161B77 /* curl */ = {
-			isa = PBXGroup;
-			children = (
-				ABA4BABE16ADF10D00161B77 /* COPYING */,
-				ABA4BABF16ADF10D00161B77 /* curl.h */,
-				ABA4BAC016ADF10D00161B77 /* curlbuild.h */,
-				ABA4BAC116ADF10D00161B77 /* curlrules.h */,
-				ABA4BAC216ADF10D00161B77 /* curlver.h */,
-				ABA4BAC316ADF10D00161B77 /* easy.h */,
-				ABA4BAC616ADF10D00161B77 /* mprintf.h */,
-				ABA4BAC716ADF10D00161B77 /* multi.h */,
-				ABA4BAC816ADF10D00161B77 /* stdcheaders.h */,
-				ABA4BAC916ADF10D00161B77 /* typecheck-gcc.h */,
-				ABA4BAD516ADF22A00161B77 /* libcurl-ios.a */,
-			);
-			path = curl;
 			sourceTree = "<group>";
 		};
 		ABA4BAE116ADF5A600161B77 /* Frameworks */ = {
@@ -1553,7 +1521,7 @@
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				DSTROOT = /tmp/ePub3_iOS.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "ePub3-iOS/ePub3-iOS-Prefix.pch";
+				GCC_PREFIX_HEADER = "../../ePub3-iOS/ePub3-iOS-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"USING_ICU=0",
@@ -1563,10 +1531,6 @@
 					"$(SRCROOT)/../../ePub3/ThirdParty",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/ePub3/ThirdParty/curl\"",
-				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -1580,7 +1544,7 @@
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				DSTROOT = /tmp/ePub3_iOS.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "ePub3-iOS/ePub3-iOS-Prefix.pch";
+				GCC_PREFIX_HEADER = "../../ePub3-iOS/ePub3-iOS-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"USING_ICU=0",
@@ -1590,10 +1554,6 @@
 					"$(SRCROOT)/../../ePub3/ThirdParty",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/ePub3/ThirdParty/curl\"",
-				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
