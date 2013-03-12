@@ -27,11 +27,17 @@
 #include <iterator>
 #include <initializer_list>
 #include <locale>
-#include <codecvt>
 #include <vector>
 #include <regex>
 #include <map>
-#include <libxml/xmlstring.h>
+#include <stdexcept>
+#include "libxml/xmlstring.h"
+
+#if UTF_USE_ICU
+# include "unicode/ucnv.h"
+#else
+# include <codecvt>
+#endif
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -553,7 +559,10 @@ public:
     string substr(size_type pos=0, size_type n=npos) const;
     
     void swap(string & str)
-    noexcept(!__base::__alloc_traits::propagate_on_container_swap::value || std::__is_nothrow_swappable<__base::__alloc_traits>::value) {
+#ifdef _LIBCPP_STRING
+    noexcept(!__base::__alloc_traits::propagate_on_container_swap::value || std::__is_nothrow_swappable<__base::__alloc_traits>::value)
+#endif
+    {
         _base.swap(str._base);
     }
     
@@ -856,7 +865,9 @@ public:
     template <typename _CharT>
     bool operator <= (const _CharT * str) const noexcept { return compare<_CharT>(str) <= 0; }
     
+#ifdef _LIBCPP_VERSION
     bool __invariants() const { return _base.__invariants(); }
+#endif
     
 protected:
     __base      _base;
@@ -877,6 +888,137 @@ protected:
     static inline constexpr __base::const_pointer _bchar(const xmlChar * c) noexcept { return (__base::const_pointer)(c); }
     static inline constexpr __base::pointer _bchar(xmlChar * c) noexcept { return (__base::pointer)(c); }
     
+#if UTF_USE_ICU
+    // ICU version, since GNU libstdc++ hasn't implemented wstring_convert or codecvt_utf8 yet
+    template <class _CharT>
+    class _Convert {
+    public:
+        typedef std::basic_string<char>     byte_string;
+        typedef std::basic_string<_CharT>   wide_string;
+        
+        static byte_string toUTF8(const _CharT* p, size_type pos=0, size_type n=npos) {
+            UErrorCode uerr = U_ZERO_ERROR;
+            UChar* __up = __to_UChar(p, &pos, &n);
+            UConverter* cvt = ucnv_open("utf-8", &uerr);
+            byte_string __out;
+            __out.resize(2*n);
+            __up = __up + pos;
+            
+            __out.resize(ucnv_fromUChars(cvt, const_cast<char*>(__out.data()), static_cast<int32_t>(__out.size()), __up, static_cast<int32_t>(n), &uerr));
+            if ( uerr == U_BUFFER_OVERFLOW_ERROR )
+                ucnv_fromUChars(cvt, const_cast<char*>(__out.data()), static_cast<int32_t>(__out.size()), __up, static_cast<int32_t>(n), &uerr);
+            
+            ucnv_close(cvt);
+            if ( (void*)__up != (void*)p )
+                delete [] __up;
+            
+            return __out;
+        }
+        static byte_string toUTF8(const wide_string& s, size_type pos=0, size_type n=npos) {
+            return ( toUTF8(s.c_str(), pos, n) );
+        }
+        static byte_string toUTF8(_CharT c, size_type n=1)
+        {
+            if ( n == 1 )
+                return toUTF8(&c, 0, 1);
+            _CharT* __buf = new _CharT[n];
+            for ( size_type i = 0; i < n; i++ )
+                __buf[i] = c;
+            
+            UErrorCode uerr = U_ZERO_ERROR;
+            UChar* __up = __to_UChar(__buf, NULL, &n);
+            
+            UConverter* cvt = ucnv_open("utf-8", &uerr);
+            byte_string __out;
+            __out.resize(2*n);
+            
+            __out.resize(ucnv_fromUChars(cvt, const_cast<char*>(__out.data()), static_cast<int32_t>(__out.size()), __up, static_cast<int32_t>(n), &uerr));
+            if ( uerr == U_BUFFER_OVERFLOW_ERROR )
+                ucnv_fromUChars(cvt, const_cast<char*>(__out.data()), static_cast<int32_t>(__out.size()), __up, static_cast<int32_t>(n), &uerr);
+            
+            ucnv_close(cvt);
+            if ( (void*)__up != (void*)__buf )
+                delete [] __up;
+            delete [] __buf;
+            
+            return __out;
+        }
+        
+        static wide_string fromUTF8(const char * utf8, size_type pos=0, size_type n=npos) {
+            if ( n == npos )
+                n = std::char_traits<char>::length(utf8) - pos;
+            UErrorCode uerr = U_ZERO_ERROR;
+            UChar* __up = __to_UChar(utf8, &pos, &n);
+            
+            if ( sizeof(_CharT) == sizeof(UChar) )
+            {
+                wide_string __r(__up + pos, n);
+                delete [] __up;
+                return __r;
+            }
+            
+            const char* name = "utf-16";
+            switch ( sizeof(_CharT) )
+            {
+                case 4:
+                    name = "utf-32";
+                    break;
+                default:
+                    break;
+            }
+            
+            UConverter* cvt = ucnv_open(name, &uerr);
+            wide_string __out;
+            __out.resize(n);
+            
+            __out.resize(ucnv_fromUChars(cvt, const_cast<char*>(__out.data()), n, __up, n, &uerr));
+            if ( uerr == U_BUFFER_OVERFLOW_ERROR )
+                ucnv_fromUChars(cvt, const_cast<char*>(__out.data()), n, __up, n, &uerr);
+            
+            ucnv_close(cvt);
+            delete [] __up;
+            
+            return __out;
+        }
+        static wide_string fromUTF8(const byte_string & utf8, size_type pos=0, size_type n=npos) {
+            return fromUTF8(utf8.data(), pos, n);
+        }
+        
+    private:
+        static UChar* __to_UChar(const _CharT* p, size_type* pPos, size_type* pN) {
+            const char* name = "utf-8";
+            switch ( sizeof(_CharT) )
+            {
+                case 2:
+                    name = "utf-16";
+                    break;
+                case 4:
+                    return reinterpret_cast<UChar*>(p);
+                    break;
+                default:
+                    break;
+            }
+            
+            UErrorCode uerr = U_ZERO_ERROR;
+            UConverter* cvt = ucnv_open(name, &uerr);
+            
+            int32_t len = ucnv_toUChars(cvt, NULL, 0, (const char*)p, *pN, &uerr);
+            UChar* __out = new UChar[len+1];
+            UChar* __p = __out;
+            UChar* __e = __out + len;
+            const char* __f = (const char*)p + *pPos;
+            const char* __fe = (const char*)(p + *pPos + *pN);
+            int32_t* offsets = new int32_t[*pN];
+            
+            ucnv_toUnicode(cvt, &__p, __e, &__f, __fe, offsets, TRUE, &uerr);
+            *pN = offsets[*pN];
+            *pPos = offsets[*pPos];
+            
+            return __out;
+        }
+    };
+#else
+    // Pure C++11 implementation, works on libc++ and VC++2010
     template <class _CharT>
     class _Convert {
         typedef std::wstring_convert<std::codecvt_utf8<_CharT>, _CharT > _cvt;
@@ -913,6 +1055,7 @@ protected:
             return _cvt().from_bytes(utf8.substr(pos, n));
         }
     };
+#endif
 };
 
 #if 0
@@ -920,7 +1063,7 @@ protected:
 #endif
 
 template<>
-class string:: _Convert<char> {
+class string::_Convert<char> {
 public:
     typedef std::string byte_string;
     typedef std::string wide_string;
