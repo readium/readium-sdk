@@ -1,6 +1,6 @@
 # Readium SDK
 
-#### Copyright (c) 2012–2013 The Readium Foundation.
+#### Copyright (c) 2012–2013 The Readium Foundation and contributors.
 
 The Readium SDK is an ePub reader SDK of similar scope and capability to
 Adobe's Reader Mobile SDK (RMSDK).  As such, it is designed to implement an ePub3-
