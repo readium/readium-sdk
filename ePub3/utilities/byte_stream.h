@@ -3,18 +3,18 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2013-02-05.
-//  Copyright (c) 2012-2013 The Readium Foundation.
-//
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
+//  
 //  The Readium SDK is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
 //  the Free Software Foundation, either version 3 of the License, or
 //  (at your option) any later version.
-//
+//  
 //  This program is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
 //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
-//
+//  
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
@@ -28,21 +28,24 @@
 #include <ios>
 #include <thread>
 
+struct zip;
+struct zip_file;
+
 EPUB3_BEGIN_NAMESPACE
 
 class ByteStream
 {
 public:
-    typedef std::streamsize         size_type;
+    typedef std::size_t             size_type;
     
     static const size_type          UnknownSize = std::numeric_limits<size_type>::min();
     
 public:
                             ByteStream()                            {}
-                            ByteStream(const ByteStream&)           = delete;
-                            ByteStream(ByteStream&&)                = delete;
     virtual                 ~ByteStream()                           {}
     
+                            ByteStream(const ByteStream&)           = delete;
+                            ByteStream(ByteStream&&)                = delete;
     ByteStream&             operator=(const ByteStream&)            = delete;
     ByteStream&             operator=(ByteStream&& o)               = delete;
     
@@ -90,10 +93,10 @@ protected:
 public:
                                 AsyncByteStream(size_type bufsize=4096);
                                 AsyncByteStream(StreamEventHandler handler, size_type bufsize=4096);
-                                AsyncByteStream(const AsyncByteStream&)         = delete;
-                                AsyncByteStream(AsyncByteStream&&)              = delete;
     virtual                     ~AsyncByteStream();
     
+                                AsyncByteStream(const AsyncByteStream&)         = delete;
+                                AsyncByteStream(AsyncByteStream&&)              = delete;
     AsyncByteStream&            operator=(const AsyncByteStream&)               = delete;
     AsyncByteStream&            operator=(AsyncByteStream&&)                    = delete;
     
@@ -129,10 +132,10 @@ class FileByteStream : public ByteStream
 public:
                             FileByteStream()                        : ByteStream(), _file(nullptr) {}
                             FileByteStream(const string& pathToOpen, std::ios::openmode mode = std::ios::in | std::ios::out);
-                            FileByteStream(const FileByteStream& o)             = delete;
-                            FileByteStream(FileByteStream&& o)                  = delete;
     virtual                 ~FileByteStream();
     
+                            FileByteStream(const FileByteStream& o)             = delete;
+                            FileByteStream(FileByteStream&& o)                  = delete;
     FileByteStream&         operator=(FileByteStream&)                          = delete;
     FileByteStream&         operator=(FileByteStream&&)                         = delete;
     
@@ -152,6 +155,32 @@ protected:
     FILE*                   _file;
 };
 
+class ZipFileByteStream : public ByteStream
+{
+public:
+                            ZipFileByteStream() : ByteStream(), _file(nullptr) {}
+                            ZipFileByteStream(struct zip* archive, const string& pathToOpen, int zipFlags=0);
+    virtual                 ~ZipFileByteStream();
+    
+                            ZipFileByteStream(const ZipFileByteStream&)         = delete;
+                            ZipFileByteStream(ZipFileByteStream&&)              = delete;
+    ZipFileByteStream&      operator=(const ZipFileByteStream&)                 = delete;
+    ZipFileByteStream&      operator=(ZipFileByteStream&&)                      = delete;
+    
+    virtual size_type       BytesAvailable()                        const noexcept;
+    virtual size_type       SpaceAvailable()                        const noexcept;
+    
+    virtual bool            IsOpen()                                const noexcept;
+    virtual bool            Open(struct zip* archive, const string& path, int zipFlags=0);
+    virtual void            Close();
+    
+    virtual size_type       ReadBytes(void* buf, size_type len);
+    virtual size_type       WriteBytes(const void* buf, size_type len);
+    
+protected:
+    struct zip_file*        _file;
+};
+
 class AsyncFileByteStream : public AsyncByteStream, public FileByteStream
 {
 private:
@@ -162,10 +191,10 @@ public:
                             AsyncFileByteStream() : AsyncByteStream(), FileByteStream() {}
                             AsyncFileByteStream(StreamEventHandler handler) : AsyncByteStream(handler), FileByteStream() {}
                             AsyncFileByteStream(StreamEventHandler handler, const string& path, std::ios::openmode mode = std::ios::in | std::ios::out) : AsyncByteStream(handler), FileByteStream(path, mode) {}
-                            AsyncFileByteStream(const AsyncFileByteStream&) = delete;
-                            AsyncFileByteStream(AsyncFileByteStream&&)      = delete;
     virtual                 ~AsyncFileByteStream();
     
+                            AsyncFileByteStream(const AsyncFileByteStream&) = delete;
+                            AsyncFileByteStream(AsyncFileByteStream&&)      = delete;
     AsyncFileByteStream&    operator=(const AsyncFileByteStream&)           = delete;
     AsyncFileByteStream&    operator=(AsyncFileByteStream&&)                = delete;
     
@@ -186,6 +215,43 @@ public:
     
 private:
     virtual size_type       Seek();
+    
+protected:
+    virtual size_type       read_for_async(void* buf, size_type len)        { return __F::ReadBytes(buf, len); }
+    virtual size_type       write_for_async(const void* buf, size_type len) { return __F::WriteBytes(buf, len); }
+};
+
+class AsyncZipFileByteStream : public AsyncByteStream, public ZipFileByteStream
+{
+private:
+    typedef ZipFileByteStream   __F;
+    typedef AsyncByteStream     __A;
+    
+public:
+                            AsyncZipFileByteStream() : AsyncByteStream(), ZipFileByteStream() {}
+                            AsyncZipFileByteStream(StreamEventHandler handler) : AsyncByteStream(handler), ZipFileByteStream() {}
+                            AsyncZipFileByteStream(StreamEventHandler handler, struct zip* archive, const string& path, int zipFlags=0) : AsyncByteStream(handler), ZipFileByteStream(archive, path, zipFlags) {}
+    virtual                 ~AsyncZipFileByteStream();
+    
+                            AsyncZipFileByteStream(const AsyncZipFileByteStream&)   = delete;
+                            AsyncZipFileByteStream(AsyncZipFileByteStream&&)        = delete;
+    AsyncZipFileByteStream& operator=(const AsyncZipFileByteStream&)                = delete;
+    AsyncZipFileByteStream& operator=(AsyncZipFileByteStream&&)                     = delete;
+    
+    // use the ringbuffer-based availability functions from AsyncByteStream
+    using                   __A::BytesAvailable;
+    using                   __A::SpaceAvailable;
+    
+    // use the file stream's IsOpen()
+    using                   __F::IsOpen;
+    
+    // use the async stream's read/writers
+    using                   __A::ReadBytes;
+    using                   __A::WriteBytes;
+    
+    virtual bool            IsOpen()                        const noexcept  { return __F::IsOpen(); }
+    virtual bool            Open(struct zip* archive, const string& path, int zipFlags=0);
+    virtual void            Close();
     
 protected:
     virtual size_type       read_for_async(void* buf, size_type len)        { return __F::ReadBytes(buf, len); }

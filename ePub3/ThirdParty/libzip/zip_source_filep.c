@@ -140,7 +140,7 @@ read_file(void *state, void *data, size_t len, enum zip_source_cmd cmd)
 	
     case ZIP_SOURCE_READ:
 	if (z->remain != -1)
-	    n = len > z->remain ? z->remain : len;
+	    n = len > z->remain ? (size_t)z->remain : (size_t)len;
 	else
 	    n = len;
 	

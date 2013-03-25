@@ -3,7 +3,7 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2012-11-29.
-//  Copyright (c) 2012-2013 The Readium Foundation.
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
 //  
 //  The Readium SDK is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 #include "manifest.h"
 #include "package.h"
+#include "byte_stream.h"
 #include <regex>
 #include <sstream>
 
@@ -218,9 +219,9 @@ xmlDocPtr ManifestItem::ReferencedDocument() const
     
     return result;
 }
-ArchiveReader* ManifestItem::Reader() const
+Auto<ByteStream> ManifestItem::Reader() const
 {
-    return _owner->ReaderForRelativePath(BaseHref());
+    return _owner->ReadStreamForRelativePath(BaseHref());
 }
 
 EPUB3_END_NAMESPACE

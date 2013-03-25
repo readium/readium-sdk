@@ -530,7 +530,7 @@ copy_data(FILE *fs, off_t len, FILE *ft, struct zip_error *error)
 	return 0;
 
     while (len > 0) {
-	nn = len > sizeof(buf) ? sizeof(buf) : len;
+	nn = len > sizeof(buf) ? sizeof(buf) : (size_t)len;
 	if ((n=fread(buf, 1, nn, fs)) < 0) {
 	    _zip_error_set(error, ZIP_ER_READ, errno);
 	    return -1;

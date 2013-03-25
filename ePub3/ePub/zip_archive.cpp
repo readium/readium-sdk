@@ -3,7 +3,7 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2012-11-27.
-//  Copyright (c) 2012-2013 The Readium Foundation.
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
 //  
 //  The Readium SDK is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 #include "zip_archive.h"
 #include "zipint.h"
+#include "byte_stream.h"
 #include <unistd.h>
 #include <sys/fcntl.h>
 
@@ -61,7 +62,7 @@ class ZipWriter : public ArchiveWriter
         // offset is always *read* offset
         void *  _buf;
         size_t  _cap;
-        off_t   _off;
+        size_t  _off;
     };
     
 public:
@@ -88,8 +89,8 @@ ZipArchive::ZipItemInfo::ZipItemInfo(struct zip_stat & info)
 {
     SetPath(info.name);
     SetIsCompressed(info.comp_method == ZIP_CM_STORE);
-    SetCompressedSize(info.comp_size);
-    SetUncompressedSize(info.size);
+    SetCompressedSize(static_cast<size_t>(info.comp_size));
+    SetUncompressedSize(static_cast<size_t>(info.size));
 }
 
 std::string ZipArchive::TempFilePath()
@@ -146,6 +147,10 @@ bool ZipArchive::DeleteItem(const std::string & path)
 bool ZipArchive::CreateFolder(const std::string & path)
 {
     return (zip_add_dir(_zip, Sanitized(path).c_str()) >= 0);
+}
+Auto<ByteStream> ZipArchive::ByteStreamAtPath(const std::string &path) const
+{
+    return Auto<ByteStream>(new ZipFileByteStream(_zip, path));
 }
 ArchiveReader* ZipArchive::ReaderAtPath(const std::string & path) const
 {
@@ -248,6 +253,7 @@ ssize_t ZipWriter::_source_callback(void *state, void *data, size_t len, enum zi
             st->size = writer->_data.Size();
             st->comp_method = (writer->_compressed ? ZIP_CM_DEFLATE : ZIP_CM_STORE);
             r = sizeof(struct zip_stat);
+            break;
         }
         case ZIP_SOURCE_ERROR:
         default:

@@ -3,7 +3,7 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2012-11-27.
-//  Copyright (c) 2012-2013 The Readium Foundation.
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
 //  
 //  The Readium SDK is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -49,9 +49,11 @@ public:
     Archive & operator = (ZipArchive &&o);
     
     virtual bool ContainsItem(const std::string & path) const;
-    virtual bool DeleteItem(const std::string & path);;
+    virtual bool DeleteItem(const std::string & path);
     
     virtual bool CreateFolder(const std::string & path);
+    
+    virtual Auto<ByteStream> ByteStreamAtPath(const std::string& path) const;
     
     virtual ArchiveReader* ReaderAtPath(const std::string & path) const;
     virtual ArchiveWriter* WriterAtPath(const std::string & path, bool compress=true, bool create=true);

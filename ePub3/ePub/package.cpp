@@ -3,7 +3,7 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2012-11-28.
-//  Copyright (c) 2012-2013 The Readium Foundation.
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
 //  
 //  The Readium SDK is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "glossary.h"
 #include "iri.h"
 #include "basic.h"
+#include "byte_stream.h"
 #include <sstream>
 #include <list>
 #include <regex>
@@ -70,6 +71,8 @@ const std::map<const string, bool> PackageBase::CoreMediaTypes({
     {"text/css", true},                             // EPUB Style Sheets
     {"text/javascript", true}                       // Scripts
 });
+
+std::locale PackageBase::gCurrentLocale("");        // NB: std::locale() returns the C locale.
 
 bool Package::gValidateSchema = true;
 
@@ -118,6 +121,18 @@ PackageBase::~PackageBase()
     // our Container owns the archive
     if ( _opf != nullptr )
         xmlFreeDoc(_opf);
+}
+std::locale& PackageBase::Locale()
+{
+    return gCurrentLocale;
+}
+void PackageBase::SetLocale(const string &name)
+{
+    gCurrentLocale = std::locale(name.stl_str());
+}
+void PackageBase::SetLocale(const std::locale &locale)
+{
+    gCurrentLocale = locale;
 }
 const SpineItem* PackageBase::SpineItemAt(size_t idx) const
 {
@@ -192,6 +207,10 @@ IRI PackageBase::PropertyIRIFromAttributeValue(const string &attrValue) const
     
     // there are two captures, at indices 1 and 2
     return MakePropertyIRI(pieces.str(2), pieces.str(1));
+}
+Auto<ByteStream> PackageBase::ReadStreamForItemAtPath(const string &path) const
+{
+    return _archive->ByteStreamAtPath(path.stl_str());
 }
 void PackageBase::InstallPrefixesFromAttributeValue(const ePub3::string &attrValue)
 {
@@ -702,7 +721,11 @@ const ManifestItem* Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRemaining
     
     return result;
 }
-const string Package::Title() const
+Auto<ByteStream> Package::ReadStreamForRelativePath(const string &path) const
+{
+    return _archive->ByteStreamAtPath(path.stl_str());
+}
+const string Package::Title(bool localized) const
 {
     IRI titleTypeIRI(MakePropertyIRI("title-type"));      // http://idpf.org/epub/vocab/package/#title-type
     
@@ -714,16 +737,20 @@ const string Package::Title() const
             continue;
         
         if ( extension->Value() == "main" )
-            return item->Value();
+            return (localized? item->LocalizedValue() : item->Value());
     }
     
     // no 'main title' found: just get the dc:title value
     const MetadataMap items = MetadataItemsWithDCType(Metadata::DCType::Title);
     if ( items.empty() )
         return string::EmptyString;
+    
+    if ( localized )
+        return items[0]->LocalizedValue();
+    
     return items[0]->Value();
 }
-const string Package::Subtitle() const
+const string Package::Subtitle(bool localized) const
 {
     IRI titleTypeIRI(MakePropertyIRI("title-type"));      // http://idpf.org/epub/vocab/package/#title-type
     
@@ -735,13 +762,17 @@ const string Package::Subtitle() const
             continue;
         
         if ( extension->Value() == "subtitle" )
+        {
+            if ( localized )
+                return item->LocalizedValue();
             return item->Value();
+        }
     }
     
     // no 'subtitle' found, so no subtitle
     return string::EmptyString;
 }
-const string Package::FullTitle() const
+const string Package::FullTitle(bool localized) const
 {
     MetadataMap items = MetadataItemsWithDCType(Metadata::DCType::Title);
     if ( items.size() == 1 )
@@ -758,7 +789,7 @@ const string Package::FullTitle() const
         {
             const Metadata::Extension* extension = item->ExtensionWithProperty(displaySeqIRI);
             size_t sz = strtoul(extension->Value().c_str(), nullptr, 10) - 1;
-            titles[sz] = item->Value();
+            titles[sz] = (localized ? item->LocalizedValue() : item->Value());
         }
     }
     else
@@ -768,7 +799,7 @@ const string Package::FullTitle() const
         // insert any non-sequenced items at the head of the list, in order
         for ( auto item : items )
         {
-            titles.emplace_back(item->Value());
+            titles.emplace_back((localized ? item->LocalizedValue() : item->Value()));
         }
     }
     
@@ -785,16 +816,26 @@ const string Package::FullTitle() const
     
     return string(ss.str());
 }
-const Package::AttributionList Package::AuthorNames() const
+const Package::AttributionList Package::AuthorNames(bool localized) const
 {
     AttributionList result;
     for ( auto item : MetadataItemsWithDCType(Metadata::DCType::Creator) )
     {
-        result.emplace_back(item->Value());
+        result.emplace_back((localized? item->LocalizedValue() : item->Value()));
     }
+    
+    if ( result.empty() )
+    {
+        // maybe they're using dcterms:creator instead?
+        for ( auto item : MetadataItemsWithProperty(MakePropertyIRI("creator", "dcterms")) )
+        {
+            result.emplace_back((localized? item->LocalizedValue() : item->Value()));
+        }
+    }
+    
     return result;
 }
-const Package::AttributionList Package::AttributionNames() const
+const Package::AttributionList Package::AttributionNames(bool localized) const
 {
     AttributionList result;
     IRI fileAsIRI(MakePropertyIRI("file-as"));
@@ -804,14 +845,16 @@ const Package::AttributionList Package::AttributionNames() const
         if ( extension != nullptr )
             result.emplace_back(extension->Value());
         else
-            result.emplace_back(item->Value());
+            result.emplace_back((localized? item->LocalizedValue() : item->Value()));
     }
     return result;
 }
-const string Package::Authors() const
+const string Package::Authors(bool localized) const
 {
-    // TODO: handle localization
-    AttributionList authors = AuthorNames();
+    // TODO: handle localization of the word 'and'
+    AttributionList authors = AuthorNames(localized);
+    if ( authors.empty() )
+        return string::EmptyString;
     if ( authors.size() == 1 )
         return authors[0];
     else if ( authors.size() == 2 )
@@ -828,6 +871,37 @@ const string Package::Authors() const
     ss << "and " << *last;
     return string(ss.str());
 }
+const Package::AttributionList Package::ContributorNames(bool localized) const
+{
+    AttributionList result;
+    for ( auto item : MetadataItemsWithProperty(MakePropertyIRI("contributor", "dcterms")) )
+    {
+        result.emplace_back((localized? item->LocalizedValue() : item->Value()));
+    }
+    return result;
+}
+const string Package::Contributors(bool localized) const
+{
+    // TODO: handle localization of the word 'and'
+    AttributionList contributors = ContributorNames(localized);
+    if ( contributors.empty() )
+        return string::EmptyString;
+    if ( contributors.size() == 1 )
+        return contributors[0];
+    else if ( contributors.size() == 2 )
+        return _Str(contributors[0], " and ", contributors[1]);
+    
+    std::stringstream ss;
+    auto pos = contributors.begin();
+    auto last = pos + (contributors.size() - 1);
+    while ( pos != last )
+    {
+        ss << *(pos++) << ", ";
+    }
+    
+    ss << "and " << *last;
+    return string(ss.str());
+}
 const string Package::Language() const
 {
     MetadataMap items = MetadataItemsWithDCType(Metadata::DCType::Language);
@@ -835,19 +909,19 @@ const string Package::Language() const
         return string::EmptyString;
     return items[0]->Value();
 }
-const string Package::Source() const
+const string Package::Source(bool localized) const
 {
     MetadataMap items = MetadataItemsWithDCType(Metadata::DCType::Source);
     if ( items.empty() )
         return string::EmptyString;
-    return items[0]->Value();
+    return (localized? items[0]->LocalizedValue() : items[0]->Value());
 }
-const string Package::CopyrightOwner() const
+const string Package::CopyrightOwner(bool localized) const
 {
     MetadataMap items = MetadataItemsWithDCType(Metadata::DCType::Rights);
     if ( items.empty() )
         return string::EmptyString;
-    return items[0]->Value();
+    return (localized? items[0]->LocalizedValue() : items[0]->Value());
 }
 const string Package::ModificationDate() const
 {
@@ -869,12 +943,12 @@ const string Package::ISBN() const
     
     return string::EmptyString;
 }
-const Package::StringList Package::Subjects() const
+const Package::StringList Package::Subjects(bool localized) const
 {
     StringList result;
     for ( auto item : MetadataItemsWithDCType(Metadata::DCType::Subject) )
     {
-        result.emplace_back(item->Value());
+        result.emplace_back((localized? item->LocalizedValue() : item->Value()));
     }
     return result;
 }

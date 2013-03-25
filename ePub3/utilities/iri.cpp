@@ -3,11 +3,25 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2013-01-15.
-//  Copyright (c) 2013 The Readium Foundation. All rights reserved.
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
+//  
+//  The Readium SDK is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//  
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//  
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 #include "iri.h"
 #include "url_util.h"
+#include "cfi.h"
 #include <regex>
 
 EPUB3_BEGIN_NAMESPACE
@@ -113,6 +127,17 @@ const string IRI::Path(bool urlEncoded) const
     url_util::DecodeURLEscapeSequences(encodedPath.c_str(), static_cast<int>(encodedPath.size()), &output);
     return string(output.data(), output.length());
 }
+const CFI IRI::ContentFragmentIdentifier() const
+{
+    if ( !_url->has_ref() )
+        return CFI();
+    
+    string ref = Fragment();
+    if ( ref.find("epubcfi(") != 0 )
+        return CFI();
+    
+    return CFI(ref);
+}
 void IRI::SetScheme(const string& scheme)
 {
     url_canon::Replacements<char> rep;
@@ -211,6 +236,12 @@ void IRI::SetFragment(const string& fragment)
         _pureIRI.append(1, '#');
         _pureIRI.append(fragment);
     }
+}
+void IRI::SetContentFragmentIdentifier(const CFI &cfi)
+{
+    if ( cfi.Empty() )
+        return;
+    SetFragment(cfi.String());
 }
 string IRI::URLEncodeComponent(const string& str)
 {

@@ -3,7 +3,7 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2012-12-04.
-//  Copyright (c) 2012-2013 The Readium Foundation.
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
 //  
 //  The Readium SDK is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,28 @@ EPUB3_BEGIN_NAMESPACE
 
 static const xmlChar * DCMES_uri = (const xmlChar*)"http://purl.org/dc/elements/1.1/";
 static const xmlChar * MetaTagName = (const xmlChar*)"meta";
+
+static string __lang_from_locale(const std::locale& loc)
+{
+    std::string lname = loc.name();
+    
+    // handle custom locales, i.e. "LC_CTYPE=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=C;LC_COLLATE=C;LC_MONETARY=C;LC_MESSAGES=C;LC_PAPER=C;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=C;LC_IDENTIFICATION=C"
+    auto __p = lname.find("LC_CTYPE=");
+    if ( __p != std::string::npos )
+    {
+        auto __e = lname.find(";", __p);
+        if ( __e == std::string::npos )
+            __e = lname.size();
+        lname = lname.substr(__p, __e);
+    }
+    
+    // now we have something like "en_US.UTF-8" or "en_US". Strip the ".UTF-8" part, if any
+    __p = lname.find(".");
+    if ( __p != std::string::npos )
+        lname = lname.substr(0, __p);
+    
+    return string(lname);
+}
 
 // C++11 FTW
 std::map<string, Metadata::DCType> Metadata::NameToIDMap = {
@@ -71,6 +93,7 @@ Metadata::Metadata(xmlNodePtr node, const Package* owner) : _node(node), _type(D
         throw std::invalid_argument("NUL node pointer supplied");
     if ( !Decode(owner) )
         throw std::domain_error("Node does not appear to be a valid metadata item");
+    _owner = owner;
 }
 Metadata::Metadata(Metadata&& o) : _node(o._node), _type(o._type), _extensions(std::move(o._extensions)), _property(std::move(o._property))
 {
@@ -115,6 +138,41 @@ string Metadata::Value() const
 {
     return xmlNodeGetContent(_node);
 }
+string Metadata::LocalizedValue() const
+{
+    return LocalizedValue(Package::Locale());
+}
+string Metadata::LocalizedValue(const std::locale &locale) const
+{
+    // get a locale name without any additions
+    string llang = __lang_from_locale(locale);
+    
+    // does this match the main value?
+    string mlang = Language();
+    if ( llang.find(mlang) == 0 || mlang.find(llang) == 0 )
+    {
+        // they match
+        return Value();
+    }
+    
+    // see if there are alternate scripts
+    ExtensionList scripts = AllExtensionsWithProperty(_owner->PropertyIRIFromAttributeValue("alternate-script"));
+    if ( scripts.empty() )
+        return Value();
+    
+    for ( auto script : scripts )
+    {
+        mlang = script->Language();
+        if ( llang.find(mlang) == 0 || mlang.find(llang) == 0 )
+        {
+            // they match
+            return script->Value();
+        }
+    }
+    
+    // no localized values
+    return Value();
+}
 string Metadata::Language() const
 {
     const xmlChar * ch = xmlNodeGetLang(_node);
@@ -135,6 +193,16 @@ const Metadata::Extension* Metadata::ExtensionWithProperty(const IRI &property) 
             return extension;
     }
     return nullptr;
+}
+const Metadata::ExtensionList Metadata::AllExtensionsWithProperty(const IRI& property) const
+{
+    ExtensionList out;
+    for ( auto extension : _extensions )
+    {
+        if ( extension->Property() == property )
+            out.push_back(extension);
+    }
+    return out;
 }
 const IRI Metadata::IRIForDCType(DCType type)
 {

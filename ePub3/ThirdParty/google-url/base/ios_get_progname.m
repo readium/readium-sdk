@@ -1,40 +1,34 @@
 //
-//  path_locator.cpp
+//  ios_get_progname.m
 //  ePub3
 //
-//  Created by Jim Dovey on 2012-12-14.
+//  Created by Jim Dovey on 2013-02-07.
 //  Copyright (c) 2012-2013 The Readium Foundation.
-//  
+//
 //  The Readium SDK is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
 //  the Free Software Foundation, either version 3 of the License, or
 //  (at your option) any later version.
-//  
+//
 //  This program is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
 //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
-//  
+//
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "path_locator.h"
-#include <fstream>
+#import <Foundation/NSProcessInfo.h>
+#import <dispatch/dispatch.h>
 
-EPUB3_BEGIN_NAMESPACE
-
-std::istream& PathLocator::ReadStream()
+extern const char* _IOSGetProgname(void)
 {
-    if ( _reader == nullptr )
-        _reader = new std::ifstream(_path);
-    return *_reader;
+    static char __pname[PATH_MAX];
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSString* str = [[NSProcessInfo processInfo] processName];
+        [str getBytes: __pname maxLength: PATH_MAX-1 usedLength: NULL encoding: NSUTF8StringEncoding options: NSStringEncodingConversionAllowLossy range: NSMakeRange(0, [str length]) remainingRange:NULL];
+    });
+    return __pname;
 }
-std::ostream& PathLocator::WriteStream()
-{
-    if ( _writer == nullptr )
-        _writer = new std::ofstream(_path);
-    return *_writer;
-}
-
-EPUB3_END_NAMESPACE

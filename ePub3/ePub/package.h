@@ -3,7 +3,7 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2012-11-28.
-//  Copyright (c) 2012-2013 The Readium Foundation.
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
 //  
 //  The Readium SDK is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@ EPUB3_BEGIN_NAMESPACE
 class Archive;
 class Metadata;
 class NavigationTable;
+class ByteStream;
 
 /**
  The PackageBase class implements the low-level components and all storage of an OPF
@@ -123,6 +124,35 @@ public:
      ~~~
      */
     virtual const string&   BasePath()              const       { return _pathBase; }
+    
+    /**
+     @defgroup locales Locale Support
+     @{
+     */
+    
+    /**
+     Returns the current locale.
+     
+     This value is initially set to the current user locale, but it can be
+     explicitly changed (i.e. for testing purposes) by calling
+     SetLocale(const string&) or SetLocale(const std::locale&).
+     @return A reference to the current C++11 locale object.
+     */
+    static std::locale&     Locale();
+    
+    /**
+     Sets the current locale using a standard locale name.
+     @param name A string containing a canonical locale name.
+     */
+    static void             SetLocale(const string& name);
+    
+    /**
+     Sets the current locale to a given `std::locale` instance.
+     @param locale The new locale.
+     */
+    static void             SetLocale(const std::locale& locale);
+    
+    /** @} */
     
     /**
      @defgroup TableAccess Raw Table Accessors
@@ -265,6 +295,13 @@ public:
      */
     IRI                     PropertyIRIFromAttributeValue(const string& attrValue)              const;
     
+    /**
+     Returns a ByteStream for reading from the specified file in the package's Archive.
+     @param path The path of the item to read.
+     @result An auto-pointer to a new ByteStream instance.
+     */
+    Auto<ByteStream>        ReadStreamForItemAtPath(const string& path)                         const;
+    
     /// Returns the CFI node index for the `<spine>` element within the package
     /// document.
     uint32_t                SpineCFIIndex()                 const   { return _spineCFIIndex; }
@@ -306,6 +343,10 @@ protected:
     ///
     /// Loads navigation tables from a given manifest item (which has the `"nav"` property).
     static NavigationList   NavTablesFromManifestItem(const ManifestItem * pItem);
+    
+    ///
+    /// The current locale instance.  Defaults to the current user locale.
+    static std::locale      gCurrentLocale;
 };
 
 /**
@@ -378,12 +419,13 @@ public:
     const SpineItem *       operator[](size_t idx)          const   { return SpineItemAt(idx); }
     const ManifestItem *    operator[](const string& ident) const   { return ManifestItemWithID(ident); }
     
-    ArchiveReader*          ReaderForRelativePath(const string& path) const {
+    ArchiveReader*          ReaderForRelativePath(const string& path)       const {
         return _archive->ReaderAtPath((_pathBase + path).stl_str());
     }
-    ArchiveXmlReader*       XmlReaderForRelativePath(const string& path) const {
+    ArchiveXmlReader*       XmlReaderForRelativePath(const string& path)    const {
         return new ArchiveXmlReader(ReaderForRelativePath(path));
     }
+    Auto<ByteStream>        ReadStreamForRelativePath(const string& path)   const;
     
     const class NavigationTable*    TableOfContents()       const       { return NavigationTable("toc"); }
     const class NavigationTable*    ListOfFigures()         const       { return NavigationTable("lof"); }
@@ -391,27 +433,30 @@ public:
     const class NavigationTable*    ListOfTables()          const       { return NavigationTable("lot"); }
     const class NavigationTable*    PageList()              const       { return NavigationTable("page-list"); }
     
-    const string            Title()                         const;
-    const string            Subtitle()                      const;
-    const string            FullTitle()                     const;
+    const string            Title(bool localized=true)              const;
+    const string            Subtitle(bool localized=true)           const;
+    const string            FullTitle(bool localized=true)          const;
     
     typedef std::vector<const string>               AttributionList;
     
     // returns the author names
-    const AttributionList   AuthorNames()                   const;
+    const AttributionList   AuthorNames(bool localized=true)        const;
     // returns the file-as names if available, as Authors() if not
-    const AttributionList   AttributionNames()              const;
+    const AttributionList   AttributionNames(bool localized=true)   const;
     // returns a formatted string for presentation to the user
-    const string            Authors()                       const;
+    const string            Authors(bool localized=true)            const;
     
-    const string            Language()                      const;
-    const string            Source()                        const;
-    const string            CopyrightOwner()                const;
-    const string            ModificationDate()              const;
-    const string            ISBN()                          const;
+    const AttributionList   ContributorNames(bool localized=true)   const;
+    const string            Contributors(bool localized=true)       const;
+    
+    const string            Language()                              const;
+    const string            Source(bool localized=true)             const;
+    const string            CopyrightOwner(bool localized=true)     const;
+    const string            ModificationDate()                      const;
+    const string            ISBN()                                  const;
     
     typedef std::vector<const string>               StringList;
-    const StringList        Subjects()                      const;
+    const StringList        Subjects(bool localized=true)           const;
     
     // Returns only the media types which have a handler of class MediaHandler.
     const StringList            MediaTypesWithDHTMLHandlers()                   const;

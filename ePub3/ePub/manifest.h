@@ -3,7 +3,7 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2012-11-29.
-//  Copyright (c) 2012-2013 The Readium Foundation.
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
 //  
 //  The Readium SDK is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ EPUB3_BEGIN_NAMESPACE
 class Package;
 class ManifestItem;
 class ArchiveReader;
+class ByteStream;
 
 typedef std::map<string, ManifestItem*>    ManifestTable;
 
@@ -142,7 +143,7 @@ public:
     xmlDocPtr           ReferencedDocument()                const;
     
     // stream the data
-    ArchiveReader*      Reader()                            const;
+    Auto<ByteStream>    Reader()                            const;
     
 protected:
     const class Package*    _owner;

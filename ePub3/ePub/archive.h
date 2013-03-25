@@ -3,7 +3,7 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2012-11-27.
-//  Copyright (c) 2012-2013 The Readium Foundation.
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
 //  
 //  The Readium SDK is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ EPUB3_BEGIN_NAMESPACE
 class ArchiveItemInfo;
 class ArchiveReader;
 class ArchiveWriter;
+class ByteStream;
 
 class Archive
 {
@@ -76,6 +77,8 @@ public:
     virtual bool DeleteItem(const std::string & path) = 0;
     
     virtual bool CreateFolder(const std::string & path) = 0;
+    
+    virtual Auto<ByteStream> ByteStreamAtPath(const std::string& path) const = 0;
     
     virtual ArchiveReader* ReaderAtPath(const std::string & path) const = 0;
     virtual ArchiveWriter* WriterAtPath(const std::string & path, bool compress=true, bool create=true) = 0;

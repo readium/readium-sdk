@@ -3,18 +3,18 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2013-01-24.
-//  Copyright (c) 2013 The Readium Foundation.
-//
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
+//  
 //  The Readium SDK is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
 //  the Free Software Foundation, either version 3 of the License, or
 //  (at your option) any later version.
-//
+//  
 //  This program is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
 //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
-//
+//  
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
@@ -27,6 +27,7 @@
 #include <type_traits>
 
 #define EPUB_PATH "TestData/childrens-literature-20120722.epub"
+#define LOCALIZED_EPUB_PATH "TestData/kusamakura-japanese-vertical-writing-20121124.epub"
 
 using namespace ePub3;
 
@@ -92,4 +93,19 @@ TEST_CASE("Simple string metadata values should be correct", "")
     REQUIRE(pkg->Source() == "http://www.gutenberg.org/files/25545/25545-h/25545-h.htm");
     REQUIRE(pkg->CopyrightOwner() == "Public domain in the USA.");
     REQUIRE(pkg->ModificationDate() == "2010-02-17T04:39:13Z");
+}
+
+TEST_CASE("An appropriately localized value should be returned if available", "")
+{
+    Container c(LOCALIZED_EPUB_PATH);
+    const Package* pkg = c.Packages()[0];
+    
+    REQUIRE(pkg->Title() == u8"草枕");
+    REQUIRE(pkg->Authors() == u8"夏目 漱石");
+    REQUIRE(pkg->Contributors() == u8"柴田 卓治, 伊藤 時也, 総務省, EPUB日本語拡張仕様策定プロジェクト, 持田 怜香, 濱田 麻邑, 川幡 太一, and 村田 真");
+    
+    Package::SetLocale("en_US.UTF-8");
+    REQUIRE(pkg->Title() == "Kusamakura");
+    REQUIRE(pkg->Authors() == "Natsume, Sōseki");
+    REQUIRE(pkg->Contributors() == u8"柴田 卓治, 伊藤 時也, Ministry of Internal Affairs and Communications, Japanese EPUB Specification Settlement Project, Reika Mochida, Mayu Hamada, Taichi Kawabata, and Makoto Murata");
 }

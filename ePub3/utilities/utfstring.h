@@ -3,7 +3,7 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2012-11-22.
-//  Copyright (c) 2012-2013 The Readium Foundation.
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
 //  
 //  The Readium SDK is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -556,11 +556,11 @@ public:
     
     __base::allocator_type get_allocator() const noexcept { return _base.get_allocator(); }
     
-    string& tolower();
-    const string tolower() const;
+    string& tolower(const std::locale& loc = std::locale(""));
+    const string tolower(const std::locale& loc = std::locale("")) const;
     
-    string& toupper();
-    const string toupper() const;
+    string& toupper(const std::locale& loc = std::locale(""));
+    const string toupper(const std::locale& loc = std::locale("")) const;
     
 #if 0
 #pragma mark - Searching

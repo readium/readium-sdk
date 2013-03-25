@@ -3,7 +3,7 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2012-12-10.
-//  Copyright (c) 2012-2013 The Readium Foundation.
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
 //  
 //  The Readium SDK is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -382,7 +382,7 @@ void CFI::Component::Parse(const string &str)
         {
             case '[':
             {
-                size_t pos = iss.tellg();
+                size_t pos = static_cast<size_t>(iss.tellg());
                 iss.ignore(std::numeric_limits<std::streamsize>::max(), ']');
                 size_t end = ((size_t)iss.tellg()) - 1;
                 
