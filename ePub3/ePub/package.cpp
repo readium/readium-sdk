@@ -554,6 +554,9 @@ bool Package::Unpack()
         }
     }
     
+    // lastly, let's set the media support information
+    InitMediaSupport();
+    
     return true;
 }
 
@@ -1005,13 +1008,50 @@ const Package::StringList Package::AllMediaTypes() const
     
     return types;
 }
+const Package::StringList Package::UnsupportedMediaTypes() const
+{
+    StringList types;
+    for ( auto& pair : _mediaSupport )
+    {
+        if ( pair.second.Support() == MediaSupportInfo::SupportType::Unsupported )
+        {
+            types.push_back(pair.first);
+        }
+    }
+    return types;
+}
 void Package::SetMediaSupport(const MediaSupportList &list)
 {
     _mediaSupport = list;
 }
 void Package::SetMediaSupport(MediaSupportList &&list)
 {
-    _mediaSupport = list;
+    _mediaSupport = std::move(list);
+}
+void Package::InitMediaSupport()
+{
+    for ( auto& mediaType : AllMediaTypes() )
+    {
+        if ( CoreMediaTypes.find(mediaType) != CoreMediaTypes.end() )
+        {
+            // support for core types is required
+            _mediaSupport[mediaType] = MediaSupportInfo(mediaType);
+        }
+        else
+        {
+            const MediaHandler* pHandler = OPFHandlerForMediaType(mediaType);
+            if ( pHandler != nullptr )
+            {
+                // supported through a handler
+                _mediaSupport[mediaType] = MediaSupportInfo(mediaType, MediaSupportInfo::SupportType::SupportedWithHandler);
+            }
+            else
+            {
+                // unsupported
+                _mediaSupport[mediaType] = MediaSupportInfo(mediaType, false);
+            }
+        }
+    }
 }
 
 EPUB3_END_NAMESPACE

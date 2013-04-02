@@ -35,27 +35,85 @@ EPUB3_BEGIN_NAMESPACE
 class Archive;
 class ByteStream;
 
+/**
+ The Container class provides an interface for interacting with an EPUB container,
+ i.e. a `.epub` file.
+ 
+ Each Container instance owns all its sub-items. All Packages from a single container,
+ for instance, are kept around as pointers which will be deleted when the container
+ is destroyed.
+ 
+ The Container class is the owner of:
+ 
+ - The Archive instance used to read from the zip file.
+ - The XML document for the OCF file at META-INF/container.xml.
+ - All Packages within the container.
+ - All EncryptionInfo instances from META-INF/encryption.xml.
+ */
 class Container
 {
 public:
+    ///
+    /// A list of container sub-item paths.
     typedef std::vector<string>             PathList;
+    ///
+    /// A list of Packages.
     typedef std::vector<Package*>           PackageList;
+    ///
+    /// A list of encryption information.
     typedef std::vector<EncryptionInfo*>    EncryptionList;
     
 public:
+    /**
+     Create a new Container.
+     @param path The filesystem path to the container file (i.e. the .epub file).
+     */
                 Container(const string& path);
+    ///
+    /// There is no copy constructor.
                 Container(const Container&)                 = delete;
+    ///
+    /// C++11 move constructor.
                 Container(Container&& o);
     virtual     ~Container();
     
+    ///
+    /// Retrieves the paths for all Package documents in the container.
     virtual PathList                PackageLocations()      const;
+    
+    ///
+    /// Retrieves the list of all instantiated packages within the container.
     virtual const PackageList&      Packages()              const   { return _packages; }
+    
+    /**
+     Retrieves the default Package instance.
+     
+     Equivalent to `this->Packages().at(0)`.
+     */
     virtual const Package*          DefaultPackage()        const;
+    
+    ///
+    /// The OCF version of the container document.
     virtual string                  Version()               const;
     
+    ///
+    /// Retrieves the encryption information embedded in the container.
     virtual const EncryptionList&   EncryptionData()        const   { return _encryption; }
+    
+    /**
+     Retrieves the encryption information for a specific file within the container.
+     @param path A container-relative path to the item whose encryption information
+     to retrieve.
+     @result Returns the encryption information, or `nullptr` if none was found.
+     */
     virtual const EncryptionInfo*   EncryptionInfoForPath(const string& path)   const;
     
+    /**
+     Obtains a pointer to a ReadStream for a specific file within the container.
+     @param path A container-relative path to the file whose data to read.
+     @result A std::unique_ptr for a new stream to the specified file, or `nullptr`
+     if the file was not found.
+     */
     virtual Auto<ByteStream>        ReadStreamAtPath(const string& path)        const;
     
 protected:
@@ -64,6 +122,8 @@ protected:
     PackageList     _packages;
     EncryptionList  _encryption;
     
+    ///
+    /// Parses the file META-INF/encryption.xml into an EncryptionList.
     void            LoadEncryption();
 };
 

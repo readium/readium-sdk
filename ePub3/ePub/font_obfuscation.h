@@ -28,6 +28,15 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+/**
+ The FontObfuscator class implements font obfuscation algorithm as defined in
+ Open Container Format 3.0 §4.
+ 
+ The underlying algorithm is bidirectional, so this filter can actually be used both
+ to obfuscate and de-obfuscate resources; as such, this filter may be applied when
+ loading or when storing content.
+ @see http://www.idpf.org/epub/30/spec/epub30-ocf.html#font-obfuscation
+ */
 class FontObfuscator : public ContentFilter
 {
 protected:
@@ -35,6 +44,15 @@ protected:
     static const std::regex     TypeCheck;
     constexpr static const char * const   FontObfuscationAlgorithmID = "http://www.idpf.org/2008/embedding";
     
+    /**
+     The type-sniffer for font obfuscation applicability.
+     
+     The sniffer looks at two things:
+     
+     1. The encryption information for the item must specify the font
+     obfuscation algorithm.
+     2. The item must be a font resource.
+     */
     static bool FontTypeSniffer(const ManifestItem* item, const EncryptionInfo* encInfo) {
         if ( encInfo->Algorithm() != FontObfuscationAlgorithmID )
             return false;
@@ -42,25 +60,54 @@ protected:
     }
     
 public:
+    ///
+    /// There is no default constructor.
     FontObfuscator() = delete;
+    
+    /**
+     Create a font obfuscation filter.
+     
+     The obfuscation key is built using data from every manifestation within an EPUB
+     container, so the Container instance is passed in for that purpose. This is
+     only used during construction.
+     @see BuildKey(const Container*)
+     */
     FontObfuscator(const Container* container) : ContentFilter(FontTypeSniffer) {
-        BuildKey();
+        BuildKey(container);
     }
+    ///
+    /// Copy constructor.
     FontObfuscator(const FontObfuscator& o) : ContentFilter(o) {
         std::memcpy(_key, o._key, KeySize);
     }
+    ///
+    /// Move constructor.
     FontObfuscator(FontObfuscator&& o) : ContentFilter(std::move(o)) {
         std::memcpy(_key, o._key, KeySize);
     }
     
+    /**
+     Applies the font obfuscation algorithm to the resource data.
+     @see http://www.idpf.org/epub/30/spec/epub30-ocf.html#font-obfuscation
+     @param data The data to process.
+     @param len The number of bytes in `data`.
+     @param outputLen Storage for the count of bytes being returned.
+     @result The obfuscated or de-obfuscated bytes.
+     */
     virtual void * FilterData(void * data, size_t len, size_t *outputLen);
     
 protected:
-    const Container*    _container;
     uint8_t             _key[KeySize];
     size_t              _bytesFiltered;     // NOT copied
     
-    bool BuildKey();
+    /**
+     Builds the obfuscaton key using data from the container.
+     @param container The container for the resources to which this filter will
+     apply.
+     @result Always returns `true`.
+     @see http://www.idpf.org/epub/30/spec/epub30-ocf.html#fobfus-keygen
+     */
+    bool BuildKey(const Container* container);
 };
 
 EPUB3_END_NAMESPACE

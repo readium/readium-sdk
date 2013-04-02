@@ -48,12 +48,12 @@ void * FontObfuscator::FilterData(void *data, size_t len, size_t *outputLen)
     *outputLen = len;
     return buf;
 }
-bool FontObfuscator::BuildKey()
+bool FontObfuscator::BuildKey(const Container* container)
 {
     std::regex re(R"X(\s+)X");
     std::stringstream ss;
     
-    for ( auto pkg : _container->Packages() )
+    for ( auto pkg : container->Packages() )
     {
         if ( ss.tellp() > 0 )
             ss << ' ';
