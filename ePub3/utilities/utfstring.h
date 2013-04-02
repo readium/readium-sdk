@@ -28,6 +28,8 @@
 #include <initializer_list>
 #include <locale>
 #include <codecvt>
+#include <vector>
+#include <regex>
 #include <map>
 #include <libxml/xmlstring.h>
 
@@ -274,6 +276,18 @@ public:
     xmlChar * xmlAt(size_type pos);
     
     __base utf8At(size_type pos) const;
+    
+#if 0
+#pragma mark - Splitting
+#endif
+    
+    // courtesy of: http://stackoverflow.com/questions/9435385/split-a-string-using-c11
+    inline std::vector<string> split(const std::regex& regex) const
+    {
+        // passing -1 as the submatch index parameter performs splitting
+        std::sregex_token_iterator first(_base.begin(), _base.end(), regex, -1), last;
+        return {first, last};
+    }
     
 #if 0
 #pragma mark - Assign
