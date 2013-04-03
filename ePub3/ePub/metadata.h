@@ -59,6 +59,8 @@ enum class Direction
  stored by either the Metadata object or its Metadata::Extension objects.
  
  @see http://www.idpf.org/epub/30/spec/epub30-publications.html#sec-meta-elem
+ 
+ @ingroup epub-model
  */
 class Metadata
 {
@@ -69,22 +71,14 @@ public:
     {
         Invalid,        ///< An invalid value.
         
-        /**
-         @defgroup required Required DCMES Elements.
-         
-         These must all be present in any EPUB manifestation (OPF file).
-         @{
-         */
+        // Required DCMES Elements.
+        
         Identifier,     ///< A unique identifier.
         Title,          ///< The title of the publication.
         Language,       ///< The language in which the publication is rendered.
         
-        /** @} */
+        // Optional DCMES elements
         
-        /**
-         @defgroup optional Optional DCMES elements
-         @{
-         */
         Contributor,    ///< The name of a secondary contributor.
         Coverage,       ///< Spatial or temporal context of the publication.
         Creator,        ///< The name of a primary creator.
@@ -168,10 +162,8 @@ public:
                     Metadata(Metadata&&);
     virtual         ~Metadata();
     
-    /**
-     @defgroup Accessors Basic Attributes
-     @{
-     */
+    /// @{
+    /// @name Basic Attributes
     
     ///
     /// The optimized type code for this metadata element.
@@ -189,12 +181,10 @@ public:
     /// The language in which the metadata value is rendered, if applicable.
     string                  Language()      const;
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup Localization Localization
-     @{
-     */
+    /// @{
+    /// @name Localization
     
     /**
      Obtains the localized value, if one is provided.
@@ -212,12 +202,10 @@ public:
      */
     string                  LocalizedValue(const std::locale& locale)   const;
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup Extensions Extensions
-     @{
-     */
+    /// @{
+    /// @name Extensions
     
     ///
     /// Retrieve the list of all this Metadata item's extensions.
@@ -245,7 +233,7 @@ public:
      */
     void                    AddExtension(xmlNodePtr node, const Package* owner);
     
-    /** @} */
+    /// @}
     
     /**
      Returns the canonical property IRI for a given DCType code.

@@ -32,8 +32,14 @@ EPUB3_XML_BEGIN_NAMESPACE
 class Document;
 
 class Namespace;
+/**
+ @ingroup validation
+ */
 typedef std::vector<Namespace *> NamespaceList;
 
+/**
+ @ingroup validation
+ */
 class Namespace : public WrapperBase
 {
 public:

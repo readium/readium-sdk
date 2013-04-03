@@ -26,6 +26,9 @@
 
 EPUB3_XML_BEGIN_NAMESPACE
 
+/**
+ @ingroup validation
+ */
 class DTD : public Node
 {
 public:

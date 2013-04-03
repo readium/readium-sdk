@@ -31,6 +31,9 @@ EPUB3_BEGIN_NAMESPACE
 
 class Package;
 
+/**
+ @ingroup media-handlers
+ */
 class ContentHandler
 {
 public:
@@ -53,6 +56,9 @@ protected:
     const string            _mediaType;
 };
 
+/**
+ @ingroup media-handlers
+ */
 class MediaHandler : public ContentHandler
 {
 public:
@@ -69,6 +75,9 @@ protected:
     const IRI           _handlerIRI;
 };
 
+/**
+ @ingroup media-handlers
+ */
 class CustomRenderer : public ContentHandler
 {
 public:

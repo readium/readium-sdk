@@ -47,6 +47,9 @@ EPUB3_BEGIN_NAMESPACE
 // Thoughts: OCF allows for multiple packages to be specified, but I don't see any
 //  handling of that in ePub3 CFI?
 
+/**
+ @ingroup utilities
+ */
 class Library
 {
 public:

@@ -33,6 +33,9 @@ class NavigationElement;
 typedef std::vector<NavigationElement*> NavigationList;
 
 // abstract base for polymorphic navigation table/point classes
+/**
+ @ingroup navigation
+ */
 class NavigationElement
 {
 public:

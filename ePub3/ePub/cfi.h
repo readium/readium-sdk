@@ -28,6 +28,14 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+/**
+ The CFI class implements an EPUB 3 Content Fragment Identifier.
+ 
+ A CFI is similar in principle to a DOMRange: it identifies a particular location
+ within a publication.
+ 
+ @ingroup epub-model
+ */
 class CFI
 {
 public:

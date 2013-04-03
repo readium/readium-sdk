@@ -40,6 +40,8 @@ class ManifestItem;
  type might be supported through a DHTML handler defined through the `bindings`
  element from an OPF file. Any other types are considered unsupported, thus triggering
  selection of any fallback manifest item in its stead.
+ 
+ @ingroup utilities
  */
 class MediaSupportInfo
 {
@@ -84,10 +86,8 @@ public:
     /// C++11 move assignment operator.
     MediaSupportInfo&   operator=(MediaSupportInfo&& o);
     
-    /**
-     @defgroup Accessors Accessors
-     @{
-     */
+    /// @{
+    /// @name Accessors
     
     /**
      Returns the media type represented by this object.
@@ -109,12 +109,10 @@ public:
      */
     virtual bool    RequiresMediaHandler()  const;
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup Setters Setters
-     @{
-     */
+    /// @{
+    /// @name Setters
     
     /**
      Sets the media type and its support state.
@@ -125,7 +123,7 @@ public:
      */
     virtual void    SetTypeAndSupport(const string& mediaType, SupportType support);
     
-    /** @} */
+    /// @}
     
     /**
      Constructs a list of manifest items with this media type.

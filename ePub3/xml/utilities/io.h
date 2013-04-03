@@ -29,6 +29,9 @@
 
 EPUB3_XML_BEGIN_NAMESPACE
 
+/**
+ @ingroup xml-utils
+ */
 class InputBuffer : public WrapperBase
 {
 public:
@@ -55,6 +58,9 @@ protected:
     
 };
 
+/**
+ @ingroup xml-utils
+ */
 class OutputBuffer : public WrapperBase
 {
 public:
@@ -80,6 +86,9 @@ protected:
     
 };
 
+/**
+ @ingroup xml-utils
+ */
 class StreamInputBuffer : public InputBuffer
 {
 public:
@@ -95,6 +104,9 @@ protected:
     
 };
 
+/**
+ @ingroup xml-utils
+ */
 class StreamOutputBuffer : public OutputBuffer
 {
 public:

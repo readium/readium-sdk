@@ -56,6 +56,8 @@ class ByteStream;
  the first SpineItem in its spine; each SpineItem holds an owning reference to the
  SpineItem that follows it. Lastly, it a reference to the XML document for its
  source OPF file.
+ 
+ @ingroup epub-model
  */
 class PackageBase
 {
@@ -131,10 +133,8 @@ public:
      */
     virtual const string&   BasePath()              const       { return _pathBase; }
     
-    /**
-     @defgroup locales Locale Support
-     @{
-     */
+    /// @{
+    /// @name Locale Support
     
     /**
      Returns the current locale.
@@ -158,14 +158,10 @@ public:
      */
     static void             SetLocale(const std::locale& locale);
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup TableAccess Raw Table Accessors
-     @note To keep these accessible in const packages, we *must* build the tree at
-     allocation time.  This is open to discussion, naturally.
-     @{
-     */
+    /// @{
+    /// @name Raw Table Accessors
     
     ///
     /// Returns an immutable reference to the metadata table.
@@ -177,7 +173,7 @@ public:
     /// Returns an immutable reference to the map of navigation tables.
     const NavigationMap&    NavigationTables()      const       { return _navigation; }
     
-    /** @} */
+    /// @}
     
     /**
      Obtains an IRI for a DCMES metadata item.
@@ -189,13 +185,12 @@ public:
      @result A constant IRI referring to the type, or an empty (invalid) IRI if the
      `type` constant does not refer to a valid DCMES element (i.e. the `Custom` or
      `Invalid` pseudo-types).
+     @ingroup utilities
      */
     const IRI               IRIForDCType(Metadata::DCType type) const { return Metadata::IRIForDCType(type); }
     
-    /**
-     @defgroup SpineAccess Spine Accessors
-     @{
-     */
+    /// @{
+    /// @name Spine Accessors
     
     /**
      Returns the first item in the Spine.
@@ -212,12 +207,10 @@ public:
     
     size_t                  IndexOfSpineItemWithIDRef(const string& idref)  const;
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup ManifestAccess Manifest Item Accessors
-     @{
-     */
+    /// @{
+    /// @name Manifest Item Accessors
     
     /**
      Looks up and returns a specific manifest item by its unique identifier.
@@ -253,7 +246,7 @@ public:
      */
     const std::vector<const ManifestItem*> ManifestItemsWithProperties(PropertyList properties) const;
     
-    /** @} */
+    /// @}
     
     /**
      Returns a navigation table identified by type.
@@ -263,10 +256,8 @@ public:
      */
     const NavigationTable * NavigationTable(const string& type)            const;
     
-    /**
-     @defgroup PropertyIRIs Metadata Property IRI Support
-     @{
-     */
+    /// @{
+    /// @name Metadata Property IRI Support
     
     /**
      Associates a property vocabulary IRI stem with a prefix.
@@ -301,10 +292,13 @@ public:
      */
     IRI                     PropertyIRIFromAttributeValue(const string& attrValue)              const;
     
+    /// @}
+    
     /**
      Returns a ByteStream for reading from the specified file in the package's Archive.
      @param path The path of the item to read.
      @result An auto-pointer to a new ByteStream instance.
+     @ingroup utilities
      */
     Auto<ByteStream>        ReadStreamForItemAtPath(const string& path)                         const;
     
@@ -363,6 +357,8 @@ protected:
  MediaSupportInfo objects attached to it.
  
  @see PackageBase for other important memory ownership information.
+ 
+ @ingroup epub-model
  */
 class Package : public PackageBase
 {
@@ -407,10 +403,8 @@ public:
     /// OPF version of this package document.
     virtual string          Version()               const;
     
-    /**
-     @defgroup EventHandlers Event/Content Handlers
-     @{
-     */
+    /// @{
+    /// @name Event/Content Handlers
     
     /**
      Attaches a handler for load-content events.
@@ -432,12 +426,10 @@ public:
      */
     virtual void            AddMediaHandler(ContentHandler* handler) { _contentHandlers[handler->MediaType()].push_back(handler); }
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup ItemAccessors Spine, Manifest, and CFI
-     @{
-     */
+    /// @{
+    /// @name Spine, Manifest, and CFI
     
     /**
      Returns the SpineItem having a given IDRef.
@@ -511,8 +503,10 @@ public:
      */
     const ManifestItem *    operator[](const string& ident) const   { return ManifestItemWithID(ident); }
     
-    /** @} */
+    /// @}
     
+    /// @{
+    /// @name Raw Data Access
     
     ArchiveReader*          ReaderForRelativePath(const string& path)       const {
         return _archive->ReaderAtPath((_pathBase + path).stl_str());
@@ -522,10 +516,10 @@ public:
     }
     Auto<ByteStream>        ReadStreamForRelativePath(const string& path)   const;
     
-    /**
-     @defgroup Navigation Navigation Tables
-     @{
-     */
+    /// @}
+    
+    /// @{
+    /// @name Navigation Tables
     
     ///
     /// Returns the table of contents for this package.
@@ -543,12 +537,10 @@ public:
     /// Returns the page list, if any exists.
     const class NavigationTable*    PageList()              const       { return NavigationTable("page-list"); }
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup HLMetadata High-Level Metadata API
-     @{
-     */
+    /// @{
+    /// @name High-Level Metadata API
     
     /**
      Fetches a map of all metadata items with a given DCType.
@@ -691,6 +683,11 @@ public:
      */
     const StringList        Subjects(bool localized=true)           const;
     
+    /// @}
+    
+    /// @{
+    /// @name Media Handling
+    
     ///
     /// A list of media types which have an installed handler of class MediaHandler.
     const StringList            MediaTypesWithDHTMLHandlers()                   const;
@@ -750,6 +747,8 @@ public:
      */
     virtual void            SetMediaSupport(MediaSupportList&& list);
     
+    /// @}
+    
 protected:
     ///
     /// Extracts information from the OPF XML document.
@@ -767,8 +766,8 @@ public:
     static void             SetValidatesSchema(bool validate)   { gValidateSchema = validate; }
     
 protected:
-    LoadEventHandler        _loadEventHandler;
-    MediaSupportList        _mediaSupport;
+    LoadEventHandler        _loadEventHandler;      ///< The current handler for load events.
+    MediaSupportList        _mediaSupport;          ///< A list of media types with their support details.
     
     void                    InitMediaSupport();
 };

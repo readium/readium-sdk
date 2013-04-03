@@ -53,6 +53,8 @@ EPUB3_BEGIN_NAMESPACE
  
  The ring buffer is used as a component in the AsyncByteStream classes to enable
  asynchronous reading/writing behaviour.
+ 
+ @ingroup utilities
  */
 class RingBuffer
 {
@@ -73,10 +75,8 @@ public:
     /// @note This locks its argument before accessing.
                     RingBuffer(RingBuffer&& o);
     
-    /**
-     @defgroup Assignment Assignment Operators
-     @{
-     */
+    /// @{
+    /// @name Assignment Operators
     
     /**
      Copy operator.
@@ -89,12 +89,14 @@ public:
      */
     RingBuffer&     operator=(RingBuffer&& o);
     
+    /// @}
+    
+    /// @{
     /**
-     @defgroup Locking Locking Operations
+     @name Locking Operations
      @note The functions here are named such that the RingBuffer class satisfies the
      C++11 Lockable concept. As a result, this object can be used as the `_Mutex`
      template parameter in `std::lock_guard` and `std::unique_lock`.
-     @{
      */
     
     /**
@@ -114,12 +116,10 @@ public:
      */
     void            unlock()                    { _lock.unlock(); }
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup Metadata Buffer Metadata
-     @{
-     */
+    /// @{
+    /// @name Buffer Metadata
     
     /**
      Obtain the total capacity of a ring buffer.
@@ -147,12 +147,10 @@ public:
      */
     std::size_t     SpaceAvailable()        const noexcept  { return _capacity - _numBytes; }
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup Accessors Content Accessors
-     @{
-     */
+    /// @{
+    /// @name Content Accessors
     
     /**
      Reads data from the buffer without removing it.
@@ -181,7 +179,7 @@ public:
      */
     void            RemoveBytes(std::size_t len)    noexcept;
     
-    /** @} */
+    /// @}
     
 protected:
     std::size_t             _capacity;  ///< The allocated capacity (in bytes) of the backing store.

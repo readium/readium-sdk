@@ -41,6 +41,9 @@ typedef std::map<string, string>  NamespaceMap;
 extern const size_t utf8_sizes[256];
 #define UTF8CharLen(c) ePub3::utf8_sizes[static_cast<xmlChar>(c)]
 
+/**
+ @ingroup utilities
+ */
 class string
 {
 public:

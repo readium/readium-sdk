@@ -27,6 +27,9 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+/**
+ @ingroup navigation
+ */
 class Glossary : public NavigationElement
 {
 public:

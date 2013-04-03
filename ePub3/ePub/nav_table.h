@@ -28,6 +28,9 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+/**
+ @ingroup navigation
+ */
 class NavigationTable : public NavigationElement
 {
 public:

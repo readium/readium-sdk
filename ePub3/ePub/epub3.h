@@ -42,6 +42,9 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+/**
+ @ingroup utilities
+ */
 static inline string _getProp(xmlNodePtr node, const char *name, const char *nsURI = nullptr)
 {
     if ( node == nullptr )

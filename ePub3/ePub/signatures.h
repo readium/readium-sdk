@@ -33,6 +33,9 @@ class KeyInfo {};
 class SignatureObject {};
 class SignatureReference {};
 
+/**
+ @ingroup epub-model
+ */
 class DigitalSignature
 {
 public:

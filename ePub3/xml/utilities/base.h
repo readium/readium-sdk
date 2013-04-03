@@ -36,6 +36,9 @@
 EPUB3_XML_BEGIN_NAMESPACE
 
 // generic 'get me a wrapper' template
+/**
+ @ingroup xml-utils
+ */
 template <class _T, typename _N>
 static inline _T * Wrapped(_N * n)
 {
@@ -44,6 +47,9 @@ static inline _T * Wrapped(_N * n)
     return new _T(n);
 }
 
+/**
+ @ingroup xml-utils
+ */
 class exception : public std::exception
 {
 public:
@@ -64,18 +70,27 @@ protected:
     std::string message;
 };
 
+/**
+ @ingroup xml-utils
+ */
 class ParserError : public exception {
 public:
     ParserError(const std::string & context, xmlErrorPtr err = NULL) throw () : exception(context.c_str(), err) {}
     ParserError(const char * s, xmlErrorPtr err = NULL) throw () : exception(s, err) {}
     virtual ~ParserError() {}
 };
+/**
+ @ingroup xml-utils
+ */
 class ValidationError : public exception  {
 public:
     ValidationError(const std::string & context, xmlErrorPtr err = NULL) throw () : exception(context.c_str(), err) {}
     ValidationError(const char * s, xmlErrorPtr err = NULL) throw () : exception(s, err) {}
     virtual ~ValidationError() {}
 };
+/**
+ @ingroup xml-utils
+ */
 class InternalError : public exception  {
 public:
     InternalError(const std::string & context, xmlErrorPtr err = NULL) throw () : exception(context.c_str(), err) {}
@@ -84,6 +99,9 @@ public:
 };
 
 // note that MOVE is allowed, just not COPY
+/**
+ @ingroup xml-utils
+ */
 class WrapperBase
 {
 public:

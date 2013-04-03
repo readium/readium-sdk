@@ -28,6 +28,9 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+/**
+ @ingroup archives
+ */
 class ZipArchive : public Archive
 {
     // a subclass that can be initialized with a zip_stat structure

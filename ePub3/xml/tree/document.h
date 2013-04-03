@@ -33,6 +33,9 @@ class DTD;
 class Element;
 class C18N;
 
+/**
+ @ingroup tree
+ */
 enum class EntityType : uint8_t {
     InternalGeneral,
     ExternalGeneralParsed,
@@ -42,6 +45,9 @@ enum class EntityType : uint8_t {
     InternalPredefinedEntity,
 };
 
+/**
+ @ingroup tree
+ */
 class Document : public Node
 {
 public:

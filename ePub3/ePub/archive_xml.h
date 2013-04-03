@@ -28,6 +28,9 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+/**
+ @ingroup archives
+ */
 class ArchiveXmlReader : public xml::InputBuffer
 {
 public:
@@ -46,6 +49,9 @@ protected:
     virtual bool close();
 };
 
+/**
+ @ingroup archives
+ */
 class ArchiveXmlWriter : public xml::OutputBuffer
 {
 public:

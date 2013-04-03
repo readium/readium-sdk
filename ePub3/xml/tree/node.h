@@ -41,6 +41,9 @@ class Namespace;
 class Node;
 typedef std::vector<Node*> NodeSet;
 
+/**
+ @ingroup tree
+ */
 enum class NodeType : uint8_t {
     Element                         = ::XML_ELEMENT_NODE,
     Attribute                       = ::XML_ATTRIBUTE_NODE,
@@ -67,8 +70,14 @@ enum class NodeType : uint8_t {
 #endif
 };
 
+/**
+ @ingroup xml-utils
+ */
 std::string TypeString(NodeType type);
 
+/**
+ @ingroup tree
+ */
 class Node : public WrapperBase
 {
 public:

@@ -26,6 +26,9 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+/**
+ @ingroup epub-model
+ */
 class EncryptionInfo
 {
 public:

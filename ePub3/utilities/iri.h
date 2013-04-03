@@ -37,6 +37,8 @@ class CFI;
  are allowed and should not be implicitly encoded) in matching properties and other
  identifiers. This class provides URN support internally, URL support through
  Google's GURL library, and Unicode IRI support is wrapped around GURL.
+ 
+ @ingroup utilities
  */
 class IRI
 {
@@ -49,6 +51,8 @@ class IRI
     static string gReservedCharacters;
     
 public:
+    ///
+    /// A type encapsulating an account and shared-secret pair, such as username and password.
     typedef const std::pair<string, string> IRICredentials;
     
     ///
@@ -103,10 +107,8 @@ public:
     
     virtual ~IRI();
     
-    /**
-     @defgroup Assignment Assignment
-     @{
-     */
+    /// @{
+    /// @name Assignment
     
     ///
     /// Assigns the value of another IRI (copy assignment).
@@ -116,12 +118,10 @@ public:
     /// Assigns ownership of the value of another IRI (move assignment).
     IRI&            operator=(IRI&& o);
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup Comparisons Comparisons
-     @{
-     */
+    /// @{
+    /// @name Comparators
     
     /**
      Compares two IRIs for equality.
@@ -146,7 +146,7 @@ public:
      */
     bool            operator<(const IRI& o)                 const;
     
-    /** @} */
+    /// @}
     
     ///
     /// Returns `true` if the IRI is a URN.
@@ -156,10 +156,8 @@ public:
     /// Returns `true` if the IRI is a URL referencing a relative location.
     bool            IsRelative() const { return !_url->has_host(); }
     
-    /**
-     @defgroup Introspection Component Introspection
-     @{
-     */
+    /// @{
+    /// @name Component Introspection
     
     ///
     /// Obtains the IRI's scheme component.
@@ -257,12 +255,10 @@ public:
      */
     void            SetContentFragmentIdentifier(const CFI& cfi);
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup Helpers Helper Methods
-     @{
-     */
+    /// @{
+    /// @name Helper Methods
     
     ///
     /// URL-encodes a path, query, or fragment component.
@@ -276,7 +272,7 @@ public:
     /// Converts an IDN (hostname in non-ASCII Unicode format) into its ASCII representation.
     static string   IDNEncodeHostname(const string& host);
     
-    /** @} */
+    /// @}
     
     /**
      Obtains a Unicode string representation of this IRI.
@@ -303,9 +299,9 @@ public:
     string          URIString() const;
     
 protected:
-    ComponentList   _urnComponents;
-    GURL*           _url;
-    string          _pureIRI;       // may be empty
+    ComponentList   _urnComponents;     ///< The components of a URN.
+    GURL*           _url;               ///< The underlying URL object.
+    string          _pureIRI;           ///< A cache of the Unicode IRI string. May be empty.
     
 };
 

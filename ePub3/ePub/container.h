@@ -47,6 +47,8 @@ class ByteStream;
  to read from the zip file, the XML document for the OCF file at META-INF/container.xml,
  all Packages within the container, and all EncryptionInfo instances from
  META-INF/encryption.xml.
+ 
+ @ingroup epub-model
  */
 class Container
 {

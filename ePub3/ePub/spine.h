@@ -72,6 +72,8 @@ class IRI;
  following item, and a *non-owning reference* to the preceding item. When a
  SpineItem is destroyed, it will delete the next SpineItem in the chain, and will
  set its prior item's pointer-to-next to be `nullptr`.
+ 
+ @ingroup epub-model
  */
 class SpineItem
 {
@@ -102,10 +104,8 @@ public:
     // It will also reach back into _prev and nullify its _next
     virtual             ~SpineItem();
     
-    /**
-     @defgroup Metadata Metadata
-     @{
-     */
+    /// @{
+    /// @name Metadata
     
     ///
     /// Returns an O(n) count of items in the spine (starting with this item).
@@ -143,12 +143,10 @@ public:
     /// Determine the spread location for this item (or for the first page thereof).
     PageSpread          Spread()            const;
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup Navigation Navigation
-     @{
-     */
+    /// @{
+    /// @name Navigation
     
     ///
     /// Retrieves a pointer to the spine item following this one, or `nullptr`.
@@ -176,11 +174,12 @@ public:
     /// Retrieves a pointer to the previous linear item in the spine, or `nullptr`.
     const SpineItem*    PriorStep()         const;
     
-    /** @} */
+    /// @}
     
+    /// @{
+    /// @name Indexed Accessors
     /**
-     @defgroup Indexing Indexed Accessors
-     The index is always considered relative to `this`, and has the following
+     @note The index is always considered relative to `this`, and has the following
      invariants:
      
      - `item.at(0)`  = `&item`
@@ -220,15 +219,17 @@ public:
      */
     const SpineItem*    operator[](ssize_t idx) const   throw (std::out_of_range) { return at(idx); }
     
-protected:
-    string       _ident;
-    string       _idref;
-    Package*     _owner;
-    bool         _linear;
-    PropertyList _properties;
+    /// @}
     
-    SpineItem* _prev;
-    SpineItem* _next;
+protected:
+    string       _ident;            ///< The spine item's `id`, if it has one.
+    string       _idref;            ///< The `idref` value targetting a ManifestItem.
+    Package*     _owner;            ///< The Package containing this SpineItem.
+    bool         _linear;           ///< `true` if the item is linear (the default).
+    PropertyList _properties;       ///< A list of property IRIs.
+    
+    SpineItem* _prev;               ///< The SpineItem preceding this one in the spine.
+    SpineItem* _next;               ///< The SpineItem following this one in the spine.
     
     friend class Package;
     void SetNextItem(SpineItem* next) {

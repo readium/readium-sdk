@@ -35,6 +35,9 @@ class ArchiveReader;
 class ArchiveWriter;
 class ByteStream;
 
+/**
+ @ingroup archives
+ */
 class Archive
 {
 protected:
@@ -107,6 +110,9 @@ protected:
     
 };
 
+/**
+ @ingroup archives
+ */
 class ArchiveItemInfo
 {
 public:
@@ -146,6 +152,9 @@ protected:
     
 };
 
+/**
+ @ingroup archives
+ */
 class ArchiveReader
 {
 public:
@@ -160,6 +169,9 @@ protected:
     ArchiveReader(ArchiveReader &&) = default;
 };
 
+/**
+ @ingroup archives
+ */
 class ArchiveWriter
 {
 public:

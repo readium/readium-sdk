@@ -58,6 +58,8 @@ class Container;
  @note The next filter is contained in a std::unique_ptr; this means each filter
  in the chain 'owns' the reference to the next, and is solely responsible for
  deleting it.
+ 
+ @ingroup filters
  */
 class ContentFilter
 {

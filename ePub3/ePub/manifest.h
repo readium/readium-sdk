@@ -51,6 +51,8 @@ typedef std::map<string, ManifestItem*>    ManifestTable;
  those arithmetic operations as methods on an `enum class`. Therefore it's all DIY.
  
  @see http://www.idpf.org/epub/30/spec/epub30-publications.html#sec-item-property-values
+ 
+ @ingroup epub-model
  */
 class ItemProperties
 {
@@ -75,10 +77,6 @@ public:
     typedef unsigned int    value_type;
     
 public:
-    /**
-     @defgroup Creation Creation
-     @{
-     */
     
     /**
      Creates a new instance from an XML `properties` attribute string.
@@ -103,12 +101,8 @@ public:
                     ItemProperties(ItemProperties&& o) : _p(o._p) {}
                     ~ItemProperties() {}
     
-    /** @} */
-    
-    /**
-     @defgroup Tests Tests
-     @{
-     */
+    /// @{
+    /// @name Tests
     
     /**
      Checks for the presence of one or more properties.
@@ -124,12 +118,10 @@ public:
      */
     bool            HasProperty(const ItemProperties& p)    const   { return HasProperty(p._p); }
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup Arithmetic Arithmetic and Bitwise Operations
-     @{
-     */
+    /// @{
+    /// @name Arithmetic and Bitwise Operations
     
     ///
     /// Compares two ItemProperties for equality.
@@ -200,12 +192,10 @@ public:
     /// Assigns the result of a bitwise-NOT with a property bitfield.
     ItemProperties& operator^=(value_type v)                        { _p ^= v; return *this; }
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup Casts Casting to Other Types
-     @{
-     */
+    /// @{
+    /// @name Casting to Other Types
     
     ///
     /// Cast to a raw bitfield.
@@ -214,13 +204,13 @@ public:
     /// Cast to a string value suitable for use as the `properties` attribute of an XML manifest `item` element.
     string          str()                                   const;
     
-    /** @} */
+    /// @}
     
 private:
-    value_type _p;
+    value_type _p;                                      ///< The property bitfield.
     
     typedef std::map<string, value_type> PropertyMap;
-    static const PropertyMap PropertyLookupTable;
+    static const PropertyMap PropertyLookupTable;       ///< A map of known property names to bitfield values.
     
 };
 
@@ -249,6 +239,8 @@ private:
  any memory-management responsibility for that pointer. Each ManifestItem is owned by
  the Package from which it was loaded., and will be deleted when that Package is
  deallocated.
+ 
+ @ingroup epub-model
  */
 class ManifestItem
 {

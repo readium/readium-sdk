@@ -33,6 +33,9 @@ struct zip_file;
 
 EPUB3_BEGIN_NAMESPACE
 
+/**
+ @ingroup utilities
+ */
 class ByteStream
 {
 public:
@@ -68,6 +71,9 @@ protected:
     
 };
 
+/**
+ @ingroup utilities
+ */
 enum class AsyncEvent : uint8_t
 {
     None,
@@ -81,6 +87,9 @@ enum class AsyncEvent : uint8_t
 class AsyncByteStream;
 using StreamEventHandler = std::function<void(AsyncEvent, AsyncByteStream*)>;
 
+/**
+ @ingroup utilities
+ */
 class AsyncByteStream : public ByteStream
 {
 protected:
@@ -127,6 +136,9 @@ protected:
     virtual size_type           write_for_async(const void* buf, size_type len) = 0;
 };
 
+/**
+ @ingroup utilities
+ */
 class FileByteStream : public ByteStream
 {
 public:
@@ -155,6 +167,9 @@ protected:
     FILE*                   _file;
 };
 
+/**
+ @ingroup utilities
+ */
 class ZipFileByteStream : public ByteStream
 {
 public:
@@ -181,6 +196,9 @@ protected:
     struct zip_file*        _file;
 };
 
+/**
+ @ingroup utilities
+ */
 class AsyncFileByteStream : public AsyncByteStream, public FileByteStream
 {
 private:
@@ -221,6 +239,9 @@ protected:
     virtual size_type       write_for_async(const void* buf, size_type len) { return __F::WriteBytes(buf, len); }
 };
 
+/**
+ @ingroup utilities
+ */
 class AsyncZipFileByteStream : public AsyncByteStream, public ZipFileByteStream
 {
 private:

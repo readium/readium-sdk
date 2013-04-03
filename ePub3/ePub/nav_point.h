@@ -29,6 +29,9 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+/**
+ @ingroup navigation
+ */
 class NavigationPoint : public NavigationElement
 {
 public:

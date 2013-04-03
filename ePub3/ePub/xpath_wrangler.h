@@ -32,8 +32,11 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-///
-/// A simple object which encapsulates the use of an XPath expression in libxml2.
+/**
+ A simple object which encapsulates the use of an XPath expression in libxml2.
+ 
+ @ingroup utilities
+ */
 class XPathWrangler
 {
 public:
@@ -61,10 +64,8 @@ public:
     XPathWrangler(XPathWrangler&& o);
     ~XPathWrangler();
     
-    /**
-     @defgroup Evaluation XPath Evaluation
-     @{
-     */
+    /// @{
+    /// @name XPath Evaluation
     
     /**
      Evaluates an XPath, returning a list of strings as a result.
@@ -105,12 +106,10 @@ public:
      */
     xmlNodeSetPtr   Nodes(const string& xpath, xmlNodePtr node=nullptr);
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup Namespaces Namespace Handling
-     @{
-     */
+    /// @{
+    /// @name Namespace Handling
     
     /**
      Adds a namespace prefix:URI pair to the XPath evaluation context.
@@ -157,10 +156,10 @@ public:
      */
     void            NameDefaultNamespace(const string& name);
     
-    /** @} */
+    /// @}
     
 protected:
-    xmlXPathContextPtr  _ctx;
+    xmlXPathContextPtr  _ctx;   ///< The libxml2 XPath context object.
 };
 
 EPUB3_END_NAMESPACE

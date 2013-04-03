@@ -28,6 +28,9 @@
 
 EPUB3_XML_BEGIN_NAMESPACE
 
+/**
+ @ingroup tree
+ */
 class Element : public Node
 {
 public:

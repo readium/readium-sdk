@@ -34,6 +34,9 @@ class Element;
 class Node;
 
 // Version codes
+/**
+ @ingroup validation
+ */
 enum class C14NVersion : uint8_t {
     v1_0,
     v1_0_Exclusive,
@@ -41,6 +44,9 @@ enum class C14NVersion : uint8_t {
     v2_0
 };
 
+/**
+ @ingroup validation
+ */
 template <C14NVersion _Version, bool _WithComments>
 struct C14NParams
 {
@@ -72,6 +78,9 @@ protected:
     QNameAwarenessMap   unqualifiedAttributes;
 };
 
+/**
+ @ingroup validation
+ */
 struct C14N
 {
     // namespaced symbolic constants to use for canonicalization types

@@ -35,6 +35,7 @@ class Package;
 /**
  Implements a filter for reading content documents which statically replaces `object`
  elements with `iframe` elements referencing the appropriate DHTML handler.
+ @ingroup filters
  */
 class ObjectPreprocessor : public ContentFilter
 {
