@@ -54,7 +54,7 @@ protected:
      2. The item must be a font resource.
      */
     static bool FontTypeSniffer(const ManifestItem* item, const EncryptionInfo* encInfo) {
-        if ( encInfo->Algorithm() != FontObfuscationAlgorithmID )
+        if ( encInfo == nullptr || encInfo->Algorithm() != FontObfuscationAlgorithmID )
             return false;
         return std::regex_match(item->MediaType().stl_str(), TypeCheck);
     }
@@ -72,17 +72,17 @@ public:
      only used during construction.
      @see BuildKey(const Container*)
      */
-    FontObfuscator(const Container* container) : ContentFilter(FontTypeSniffer) {
+    FontObfuscator(const Container* container) : ContentFilter(FontTypeSniffer), _bytesFiltered(0) {
         BuildKey(container);
     }
     ///
     /// Copy constructor.
-    FontObfuscator(const FontObfuscator& o) : ContentFilter(o) {
+    FontObfuscator(const FontObfuscator& o) : ContentFilter(o), _bytesFiltered(o._bytesFiltered) {
         std::memcpy(_key, o._key, KeySize);
     }
     ///
     /// Move constructor.
-    FontObfuscator(FontObfuscator&& o) : ContentFilter(std::move(o)) {
+    FontObfuscator(FontObfuscator&& o) : ContentFilter(std::move(o)), _bytesFiltered(o._bytesFiltered) {
         std::memcpy(_key, o._key, KeySize);
     }
     

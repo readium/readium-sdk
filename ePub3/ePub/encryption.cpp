@@ -28,13 +28,13 @@ EncryptionInfo::EncryptionInfo(xmlNodePtr node)
 {
     XPathWrangler xpath(node->doc, {{"enc", XMLENCNamespaceURI}, {"dsig", XMLDSigNamespaceURI}});
     
-    auto strings = xpath.Strings("./enc:EncryptionMethod/@Algorithm");
+    auto strings = xpath.Strings("./enc:EncryptionMethod/@Algorithm", node);
     if ( strings.empty() )
         throw std::invalid_argument("Node does not contain enc:EncryptionMethod with an Algorithm attribute");
     
     _algorithm = strings[0];
     
-    strings = xpath.Strings("./enc:CipherData/enc:CipherReference/@URI");
+    strings = xpath.Strings("./enc:CipherData/enc:CipherReference/@URI", node);
     if ( strings.empty() )
         throw std::invalid_argument("Node does not specify a cipher reference URI");
     

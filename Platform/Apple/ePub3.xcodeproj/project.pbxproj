@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		3418BA7D16C4151E009AA7EF /* ring_buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA88FD116C2B4ED00F2014B /* ring_buffer.cpp */; };
 		850B1AE916A75AC600619C3C /* TestData in CopyFiles */ = {isa = PBXBuildFile; fileRef = 850B1AE816A75AB000619C3C /* TestData */; };
+		AB17B29B170C872E00FD5917 /* font_obfuscation_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB17B29A170C872E00FD5917 /* font_obfuscation_tests.cpp */; };
 		AB61CE4E1694845700299BB1 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB61CE4D1694845700299BB1 /* main.cpp */; };
 		AB61CE501694845700299BB1 /* UnitTests.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = AB61CE4F1694845700299BB1 /* UnitTests.1 */; };
 		AB61CE56169485BD00299BB1 /* string_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB61CE55169485BD00299BB1 /* string_tests.cpp */; };
@@ -344,6 +345,7 @@
 
 /* Begin PBXFileReference section */
 		850B1AE816A75AB000619C3C /* TestData */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TestData; path = ../../TestData; sourceTree = "<group>"; };
+		AB17B29A170C872E00FD5917 /* font_obfuscation_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = font_obfuscation_tests.cpp; sourceTree = "<group>"; };
 		AB61CE4A1694845700299BB1 /* UnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = UnitTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB61CE4D1694845700299BB1 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		AB61CE4F1694845700299BB1 /* UnitTests.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = UnitTests.1; sourceTree = "<group>"; };
@@ -614,6 +616,7 @@
 				ABA4BB5F16B1942100161B77 /* metadata_tests.cpp */,
 				AB95448B16BC28F300EFD2FD /* switch_preproc_tests.cpp */,
 				AB95448D16BC539200EFD2FD /* object_preproc_tests.cpp */,
+				AB17B29A170C872E00FD5917 /* font_obfuscation_tests.cpp */,
 			);
 			name = UnitTests;
 			path = ../../UnitTests;
@@ -1222,7 +1225,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0460;
-				ORGANIZATIONNAME = "The Readium Foundation";
+				ORGANIZATIONNAME = "The Readium Foundation and contributors";
 			};
 			buildConfigurationList = ABA72C1E1655382E003125FF /* Build configuration list for PBXProject "ePub3" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -1256,6 +1259,7 @@
 				ABA4BB6016B1942100161B77 /* metadata_tests.cpp in Sources */,
 				AB95448C16BC28F300EFD2FD /* switch_preproc_tests.cpp in Sources */,
 				AB95448E16BC539200EFD2FD /* object_preproc_tests.cpp in Sources */,
+				AB17B29B170C872E00FD5917 /* font_obfuscation_tests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
