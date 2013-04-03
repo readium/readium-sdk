@@ -43,12 +43,10 @@ class ByteStream;
  for instance, are kept around as pointers which will be deleted when the container
  is destroyed.
  
- The Container class is the owner of:
- 
- - The Archive instance used to read from the zip file.
- - The XML document for the OCF file at META-INF/container.xml.
- - All Packages within the container.
- - All EncryptionInfo instances from META-INF/encryption.xml.
+ @remarks The Container class holds owning references to the Archive instance used
+ to read from the zip file, the XML document for the OCF file at META-INF/container.xml,
+ all Packages within the container, and all EncryptionInfo instances from
+ META-INF/encryption.xml.
  */
 class Container
 {

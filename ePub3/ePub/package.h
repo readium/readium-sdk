@@ -50,6 +50,12 @@ class ByteStream;
  The PackageBase class implements the low-level components and all storage of an OPF
  package document.  It provides direct access to spine, manifest, and metadata tables,
  while the Package class provides a higher-level API on top of these.
+ 
+ @remarks The PackageBase class holds owning references for all Metadata, ContentHandlers,
+ top-level NavigationTables, and ManifestItems. It also holds an owning reference to
+ the first SpineItem in its spine; each SpineItem holds an owning reference to the
+ SpineItem that follows it. Lastly, it a reference to the XML document for its
+ source OPF file.
  */
 class PackageBase
 {
@@ -352,6 +358,11 @@ protected:
 /**
  The Package class implements a high-level API for interacting with OPF packages,
  including convenience accessors for well-known metadata items.
+ 
+ @remarks A Package instance holds owning references to all LoadEventHandlers and
+ MediaSupportInfo objects attached to it.
+ 
+ @see PackageBase for other important memory ownership information.
  */
 class Package : public PackageBase
 {

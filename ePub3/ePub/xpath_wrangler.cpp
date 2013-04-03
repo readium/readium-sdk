@@ -81,7 +81,8 @@ XPathWrangler::StringList XPathWrangler::Strings(const string& xpath, xmlNodePtr
                 // a list of strings (I hope)
                 for ( int i = 0; i < result->nodesetval->nodeNr; i++ )
                 {
-                    strings.emplace_back(xmlNodeGetContent(result->nodesetval->nodeTab[i]));
+                    strings.emplace_back(xmlXPathCastNodeToString(result->nodesetval->nodeTab[i]));
+                    //strings.emplace_back(xmlNodeGetContent(result->nodesetval->nodeTab[i]));
                 }
                 break;
             default:

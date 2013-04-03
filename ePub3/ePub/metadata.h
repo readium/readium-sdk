@@ -53,7 +53,7 @@ enum class Direction
  item can have many such extensions. The most common metadata types are those from
  the DCMES standard, and those are optimized using the Metadata::DCType enumeration.
  
- Each Metadata instance owns its Metadata::Extension instances, and is responsible
+ @remarks Each Metadata instance owns its Metadata::Extension instances, and is responsible
  for deleting them. The Package instance which owns a Metadata object is passed into
  the constructor to assist with property to IRI mappings, but that reference is not
  stored by either the Metadata object or its Metadata::Extension objects.

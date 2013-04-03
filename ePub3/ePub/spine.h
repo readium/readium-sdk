@@ -68,7 +68,7 @@ class IRI;
  spine items, however, the NextStep() and PriorStep() methods can be used to
  implicitly skip any non-linear items.
  
- As a linked-list structure, each SpineItem holds an *owning reference* to the
+ @remarks As a linked-list structure, each SpineItem holds an *owning reference* to the
  following item, and a *non-owning reference* to the preceding item. When a
  SpineItem is destroyed, it will delete the next SpineItem in the chain, and will
  set its prior item's pointer-to-next to be `nullptr`.
