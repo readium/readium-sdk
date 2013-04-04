@@ -41,7 +41,7 @@ IRI MediaHandler::Target(const string& src, const ParameterList& parameters) con
     
     std::stringstream ss;
     ss << "src=" << src;
-    for ( auto pair : parameters )
+    for ( auto& pair : parameters )
     {
         string str = _Str('&', IRI::URLEncodeComponent(pair.first), '=', IRI::URLEncodeComponent(pair.second));
         ss << str;

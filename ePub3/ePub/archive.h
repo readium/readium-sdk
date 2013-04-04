@@ -36,6 +36,8 @@ class ArchiveWriter;
 class ByteStream;
 
 /**
+ An abstract class representing a generic archive.
+ 
  @ingroup archives
  */
 class Archive

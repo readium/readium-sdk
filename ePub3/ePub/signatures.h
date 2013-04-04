@@ -34,21 +34,40 @@ class SignatureObject {};
 class SignatureReference {};
 
 /**
+ Encapsulates details of a digital signature in an EPUB container.
+ 
+ @todo Implement.
  @ingroup epub-model
  */
 class DigitalSignature
 {
 public:
+    ///
+    /// Digital signature algorithms are identified using URI strings.
     typedef string          algorithm_type;
     
 public:
                 DigitalSignature()                                  = default;
+    /**
+     Creates a new DigitalSignature from a `<Signature>` XML element node.
+     @param node An XML node, which *must* be a `<Signature>` node as defined in
+     XML-DSig.
+     @see http://www.w3.org/TR/xmldsig-core1/#sec-Signature
+     */
                 DigitalSignature(xmlNodePtr signatureNode);
+    ///
+    /// No copy constructor.
                 DigitalSignature(const DigitalSignature&)           = delete;
+    ///
+    /// Move constructor.
                 DigitalSignature(DigitalSignature&& o) : _signedInfo(std::move(o._signedInfo)), _keyInfo(std::move(o._keyInfo)), _object(std::move(o._object)) {}
     virtual     ~DigitalSignature() {}
     
+    ///
+    /// No copy assignment operator.
     DigitalSignature&           operator=(const DigitalSignature&)  = delete;
+    ///
+    /// Move assignment operator.
     virtual DigitalSignature&   operator=(DigitalSignature&&);
     
     class SignedInfo*           SignedInfo()                                { return _signedInfo.get(); }
@@ -63,6 +82,8 @@ public:
     void                        SetSignatureObject(class SignatureObject& __i) { _object.reset(&__i); }
     const class SignatureObject* SignatureObject()                  const   { return _object.get(); }
     
+    ///
+    /// Performs validation of the digital signature.
     bool                        Validate()                          const;
     
 protected:
