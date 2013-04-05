@@ -43,6 +43,13 @@
 EPUB3_BEGIN_NAMESPACE
 
 /**
+ Reads a property (attribute) value from an XML node.
+ 
+ Thi method performs all the book-keeping of strings copied from `libxml` properties.
+ @param node The node whose property to read.
+ @param name The name of the property.
+ @param nsURI The URI of the namespace that defines the property.
+ @result A string containing the property value, or an empty string if none was found.
  @ingroup utilities
  */
 static inline string _getProp(xmlNodePtr node, const char *name, const char *nsURI = nullptr)

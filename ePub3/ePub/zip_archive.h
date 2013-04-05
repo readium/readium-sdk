@@ -29,6 +29,13 @@
 EPUB3_BEGIN_NAMESPACE
 
 /**
+ An Archive implementation for ZIP files, as used by the OCF 3.0 standard.
+ 
+ @note ZIP archives do not contain any access permission information.
+ @note The underlying implementation, `libzip`, writes data only when the archive
+ is closed. Any data written to a zip file will therefore be kept in temporary
+ storage until the archive object is closed.
+ @see http://www.idpf.org/epub/30/spec/epub30-ocf.html#physical-container-zip
  @ingroup archives
  */
 class ZipArchive : public Archive
@@ -43,12 +50,22 @@ private:
     static std::string TempFilePath();
     
 public:
+    ///
+    /// Creates a new empty ZipArchive.
     ZipArchive() : ZipArchive(TempFilePath()) {}
+    ///
+    /// Opens the ZipArchive at a given filesystem path.
     ZipArchive(const std::string & path);
+    ///
+    /// move constructos.
     ZipArchive(ZipArchive &&o) : _zip(o._zip) { o._zip = nullptr; }
+    ///
+    /// Initialize directly from a `libzip` internal structure.
     explicit ZipArchive(struct zip * aZip) : _zip(aZip) {}
     virtual ~ZipArchive();
     
+    ///
+    /// Move assignment.
     Archive & operator = (ZipArchive &&o);
     
     virtual bool ContainsItem(const std::string & path) const;
@@ -64,11 +81,13 @@ public:
     virtual ArchiveItemInfo InfoAtPath(const std::string & path) const;
     
 protected:
-    struct zip *    _zip;
+    struct zip *    _zip;           ///< Pointer to the underlying `libzip` data type.
     
     typedef std::list<zip_source*>  ZipSourceList;
-    ZipSourceList   _liveSources;
+    ZipSourceList   _liveSources;   ///< A list of live zip sources, which must be cleaned up upon closing.
     
+    ///
+    /// Sanitizes a path string, since `libzip` can be finnicky about them.
     std::string Sanitized(const std::string& path) const;
 };
 

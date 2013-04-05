@@ -57,6 +57,21 @@ static inline std::stringstream& __format(std::stringstream& s, const Arg1& arg1
     return __format(s, args...);
 }
 
+/**
+ Formats a string from a list of components.
+ 
+ This will stringify and concatenate the value of each component using a C++
+ stringstream object. It is assumed that all arguments can be sent to an ostream
+ object using the `<<` operator. To include spaces they must be explicitly added as
+ strings, e.g. `_Str("There are ", 5, " items here.", std::endl);
+ 
+ The implementation is essentially expanded to the following, for any number of
+ arguments:
+ 
+     std::stringstream ss;
+     ss << Arg1 << Arg2 << ... << ArgN;
+     return ss.str();
+ */
 template <typename... Args>
 static inline std::string _Str(const Args&... args)
 {
@@ -67,7 +82,8 @@ static inline std::string _Str(const Args&... args)
 /////////////////////////////////////////////////////////////////////////////
 // C++11 user-defined literals
 
-// const xmlChar * xmlString = "this is an xmlChar* string"_xml;
+///
+/// const xmlChar * xmlString = "this is an xmlChar* string"_xml;
 inline constexpr const xmlChar* operator "" _xml (char const *s, std::size_t len)
 {
     return (const xmlChar*)s;
