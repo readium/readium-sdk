@@ -73,41 +73,41 @@ void RunLoop::PerformFunction(std::function<void ()> fn)
 {
     CFRunLoopPerformBlock(_cf, ADD_MODE_ARG, ^{fn();});
 }
-void RunLoop::AddTimer(const Timer &timer)
+void RunLoop::AddTimer(Timer* timer)
 {
-    CFRunLoopAddTimer(_cf, timer._cf, ADD_MODE_ARG);
+    CFRunLoopAddTimer(_cf, timer->_cf, ADD_MODE_ARG);
 }
-bool RunLoop::ContainsTimer(const Timer &timer) const
+bool RunLoop::ContainsTimer(Timer* timer) const
 {
-    return (CFRunLoopContainsTimer(_cf, timer._cf, ADD_MODE_ARG) == TRUE);
+    return (CFRunLoopContainsTimer(_cf, timer->_cf, ADD_MODE_ARG) == TRUE);
 }
-void RunLoop::RemoveTimer(const Timer &timer)
+void RunLoop::RemoveTimer(Timer* timer)
 {
-    CFRunLoopRemoveTimer(_cf, timer._cf, ADD_MODE_ARG);
+    CFRunLoopRemoveTimer(_cf, timer->_cf, ADD_MODE_ARG);
 }
-void RunLoop::AddEventSource(const EventSource &source)
+void RunLoop::AddEventSource(EventSource* source)
 {
-    CFRunLoopAddSource(_cf, source._cf, ADD_MODE_ARG);
+    CFRunLoopAddSource(_cf, source->_cf, ADD_MODE_ARG);
 }
-bool RunLoop::ContainsEventSource(const EventSource &source) const
+bool RunLoop::ContainsEventSource(EventSource* source) const
 {
-    return (CFRunLoopContainsSource(_cf, source._cf, ADD_MODE_ARG) == TRUE);
+    return (CFRunLoopContainsSource(_cf, source->_cf, ADD_MODE_ARG) == TRUE);
 }
-void RunLoop::RemoveEventSource(const EventSource &source)
+void RunLoop::RemoveEventSource(EventSource* source)
 {
-    CFRunLoopRemoveSource(_cf, source._cf, ADD_MODE_ARG);
+    CFRunLoopRemoveSource(_cf, source->_cf, ADD_MODE_ARG);
 }
-void RunLoop::AddObserver(const Observer &observer)
+void RunLoop::AddObserver(Observer* observer)
 {
-    CFRunLoopAddObserver(_cf, observer._cf, ADD_MODE_ARG);
+    CFRunLoopAddObserver(_cf, observer->_cf, ADD_MODE_ARG);
 }
-bool RunLoop::ContainsObserver(const Observer &observer) const
+bool RunLoop::ContainsObserver(Observer* observer) const
 {
-    return (CFRunLoopContainsObserver(_cf, observer._cf, ADD_MODE_ARG) == TRUE);
+    return (CFRunLoopContainsObserver(_cf, observer->_cf, ADD_MODE_ARG) == TRUE);
 }
-void RunLoop::RemoveObserver(const Observer &observer)
+void RunLoop::RemoveObserver(Observer* observer)
 {
-    CFRunLoopRemoveObserver(_cf, observer._cf, ADD_MODE_ARG);
+    CFRunLoopRemoveObserver(_cf, observer->_cf, ADD_MODE_ARG);
 }
 void RunLoop::Run()
 {
@@ -269,11 +269,12 @@ RunLoop::EventSource::EventSource(EventHandlerFn fn) : _cf(nullptr), _rl(), _fn(
 }
 RunLoop::EventSource::EventSource(const EventSource& o) : _cf(o._cf)
 {
-    CFRetain(_cf);
 }
-RunLoop::EventSource::EventSource(EventSource&& o) : _cf(o._cf)
+RunLoop::EventSource::EventSource(EventSource&& o) : _cf(std::move(o._cf))
 {
-    o._cf = nullptr;
+}
+RunLoop::EventSource::~EventSource()
+{
 }
 RunLoop::EventSource& RunLoop::EventSource::operator=(EventSource && o)
 {

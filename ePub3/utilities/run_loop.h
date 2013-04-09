@@ -56,9 +56,9 @@ private:
 #if EPUB_USE(CF)
     CFRunLoopRef    _cf;                ///< The underlying CF type of the run loop.
 #elif EPUB_OS(ANDROID)
-    std::list<Timer>        _timers;
-    std::list<Observer>     _observers;
-    std::list<EventSource>  _sources;
+    std::list<Timer*>       _timers;
+    std::list<Observer*>    _observers;
+    std::list<EventSource*> _sources;
     std::recursive_mutex    _listLock;
     std::condition_variable _wakeUp;
     std::atomic<bool>       _waiting;
@@ -239,7 +239,7 @@ public:
 #if EPUB_USE(CF)
         CFRefCounted<CFRunLoopTimerRef> _cf;        ///< The underlying CF type of the timer.
 #elif EPUB_OS(ANDROID)
-        timer_t             _timer;     ///< The underlying Linux timer.
+        timer_t                         _timer;     ///< The underlying Linux timer.
 #elif EPUB_OS(WINDOWS)
 #error No Windows RunLoop implementation defined
 #else
@@ -379,33 +379,33 @@ public:
     
     ///
     /// Adds a timer to the run loop.
-    void            AddTimer(const Timer& timer);
+    void            AddTimer(Timer* timer);
     ///
     /// Whether a timer is registered on this runloop.
-    bool            ContainsTimer(const Timer& timer)               const;
+    bool            ContainsTimer(Timer* timer)               const;
     ///
     /// Removes the timer from this RunLoop (without cancelling it).
-    void            RemoveTimer(const Timer& timer);
+    void            RemoveTimer(Timer* timer);
     
     ///
     /// Adds an event source to the run loop.
-    void            AddEventSource(const EventSource& source);
+    void            AddEventSource(EventSource* source);
     ///
     /// Whether an event source is registered on this runloop.
-    bool            ContainsEventSource(const EventSource& source)  const;
+    bool            ContainsEventSource(EventSource* source)  const;
     ///
     /// Removes an event source from this RunLoop (without cancelling it).
-    void            RemoveEventSource(const EventSource& source);
+    void            RemoveEventSource(EventSource* source);
     
     ///
     /// Adds an observer to the run loop.
-    void            AddObserver(const Observer& observer);
+    void            AddObserver(Observer* observer);
     ///
     /// Whether an observer is registered on this runloop.
-    bool            ContainsObserver(const Observer& observer)      const;
+    bool            ContainsObserver(Observer* observer)      const;
     ///
     /// Removes an observer from this RunLoop (without cancelling it).
-    void            RemoveObserver(const Observer& observer);
+    void            RemoveObserver(Observer* observer);
     
     /**
      Run the RunLoop, either indefinitely, for a specific duration, and/or until an event occurs.
@@ -418,9 +418,11 @@ public:
      @result Returns a value defining the reason that the method returned.
      */
     template <class _Rep = long long, class _Period = std::ratio<1>>
-    ExitReason      Run(bool returnAfterSourceHandled=false,
-                        std::chrono::duration<_Rep,_Period>& timeout=std::numeric_limits<decltype(timeout)>::max()) {
-        return RunInternal(returnAfterSourceHandled, std::chrono::duration_cast<std::chrono::nanoseconds>(timeout));
+    ExitReason      Run(bool returnAfterSourceHandled,
+                        std::chrono::duration<_Rep,_Period> timeout) {
+        using namespace std::chrono;
+        nanoseconds ns = duration_cast<nanoseconds>(timeout);
+        return RunInternal(returnAfterSourceHandled, ns);
     }
     
     ///

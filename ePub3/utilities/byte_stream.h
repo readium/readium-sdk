@@ -27,6 +27,7 @@
 #include <functional>
 #include <ios>
 #include <thread>
+#include "run_loop.h"
 
 struct zip;
 struct zip_file;
@@ -161,6 +162,9 @@ public:
     StreamEventHandler          GetEventHandler()                   const           { return _eventHandler; }
     void                        SetEventHandler(StreamEventHandler handler)         { _eventHandler = handler; }
     
+    RunLoop*                    EventTargetRunLoop()                const           { return _targetRunLoop; }
+    void                        SetTargetRunLoop(RunLoop* rl)                       { _targetRunLoop = rl; }
+    
     virtual size_type           BytesAvailable()                    const noexcept  { return _ringbuf.BytesAvailable(); }
     virtual size_type           SpaceAvailable()                    const noexcept  { return _ringbuf.SpaceAvailable(); }
     
@@ -175,10 +179,13 @@ protected:
     
     RingBuffer                  _ringbuf;
     StreamEventHandler          _eventHandler;
-    std::thread                 _asyncIOThread;
-    std::mutex                  _condMutex;
-    std::condition_variable     _threadSignal;
+    
+    static std::thread          _asyncIOThread;
+    static RunLoop*             _asyncRunLoop;
+    
+    RunLoop::EventSource*       _eventSource;
     std::atomic<ThreadEvent>    _event;
+    RunLoop*                    _targetRunLoop;
     
     virtual void                InitAsyncHandler();
     virtual size_type           read_for_async(void* buf, size_type len)        = 0;

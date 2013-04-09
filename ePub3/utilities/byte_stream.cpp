@@ -26,15 +26,16 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+std::thread AsyncByteStream::_asyncIOThread;
+RunLoop*    AsyncByteStream::_asyncRunLoop(nullptr);
+
 AsyncByteStream::AsyncByteStream(size_type bufsize) : AsyncByteStream(nullptr, bufsize)
 {
 }
 AsyncByteStream::AsyncByteStream(StreamEventHandler handler, size_type bufsize)
   : _ringbuf(bufsize),
     _eventHandler(handler),
-    _asyncIOThread(),
-    _condMutex(),
-    _threadSignal(),
+    _eventSource(nullptr),
     _event(ReadSpaceAvailable)
 {
 }
@@ -44,33 +45,32 @@ AsyncByteStream::~AsyncByteStream()
 }
 void AsyncByteStream::Close()
 {
-    if ( _asyncIOThread.joinable() )
+    if ( _eventSource != nullptr )
     {
-        _event = Terminate;
-        _threadSignal.notify_all();
-        _asyncIOThread.join();
+        _eventSource->Cancel();
+        delete _eventSource;
     }
 }
 ByteStream::size_type AsyncByteStream::ReadBytes(void *buf, size_type len)
 {
     size_type result =_ringbuf.ReadBytes(reinterpret_cast<uint8_t*>(buf), len);
     _event |= ReadSpaceAvailable;
-    _threadSignal.notify_all();
+    _eventSource->Signal();
     return result;
 }
 ByteStream::size_type AsyncByteStream::WriteBytes(const void *buf, size_type len)
 {
     size_type result = _ringbuf.WriteBytes(reinterpret_cast<const uint8_t*>(buf), len);
     _event |= DataToWrite;
-    _threadSignal.notify_all();
+    _eventSource->Signal();
     return result;
 }
 void AsyncByteStream::InitAsyncHandler()
 {
-    if ( _asyncIOThread.joinable() )
-        throw std::logic_error("The async IO thread already been started");
+    if ( _eventSource != nullptr )
+        throw std::logic_error("This stream is already set up for async operation.");
     
-    _asyncIOThread = std::thread([&](){
+    _eventSource = new RunLoop::EventSource([=](RunLoop::EventSource&) {
         // atomically pull out the event flags here
         ThreadEvent t = _event.exchange(Wait);
         if ( t == Terminate )
@@ -105,14 +105,72 @@ void AsyncByteStream::InitAsyncHandler()
             }
         }
         
-        if ( hasRead )
-            _eventHandler(AsyncEvent::HasBytesAvailable, this);
-        if ( hasWritten )
-            _eventHandler(AsyncEvent::HasSpaceAvailable, this);
+        auto invocation = [this, hasRead, hasWritten] () {
+            if ( hasRead )
+                _eventHandler(AsyncEvent::HasBytesAvailable, this);
+            if ( hasWritten )
+                _eventHandler(AsyncEvent::HasSpaceAvailable, this);
+        };
         
-        std::unique_lock<std::mutex> __l(_condMutex);
-        _threadSignal.wait(__l, [&](){ return _event != Wait; });
+        if ( _targetRunLoop != nullptr )
+        {
+            _targetRunLoop->PerformFunction(invocation);
+        }
+        else
+        {
+            invocation();
+        }
     });
+    
+    if ( _asyncRunLoop == nullptr )
+    {
+        std::mutex __mut;
+        std::condition_variable __inited;
+        
+        std::unique_lock<std::mutex> __lock(__mut);
+        _asyncIOThread = std::thread([&](){
+            AsyncByteStream::_asyncRunLoop = RunLoop::CurrentRunLoop();
+            {
+                std::unique_lock<std::mutex> __(__mut);
+                __inited.notify_all();
+            }
+            
+            // now run the run loop
+            
+            // only spin an empty run loop a certain amount of time before giving up
+            // and exiting the thread entirely
+            // FIXME: There's a gap here where a race could lose an EventSource addition
+            static constexpr unsigned kMaxEmptyTicks(1000);
+            static constexpr std::chrono::milliseconds kTickLen(10);
+            unsigned __emptyTickCounter = 0;
+            
+            do
+            {
+                RunLoop::ExitReason __r = RunLoop::CurrentRunLoop()->Run(true, std::chrono::seconds(20));
+                if ( __r == RunLoop::ExitReason::RunFinished )
+                {
+                    if ( ++__emptyTickCounter == kMaxEmptyTicks )
+                        break;      // exit the thread
+                    
+                    // wait a bit and try again
+                    std::this_thread::sleep_for(kTickLen);
+                }
+                
+                // by definition not an empty runloop
+                __emptyTickCounter = 0;
+            } while (1);
+            
+            // nullify the global before we quit
+            // deletion isn't necessary, it's done by TLS in run_loop.cpp
+            _asyncRunLoop = nullptr;
+        });
+        
+        // wait for the runloop to be set
+        __inited.wait(__lock, [&](){return _asyncRunLoop != nullptr;});
+    }
+    
+    // install the event source into the run loop, then we're all done
+    _asyncRunLoop->AddEventSource(_eventSource);
 }
 
 #if 0
