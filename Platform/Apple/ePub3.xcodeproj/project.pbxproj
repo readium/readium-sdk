@@ -10,6 +10,11 @@
 		3418BA7D16C4151E009AA7EF /* ring_buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA88FD116C2B4ED00F2014B /* ring_buffer.cpp */; };
 		850B1AE916A75AC600619C3C /* TestData in CopyFiles */ = {isa = PBXBuildFile; fileRef = 850B1AE816A75AB000619C3C /* TestData */; };
 		AB17B29B170C872E00FD5917 /* font_obfuscation_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB17B29A170C872E00FD5917 /* font_obfuscation_tests.cpp */; };
+		AB17B29E171301C800FD5917 /* run_loop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB17B29C171301C700FD5917 /* run_loop.cpp */; };
+		AB17B29F171301C800FD5917 /* run_loop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB17B29C171301C700FD5917 /* run_loop.cpp */; };
+		AB17B2A0171301C800FD5917 /* run_loop.h in Headers */ = {isa = PBXBuildFile; fileRef = AB17B29D171301C800FD5917 /* run_loop.h */; };
+		AB17B2A817145A1E00FD5917 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB17B2A61714599300FD5917 /* CoreFoundation.framework */; };
+		AB17B2AA17145BF000FD5917 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB17B2A917145BF000FD5917 /* CoreFoundation.framework */; };
 		AB61CE4E1694845700299BB1 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB61CE4D1694845700299BB1 /* main.cpp */; };
 		AB61CE501694845700299BB1 /* UnitTests.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = AB61CE4F1694845700299BB1 /* UnitTests.1 */; };
 		AB61CE56169485BD00299BB1 /* string_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB61CE55169485BD00299BB1 /* string_tests.cpp */; };
@@ -346,6 +351,13 @@
 /* Begin PBXFileReference section */
 		850B1AE816A75AB000619C3C /* TestData */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TestData; path = ../../TestData; sourceTree = "<group>"; };
 		AB17B29A170C872E00FD5917 /* font_obfuscation_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = font_obfuscation_tests.cpp; sourceTree = "<group>"; };
+		AB17B29C171301C700FD5917 /* run_loop.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = run_loop.cpp; sourceTree = "<group>"; };
+		AB17B29D171301C800FD5917 /* run_loop.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = run_loop.h; sourceTree = "<group>"; };
+		AB17B2A11713064700FD5917 /* _compiler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = _compiler.h; sourceTree = "<group>"; };
+		AB17B2A21713086400FD5917 /* _platform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = _platform.h; sourceTree = "<group>"; };
+		AB17B2A61714599300FD5917 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		AB17B2A917145BF000FD5917 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk/System/Library/Frameworks/CoreFoundation.framework; sourceTree = DEVELOPER_DIR; };
+		AB5D103C17148E8E001D3C95 /* cf_helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cf_helpers.h; sourceTree = "<group>"; };
 		AB61CE4A1694845700299BB1 /* UnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = UnitTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB61CE4D1694845700299BB1 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		AB61CE4F1694845700299BB1 /* UnitTests.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = UnitTests.1; sourceTree = "<group>"; };
@@ -453,7 +465,6 @@
 		ABA4BAAE16A7518B00161B77 /* url_canon_cpp11.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = url_canon_cpp11.h; sourceTree = "<group>"; };
 		ABA4BAB516ADAF6E00161B77 /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
 		ABA4BAE016ADF5A600161B77 /* libePub3-iOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libePub3-iOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		ABA4BAE216ADF5A600161B77 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		ABA4BAE616ADF5A600161B77 /* ePub3-iOS-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ePub3-iOS-Prefix.pch"; sourceTree = "<group>"; };
 		ABA4BB5F16B1942100161B77 /* metadata_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = metadata_tests.cpp; sourceTree = "<group>"; };
 		ABA72C241655382E003125FF /* ePub3.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = ePub3.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -577,6 +588,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AB17B2AA17145BF000FD5917 /* CoreFoundation.framework in Frameworks */,
 				ABA4BB5D16ADF66700161B77 /* libxml2.dylib in Frameworks */,
 				ABA4BB5E16ADF66700161B77 /* libz.dylib in Frameworks */,
 			);
@@ -590,6 +602,7 @@
 				ABB190251656DB2200CFC651 /* libxml2.dylib in Frameworks */,
 				ABB190201656868100CFC651 /* libz.dylib in Frameworks */,
 				AB6AC71C1683BFC9000DE924 /* libcurl.dylib in Frameworks */,
+				AB17B2A817145A1E00FD5917 /* CoreFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -635,6 +648,9 @@
 				ABA88FD116C2B4ED00F2014B /* ring_buffer.cpp */,
 				ABA88FC116C1534900F2014B /* byte_stream.cpp */,
 				ABA88FC216C1534900F2014B /* byte_stream.h */,
+				AB17B29C171301C700FD5917 /* run_loop.cpp */,
+				AB17B29D171301C800FD5917 /* run_loop.h */,
+				AB5D103C17148E8E001D3C95 /* cf_helpers.h */,
 			);
 			path = utilities;
 			sourceTree = "<group>";
@@ -837,7 +853,7 @@
 		ABA4BAE116ADF5A600161B77 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				ABA4BAE216ADF5A600161B77 /* Foundation.framework */,
+				AB17B2A61714599300FD5917 /* CoreFoundation.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -845,6 +861,7 @@
 		ABA4BAE416ADF5A600161B77 /* ePub3-iOS */ = {
 			isa = PBXGroup;
 			children = (
+				AB17B2A917145BF000FD5917 /* CoreFoundation.framework */,
 				ABA4BAE516ADF5A600161B77 /* Supporting Files */,
 			);
 			name = "ePub3-iOS";
@@ -886,6 +903,8 @@
 			children = (
 				AB6AC71A16836D24000DE924 /* base.h */,
 				ABA88FD016C17AC600F2014B /* _config.h */,
+				AB17B2A21713086400FD5917 /* _platform.h */,
+				AB17B2A11713064700FD5917 /* _compiler.h */,
 				ABA4BA1916A740D200161B77 /* ThirdParty */,
 				AB6AC71716836CA5000DE924 /* utilities */,
 				ABAB94B616654F580018D451 /* ePub */,
@@ -1159,6 +1178,7 @@
 				ABA88FC016C062BF00F2014B /* media_support_info.h in Headers */,
 				ABA88FC516C1534900F2014B /* byte_stream.h in Headers */,
 				ABA88FCA16C16C3500F2014B /* ring_buffer.h in Headers */,
+				AB17B2A0171301C800FD5917 /* run_loop.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1375,6 +1395,7 @@
 				ABA88FC416C1534900F2014B /* byte_stream.cpp in Sources */,
 				3418BA7D16C4151E009AA7EF /* ring_buffer.cpp in Sources */,
 				ABA88FD916C4415D00F2014B /* ios_get_progname.m in Sources */,
+				AB17B29F171301C800FD5917 /* run_loop.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1489,6 +1510,7 @@
 				ABA88FBE16C062BF00F2014B /* media_support_info.cpp in Sources */,
 				ABA88FC316C1534900F2014B /* byte_stream.cpp in Sources */,
 				ABA88FD216C2B4ED00F2014B /* ring_buffer.cpp in Sources */,
+				AB17B29E171301C800FD5917 /* run_loop.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1581,6 +1603,7 @@
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"BUILDING_EPUB3=1",
 					"DEBUG=1",
 					"$(inherited)",
 				);
@@ -1608,7 +1631,10 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = "NDEBUG=1";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"BUILDING_EPUB3=1",
+					"NDEBUG=1",
+				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
@@ -1622,6 +1648,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"USING_ICU=1",
@@ -1638,6 +1665,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"USING_ICU=1",
