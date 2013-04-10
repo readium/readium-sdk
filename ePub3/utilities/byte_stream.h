@@ -62,6 +62,7 @@ public:
                             ByteStream()                            {}
     virtual                 ~ByteStream()                           {}
     
+private:
     ///
     /// ByteStreams cannot be copied, moved, or assigned.
                             ByteStream(const ByteStream&)           = delete;
@@ -69,6 +70,7 @@ public:
     ByteStream&             operator=(const ByteStream&)            = delete;
     ByteStream&             operator=(ByteStream&& o)               = delete;
     
+public:
     ///
     /// Returns the number of bytes that can be read at this time.
     virtual size_type       BytesAvailable()                        const noexcept  { return UnknownSize; }
@@ -135,124 +137,275 @@ class AsyncByteStream;
 using StreamEventHandler = std::function<void(AsyncEvent, AsyncByteStream*)>;
 
 /**
+ An exception posted when a non-duplex stream is used in the wrong direction.
+ */
+class InvalidDuplexStreamOperationError : public std::logic_error
+{
+public:
+    InvalidDuplexStreamOperationError(const std::string& str) : std::logic_error(str) {}
+    InvalidDuplexStreamOperationError(const char* str) : std::logic_error(str) {}
+};
+
+/**
  A simple asynchronous stream class.
  
- This class will spawn a thread on which to perform actual reads and writes.
+ This class spawns a single shared thread on which reads and writes are issued. Each
+ async stream uses a RunLoop::EventSource to notify the shared thread when the
+ stream's ReadBytes() or WriteBytes() methods have been called. Similarly, a stream
+ may be given a RunLoop on which to fire events advertising the availablility of
+ either data to read or space to write.
  @ingroup utilities
  */
 class AsyncByteStream : public ByteStream
 {
 protected:
+    ///
+    /// Internal event type-- used to signal the shared I/O thread.
     typedef uint8_t             ThreadEvent;
+    ///
+    /// Take no action: wait for a different event.
     static const ThreadEvent    Wait                    = 0;
+    ///
+    /// Space is available in the stream's RingBuffer to receive resource data.
     static const ThreadEvent    ReadSpaceAvailable      = 1 << 0;
+    ///
+    /// Data has been written to the stream and can be written to the resource now.
     static const ThreadEvent    DataToWrite             = 1 << 1;
-    static const ThreadEvent    Terminate               = std::numeric_limits<ThreadEvent>::max();
     
 public:
+    /**
+     Create a new AsyncByteStream.
+     @param bufsize The size, in bytes, of the read/write buffers. The default is 4KiB.
+     */
                                 AsyncByteStream(size_type bufsize=4096);
+    /**
+     Create a new AsyncByteStream with an event handler.
+     @param handler The event-handling function to call when the stream's status changes.
+     @param bufsize The size, in bytes, of the read/write buffers. The default is 4KiB.
+     */
                                 AsyncByteStream(StreamEventHandler handler, size_type bufsize=4096);
     virtual                     ~AsyncByteStream();
     
+private:
                                 AsyncByteStream(const AsyncByteStream&)         = delete;
                                 AsyncByteStream(AsyncByteStream&&)              = delete;
     AsyncByteStream&            operator=(const AsyncByteStream&)               = delete;
     AsyncByteStream&            operator=(AsyncByteStream&&)                    = delete;
     
+public:
+    ///
+    /// Retrieve the stream's event-handler function.
     StreamEventHandler          GetEventHandler()                   const           { return _eventHandler; }
+    ///
+    /// Assign an event-handler to an asynchronous stream.
     void                        SetEventHandler(StreamEventHandler handler)         { _eventHandler = handler; }
     
+    /**
+     Retrieve the RunLoop on which the event-handler will be invoked.
+     
+     If no RunLoop has been assigned, the event-handler will be invoked from the
+     shared I/O thread directly.
+     */
     RunLoop*                    EventTargetRunLoop()                const           { return _targetRunLoop; }
+    ///
+    /// Assign a RunLoop on which to invoke the event-handler.
     void                        SetTargetRunLoop(RunLoop* rl)                       { _targetRunLoop = rl; }
     
-    virtual size_type           BytesAvailable()                    const noexcept  { return _ringbuf.BytesAvailable(); }
-    virtual size_type           SpaceAvailable()                    const noexcept  { return _ringbuf.SpaceAvailable(); }
+    ///
+    /// @copydoc ByteStream::BytesAvailable()
+    virtual size_type           BytesAvailable()                    const noexcept  {
+        return (_readbuf ? _readbuf->BytesAvailable() : 0);
+    }
+    ///
+    /// @copydoc ByteStream::BytesAvailable()
+    virtual size_type           SpaceAvailable()                    const noexcept  {
+        return (_writebuf ? _writebuf->SpaceAvailable() : 0);
+    }
     
+    /**
+     Initializes the input/output buffers of the stream.
+     
+     Subclasses *must* call this as part of their stream opening sequence to
+     initialize the required stream resources.
+     @param mode Only `std::ios::in` and `std::ios::out` are supported. This flag
+     controls the creation of the read/write buffers; the default is to create a
+     bidirectional stream with both input and output buffers.
+     */
+    virtual void                Open(std::ios::openmode mode = std::ios::in|std::ios::out);
+    
+    ///
+    /// @copydoc ByteStream::Close()
     virtual void                Close();
     
-    // subclassers can implement these and call AsyncByteStream's implementations
-    // to interact with the ring buffer
+    /**
+     @copydoc ByteStream::ReadBytes()
+     All reads are serviced from the async stream's read buffer, which is filled
+     asynchronously from the underlying resource.
+     */
     virtual size_type           ReadBytes(void* buf, size_type len);
+    /**
+     @copydoc ByteStream::ReadBytes()
+     All writes go to the async stream's write buffer, and will be written from
+     there to the underlying resource asynchronously.
+     */
     virtual size_type           WriteBytes(const void* buf, size_type len);
     
+private:
+    size_type                   _bufsize;           ///< The size of the read/write data buffers.
+    Shared<RingBuffer>          _readbuf;           ///< The read buffer, if opened for reading.
+    Shared<RingBuffer>          _writebuf;          ///< The write buffer, if opened for writing.
+    StreamEventHandler          _eventHandler;      ///< The event-handler function to notify of stream status changes.
+    
+    static std::thread          _asyncIOThread;     ///< The shared async I/O thread.
+    static RunLoop*             _asyncRunLoop;      ///< The shared I/O thread's run loop, to which streams will attach.
+    
+    RunLoop::EventSource*       _eventSource;       ///< The event source used to communicate with the shared I/O thread.
+    std::atomic<ThreadEvent>    _event;             ///< The internal event bitmask. @see ThreadEvent.
+    RunLoop*                    _targetRunLoop;     ///< The runloop on which this stream should post status events.
+    
 protected:
-    
-    RingBuffer                  _ringbuf;
-    StreamEventHandler          _eventHandler;
-    
-    static std::thread          _asyncIOThread;
-    static RunLoop*             _asyncRunLoop;
-    
-    RunLoop::EventSource*       _eventSource;
-    std::atomic<ThreadEvent>    _event;
-    RunLoop*                    _targetRunLoop;
-    
+    ///
+    /// Called by subclasses to initialize the asynchronous event handler and RunLoop.
+    /// @throw std::logic_error if this stream has already set up its RunLoop::EventSource.
     virtual void                InitAsyncHandler();
+    ///
+    /// Implemented by subclasses to synchronously read data from the underlying resource.
+    /// @see ByteStream::ReadBytes(void*, size_type)
     virtual size_type           read_for_async(void* buf, size_type len)        = 0;
+    ///
+    /// Implemented by subclasses to synchronously write data to the underlying resource.
+    /// @see ByteStream::WriteBytes(const void*, size_type)
     virtual size_type           write_for_async(const void* buf, size_type len) = 0;
 };
 
 /**
+ A concrete ByteStream providing synchronous access to a resource on a filesystem.
  @ingroup utilities
  */
 class FileByteStream : public ByteStream
 {
 public:
+    ///
+    /// Create a new stream unassociated with any file.
                             FileByteStream()                        : ByteStream(), _file(nullptr) {}
+    /**
+     Create a new stream to a given file and open it for reading and/or writing.
+     @param pathToOpen The path to the file to open.
+     @param mode Whether to open with read and/or write access. Default is to open
+     for both reading and writing.
+     */
                             FileByteStream(const string& pathToOpen, std::ios::openmode mode = std::ios::in | std::ios::out);
     virtual                 ~FileByteStream();
     
+private:
                             FileByteStream(const FileByteStream& o)             = delete;
                             FileByteStream(FileByteStream&& o)                  = delete;
     FileByteStream&         operator=(FileByteStream&)                          = delete;
     FileByteStream&         operator=(FileByteStream&&)                         = delete;
     
+public:
+    ///
+    /// @copydoc ByteStream::BytesAvailable()
     virtual size_type       BytesAvailable()                        const noexcept;
+    ///
+    /// @copydoc ByteStream::SpaceAvailable()
     virtual size_type       SpaceAvailable()                        const noexcept;
     
+    ///
+    /// @copydoc ByteStream::IsOpen()
     virtual bool            IsOpen()                                const noexcept;
+    /**
+     Opens the stream for reading and/or writing a file at a given path.
+     @param path The filesystem path to the file to access.
+     @param mode Whether to open with read and/or write access. The default is to
+     open for both reading and writing.
+     @result Returns `true` if the file opened successfully, `false` otherwise.
+     */
     virtual bool            Open(const string& path, std::ios::openmode mode = std::ios::in | std::ios::out);
+    ///
+    /// @copydoc ByteStream::Close()
     virtual void            Close();
     
+    ///
+    /// @copydoc ByteStream::ReadBytes()
     virtual size_type       ReadBytes(void* buf, size_type len);
+    ///
+    /// @copydoc ByteStream::WriteBytes()
     virtual size_type       WriteBytes(const void* buf, size_type len);
     
+    /**
+     Seek to a position within the target file.
+     @param by The amount to move the file position.
+     @param dir The starting point for the position calculation: current position,
+     start of file, or end of file.
+     */
     virtual size_type       Seek(size_type by, std::ios::seekdir dir);
     
 protected:
-    FILE*                   _file;
+    FILE*                   _file;  ///< The underlying system file stream.
 };
 
 /**
+ A concrete ByteStream providing access to a file within a Zip archive.
  @ingroup utilities
  */
 class ZipFileByteStream : public ByteStream
 {
 public:
+    ///
+    /// Create a new unattached stream.
                             ZipFileByteStream() : ByteStream(), _file(nullptr) {}
+    /**
+     Create a new stream to a file within a zip archive.
+     @param archive The Zip arrchive containing the target file.
+     @param pathToOpen The path within the archive of the resource to open.
+     @param zipFlags Flags such as whether to read the raw compressed data.
+     */
                             ZipFileByteStream(struct zip* archive, const string& pathToOpen, int zipFlags=0);
     virtual                 ~ZipFileByteStream();
     
+private:
                             ZipFileByteStream(const ZipFileByteStream&)         = delete;
                             ZipFileByteStream(ZipFileByteStream&&)              = delete;
     ZipFileByteStream&      operator=(const ZipFileByteStream&)                 = delete;
     ZipFileByteStream&      operator=(ZipFileByteStream&&)                      = delete;
     
+public:
+    ///
+    /// @copydoc ByteStream::BytesAvailable()
     virtual size_type       BytesAvailable()                        const noexcept;
+    ///
+    /// @copydoc ByteStream::SpaceAvailable
     virtual size_type       SpaceAvailable()                        const noexcept;
     
+    ///
+    /// @copydoc ByteStream::IsOpen()
     virtual bool            IsOpen()                                const noexcept;
+    /**
+     Opens a file within an archive and attaches the stream.
+     @param archive The Zip arrchive containing the target file.
+     @param pathToOpen The path within the archive of the resource to open.
+     @param zipFlags Flags such as whether to read the raw compressed data.
+     @result Returns `true` if the file opened successfully, `false` otherwise.
+     */
     virtual bool            Open(struct zip* archive, const string& path, int zipFlags=0);
+    ///
+    /// @copydoc ByteStream::Close()
     virtual void            Close();
     
+    ///
+    /// @copydoc ByteStream::ReadBytes()
     virtual size_type       ReadBytes(void* buf, size_type len);
+    ///
+    /// @copydoc ByteStream::WriteBytes()
     virtual size_type       WriteBytes(const void* buf, size_type len);
     
 protected:
-    struct zip_file*        _file;
+    struct zip_file*        _file;      ///< The underlying Zip file stream.
 };
 
 /**
+ A concrete AsyncByteStream subclass providing access to a filesystem resource.
  @ingroup utilities
  */
 class AsyncFileByteStream : public AsyncByteStream, public FileByteStream
@@ -262,32 +415,57 @@ private:
     typedef AsyncByteStream __A;
     
 public:
+    ///
+    /// Create a new unattached stream.
                             AsyncFileByteStream() : AsyncByteStream(), FileByteStream() {}
-                            AsyncFileByteStream(StreamEventHandler handler) : AsyncByteStream(handler), FileByteStream() {}
-                            AsyncFileByteStream(StreamEventHandler handler, const string& path, std::ios::openmode mode = std::ios::in | std::ios::out) : AsyncByteStream(handler), FileByteStream(path, mode) {}
+    ///
+    /// Create a new unattached stream with a given event-handler.
+    /// @see AsyncByteStream::AsyncByteStream(StreamEventHandler,size_type)
+                            AsyncFileByteStream(StreamEventHandler handler, size_type bufsize=4096) : AsyncByteStream(handler, bufsize), FileByteStream() {}
+    ///
+    /// Create a new stream attached to a filesystem resource with an event-handler.
+    /// @see AsyncByteStream::AsyncByteStream(StreamEventHandler,size_type)
+    /// @see FileByteStream::FileByteStream(const string&,std::ios::openmode)
+                            AsyncFileByteStream(StreamEventHandler handler, const string& path, std::ios::openmode mode = std::ios::in | std::ios::out, size_type bufsize=4096) : AsyncByteStream(handler, bufsize), FileByteStream(path, mode) {}
     virtual                 ~AsyncFileByteStream();
     
+private:
                             AsyncFileByteStream(const AsyncFileByteStream&) = delete;
                             AsyncFileByteStream(AsyncFileByteStream&&)      = delete;
     AsyncFileByteStream&    operator=(const AsyncFileByteStream&)           = delete;
     AsyncFileByteStream&    operator=(AsyncFileByteStream&&)                = delete;
     
+public:
     // use the ringbuffer-based availability functions from AsyncByteStream
-    using                   __A::BytesAvailable;
-    using                   __A::SpaceAvailable;
+    ///
+    /// @copydoc AsyncByteStream::BytesAvailable
+    virtual size_type       BytesAvailable()    const noexcept              { return __A::BytesAvailable(); }
+    ///
+    /// @copydoc AsyncByteStream::SpaceAvailable
+    virtual size_type       SpaceAvailable()    const noexcept              { return __A::SpaceAvailable(); }
     
     // use the file stream's IsOpen()
-    using                   __F::IsOpen;
+    ///
+    /// @copydoc FileByteStream::IsOpen()
+    virtual bool            IsOpen()            const noexcept              { return __F::IsOpen(); }
     
     // use the async stream's read/writers
-    using                   __A::ReadBytes;
-    using                   __A::WriteBytes;
+    ///
+    /// @copydoc AsyncByteStream::ReadBytes()
+    virtual size_type       ReadBytes(void* buf, size_type len)             { return __A::ReadBytes(buf, len); }
+    ///
+    /// @copydoc AsyncByteStream::WriteBytes()
+    virtual size_type       WriteBytes(const void* buf, size_type len)      { return __A::WriteBytes(buf, len); }
     
-    virtual bool            IsOpen()                        const noexcept  { return __F::IsOpen(); }
+    ///
+    /// @copydoc FileByteStream::Open()
     virtual bool            Open(const string& path, std::ios::openmode mode = std::ios::in | std::ios::out);
+    ///
+    /// @copydoc FileByteStream::Close()
     virtual void            Close();
     
 private:
+    // seeking disabled on async streams, because I value my sanity
     virtual size_type       Seek();
     
 protected:
@@ -296,6 +474,7 @@ protected:
 };
 
 /**
+ A concrete AsyncByteStream subclass providing access to a file within a Zip archive.
  @ingroup utilities
  */
 class AsyncZipFileByteStream : public AsyncByteStream, public ZipFileByteStream
@@ -305,29 +484,52 @@ private:
     typedef AsyncByteStream     __A;
     
 public:
+    ///
+    /// Create a new unattached stream.
                             AsyncZipFileByteStream() : AsyncByteStream(), ZipFileByteStream() {}
+    ///
+    /// @copydoc AsyncFileByteStream::AsyncFileByteStream(StreamEventHandler)
                             AsyncZipFileByteStream(StreamEventHandler handler) : AsyncByteStream(handler), ZipFileByteStream() {}
+    ///
+    /// Create a new stream attached to a file in a given Zip archive with an event-handler.
+    /// @see AsyncByteStream::AsyncByteStream(StreamEventHandler,size_type)
+    /// @see ZipFileByteStream::ZipFileByteStream(struct zip*,const string&,int)
                             AsyncZipFileByteStream(StreamEventHandler handler, struct zip* archive, const string& path, int zipFlags=0) : AsyncByteStream(handler), ZipFileByteStream(archive, path, zipFlags) {}
     virtual                 ~AsyncZipFileByteStream();
     
+private:
                             AsyncZipFileByteStream(const AsyncZipFileByteStream&)   = delete;
                             AsyncZipFileByteStream(AsyncZipFileByteStream&&)        = delete;
     AsyncZipFileByteStream& operator=(const AsyncZipFileByteStream&)                = delete;
     AsyncZipFileByteStream& operator=(AsyncZipFileByteStream&&)                     = delete;
     
+public:
     // use the ringbuffer-based availability functions from AsyncByteStream
-    using                   __A::BytesAvailable;
-    using                   __A::SpaceAvailable;
+    ///
+    /// @copydoc AsyncByteStream::BytesAvailable
+    virtual size_type       BytesAvailable()    const noexcept              { return __A::BytesAvailable(); }
+    ///
+    /// @copydoc AsyncByteStream::SpaceAvailable
+    virtual size_type       SpaceAvailable()    const noexcept              { return __A::SpaceAvailable(); }
     
     // use the file stream's IsOpen()
-    using                   __F::IsOpen;
+    ///
+    /// @copydoc FileByteStream::IsOpen()
+    virtual bool            IsOpen()            const noexcept              { return __F::IsOpen(); }
     
     // use the async stream's read/writers
-    using                   __A::ReadBytes;
-    using                   __A::WriteBytes;
+    ///
+    /// @copydoc AsyncByteStream::ReadBytes()
+    virtual size_type       ReadBytes(void* buf, size_type len)             { return __A::ReadBytes(buf, len); }
+    ///
+    /// @copydoc AsyncByteStream::WriteBytes()
+    virtual size_type       WriteBytes(const void* buf, size_type len)      { return __A::WriteBytes(buf, len); }
     
-    virtual bool            IsOpen()                        const noexcept  { return __F::IsOpen(); }
+    ///
+    /// @copydoc ZipFileByteStream::Open()
     virtual bool            Open(struct zip* archive, const string& path, int zipFlags=0);
+    ///
+    /// @copydoc ByteStream::Close()
     virtual void            Close();
     
 protected:

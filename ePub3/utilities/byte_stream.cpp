@@ -33,7 +33,7 @@ AsyncByteStream::AsyncByteStream(size_type bufsize) : AsyncByteStream(nullptr, b
 {
 }
 AsyncByteStream::AsyncByteStream(StreamEventHandler handler, size_type bufsize)
-  : _ringbuf(bufsize),
+  : _bufsize(bufsize),
     _eventHandler(handler),
     _eventSource(nullptr),
     _event(ReadSpaceAvailable)
@@ -50,17 +50,41 @@ void AsyncByteStream::Close()
         _eventSource->Cancel();
         delete _eventSource;
     }
+    
+    _readbuf = nullptr;
+    _writebuf = nullptr;
+}
+void AsyncByteStream::Open(std::ios::openmode mode)
+{
+    if ( (mode & std::ios::in) == std::ios::in )
+    {
+        _readbuf = Shared<RingBuffer>::make_shared(_bufsize);
+    }
+    if ( (mode & std::ios::out) == std::ios::out )
+    {
+        _writebuf = Shared<RingBuffer>::make_shared(_bufsize);
+    }
 }
 ByteStream::size_type AsyncByteStream::ReadBytes(void *buf, size_type len)
 {
-    size_type result =_ringbuf.ReadBytes(reinterpret_cast<uint8_t*>(buf), len);
-    _event |= ReadSpaceAvailable;
-    _eventSource->Signal();
+    if ( !_readbuf )
+        throw new InvalidDuplexStreamOperationError("Stream not opened for reading");
+    
+    size_type result =_readbuf->ReadBytes(reinterpret_cast<uint8_t*>(buf), len);
+    if ( result > 0 )
+    {
+        _readbuf->RemoveBytes(result);
+        _event |= ReadSpaceAvailable;
+        _eventSource->Signal();
+    }
     return result;
 }
 ByteStream::size_type AsyncByteStream::WriteBytes(const void *buf, size_type len)
 {
-    size_type result = _ringbuf.WriteBytes(reinterpret_cast<const uint8_t*>(buf), len);
+    if ( !_writebuf )
+        throw new InvalidDuplexStreamOperationError("Stream not opened for writing");
+    
+    size_type result = _writebuf->WriteBytes(reinterpret_cast<const uint8_t*>(buf), len);
     _event |= DataToWrite;
     _eventSource->Signal();
     return result;
@@ -70,37 +94,39 @@ void AsyncByteStream::InitAsyncHandler()
     if ( _eventSource != nullptr )
         throw std::logic_error("This stream is already set up for async operation.");
     
+    Weak<RingBuffer> weakReadBuf = _readbuf;
+    Weak<RingBuffer> weakWriteBuf = _writebuf;
+    
     _eventSource = new RunLoop::EventSource([=](RunLoop::EventSource&) {
         // atomically pull out the event flags here
         ThreadEvent t = _event.exchange(Wait);
-        if ( t == Terminate )
-        {
-            return;
-        }
         
         bool hasRead = false, hasWritten = false;
         
         uint8_t buf[4096];
         
-        if ( (t & ReadSpaceAvailable) == ReadSpaceAvailable )
+        Shared<RingBuffer> readBuf = weakReadBuf.lock();
+        Shared<RingBuffer> writeBuf = weakWriteBuf.lock();
+        
+        if ( (t & ReadSpaceAvailable) == ReadSpaceAvailable && readBuf )
         {
-            std::lock_guard<RingBuffer> _(_ringbuf);
-            size_type read = this->read_for_async(buf, _ringbuf.SpaceAvailable());
+            std::lock_guard<RingBuffer> _(*readBuf);
+            size_type read = this->read_for_async(buf, readBuf->SpaceAvailable());
             if ( read != 0 )
             {
-                _ringbuf.WriteBytes(buf, read);
+                readBuf->WriteBytes(buf, read);
                 hasRead = true;
             }
         }
-        if ( (t & DataToWrite) == DataToWrite )
+        if ( (t & DataToWrite) == DataToWrite && writeBuf )
         {
-            std::lock_guard<RingBuffer> _(_ringbuf);
-            size_type written = _ringbuf.ReadBytes(buf, _ringbuf.BytesAvailable());
+            std::lock_guard<RingBuffer> _(*writeBuf);
+            size_type written = writeBuf->ReadBytes(buf, writeBuf->BytesAvailable());
             written = this->write_for_async(buf, written);
             if ( written != 0 )
             {
                 // only remove as much as actually went out
-                _ringbuf.RemoveBytes(written);
+                writeBuf->RemoveBytes(written);
                 hasWritten = true;
             }
         }
