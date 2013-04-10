@@ -27,23 +27,23 @@ EPUB3_BEGIN_NAMESPACE
 
 Archive::ArchiveRegistrationDomain Archive::RegistrationDomain;
 
-void Archive::RegisterArchive(ArchiveTypeSniffer sniffer, ArchiveFactory factory)
+void Archive::RegisterArchive(CreatorFn creator, SnifferFn sniffer)
 {
-    RegistrationDomain[sniffer] = factory;
+    RegistrationDomain.emplace_front(creator, sniffer);
 }
 void Archive::Initialize()
 {
-    RegisterArchive([](const std::string& path) { return path.rfind(".zip") == path.size()-4; },
-                    [](const std::string& path) { return new ZipArchive(path); });
-    RegisterArchive([](const std::string& path) { return path.rfind(".epub") == path.size()-5; },
-                    [](const std::string& path) { return new ZipArchive(path); });
+    RegisterArchive([](const std::string& path) { return new ZipArchive(path); },
+                    [](const std::string& path) { return path.rfind(".zip") == path.size()-4; });
+    RegisterArchive([](const std::string& path) { return new ZipArchive(path); },
+                    [](const std::string& path) { return path.rfind(".epub") == path.size()-5; });
 }
 Archive * Archive::Open(const std::string& path)
 {
-    for ( auto item : RegistrationDomain )
+    for ( auto& factory : RegistrationDomain )
     {
-        if ( item.first(path) )
-            return item.second(path);
+        if ( factory.CanInit(path) )
+            return factory(path);
     }
     
     return nullptr;
@@ -51,7 +51,7 @@ Archive * Archive::Open(const std::string& path)
 bool Archive::ShouldCompress(const std::string &path, const std::string &mimeType, size_t size) const
 {
     // check MIME type for known pre-compressed data formats
-    if ( mimeType.find("image/", 0, 6) != std::string::npos )
+    if ( mimeType.find("image/", 0, 6) != std::string::npos && mimeType.find("bmp") == std::string::npos )
         return false;
     if ( mimeType.find("video/", 0, 6) != std::string::npos )
         return false;

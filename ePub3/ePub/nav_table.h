@@ -28,6 +28,9 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+/**
+ @ingroup navigation
+ */
 class NavigationTable : public NavigationElement
 {
 public:
@@ -52,7 +55,9 @@ protected:
     string      _title;     // optional
     
     bool                    Parse(xmlNodePtr node);
-    static void             BuildNavPoints(xmlNodeSetPtr nodes, NavigationList* navList);
+    NavigationElement*      BuildNavigationPoint(xmlNodePtr liNode);
+
+    void                    LoadChildElements(NavigationElement *pElement, xmlNodePtr pXmlNode);
 };
 
 EPUB3_END_NAMESPACE

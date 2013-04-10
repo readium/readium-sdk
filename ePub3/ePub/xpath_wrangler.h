@@ -32,26 +32,134 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+/**
+ A simple object which encapsulates the use of an XPath expression in libxml2.
+ 
+ @ingroup utilities
+ */
 class XPathWrangler
 {
 public:
+    ///
+    /// A list of namespace prefix to URI pairs.
     typedef std::map<string, string>    NamespaceList;
+    ///
+    /// A list of strings.
     typedef std::vector<string>         StringList;
     
 public:
+    /**
+     Create a new XPathWrangler instance.
+     @param doc The XML document upon which all operations are to be performend.
+     @param namespaces A list of namespace prefix to URI pairs defining namespaces
+     that the XPath interpreter should expect to find.
+     @see RegisterNamespaces(const NamespaceList&)
+     */
     XPathWrangler(xmlDocPtr doc, const NamespaceList & namespaces = NamespaceList());
+    ///
+    /// Copy constructor.
     XPathWrangler(const XPathWrangler& o);
+    ///
+    /// C++11 move constructor.
     XPathWrangler(XPathWrangler&& o);
     ~XPathWrangler();
     
+    /// @{
+    /// @name XPath Evaluation
+    
+    /**
+     Evaluates an XPath, returning a list of strings as a result.
+     @param xpath The XPath expression to evaluate.
+     @param node The root node upon which to evaluate the XPath expression. If not
+     supplied, the document root node will be used.
+     @result The results of evaluating the XPath expression, coerced to string
+     values.
+     */
     StringList      Strings(const string& xpath, xmlNodePtr node=nullptr);
+    
+    /**
+     Evaluates an XPath as a boolean expression.
+     
+     This method will aim to return a Boolean result value at the earliest possible
+     opportunity rather than constructing a potentially large node-set as a result
+     only to cast it to a Boolean for return.
+     
+     @remarks Note that this will explicitly adjust the XPath such that it will stop
+     evaluation upon finding the first matching node.
+     @param xpath The XPath expression to evaluate.
+     @param node The root node upon which to evaluate the XPath expression. If not
+     supplied, the document root node will be used.
+     @result Returns `false` if the XPath did not match any node in the specified
+     subtree. Otherwise, returns `true` to indicate that at least one result would
+     be returned from either Strings(const string&, xmlNodePtr) or
+     Nodes(const string&, xmlNodePtr).
+     */
+    bool            Matches(const string& xpath, xmlNodePtr node=nullptr);
+    
+    /**
+     Evaluates an XPath, returning a set of all matching nodes.
+     @param xpath The XPath expression to evaluate.
+     @param node The root node upon which to evaluate the XPath expression. If not
+     supplied, the document root node will be used.
+     @result The nodes which result from evaluating the XPath expression on the
+     specified subtree.
+     */
     xmlNodeSetPtr   Nodes(const string& xpath, xmlNodePtr node=nullptr);
     
+    /// @}
+    
+    /// @{
+    /// @name Namespace Handling
+    
+    /**
+     Adds a namespace prefix:URI pair to the XPath evaluation context.
+     
+     If a document uses namespaces, then an XPath expression which does not
+     explicitly reference those namespaces will *not* match. Additionally, the XPath
+     evaluation context will not automatically load namespace details from a
+     document.
+     
+     For example, an OPF document uses elements from the DCMES namespace, defined as
+     `http://purl.org/dc/elements/1.1/`. Regardless of any prefix assigned to that
+     namespace by the source document, an XPath evaluation context must be informed
+     of the prefix that will be used to reference that namespace *in the XPath
+     expression*. Thus to match a `<dc:title>` element, the XPath evaluation context
+     must be told to associate `http://purl.org/dc/elements/1.1/` with the prefix 
+     `dc`. It will now recognize XPaths such as `//dc:title/text()`.
+     @param namespaces A list of namespace prefix to URI pairs to register with the
+     XPath evaluation context.
+     */
     void            RegisterNamespaces(const NamespaceList& namespaces);
+    
+    /**
+     Assigns a prefix to the default namespace of the source document.
+     
+     As described in the documentation for RegisterNamespaces(const NamespaceList&),
+     the XPath evaluation context needs to be informed explicitly of the existence of
+     every single namespace. This also applies to the default namespace, which
+     otherwise does not have a prefix assigned.
+     
+     When the default namespace is known in advance, it is possible and indeed
+     recommended that it be registered using RegisterNamespaces(const NamespaceList&).
+     This method will look at the document to see if it defines a document-wide
+     default namespace, and will assign it a given prefix in the XPath evaluation
+     context.
+     
+     This can be useful where an XPath is selecting an element which could be a
+     member of two or more different namespaces, such as OEBPS 1.2 vs. OPF 3.0.
+     When the exact version is unknown (and unneeded) then the caller can simply
+     request that the default namespace be called e.g. 'opf'. This way, an XPath of
+     `//opf:manifest/opf:item/@opf:href` could be run against both an OPF 3.0
+     document and an OEBPS 1.2 document.
+     @param name The prefix to assign to the default namespace within the XPath
+     evaluation context.
+     */
     void            NameDefaultNamespace(const string& name);
     
+    /// @}
+    
 protected:
-    xmlXPathContextPtr  _ctx;
+    xmlXPathContextPtr  _ctx;   ///< The libxml2 XPath context object.
 };
 
 EPUB3_END_NAMESPACE

@@ -32,6 +32,9 @@ EPUB3_XML_BEGIN_NAMESPACE
 class Document;
 class Element;
 
+/**
+ @ingroup xml-utils
+ */
 class XPathEvaluator : public WrapperBase
 {
 public:

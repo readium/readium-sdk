@@ -50,6 +50,14 @@ class ByteStream;
  The PackageBase class implements the low-level components and all storage of an OPF
  package document.  It provides direct access to spine, manifest, and metadata tables,
  while the Package class provides a higher-level API on top of these.
+ 
+ @remarks The PackageBase class holds owning references for all Metadata, ContentHandlers,
+ top-level NavigationTables, and ManifestItems. It also holds an owning reference to
+ the first SpineItem in its spine; each SpineItem holds an owning reference to the
+ SpineItem that follows it. Lastly, it a reference to the XML document for its
+ source OPF file.
+ 
+ @ingroup epub-model
  */
 class PackageBase
 {
@@ -125,10 +133,8 @@ public:
      */
     virtual const string&   BasePath()              const       { return _pathBase; }
     
-    /**
-     @defgroup locales Locale Support
-     @{
-     */
+    /// @{
+    /// @name Locale Support
     
     /**
      Returns the current locale.
@@ -152,14 +158,10 @@ public:
      */
     static void             SetLocale(const std::locale& locale);
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup TableAccess Raw Table Accessors
-     @note To keep these accessible in const packages, we *must* build the tree at
-     allocation time.  This is open to discussion, naturally.
-     @{
-     */
+    /// @{
+    /// @name Raw Table Accessors
     
     ///
     /// Returns an immutable reference to the metadata table.
@@ -171,7 +173,7 @@ public:
     /// Returns an immutable reference to the map of navigation tables.
     const NavigationMap&    NavigationTables()      const       { return _navigation; }
     
-    /** @} */
+    /// @}
     
     /**
      Obtains an IRI for a DCMES metadata item.
@@ -183,13 +185,12 @@ public:
      @result A constant IRI referring to the type, or an empty (invalid) IRI if the
      `type` constant does not refer to a valid DCMES element (i.e. the `Custom` or
      `Invalid` pseudo-types).
+     @ingroup utilities
      */
     const IRI               IRIForDCType(Metadata::DCType type) const { return Metadata::IRIForDCType(type); }
     
-    /**
-     @defgroup SpineAccess Spine Accessors
-     @{
-     */
+    /// @{
+    /// @name Spine Accessors
     
     /**
      Returns the first item in the Spine.
@@ -206,12 +207,10 @@ public:
     
     size_t                  IndexOfSpineItemWithIDRef(const string& idref)  const;
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup ManifestAccess Manifest Item Accessors
-     @{
-     */
+    /// @{
+    /// @name Manifest Item Accessors
     
     /**
      Looks up and returns a specific manifest item by its unique identifier.
@@ -247,7 +246,7 @@ public:
      */
     const std::vector<const ManifestItem*> ManifestItemsWithProperties(PropertyList properties) const;
     
-    /** @} */
+    /// @}
     
     /**
      Returns a navigation table identified by type.
@@ -257,10 +256,8 @@ public:
      */
     const NavigationTable * NavigationTable(const string& type)            const;
     
-    /**
-     @defgroup PropertyIRIs Metadata Property IRI Support
-     @{
-     */
+    /// @{
+    /// @name Metadata Property IRI Support
     
     /**
      Associates a property vocabulary IRI stem with a prefix.
@@ -295,10 +292,13 @@ public:
      */
     IRI                     PropertyIRIFromAttributeValue(const string& attrValue)              const;
     
+    /// @}
+    
     /**
      Returns a ByteStream for reading from the specified file in the package's Archive.
      @param path The path of the item to read.
      @result An auto-pointer to a new ByteStream instance.
+     @ingroup utilities
      */
     Auto<ByteStream>        ReadStreamForItemAtPath(const string& path)                         const;
     
@@ -352,6 +352,13 @@ protected:
 /**
  The Package class implements a high-level API for interacting with OPF packages,
  including convenience accessors for well-known metadata items.
+ 
+ @remarks A Package instance holds owning references to all LoadEventHandlers and
+ MediaSupportInfo objects attached to it.
+ 
+ @see PackageBase for other important memory ownership information.
+ 
+ @ingroup epub-model
  */
 class Package : public PackageBase
 {
@@ -396,28 +403,110 @@ public:
     /// OPF version of this package document.
     virtual string          Version()               const;
     
+    /// @{
+    /// @name Event/Content Handlers
+    
+    /**
+     Attaches a handler for load-content events.
+     @param handler A function to be called with the URL of each item loaded.
+     */
     virtual void            SetLoadHandler(LoadEventHandler handler) { _loadEventHandler = handler; }
+    
+    /**
+     Fires a load-content event for a given URL, calling the handler passed to SetLoadHandler.
+     @param url The URL of the item being loaded.
+     */
     virtual void            FireLoadEvent(const IRI& url) const;
     
+    /**
+     Adds a new handler for a particular (foreign) media type.
+     
+     Assumes ownership of the input ContentHandler pointer.
+     @param handler A ContentHandler instance.
+     */
     virtual void            AddMediaHandler(ContentHandler* handler) { _contentHandlers[handler->MediaType()].push_back(handler); }
     
-    const MetadataMap       MetadataItemsWithDCType(Metadata::DCType type) const;
-    const MetadataMap       MetadataItemsWithProperty(const IRI& iri) const;
+    /// @}
     
+    /// @{
+    /// @name Spine, Manifest, and CFI
+    
+    /**
+     Returns the SpineItem having a given IDRef.
+     @param idref The IDRef for which to search.
+     @result A pointer to the located SpineItem, or `nullptr` if none was found.
+     */
     const SpineItem *       SpineItemWithIDRef(const string& idref)         const;
     
+    /**
+     Creates a CFI which locates a given ManifestItem.
+     @param item A pointer to the ManifestItem to locate.
+     @result A new CFI, as specific as possible, for the input ManifestItem.
+     */
     const CFI               CFIForManifestItem(const ManifestItem* item)    const;
+    
+    /**
+     Creates a CFI which locates a given SpineItem.
+     @param item A pointer to the SpineItem to locate.
+     @result A new CFI, as specific as possible, for the input SpineItem.
+     */
     const CFI               CFIForSpineItem(const SpineItem* item)          const;
     
     // note that the CFI is purposely non-const so the package can correct it (cf. epub-cfi §3.5)
+    /**
+     Obtains the ManifestItem referenced by a given CFI.
+     
+     This method will fix the input CFI if necessary/possible, based on any qualifiers
+     included in the CFI.
+     @param cfi The CFI whose corresponding ManifestItem to locate. This may be altered
+        for correctness if its qualifiers do not match the target item.
+     @param pRemainingCFI A pointer to a CFI instance whose value will be set to the
+        fragment of `cfi` which refers to the content of the document referenced by
+        the returned ManifestItem, i.e. a document-relative locator. If no fragment
+        remains (`cfi` referred only to the top-level document) then it will be set
+        to the empty CFI.
+     @result The ManifestItem corresponding to the input CFI, or `nullptr` otherwise.
+     */
     const ManifestItem *    ManifestItemForCFI(CFI& cfi, CFI* pRemainingCFI) const;
+    
+    /**
+     A convenience method used to obtain a libxml2 `xmlDocPtr` from a CFI.
+     
+     This method calls ManifestItemForCFI() internally, so will fix the input
+     CFI based on any qualifiers.
+     @param cfi The CFI whose corresponding ManifestItem to locate. This may be altered
+     for correctness if its qualifiers do not match the target item.
+     @param pRemainingCFI A pointer to a CFI instance whose value will be set to the
+     fragment of `cfi` which refers to the content of the document referenced by
+     the returned ManifestItem, i.e. a document-relative locator. If no fragment
+     remains (`cfi` referred only to the top-level document) then it will be set
+     to the empty CFI.
+     @result An `xmlDocPtr` for the selected document, or `nullptr` upon failure.
+     */
     xmlDocPtr               DocumentForCFI(CFI& cfi, CFI* pRemainingCFI) const {
         return ManifestItemForCFI(cfi, pRemainingCFI)->ReferencedDocument();
     }
     
-    // array-style operators: indices get spine items, identifiers get manifest items
+    /**
+     Obtains an element from the spine by index.
+     @param idx The (zero-based) index of the spine item to retrieve.
+     @result The SpineItem at the supplied index, or `nullptr` if the index was out
+     of bounds.
+     */
     const SpineItem *       operator[](size_t idx)          const   { return SpineItemAt(idx); }
+    
+    /**
+     Obtains the ManifestItem with a given identifier.
+     @param ident The identifier of the ManifestItem to retrieve.
+     @result The ManifestItem with the given identifier, or `nullptr` if no item
+     had that identifier.
+     */
     const ManifestItem *    operator[](const string& ident) const   { return ManifestItemWithID(ident); }
+    
+    /// @}
+    
+    /// @{
+    /// @name Raw Data Access
     
     ArchiveReader*          ReaderForRelativePath(const string& path)       const {
         return _archive->ReaderAtPath((_pathBase + path).stl_str());
@@ -427,61 +516,260 @@ public:
     }
     Auto<ByteStream>        ReadStreamForRelativePath(const string& path)   const;
     
+    /// @}
+    
+    /// @{
+    /// @name Navigation Tables
+    
+    ///
+    /// Returns the table of contents for this package.
     const class NavigationTable*    TableOfContents()       const       { return NavigationTable("toc"); }
+    ///
+    /// Return the list of figures, if any exists.
     const class NavigationTable*    ListOfFigures()         const       { return NavigationTable("lof"); }
+    ///
+    /// Returns the list of illustrations, if any exists.
     const class NavigationTable*    ListOfIllustrations()   const       { return NavigationTable("loi"); }
+    ///
+    /// Returns the list of tables, if any exists.
     const class NavigationTable*    ListOfTables()          const       { return NavigationTable("lot"); }
+    ///
+    /// Returns the page list, if any exists.
     const class NavigationTable*    PageList()              const       { return NavigationTable("page-list"); }
     
+    /// @}
+    
+    /// @{
+    /// @name High-Level Metadata API
+    
+    /**
+     Fetches a map of all metadata items with a given DCType.
+     @param type The type of the attribute to fetch.
+     @result A MetadataMap containing all the metadata items with this DC type.
+     */
+    const MetadataMap       MetadataItemsWithDCType(Metadata::DCType type) const;
+    
+    /**
+     Fetches a map of all metadata items with a given IRI.
+     @param iri The IRI identifying the type of metadata item to fetch.
+     @result A MetadataMap containing all the metadata items with this type.
+     */
+    const MetadataMap       MetadataItemsWithProperty(const IRI& iri) const;
+    
+    /**
+     Retrieves the title of the publication.
+     @param localized Set to `true` (the default) to obtain a localized value if
+     one is available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result The title of the publication.
+     */
     const string            Title(bool localized=true)              const;
+    
+    /**
+     Retrieves the subtitle of the publication.
+     @param localized Set to `true` (the default) to obtain a localized value if
+     one is available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result The subtitle of the publication.
+     */
     const string            Subtitle(bool localized=true)           const;
+    
+    /**
+     Retrieves the complete title (title and subtitle) of the publication.
+     @param localized Set to `true` (the default) to obtain a localized value if
+     one is available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result The complete title of the publication.
+     */
     const string            FullTitle(bool localized=true)          const;
     
+    ///
+    /// A simple type which lists the names of a publication's creators.
     typedef std::vector<const string>               AttributionList;
     
-    // returns the author names
+    /**
+     Retrieves the names of all authors/creators credited for this publication.
+     @param localized Set to `true` (the default) to obtain localized values if
+     available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result A list of authors, each name suitable for display.
+     */
     const AttributionList   AuthorNames(bool localized=true)        const;
-    // returns the file-as names if available, as Authors() if not
+    
+    /**
+     Retrieves the names of all authors/creators in sortable format.
+     
+     If a `file-as` refinement of an author/creator name is not available, that name
+     will be returned in display format, i.e. the library will not attempt to
+     synthesize a `file-as` value from the display name.
+     @param localized Set to `true` (the default) to obtain localized values if
+     available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result A list of authors, suitable for sorting.
+     */
     const AttributionList   AttributionNames(bool localized=true)   const;
-    // returns a formatted string for presentation to the user
+    
+    /**
+     Retrieves a display-ready string listing all authors.
+     @param localized Set to `true` (the default) to obtain a localized value if
+     one is available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result A list of authors, collated and ready for display.
+     */
     const string            Authors(bool localized=true)            const;
     
+    /**
+     Retrieves a list of all contributors (authors, editors, committee members, etc.)
+     @param localized Set to `true` (the default) to obtain localized values if
+     available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result A list of contributors, each in display format.
+     */
     const AttributionList   ContributorNames(bool localized=true)   const;
+    
+    /**
+     Retrieves a display-ready string listing all contributors.
+     @param localized Set to `true` (the default) to obtain a localized value if
+     one is available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result A list of contributors, collated and ready for display.
+     */
     const string            Contributors(bool localized=true)       const;
     
+    /**
+     Retrieves the language of the publication, if available.
+     @result The publication's original language.
+     */
     const string            Language()                              const;
+    
+    /**
+     Retrieves the source of the publication, if available.
+     @param localized Set to `true` (the default) to obtain a localized value if
+     one is available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result The publication's original source.
+     */
     const string            Source(bool localized=true)             const;
+    
+    /**
+     Retrieves the publication's copyright information.
+     @param localized Set to `true` (the default) to obtain a localized value if
+     one is available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result The publication's copyright ownership/assignment statement.
+     */
     const string            CopyrightOwner(bool localized=true)     const;
+    
+    /**
+     Retrieves a string indicating the last modification date of this package.
+     @result The package's modification date, if specified.
+     */
     const string            ModificationDate()                      const;
+    
+    /**
+     Returns the publication's ISBN number, if available.
+     @result An ISBN, or the empty string if none is specified.
+     */
     const string            ISBN()                                  const;
     
     typedef std::vector<const string>               StringList;
+    
+    /**
+     Retrieves a list of the publication's subjects.
+     @param localized Set to `true` (the default) to obtain localized values if
+     available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result The publication's subjects.
+     */
     const StringList        Subjects(bool localized=true)           const;
     
-    // Returns only the media types which have a handler of class MediaHandler.
+    /// @}
+    
+    /// @{
+    /// @name Media Handling
+    
+    ///
+    /// A list of media types which have an installed handler of class MediaHandler.
     const StringList            MediaTypesWithDHTMLHandlers()                   const;
+    
+    /**
+     Obtains all installed handlers for a particular media type.
+     @param mediaType The media-type whose handler list to retrieve.
+     @result A list of installed handlers for this media type.
+     */
     const ContentHandlerList    HandlersForMediaType(const string& mediaType)   const;
+    
+    /**
+     Retrieves the handler that will be used for a certain media type.
+     @param mediaType The media-type whose handler to retrieve.
+     @result The handler for this media type.
+     */
     const MediaHandler*         OPFHandlerForMediaType(const string& mediaType) const;
     
     ///
     /// Returns a list of all media types seen in the manifest.
     const StringList        AllMediaTypes()                 const;
+    ///
+    /// Returns a list of all unsupported media types.
+    const StringList        UnsupportedMediaTypes()         const;
+    
+    /**
+     The package's current media support list.
+     
+     The package loading system will create this based on the known core types and
+     any DHTML media handlers defined in the package itself.
+     @result The package's media support information.
+     */
+    const MediaSupportList& MediaSupport()                  const       { return _mediaSupport; }
+    
+    /**
+     The package's current media support list, supports editing in-place.
+     
+     The package loading system will create this based on the known core types and
+     any DHTML media handlers defined in the package itself.
+     @result The package's media support information.
+     */
+    MediaSupportList&       MediaSupport()                              { return _mediaSupport; }
+    
+    /**
+     Sets the media support information for the package.
+     @param list A list of MediaSupportInfo objects detailing support for each
+     media type defined in the manifest. This may contain information for types not
+     present in this package's manifest, for convenience.
+     */
     virtual void            SetMediaSupport(const MediaSupportList& list);
+    
+    /**
+     Sets the media support information for the package.
+     @param list A list of MediaSupportInfo objects detailing support for each
+     media type defined in the manifest. This may contain information for types not
+     present in this package's manifest, for convenience.
+     */
     virtual void            SetMediaSupport(MediaSupportList&& list);
     
+    /// @}
+    
 protected:
+    ///
+    /// Extracts information from the OPF XML document.
     virtual bool            Unpack();
     
     // default is `true`
     static bool             gValidateSchema;
     
 public:
+    ///
+    /// Whether the XML parser will validate an OPF file against its schema (default is `true`).
     static bool             ValidatesSchema()                   { return gValidateSchema; }
+    ///
+    /// Enable or disable OPF schema validation.
     static void             SetValidatesSchema(bool validate)   { gValidateSchema = validate; }
     
 protected:
-    LoadEventHandler        _loadEventHandler;
-    MediaSupportList        _mediaSupport;
+    LoadEventHandler        _loadEventHandler;      ///< The current handler for load events.
+    MediaSupportList        _mediaSupport;          ///< A list of media types with their support details.
+    
+    void                    InitMediaSupport();
 };
 
 EPUB3_END_NAMESPACE

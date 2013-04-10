@@ -33,54 +33,112 @@ struct zip_file;
 
 EPUB3_BEGIN_NAMESPACE
 
+/**
+ The abstract base class for all stream and pipe objects used by the Readium SDK.
+ 
+ This class declares the standard interface for a stream-- that is, an object to
+ which bytes can be sent and from which bytes can be read. By itself, a stream is
+ not considered to be seekable, and has no concept of position. Subclasses are free
+ to add that where applicable, however.
+ 
+ This class does not define any interface for asynchronous I/O; that is the purview
+ of the AsyncByteStream class, which inherits this one.
+ 
+ @ingroup utilities
+ */
 class ByteStream
 {
 public:
+    ///
+    /// The type for all byte-counts used with the ByteStream API.
     typedef std::size_t             size_type;
     
+    ///
+    /// A value to be returned when a real count is not possible.
     static const size_type          UnknownSize = std::numeric_limits<size_type>::min();
     
 public:
                             ByteStream()                            {}
     virtual                 ~ByteStream()                           {}
     
+    ///
+    /// ByteStreams cannot be copied, moved, or assigned.
                             ByteStream(const ByteStream&)           = delete;
                             ByteStream(ByteStream&&)                = delete;
     ByteStream&             operator=(const ByteStream&)            = delete;
     ByteStream&             operator=(ByteStream&& o)               = delete;
     
+    ///
+    /// Returns the number of bytes that can be read at this time.
     virtual size_type       BytesAvailable()                        const noexcept  { return UnknownSize; }
+    ///
+    /// Returns the amount of space available for writing at this time.
     virtual size_type       SpaceAvailable()                        const noexcept  { return UnknownSize; }
     
-    // can't define an Open() here because that requires implementation-specific information
+    /**
+     Determine whether the stream is currently open (i.e. usable).
+     
+     I can't define an Open() method on ByteStream here because that would require
+     implementation-specific parameters.
+     */
     virtual bool            IsOpen()                                const noexcept  = 0;
+    ///
+    /// Close the stream.
     virtual void            Close()                                                 = 0;
     
+    /**
+     Read some data from the stream.
+     @param buf A buffer into which to place any retrieved data.
+     @param len The number of bytes that can be stored in `buf`.
+     @result Returns the number of bytes actually copied into `buf`.
+     */
     virtual size_type       ReadBytes(void* buf, size_type len)                     = 0;
+    /**
+     Write some data to the stream.
+     @param buf A buffer containing data to write.
+     @param len The number of bytes to send.
+     @result Returns the number of bytes actually written to the stream.
+     */
     virtual size_type       WriteBytes(const void* buf, size_type len)              = 0;
     
+    ///
+    /// Returns `true` if an EOF status has occurred.
     virtual bool            AtEnd()                                 const noexcept  { return _eof; }
+    ///
+    /// Returns any error code reported by the underlying system.
     virtual int             Error()                                 const noexcept  { return _err; }
     
 protected:
-    bool                    _eof;
-    int                     _err;
+    bool                    _eof;   ///< Whether the end of a finite-length data stream has been reached.
+    int                     _err;   ///< Any system error which has occurred on this stream.
     
 };
 
+/**
+ Event codes for asynchronous stream events.
+ @ingroup utilities
+ */
 enum class AsyncEvent : uint8_t
 {
-    None,
-    OpenCompleted,
-    HasBytesAvailable,
-    HasSpaceAvailable,
-    ErrorOccurred,
-    EndEncountered
+    None,                   ///< No event (invalid code, or maybe just a wakeup call)
+    OpenCompleted,          ///< The stream opened successfully.
+    HasBytesAvailable,      ///< There is some data ready to read from the stream.
+    HasSpaceAvailable,      ///< There is room in the output buffer to write more data.
+    ErrorOccurred,          ///< An error occurred. Call ByteStream::Error() for details.
+    EndEncountered          ///< The end of a finite-length stream was encountered; no more data is available.
 };
 
 class AsyncByteStream;
+///
+/// The type of an asynchronous stream's event-handler function.
 using StreamEventHandler = std::function<void(AsyncEvent, AsyncByteStream*)>;
 
+/**
+ A simple asynchronous stream class.
+ 
+ This class will spawn a thread on which to perform actual reads and writes.
+ @ingroup utilities
+ */
 class AsyncByteStream : public ByteStream
 {
 protected:
@@ -127,6 +185,9 @@ protected:
     virtual size_type           write_for_async(const void* buf, size_type len) = 0;
 };
 
+/**
+ @ingroup utilities
+ */
 class FileByteStream : public ByteStream
 {
 public:
@@ -155,6 +216,9 @@ protected:
     FILE*                   _file;
 };
 
+/**
+ @ingroup utilities
+ */
 class ZipFileByteStream : public ByteStream
 {
 public:
@@ -181,6 +245,9 @@ protected:
     struct zip_file*        _file;
 };
 
+/**
+ @ingroup utilities
+ */
 class AsyncFileByteStream : public AsyncByteStream, public FileByteStream
 {
 private:
@@ -221,6 +288,9 @@ protected:
     virtual size_type       write_for_async(const void* buf, size_type len) { return __F::WriteBytes(buf, len); }
 };
 
+/**
+ @ingroup utilities
+ */
 class AsyncZipFileByteStream : public AsyncByteStream, public ZipFileByteStream
 {
 private:

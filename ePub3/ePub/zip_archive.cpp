@@ -22,10 +22,38 @@
 #include "zip_archive.h"
 #include "zipint.h"
 #include "byte_stream.h"
+#include <sstream>
+#include <fstream>
+#include <iostream>
 #include <unistd.h>
 #include <sys/fcntl.h>
 
 EPUB3_BEGIN_NAMESPACE
+
+static std::string GetTempFilePath(const std::string& ext)
+{
+    std::stringstream ss;
+    ss << "/tmp/epub3.XXXXXX." << ext;
+    std::string path(ss.str());
+    
+    char *buf = new char[path.length()];
+    std::char_traits<char>::copy(buf, ss.str().c_str(), sizeof(buf));
+    
+    int fd = ::mkstemp(buf);
+    if ( fd == -1 )
+        throw std::runtime_error(std::string("mkstemp() failed: ") + strerror(errno));
+    
+    char pathbuf[PATH_MAX];
+    if ( ::fcntl(fd, F_GETPATH, pathbuf) < 0 )
+    {
+        int err = errno;
+        ::close(fd);
+        throw std::runtime_error(std::string("fcntl(F_GETPATH) failed: ") + strerror(err));
+    }
+    
+    ::close(fd);
+    return std::string(pathbuf);
+}
 
 class ZipReader : public ArchiveReader
 {
@@ -46,23 +74,21 @@ class ZipWriter : public ArchiveWriter
     class DataBlob
     {
     public:
-        DataBlob() {}
+        DataBlob() : _fs(GetTempFilePath("tmp"), std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc) {}
         DataBlob(const DataBlob&) = delete;
-        DataBlob(DataBlob&& o) : _buf(o._buf), _cap(o._cap), _off(o._off) { o._buf = nullptr; o._cap = o._off = 0; }
-        ~DataBlob() { if (_buf != nullptr) ::free(_buf); }
+        DataBlob(DataBlob&& o) : _fs(std::move(o._fs)) {}
+        ~DataBlob() {}
         
         void Append(const void * data, size_t len);
-        size_t Read(void * data, size_t len);
-        size_t Size() const { return _cap; }
-        size_t Avail() const { return (_cap - _off); }
-        unsigned int CRC() const;
+        size_t Read(void *buf, size_t len);
+        
+        size_t Size() { return _fs.tellp(); }
+        size_t Size() const { return const_cast<DataBlob*>(this)->Size(); }
+        size_t Avail() { return Size() - _fs.tellg(); }
+        size_t Avail() const { return const_cast<DataBlob*>(this)->Avail(); }
         
     protected:
-        // writes always go at the end
-        // offset is always *read* offset
-        void *  _buf;
-        size_t  _cap;
-        size_t  _off;
+        std::fstream    _fs;
     };
     
 public:
@@ -70,7 +96,7 @@ public:
     ZipWriter(ZipWriter&& o);
     virtual ~ZipWriter() { if (_zsrc != nullptr) zip_source_free(_zsrc); }
     
-    virtual bool operator !() const { return _data.Avail() == 0; }
+    virtual bool operator !() const { return false; }
     virtual ssize_t write(const void *p, size_t len) { _data.Append(p, len); return static_cast<ssize_t>(len); }
     
     struct zip_source* ZipSource() { return _zsrc; }
@@ -95,22 +121,7 @@ ZipArchive::ZipItemInfo::ZipItemInfo(struct zip_stat & info)
 
 std::string ZipArchive::TempFilePath()
 {
-    char *buf = new char[22];
-    std::char_traits<char>::copy(buf, "/tmp/epub3.XXXXXX.zip", 22);
-    int fd = ::mkstemp(buf);
-    if ( fd == -1 )
-        throw std::runtime_error(std::string("mkstemp() failed: ") + strerror(errno));
-    
-    char pathbuf[PATH_MAX];
-    if ( ::fcntl(fd, F_GETPATH, pathbuf) < 0 )
-    {
-        int err = errno;
-        ::close(fd);
-        throw std::runtime_error(std::string("fcntl(F_GETPATH) failed: ") + strerror(err));
-    }
-    
-    ::close(fd);
-    return std::string(pathbuf);
+    return GetTempFilePath("zip");
 }
 ZipArchive::ZipArchive(const std::string & path)
 {
@@ -197,23 +208,13 @@ std::string ZipArchive::Sanitized(const std::string& path) const
 
 void ZipWriter::DataBlob::Append(const void *data, size_t len)
 {
-    if ( _buf == nullptr )
-        _buf = ::malloc(len);
-    else
-        _buf = ::realloc(_buf, _cap+len);
-    
-    ::memcpy(reinterpret_cast<uint8_t*>(_buf)+_cap, data, len);
-    _cap += len;
+    _fs.write(reinterpret_cast<const decltype(_fs)::char_type *>(data), len);
 }
 size_t ZipWriter::DataBlob::Read(void *data, size_t len)
 {
-    size_t toRead = std::min(Avail(), len);
-    if ( toRead == 0 )
-        return 0;
-    
-    ::memcpy(data, reinterpret_cast<const uint8_t*>(_buf)+_off, toRead);
-    _off += toRead;
-    return toRead;
+    if ( _fs.tellg() == 0 )
+        _fs.flush();
+    return _fs.readsome(reinterpret_cast<decltype(_fs)::char_type *>(data), len);
 }
 
 ZipWriter::ZipWriter(struct zip *zip, const std::string& path, bool compressed)
@@ -277,8 +278,8 @@ ssize_t ZipWriter::_source_callback(void *state, void *data, size_t len, enum zi
             delete writer;
             return 0;
         }
+            
     }
-    
     return r;
 }
 

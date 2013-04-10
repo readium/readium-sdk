@@ -27,8 +27,7 @@ EPUB3_BEGIN_NAMESPACE
 // upside: nice syntax for checking
 // downside: operator[] always creates a new item
 static std::map<string, bool> AllowedRootNodeNames = {
-    { "nav", true },
-    { "li", true },
+    { "nav", true }
 };
 
 NavigationTable::NavigationTable(xmlNodePtr node)
@@ -46,28 +45,18 @@ bool NavigationTable::Parse(xmlNodePtr node)
         return false;
     
     _type = _getProp(node, "type", ePub3NamespaceURI);
-    if ( name == "nav" && _type.empty() )
+    if ( _type.empty() )
         return false;
     
     XPathWrangler xpath(node->doc, {{"epub", ePub3NamespaceURI}}); // goddamn I love C++11 initializer list constructors
     xpath.NameDefaultNamespace("html");
     
-    if ( name == "nav" )
-    {
-        // look for optional <h2> title
-        // Q: Should we fail on finding multiple <h2> tags here?
-        auto strings = xpath.Strings("./html:h2[1]/text()", node);
-        if ( !strings.empty() )
-            _title = std::move(strings[0]);
-    }
-    else if ( name == "li" )
-    {
-        // look for optional <span> title
-        // Q: As abive, should we fail on multiple title elements?
-        auto strings = xpath.Strings("./html:span[1]/text()", node);
-        if ( !strings.empty() )
-            _title = std::move(strings[0]);
-    }
+    // look for optional <h2> title
+    // Q: Should we fail on finding multiple <h2> tags here?
+    auto strings = xpath.Strings("./html:h2[1]/text()", node);
+    if ( !strings.empty() )
+        _title = std::move(strings[0]);
+
     
     // load List Elements from a single Ordered List
     // first: confirm there's a single list
@@ -79,85 +68,70 @@ bool NavigationTable::Parse(xmlNodePtr node)
         xmlXPathFreeNodeSet(nodes);
         return false;
     }
-    
-    xmlXPathFreeNodeSet(nodes);
-    nodes = xpath.Nodes("./html:ol[1]/html:li", node);
-    if ( nodes == nullptr )
-        return false;   // it's not explicit whether an empty <ol> is invalid, but...
-    if ( nodes->nodeNr == 0 )
-    {
-        xmlXPathFreeNodeSet(nodes);
-        return false;
-    }
-    
-    BuildNavPoints(nodes, &_children);
+
+    LoadChildElements(this, nodes->nodeTab[0]);
+
     xmlXPathFreeNodeSet(nodes);
     
     return true;
 }
-void NavigationTable::BuildNavPoints(xmlNodeSetPtr nodes, NavigationList *navList)
+
+void NavigationTable::LoadChildElements(NavigationElement *pElement, xmlNodePtr olNode)
 {
-    for ( size_t i = 0; i < nodes->nodeNr; i++ )
+    XPathWrangler xpath(olNode->doc, {{"epub", ePub3NamespaceURI}});
+    xpath.NameDefaultNamespace("html");
+
+    xmlNodeSetPtr liNodes = xpath.Nodes("./html:li", olNode);
+
+    for ( size_t i = 0; i < liNodes->nodeNr; i++ )
     {
-        // should be a single <a> or optional <span> tag, followed by an optional <ol>
-        xmlNodePtr liNode = nodes->nodeTab[i];
-        xmlNodePtr liChild = liNode->children;
-        NavigationPoint* point = nullptr;
-        bool builtSubTable = false;
-        
-        for ( ; liChild != nullptr; liChild = liChild->next )
+        NavigationElement* childElement = BuildNavigationPoint(liNodes->nodeTab[i]);
+        if(childElement != nullptr)
         {
-            if ( liChild->type != XML_ELEMENT_NODE )
-                continue;
-            
-            std::string cName(reinterpret_cast<const char*>(liChild->name));
-            
-            if ( cName == "a" && point == nullptr )
-            {
-                // create navigation points from anchor tags
-                navList->push_back(new NavigationPoint(liChild));
-            }
-            else if ( cName == "span" )
-            {
-                // create a new sub-table
-                if ( builtSubTable )
-                {
-                    // apply title to an existing item (back of the list)
-                    navList->back()->SetTitle(xmlNodeGetContent(liChild));
-                }
-                else
-                {
-                    // create a new table either on the input list or in the current point
-                    if ( point == nullptr )
-                    {
-                        navList->push_back(new NavigationTable(liNode));
-                    }
-                    else
-                    {
-                        point->AppendChild(new NavigationTable(liNode));
-                    }
-                    
-                    builtSubTable = true;
-                }
-            }
-            else if ( cName == "ol" && !builtSubTable )
-            {
-                // create a new table either on the input list or in the current point
-                if ( point == nullptr )
-                {
-                    navList->push_back(new NavigationTable(liNode));
-                }
-                else
-                {
-                    point->AppendChild(new NavigationTable(liNode));
-                }
-                
-                builtSubTable = true;
-            }
+            pElement->AppendChild(childElement);
         }
-        
-        // all children of this <li> element have been enumerated now
     }
+
+    xmlXPathFreeNodeSet(liNodes);
 }
+
+NavigationElement*  NavigationTable::BuildNavigationPoint(xmlNodePtr liNode)
+{
+    xmlNodePtr liChild = liNode->children;
+
+    if(liChild == nullptr)
+    {
+        return nullptr;
+    }
+
+    NavigationPoint* point = new NavigationPoint();
+
+    for ( ; liChild != nullptr; liChild = liChild->next )
+    {
+        if ( liChild->type != XML_ELEMENT_NODE )
+            continue;
+
+        std::string cName(reinterpret_cast<const char*>(liChild->name));
+
+        if ( cName == "a" )
+        {
+            point->SetTitle(reinterpret_cast<const char*>(xmlNodeGetContent(liChild)));
+            point->SetContent(_getProp(liChild, "href"));
+        }
+        else if( cName == "span" )
+        {
+            point->SetTitle(xmlNodeGetContent(liChild));
+        }
+        else if( cName == "ol" )
+        {
+            LoadChildElements(point, liChild);
+            break;
+        }
+    }
+
+    return point;
+}
+
+
 
 EPUB3_END_NAMESPACE

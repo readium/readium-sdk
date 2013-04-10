@@ -31,6 +31,18 @@ EPUB3_BEGIN_NAMESPACE
 class Package;
 class ManifestItem;
 
+/**
+ The MediaSupportInfo class provides at-a-glance information to the EPUB engine describing
+ whether a given manifest item can be handled by the reading system.
+ 
+ A media type can be intrinsically supported as an EPUB 3 core media type or
+ a foreign media type which is supported by the rendering engine. Alternatively a
+ type might be supported through a DHTML handler defined through the `bindings`
+ element from an OPF file. Any other types are considered unsupported, thus triggering
+ selection of any fallback manifest item in its stead.
+ 
+ @ingroup utilities
+ */
 class MediaSupportInfo
 {
 public:
@@ -74,10 +86,8 @@ public:
     /// C++11 move assignment operator.
     MediaSupportInfo&   operator=(MediaSupportInfo&& o);
     
-    /**
-     @defgroup Accessors Accessors
-     @{
-     */
+    /// @{
+    /// @name Accessors
     
     /**
      Returns the media type represented by this object.
@@ -99,12 +109,10 @@ public:
      */
     virtual bool    RequiresMediaHandler()  const;
     
-    /** @} */
+    /// @}
     
-    /**
-     @defgroup Setters Setters
-     @{
-     */
+    /// @{
+    /// @name Setters
     
     /**
      Sets the media type and its support state.
@@ -115,7 +123,7 @@ public:
      */
     virtual void    SetTypeAndSupport(const string& mediaType, SupportType support);
     
-    /** @} */
+    /// @}
     
     /**
      Constructs a list of manifest items with this media type.

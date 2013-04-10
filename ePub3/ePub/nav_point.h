@@ -29,11 +29,13 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+/**
+ @ingroup navigation
+ */
 class NavigationPoint : public NavigationElement
 {
 public:
-                            NavigationPoint()                           = delete;
-                            NavigationPoint(xmlNodePtr node); // NB: does NOT cascade to create children
+                            NavigationPoint() {};
                             NavigationPoint(const std::string& ident, const std::string& label, const std::string& content) : NavigationElement(), _label(label), _content(content) {}
                             NavigationPoint(const NavigationPoint&)     = delete;
                             NavigationPoint(NavigationPoint&& o) : NavigationElement(o), _label(std::move(o._label)), _content(std::move(o._content)) {}
@@ -44,6 +46,8 @@ public:
     virtual void            SetTitle(string&& str)              { _label = str; }
     
     const string&           Content()                   const   { return _content; }
+    void                    SetContent(const string& str)       { _content = str; }
+    void                    SetContent(string&& str)            { _content = str; }
     
 protected:
     string _label;

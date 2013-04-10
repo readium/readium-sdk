@@ -28,44 +28,135 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+/**
+ The CFI class implements an EPUB 3 Content Fragment Identifier.
+ 
+ A CFI is similar in principle to a DOMRange: it identifies a particular location
+ within a publication.
+ 
+ @ingroup epub-model
+ */
 class CFI
 {
 public:
+    ///
+    /// Create an empty CFI.
                     CFI() : _components(), _rangeStart(), _rangeEnd(), _options(0) {}
+    /**
+     Create a ranged CFI from a base and two relative CFIs.
+     @param base A CFI consisting of components common to both the start and end of
+     the resulting range.
+     @param start A relative CFI denoting the path from `base` to the start of a
+     range.
+     @param end A relative CFI denoting the path from `base` to the end of a range.
+     */
                     CFI(const CFI& base, const CFI& start, const CFI& end);
+    /**
+     Create a CFI from a string representation.
+     @param str A string representation of a CFI; the `epubcfi(...)` wrapping is
+     optional.
+     */
                     CFI(const string& str);
+    ///
+    /// Create a copy of an existing CFI.
                     CFI(const CFI& o) : _components(o._components), _rangeStart(o._rangeStart), _rangeEnd(o._rangeEnd), _options(o._options) {}
+    /**
+     Creates a relative CFI from a particular node index within another.
+     
+     This can be used to create a document-content CFI from a container-level CFI.
+     For example, given the following code:
+     
+         CFI mainCFI("/6/4!/2/11:5");
+         CFI subCFI(mainCFI, 2);
+         std::cout << subCFI.String() << std::endl;
+     
+     ...this will be printed to the console:
+     
+        /2/11:5
+     
+     @param o A CFI from which to extract a sub-component.
+     @param fromIndex The index in `o` at which to start copying components.
+     */
                     CFI(const CFI& o, size_t fromIndex);
+    ///
+    /// C++11 move constructor.
                     CFI(CFI&& o) : _components(std::move(o._components)), _rangeStart(std::move(o._rangeStart)), _rangeEnd(std::move(o._rangeEnd)), _options(o._options) {}
     virtual         ~CFI() {}
     
+    /**
+     Obtains a string representation of the CFI.
+     @result A CFI string, including the `epubcfi(...)` wrapper.
+     */
     string          String()                const           { return Stringify(_components.begin(), _components.end()); }
+    
+    /**
+     Determine whether a CFI represents a location or a range.
+     @result Returns `true` if the CFI represents a range, `false` otherwise.
+     */
     bool            IsRangeTriplet()        const           { return (_options & RangeTriplet) == RangeTriplet; }
+    
+    /**
+     Determine if a CFI is empty.
+     @result Returns `true` if the CFI has no components, `false` otherwise.
+     */
     bool            Empty()                 const           { return _components.empty(); }
+    ///
+    /// Clears a CFI, making it empty.
     void            Clear()                                 { _components.clear(); }
     
+    ///
+    /// Determines whether two CFIs are equal.
     bool            operator==(const CFI& o)        const;
+    ///
+    /// Determines whether a CFI is equal to a CFI string representation.
     bool            operator==(const string& str)   const;
+    ///
+    /// Determines whether two CFIs are inequal.
     bool            operator!=(const CFI& o)        const;
+    ///
+    /// Determines whether a CFI is inequal to a CFI string representation.
     bool            operator!=(const string& str)   const;
     
+    ///
+    /// Assigns a new value to a CFI by copying.
     CFI&            Assign(const CFI& o);
+    CFI&            operator=(const CFI& o)                 { return Assign(o); }
+    
+    ///
+    /// Assigns a new value to a CFI by moving.
     CFI&            Assign(CFI&& o);
+    CFI&            operator=(CFI&& o)                      { return Assign(std::move(o)); }
+    
+    ///
+    /// Assigns a new value to a CFI using a sub-path of another CFI
+    /// @see CFI(const CFI&, size_t)
     CFI&            Assign(const CFI& o, size_t fromIndex);
+    
+    ///
+    /// Assigns a new value to a CFI from a CFI string representation.
+    CFI&            operator=(const string& str)            { return Assign(str); }
     CFI&            Assign(const string& str);
     
-    CFI&            operator=(const CFI& o)                 { return Assign(o); }
-    CFI&            operator=(CFI&& o)                      { return Assign(o); }
-    CFI&            operator=(const string& str)            { return Assign(str); }
-    
+    /**
+     Appends the components of one CFI to another.
+     @note It is not possible to append components to a ranged CFI.
+     @throws RangedCFIAppendAttempt if the LHS is a ranged CFI.
+     */
     CFI&            Append(const CFI& cfi);
-    CFI&            Append(const string& str);
     CFI&            operator+=(const CFI& cfi)              { return Append(cfi); }
-    CFI&            operator+=(const string& str)           { return Append(str); }
-    
     CFI             operator+(const CFI& cfi)       const   { return CFI(*this).Append(cfi); }
+    
+    /**
+     Appends the components of a CFI string representation.
+     @note It is not possible to append components to a ranged CFI.
+     @throws RangedCFIAppendAttempt if the LHS is a ranged CFI.
+     */
+    CFI&            Append(const string& str);
+    CFI&            operator+=(const string& str)           { return Append(str); }
     CFI             operator+(const string& str)    const   { return CFI(*this).Append(str); }
     
+    ///
+    /// The exception thrown when an invalid CFI string is encountered.
     class InvalidCFI : public std::logic_error
     {
     public:
@@ -73,6 +164,8 @@ public:
         InvalidCFI(const char * str) : std::logic_error(str) {}
         virtual ~InvalidCFI() {}
     };
+    ///
+    /// An attempt was made to append components to a ranged CFI, which is not valid.
     class RangedCFIAppendAttempt : public std::logic_error
     {
     public:
@@ -82,21 +175,27 @@ public:
     };
     
 protected:
+    ///
+    /// A single component of a CFI.
     struct Component
     {
+        ///
+        /// Bitfield values identifying special status for a CFI component.
         enum Flags : uint8_t
         {
-            Qualifier        = 1<<0,
-            CharacterOffset  = 1<<1,
-            TemporalOffset   = 1<<2,
-            SpatialOffset    = 1<<3,
-            Indirector       = 1<<4,
-            TextQualifier    = 1<<5,
+            Qualifier        = 1<<0,    ///< The component contains an `id` or `idref` qualifier, i.e. `[bob]`
+            CharacterOffset  = 1<<1,    ///< The component has a character offset value, i.e. `:12`
+            TemporalOffset   = 1<<2,    ///< The component has a temporal offset value, i.e. `~87.24`.
+            SpatialOffset    = 1<<3,    ///< The component has a spatial offset value, i.e. `@150:220`
+            Indirector       = 1<<4,    ///< The component specifies stepping into the identified node (i.e. `!`)
+            TextQualifier    = 1<<5,    ///< The component contains a text qualifier, i.e. `[this]`
             
-            SpatialTemporalOffset   = TemporalOffset|SpatialOffset,
+            SpatialTemporalOffset   = TemporalOffset|SpatialOffset, ///< Component contains both temporal and spatial offsets.
             OffsetsMask             = CharacterOffset|TemporalOffset|SpatialOffset,
         };
         
+        ///
+        /// A simple structure which defines a spatial location and can perform comparisons.
         struct Point
         {
             float x;
@@ -112,25 +211,40 @@ protected:
                 
         };
         
-        uint8_t         flags;
-        uint32_t        nodeIndex;
-        string          qualifier;
-        uint32_t        characterOffset;
-        float           temporalOffset;
-        Point           spatialOffset;
-        string          textQualifier;
+        uint8_t         flags;              ///< The bitfield containing values from the Flags enumeration.
+        uint32_t        nodeIndex;          ///< The numeric index for the node identified by component.
+        string          qualifier;          ///< The value of any `id` or `idref` qualifier.
+        uint32_t        characterOffset;    ///< The value of any character offset.
+        float           temporalOffset;     ///< The value, in seconds, of any temporal offset.
+        Point           spatialOffset;      ///< The value of any spatial offset.
+        string          textQualifier;      ///< The content of any character location qualifier.
         
         ////////////////////////////////////////////////////////////////////////////
         
-                        Component()                             = default;
+        ///
+        /// Creates a default component with a node index of zero.
+                        Component() : Component(0) {}
+        ///
+        /// Creates a component from a string.
                         Component(const string& str);
+        ///
+        /// Creates a numeric component with no flags.
                         Component(uint32_t __nodeIdx) : flags(0), nodeIndex(__nodeIdx), qualifier(), characterOffset(0), temporalOffset(), spatialOffset(), textQualifier() {}
+        ///
+        /// Copy constructor.
                         Component(const Component& o)           = default;
+        ///
+        /// Move constructor.
                         Component(Component&& o) : flags(o.flags), nodeIndex(o.nodeIndex), qualifier(std::move(o.qualifier)), characterOffset(o.characterOffset), temporalOffset(o.temporalOffset), spatialOffset(o.spatialOffset), textQualifier(std::move(o.textQualifier)) {}
                         ~Component() = default;
         
+        ///
+        /// Compare conpoments for equality.
         bool            operator==(const Component& o)      const;
         bool            operator!=(const Component& o)      const;
+        
+        ///
+        /// Assign a new value to a component.
         Component&      operator=(const Component& o);
         Component&      operator=(Component&& o);
         Component&      operator=(const string& str);
@@ -148,33 +262,53 @@ protected:
         void            Parse(const string& str);
     };
     
+    ///
+    /// Options bitfield for a CFI.
     enum Options : uint8_t
     {
-        RangeTriplet        = 1<<0,
+        RangeTriplet        = 1<<0,     ///< The CFI represents a range, not a location.
     };
     
     typedef std::vector<Component>  ComponentList;
     
-    ComponentList   _components;
-    uint8_t         _options;
+    ComponentList   _components;        ///< The CFI's discrete components.
+    uint8_t         _options;           ///< CFI options, i.e. Options::RangeTriplet.
     
-    ComponentList   _rangeStart;
-    ComponentList   _rangeEnd;
+    ComponentList   _rangeStart;        ///< The components for the start of a range.
+    ComponentList   _rangeEnd;          ///< The components for the end of a range.
     
     // PackageBase should be able to work with components
     friend class    PackageBase;
     friend class    Package;
     
+    ///
+    /// The total number of components in a CFI, including range components.
     size_t              TotalComponents()                   const;
+    ///
+    /// Generates a sub-path CFI from a given index.
+    /// @see CFI(const CFI&, size_t)
     string              SubCFIFromIndex(size_t index)       const;
+    ///
+    /// Generates a string representation of the CFI between two components.
     string              Stringify(ComponentList::const_iterator start, ComponentList::const_iterator end)   const;
     
+    ///
+    /// Appends components to a string stream. Used by Stringify().
     static void         AppendComponents(std::stringstream& stream, ComponentList::const_iterator start, ComponentList::const_iterator end);
     
     typedef std::vector<string>    StringList;
+    
+    ///
+    /// Breaks a CFI string into its components.
     static StringList   CFIComponentStrings(const string& cfi, const string& delimiter = "/");
+    ///
+    /// Breaks a ranged CFI string into base, start, and end CFI strings
     static StringList   RangedCFIComponents(const string& cfi)          { return CFIComponentStrings(cfi, ","); }
+    ///
+    /// Compiles CFI component strings into a component list.
     static bool         CompileComponentsToList(const StringList& strings, ComponentList* list);
+    ///
+    /// Top-level CFI compilation method.
     bool                CompileCFI(const string& str);
 };
 

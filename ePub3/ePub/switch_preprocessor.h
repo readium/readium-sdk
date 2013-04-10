@@ -30,7 +30,9 @@
 EPUB3_BEGIN_NAMESPACE
 
 /**
- The SwitchPreprocessor will locate any <epub:switch> compounds in an EPUB Content
+ A filter for preprocessing `epub:switch` compounds.
+ 
+ The SwitchPreprocessor will locate any `<epub:switch>` compounds in an EPUB Content
  Document and will statically alter their contents by replacing each switch compound
  with the content of an epub:case element or epub:default element depending on the
  namespaces supported.
@@ -40,6 +42,7 @@ EPUB3_BEGIN_NAMESPACE
  then that file will be passed through unchanged.
  
  It should be used only for reading, never for writing.
+ @ingroup filters
  */
 class SwitchPreprocessor : public ContentFilter
 {

@@ -31,6 +31,9 @@ EPUB3_XML_BEGIN_NAMESPACE
 
 class Document;
 
+/**
+ @ingroup validation
+ */
 class Schema : public WrapperBase
 {
 public:
