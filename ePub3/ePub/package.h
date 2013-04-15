@@ -585,7 +585,7 @@ public:
     
     ///
     /// A simple type which lists the names of a publication's creators.
-    typedef std::vector<const string>               AttributionList;
+    typedef std::vector<string>                 AttributionList;
     
     /**
      Retrieves the names of all authors/creators credited for this publication.
@@ -672,7 +672,7 @@ public:
      */
     const string            ISBN()                                  const;
     
-    typedef std::vector<const string>               StringList;
+    typedef std::vector<string>                     StringList;
     
     /**
      Retrieves a list of the publication's subjects.

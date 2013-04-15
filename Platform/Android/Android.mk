@@ -4,7 +4,7 @@ THIRD_PARTY := $(LOCAL_PATH)/ePub3/ThirdParty
 ###########################################################
 # Prebuilt libraries for ICU
 
-ICU_LIB_PATH := /ePub3/ThirdParty/icu4c/lib
+ICU_LIB_PATH := ePub3/ThirdParty/icu4c/lib
 ICU_INCLUDE_PATH := $(THIRD_PARTY)/icu4c/include
 
 # Unicode
@@ -37,6 +37,28 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := icudata
 LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicudata.a
 LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
+include $(PREBUILT_STATIC_LIBRARY)
+
+###########################################################
+# Prebuilt libraries for OpenSSL
+
+OPENSSL_LIB_PATH := ePub3/ThirdParty/openssl-android/lib
+OPENSSL_INCLUDE_PATH := $(THIRD_PARTY)/openssl-android/include
+
+# Crypto
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := crypto
+LOCAL_SRC_FILES := $(OPENSSL_LIB_PATH)/libcrypto.a
+LOCAL_EXPORT_C_INCLUDES := $(OPENSSL_INCLUDE_PATH)
+include $(PREBUILT_STATIC_LIBRARY)
+
+# SSL (unneeded right now)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := ssl
+LOCAL_SRC_FILES := $(OPENSSL_LIB_PATH)/libssl.a
+LOCAL_EXPORT_C_INCLUDES := $(OPENSSL_INCLUDE_PATH)
 include $(PREBUILT_STATIC_LIBRARY)
 
 ###########################################################
@@ -106,10 +128,11 @@ LOCAL_CPP_FEATURES += exceptions rtti
 LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/ePub3 \
 		$(LOCAL_PATH)/ePub3/utilities \
-		$(LOCAL_PATH)/ePub3/ThirdParty
+		$(LOCAL_PATH)/ePub3/ThirdParty \
+        $(LOCAL_PATH)/ePub3/ThirdParty/google-url/src
 LOCAL_C_INCLUDES += ${shell find $(LOCAL_PATH)/ePub3/xml/ -type d}
 LOCAL_C_INCLUDES += ${shell find $(LOCAL_PATH)/ePub3/ePub -type d}
-LOCAL_STATIC_LIBRARIES := icuuc icui18n icuio icudata xml2
+LOCAL_STATIC_LIBRARIES := icuuc icui18n icuio icudata xml2 crypto
 LOCAL_LDLIBS := -lz
 LOCAL_SRC_FILES := \
 		ePub3/ThirdParty/libzip/mkstemp.c \

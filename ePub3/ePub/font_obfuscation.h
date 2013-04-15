@@ -25,6 +25,7 @@
 #include "filter.h"
 #include "encryption.h"
 #include <regex>
+#include <cstring>
 
 EPUB3_BEGIN_NAMESPACE
 

@@ -90,8 +90,8 @@ public:
     //////////////////////////////////////////////////////////////////////////////
     // Output
     
-    template <C14NVersion _V, bool _C>
-    string Canonicalize(const C14NParams<_V, _C> & params) const;
+    template <C14NVersion _Version, bool _WithComments>
+    string Canonicalize(const C14NParams<_Version, _WithComments> & params) const;
     
     void WriteXML(OutputBuffer & outbuf) const;
     void WriteXML(string & string) const;

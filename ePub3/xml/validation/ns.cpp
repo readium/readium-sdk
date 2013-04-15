@@ -27,7 +27,7 @@ EPUB3_XML_BEGIN_NAMESPACE
 Namespace::Namespace(Document * doc, const string &prefix, const string &uri)
 {
     xmlDocPtr d = doc->xml();
-    _xml = xmlNewGlobalNs(d, uri.utf8(), prefix.utf8());
+    _xml = xmlNewNs(reinterpret_cast<xmlNodePtr>(d), uri.utf8(), prefix.utf8());
 }
 Namespace::~Namespace()
 {

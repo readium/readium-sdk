@@ -77,7 +77,7 @@ class ParserError : public exception {
 public:
     ParserError(const std::string & context, xmlErrorPtr err = NULL) throw () : exception(context.c_str(), err) {}
     ParserError(const char * s, xmlErrorPtr err = NULL) throw () : exception(s, err) {}
-    virtual ~ParserError() {}
+    virtual ~ParserError() throw () {}
 };
 /**
  @ingroup xml-utils
@@ -86,7 +86,7 @@ class ValidationError : public exception  {
 public:
     ValidationError(const std::string & context, xmlErrorPtr err = NULL) throw () : exception(context.c_str(), err) {}
     ValidationError(const char * s, xmlErrorPtr err = NULL) throw () : exception(s, err) {}
-    virtual ~ValidationError() {}
+    virtual ~ValidationError() throw () {}
 };
 /**
  @ingroup xml-utils
@@ -95,7 +95,7 @@ class InternalError : public exception  {
 public:
     InternalError(const std::string & context, xmlErrorPtr err = NULL) throw () : exception(context.c_str(), err) {}
     InternalError(const char * s, xmlErrorPtr err = NULL) throw () : exception(s, err) {}
-    virtual ~InternalError() {}
+    virtual ~InternalError() throw () {}
 };
 
 // note that MOVE is allowed, just not COPY

@@ -128,7 +128,7 @@ std::locale& PackageBase::Locale()
 }
 void PackageBase::SetLocale(const string &name)
 {
-    gCurrentLocale = std::locale(name.stl_str());
+    gCurrentLocale = std::locale(name.c_str());
 }
 void PackageBase::SetLocale(const std::locale &locale)
 {
@@ -341,7 +341,11 @@ bool Package::Unpack()
         for ( int i = 0; i < manifestNodes->nodeNr; i++ )
         {
             ManifestItem *p = new ManifestItem(manifestNodes->nodeTab[i], this);
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
             _manifest.emplace(p->Identifier(), p);
+#else
+            _manifest[p->Identifier()] = p;
+#endif
         }
         
         SpineItem* cur = nullptr;
@@ -550,7 +554,11 @@ bool Package::Unpack()
         {
             // have to dynamic_cast these guys to get the right pointer type
             class NavigationTable* navTable = dynamic_cast<class NavigationTable*>(table);
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
             _navigation.emplace(navTable->Type(), navTable);
+#else
+            _navigation[navTable->Type()] = navTable;
+#endif
         }
     }
     

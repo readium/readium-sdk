@@ -20,39 +20,43 @@
 //
 
 #include "zip_archive.h"
-#include "zipint.h"
+#include <libzip/zipint.h>
 #include "byte_stream.h"
 #include <sstream>
 #include <fstream>
 #include <iostream>
 #include <unistd.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
+
+#if EPUB_OS(ANDROID)
+extern "C" char* gAndroidCacheDir;
+#endif
 
 EPUB3_BEGIN_NAMESPACE
 
 static std::string GetTempFilePath(const std::string& ext)
 {
     std::stringstream ss;
+#if EPUB_OS(ANDROID)
+    ss << gAndroidCacheDir << "epub3.XXXXXX";
+#else
     ss << "/tmp/epub3.XXXXXX." << ext;
+#endif
     std::string path(ss.str());
     
     char *buf = new char[path.length()];
     std::char_traits<char>::copy(buf, ss.str().c_str(), sizeof(buf));
-    
+
+#if EPUB_OS(ANDROID)
     int fd = ::mkstemp(buf);
+#else
+    int fd = ::mkstemps(buf, ext.size()+1);
+#endif
     if ( fd == -1 )
         throw std::runtime_error(std::string("mkstemp() failed: ") + strerror(errno));
     
-    char pathbuf[PATH_MAX];
-    if ( ::fcntl(fd, F_GETPATH, pathbuf) < 0 )
-    {
-        int err = errno;
-        ::close(fd);
-        throw std::runtime_error(std::string("fcntl(F_GETPATH) failed: ") + strerror(err));
-    }
-    
     ::close(fd);
-    return std::string(pathbuf);
+    return std::string(buf);
 }
 
 class ZipReader : public ArchiveReader
@@ -74,10 +78,10 @@ class ZipWriter : public ArchiveWriter
     class DataBlob
     {
     public:
-        DataBlob() : _fs(GetTempFilePath("tmp"), std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc) {}
+        DataBlob() : _tmpPath(GetTempFilePath("tmp")), _fs(_tmpPath, std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc) {}
         DataBlob(const DataBlob&) = delete;
-        DataBlob(DataBlob&& o) : _fs(std::move(o._fs)) {}
-        ~DataBlob() {}
+        DataBlob(DataBlob&& o) : _tmpPath(std::move(o._tmpPath)), _fs(_tmpPath, std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc) {}
+        ~DataBlob() { _fs.close(); ::unlink(_tmpPath.c_str()); }
         
         void Append(const void * data, size_t len);
         size_t Read(void *buf, size_t len);
@@ -88,6 +92,7 @@ class ZipWriter : public ArchiveWriter
         size_t Avail() const { return const_cast<DataBlob*>(this)->Avail(); }
         
     protected:
+        std::string     _tmpPath;
         std::fstream    _fs;
     };
     

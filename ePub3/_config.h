@@ -84,4 +84,16 @@
 # define EPUB3_EXPORT
 #endif
 
+#if EPUB_OS(ANDROID)
+# define UTF_USE_ICU 1
+#endif
+
+#ifndef _LIBCPP_HIDDEN
+# define _LIBCPP_HIDDEN __attribute__ ((__visibility__("hidden")))
+#endif
+
+#ifndef _LIBCPP_INLINE_VISIBILITY
+# define _LIBCPP_INLINE_VISIBILITY __attribute__ ((__visibility__("hidden"), __always_inline__))
+#endif
+
 #endif

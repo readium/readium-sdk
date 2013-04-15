@@ -22,6 +22,7 @@
 #if EPUB_USE(CF)
 # include <CoreFoundation/CoreFoundation.h>
 #elif EPUB_OS(ANDROID)
+# include <condition_variable>      // GNU libstdc++ 4.7 has this guy in a separate header
 # include <pthread.h>
 # include <time.h>
 #elif EPUB_OS(WINDOWS)

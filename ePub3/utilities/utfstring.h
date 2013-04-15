@@ -993,7 +993,7 @@ protected:
                     name = "utf-16";
                     break;
                 case 4:
-                    return reinterpret_cast<UChar*>(p);
+                    return const_cast<UChar*>(reinterpret_cast<const UChar*>(p));
                     break;
                 default:
                     break;

@@ -129,7 +129,11 @@ void Library::AddPublicationsInContainer(Container* container, const string& pat
     
     for ( auto pkg : container->Packages() )
     {
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
         _packages.emplace(pkg->UniqueID(), LookupEntry({path, pkg}));
+#else
+        _packages[pkg->UniqueID()] = LookupEntry({path, pkg});
+#endif
     }
 }
 void Library::AddPublicationsInContainerAtPath(const ePub3::string &path)

@@ -26,6 +26,7 @@
 #include "utfstring.h"
 #include <string>
 #include <libxml/xmlschemastypes.h>
+#include <libxml/schemasInternals.h>
 
 EPUB3_XML_BEGIN_NAMESPACE
 

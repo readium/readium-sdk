@@ -154,7 +154,7 @@ size_t CFI::TotalComponents() const
 string CFI::SubCFIFromIndex(size_t index) const
 {
     if ( index >= TotalComponents() )
-        throw std::range_error((std::stringstream() << "Index " << index << " is out of bounds.").str());
+        throw std::range_error(_Str("Index ", index, " is out of bounds."));
     
     return Stringify(_components.begin()+index, _components.end());
 }
@@ -242,7 +242,7 @@ CFI::StringList CFI::CFIComponentStrings(const string &cfi, const string& delimi
         {
             loc = cfi.find_first_of(']', loc);
             if ( loc == string::npos )
-                throw std::range_error((std::stringstream() << "CFI '" << cfi << "' has an unterminated qualifier").str());
+                throw std::range_error(_Str("CFI '", cfi, "' has an unterminated qualifier"));
             
             ++loc;
             tmp.append(cfi, pos, loc-pos);

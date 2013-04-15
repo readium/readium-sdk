@@ -26,7 +26,9 @@
 #include <iostream>
 #include <list>
 #include <zlib.h>
+#if EPUB_HAVE(ACL)
 #include <sys/acl.h>
+#endif
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -202,20 +204,21 @@ public:
      The default implementation returns zero.
      */
     virtual mode_t POSIXPermissions(const std::string & path) const { return 0; }
-    
+#if EPUB_HAVE(ACL)
     /**
      Apply an Access Control List to a file within the archive, if supported.
      
      The default implementation does nothing.
      */
     virtual void SetACL(const std::string & path, acl_t acl) {}
+
     /**
      Retrieve the Access Control List for a file, if supported.
      
      The befault implementation returns `nullptr`.
      */
     virtual acl_t GetACL(const std::string & path) const { return nullptr; }
-    
+#endif    
     /**
      Returns detailed information on a file within the archive.
      @param path The path to an existing file within the archive.
@@ -256,15 +259,27 @@ public:
     ///
     /// Copy constructor
     ArchiveItemInfo(const ArchiveItemInfo & o) : _path(o._path), _isCompressed(o._isCompressed), _compressedSize(o._compressedSize), _uncompressedSize(o._uncompressedSize), _posix(o._posix) {
+#if EPUB_HAVE(ACL)
         if ( o._acl != nullptr )
             _acl = acl_dup(o._acl);
+#endif
     }
     ///
     /// Move constructor
-    ArchiveItemInfo(ArchiveItemInfo && o) : _path(std::move(o._path)), _isCompressed(o._isCompressed), _compressedSize(o._compressedSize), _uncompressedSize(o._uncompressedSize), _posix(o._posix), _acl(o._acl) {
-            o._acl = nullptr;
+    ArchiveItemInfo(ArchiveItemInfo && o) : _path(std::move(o._path)), _isCompressed(o._isCompressed), _compressedSize(o._compressedSize), _uncompressedSize(o._uncompressedSize), _posix(o._posix)
+#if EPUB_HAVE(ACL)
+    , _acl(o._acl)
+#endif
+    {
+#if EPUB_HAVE(ACL)
+        o._acl = nullptr;
+#endif
     }
-    virtual ~ArchiveItemInfo() { if (_acl != nullptr) acl_free(_acl); }
+    virtual ~ArchiveItemInfo() {
+#if EPUB_HAVE(ACL)
+        if (_acl != nullptr) acl_free(_acl);
+#endif
+    }
     
     ///
     /// Retrieves the item's p4ath within an archive.
@@ -281,9 +296,11 @@ public:
     ///
     /// POSIX-style access permissions, if supported.
     virtual mode_t POSIXPermissions() const { return _posix; }
+#if EPUB_HAVE(ACL)
     ///
     /// Access Control List permissions, if supported.
     virtual acl_t AccessControlList() const { return _acl; }
+#endif
     
     virtual void SetPath(const std::string & path) { _path = path; }
     virtual void SetPath(std::string &&path) { _path = path; }
@@ -291,7 +308,9 @@ public:
     virtual void SetCompressedSize(size_t size) { _compressedSize = size; }
     virtual void SetUncompressedSize(size_t size) { _uncompressedSize = size; }
     virtual void SetPOSIXPermissions(mode_t perms) { _posix = perms; }
+#if EPUB_HAVE(ACL)
     virtual void SetAccessControlList(acl_t acl) { _acl = acl_dup(acl); }
+#endif
     
 protected:
     std::string                 _path;              ///< The path to the item.
@@ -300,7 +319,9 @@ protected:
     size_t                      _uncompressedSize;  ///< The item's uncompressed size.
     
     mode_t                      _posix;             ///< POSIX permissions, if supported.
+#if EPUB_HAVE(ACL)
     acl_t                       _acl;               ///< Access Control List, if supported.
+#endif
     
 };
 
