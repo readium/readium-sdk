@@ -37,8 +37,6 @@
 #define GOOGLEURL_SRC_URL_CANON_CXX11_H__
 
 #include "url_canon.h"
-#include <locale>
-#include <codecvt>
 
 namespace url_canon {
 

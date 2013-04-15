@@ -22,13 +22,14 @@
 #include "object_preprocessor.h"
 #include "package.h"
 
-static const std::regex reEscaper(R"X(\\\.\(\)\[\]\$\^\*\+\?\:\=\|)X", std::regex::ECMAScript|std::regex::optimize);
+static const REGEX_NS::regex::flag_type regexFlags(REGEX_NS::regex::ECMAScript|REGEX_NS::regex::optimize);
+static const REGEX_NS::regex reEscaper(R"X(\\\.\(\)\[\]\$\^\*\+\?\:\=\|)X", regexFlags);
 
 EPUB3_BEGIN_NAMESPACE
 
-static std::regex ParamMatcher(R"X(<param[^>]+(name|value)="([^"]*)"[^>]*?(value|name)="([^"]*)"(.|\n|\r)*?>)X", std::regex::ECMAScript|std::regex::optimize|std::regex::icase);
-static std::regex SourceFinder("data=\"([^\"]*)\"", std::regex::ECMAScript|std::regex::optimize|std::regex::icase);
-static std::regex IDFinder("id=\"([^\"]*)\"", std::regex::ECMAScript|std::regex::optimize|std::regex::icase);
+static REGEX_NS::regex ParamMatcher(R"X(<param[^>]+(name|value)="([^"]*)"[^>]*?(value|name)="([^"]*)"(.|\n|\r)*?>)X", regexFlags);
+static REGEX_NS::regex SourceFinder("data=\"([^\"]*)\"", regexFlags);
+static REGEX_NS::regex IDFinder("id=\"([^\"]*)\"", regexFlags);
 
 bool ObjectPreprocessor::ShouldApply(const ePub3::ManifestItem *item, const ePub3::EncryptionInfo *encInfo __unused)
 {
@@ -53,7 +54,7 @@ ObjectPreprocessor::ObjectPreprocessor(const Package* pkg, const string& buttonT
     while ( pos != end )
     {
         auto here = pos++;
-        std::string str = std::regex_replace(here->stl_str(), reEscaper, R"X($`\\$&$')X");    // yes, double-backslash, so it doesn't escape whatever '$&' is (i.e. the character which needs to be escaped)
+        std::string str = REGEX_NS::regex_replace(here->stl_str(), reEscaper, R"X($`\\$&$')X");    // yes, double-backslash, so it doesn't escape whatever '$&' is (i.e. the character which needs to be escaped)
         if ( pos == end )
             ss << str;
         else
@@ -62,19 +63,23 @@ ObjectPreprocessor::ObjectPreprocessor(const Package* pkg, const string& buttonT
     
     ss << R"X()"[^>]*?)>((?:.|\n|\r)*?)</object>)X";
     std::string reStr = ss.str();
-    _objectMatcher = std::regex(reStr, std::regex::icase|std::regex::optimize|std::regex::ECMAScript);
+    _objectMatcher = REGEX_NS::regex(reStr, regexFlags);
     
     for ( auto mediaType : mediaTypes )
     {
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
         _handlers.emplace(mediaType, *(pkg->OPFHandlerForMediaType(mediaType)));
+#else
+        _handlers.insert({mediaType, *(pkg->OPFHandlerForMediaType(mediaType))});
+#endif
     }
 }
 void* ObjectPreprocessor::FilterData(void *data, size_t len, size_t *outputLen)
 {
     char* input = reinterpret_cast<char*>(data);
     // find each `object` tag
-    std::cregex_iterator pos(input, input+len, _objectMatcher);
-    std::cregex_iterator end;
+    REGEX_NS::cregex_iterator pos(input, input+len, _objectMatcher);
+    REGEX_NS::cregex_iterator end;
     if ( pos == end )
     {
         *outputLen = len;
@@ -100,15 +105,15 @@ void* ObjectPreprocessor::FilterData(void *data, size_t len, size_t *outputLen)
         ContentHandler::ParameterList params({{"type", type}});
         
         // find the data source
-        std::smatch m;
+        REGEX_NS::smatch m;
         std::string attrs(pos->str(1));
-        std::regex_search(attrs.cbegin(), attrs.cend(), m, SourceFinder);
+        REGEX_NS::regex_search(attrs.cbegin(), attrs.cend(), m, SourceFinder);
         string src(m[1].str());
         
         // find any parameters to the object tag
         std::string content(pos->str(3));
-        std::sregex_iterator cpos(content.begin(), content.end(), ParamMatcher);
-        std::sregex_iterator cend;
+        REGEX_NS::sregex_iterator cpos(content.begin(), content.end(), ParamMatcher);
+        REGEX_NS::sregex_iterator cend;
         
         while ( cpos != cend )
         {
@@ -136,7 +141,7 @@ void* ObjectPreprocessor::FilterData(void *data, size_t len, size_t *outputLen)
         
         // find out if the object tag had an id attribute
         std::string objectID;
-        if ( std::regex_search(attrs.cbegin(), attrs.cend(), m, IDFinder) )
+        if ( REGEX_NS::regex_search(attrs.cbegin(), attrs.cend(), m, IDFinder) )
             objectID = m[1].str();
         
         // now construct the `iframe` tag

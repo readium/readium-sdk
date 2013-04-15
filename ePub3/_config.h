@@ -72,6 +72,9 @@
 
 #include "_platform.h"
 
+#define REGEX_INCLUDE <regex>
+#define REGEX_NS std
+
 #if EPUB_OS(WINDOWS)
 # ifndef EPUB3_EXPORT
 #  ifdef BUILDING_EPUB3
@@ -85,7 +88,12 @@
 #endif
 
 #if EPUB_OS(ANDROID)
-# define UTF_USE_ICU 1
+//# define UTF_USE_ICU 1
+# define CXX11_STRING_UNAVAILABLE 1
+# undef REGEX_INCLUDE
+# define REGEX_INCLUDE <boost/regex.hpp>
+# undef REGEX_NS
+# define REGEX_NS boost
 #endif
 
 #ifndef _LIBCPP_HIDDEN

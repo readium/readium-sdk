@@ -27,10 +27,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "_config.h"
+
 #include <ctime>
 #include <iomanip>
 #include <cstring>
-#include <codecvt>
+#if EPUB_OS(ANDROID)
+# include <utf8.h>
+# include <sstream>
+# include <fstream>
+#include REGEX_INCLUDE
+#else
+# include <codecvt>
+#endif
 #if _WIN32 || _WIN64
 # include <windows.h>
 # include <tchar.h>
@@ -98,6 +107,37 @@ HANDLE log_mutex = NULL;
 #else
 pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
+    
+#if EPUB_OS(ANDROID)
+std::string GetProcessName()
+{
+    static std::string __procname;
+    if ( __procname.empty() )
+    {
+        std::stringstream ss;
+        ss << "/proc/" << getpid() << "/stat";
+        std::ifstream reader(ss.str());
+        
+        std::string contents;
+        reader >> contents;
+        
+        REGEX_NS::regex re(R"X(\((.*?)\))X");
+        REGEX_NS::smatch found;
+        if ( REGEX_NS::regex_search(contents, found, re) )
+        {
+            __procname = found[1].str();
+        }
+        else
+        {
+            std::stringstream pss;
+            pss << "unknown_process_" << getpid();
+            __procname = pss.str();
+        }
+    }
+    
+    return __procname;
+}
+#endif
 
 // Called by logging functions to ensure that debug_file is initialized
 // and can be used for writing. Returns false if the file could not be
@@ -139,6 +179,8 @@ bool InitializeLogFileHandle() {
 # else
         strlcpy(log_file_name, *_NSGetProgname(), MAX_PATH);
 # endif
+#elif EPUB_OS(ANDROID)
+        strlcpy(log_file_name, GetProcessName().c_str(), MAX_PATH);
 #else
         strlcpy(log_file_name, __progname, MAX_PATH);
 #endif
@@ -314,7 +356,11 @@ LogMessage::LogMessage(const char* file, int line, LogSeverity severity)
     
 #if !defined(_WIN32) || !defined(_WIN64)
 # define GetCurrentProcessId() getpid()
-# define GetCurrentThreadId() reinterpret_cast<uintptr_t>(pthread_self())
+# if EPUB_OS(LINUX)
+#  define GetCurrentThreadId() static_cast<uintptr_t>(pthread_self())
+# else
+#  define GetCurrentThreadId() reinterpret_cast<uintptr_t>(pthread_self())
+# endif
 # if __MACH__
 #  define GetTickCount() mach_absolute_time()
 # else
@@ -359,20 +405,20 @@ void LogMessage::Init(const char* file, int line) {
     stream_ << GetTickCount() << ':';
   stream_ << log_severity_names[severity_] << ":" << file << "(" << line << ")] ";
 
-  message_start_ = stream_.pcount();
+  message_start_ = static_cast<int>(stream_.str().length());
 }
 
 LogMessage::~LogMessage() {
   if (severity_ < min_log_level)
     return;
 
-  std::string str_newline(stream_.str(), stream_.pcount());
+  std::string str_newline(stream_.str());
   str_newline.append(NEWLINE);
 
   if (log_filter_prefix && severity_ <= kMaxFilteredLogLevel &&
       str_newline.compare(message_start_, strlen(log_filter_prefix),
                           log_filter_prefix) != 0) {
-    goto cleanup;
+    return;
   }
 
   if (logging_destination != LOG_ONLY_TO_FILE)
@@ -461,11 +507,6 @@ LogMessage::~LogMessage() {
 # endif // NDEBUG
 #endif
   }
-
-cleanup:
-  // Calling stream_.str() freezes the stream buffer.  A frozen buffer will
-  // not be freed during strstreambuf destruction.
-  stream_.freeze(false);
 }
 
 void CloseLogFile() {
@@ -496,6 +537,14 @@ std::ostream& operator<<(std::ostream& out, const wchar_t* wstr) {
   scoped_array<char> buf(new char[charcount]);
   WideCharToMultiByte(CP_UTF8, 0, wstr, -1, buf.get(), charcount, NULL, NULL);
   return out << buf.get();
+#elif EPUB_OS(ANDROID)
+    std::string bytes;
+    int len = std::char_traits<wchar_t>::length(wstr);
+    if ( sizeof(wchar_t) == sizeof(char32_t))
+        utf8::utf32to8(wstr, wstr+len, std::back_inserter(bytes));
+    else
+        utf8::utf16to8(wstr, wstr+len, std::back_inserter(bytes));
+    return out << bytes;
 #else
     std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> _cvt;
     return out << _cvt.to_bytes(wstr);

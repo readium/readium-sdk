@@ -153,12 +153,18 @@
 #define EPUB_CPU_ARM 1
 
 #if EPUB_COMPILER(CLANG)
-#define __atomic_fetch_add(mem, val, typ)   __sync_fetch_and_add(mem, val)
-#define __atomic_fetch_sub(mem, val, typ)   __sync_fetch_and_sub(mem, val)
-#define __atomic_fetch_and(mem, val, typ)   __sync_fetch_and_and(mem, val)
-#define __atomic_fetch_or(mem, val, typ)    __sync_fetch_and_or(mem, val)
-#define __atomic_fetch_xor(mem, val, typ)   __sync_fetch_and_xor(mem, val)
-#define __atomic_fetch_nand(mem, val, typ)  __sync_fetch_and_nand(mem, val)
+# define __atomic_fetch_add(mem, val, typ)   __sync_fetch_and_add(mem, val)
+# define __atomic_fetch_sub(mem, val, typ)   __sync_fetch_and_sub(mem, val)
+# define __atomic_fetch_and(mem, val, typ)   __sync_fetch_and_and(mem, val)
+# define __atomic_fetch_or(mem, val, typ)    __sync_fetch_and_or(mem, val)
+# define __atomic_fetch_xor(mem, val, typ)   __sync_fetch_and_xor(mem, val)
+# define __atomic_fetch_nand(mem, val, typ)  __sync_fetch_and_nand(mem, val)
+# define __atomic_add_fetch(mem, val, typ)   __sync_add_and_fetch(mem, val)
+# define __atomic_sub_fetch(mem, val, typ)   __sync_sub_and_fetch(mem, val)
+# define __atomic_and_fetch(mem, val, typ)   __sync_and_and_fetch(mem, val)
+# define __atomic_or_fetch(mem, val, typ) __sync_or_and_fetch(mem, val)
+# define __atomic_xor_fetch(mem, val, typ)   __sync_xor_and_fetch(mem, val)
+# define __atomic_nand_fetch(mem, val, typ)  __sync_nand_and_fetch(mem, val)
 #endif
 
 #if defined(__ARM_PCS_VFP)
@@ -564,6 +570,7 @@
 
 #if EPUB_OS(DARWIN)
 
+#define EPUB_HAVE_CXX_MAP_EMPLACE 1
 #define EPUB_HAVE_MERGESORT 1
 #define EPUB_HAVE_SYS_TIMEB_H 1
 #define EPUB_USE_ACCELERATE 1

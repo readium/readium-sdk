@@ -30,6 +30,8 @@
 #ifndef GOOGLEURL_SRC_GURL_H__
 #define GOOGLEURL_SRC_GURL_H__
 
+#include "_config.h"
+
 #include <iosfwd>
 #include <string>
 

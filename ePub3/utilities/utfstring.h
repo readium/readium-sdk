@@ -28,15 +28,25 @@
 #include <initializer_list>
 #include <locale>
 #include <vector>
-#include <regex>
+#include REGEX_INCLUDE
 #include <map>
 #include <stdexcept>
 #include "libxml/xmlstring.h"
 
 #if UTF_USE_ICU
 # include "unicode/ucnv.h"
+#elif EPUB_OS(ANDROID)
+# include <utf8.h>
 #else
 # include <codecvt>
+#endif
+
+// the GNU runtime hasn't updated std::string to the C++11 standard yet, so much of
+// our `const_iterator` usage needs to be plain `iterator` to keep Android happy.
+#if defined(CXX11_STRING_UNAVAILABLE) && CXX11_STRING_UNAVAILABLE
+# define cxx11_const_iterator iterator
+#else
+# define cxx11_const_iterator const_iterator
 #endif
 
 EPUB3_BEGIN_NAMESPACE
@@ -291,10 +301,10 @@ public:
 #endif
     
     // courtesy of: http://stackoverflow.com/questions/9435385/split-a-string-using-c11
-    inline std::vector<string> split(const std::regex& regex) const
+    inline std::vector<string> split(const REGEX_NS::regex& regex) const
     {
         // passing -1 as the submatch index parameter performs splitting
-        std::sregex_token_iterator first(_base.begin(), _base.end(), regex, -1), last;
+        REGEX_NS::sregex_token_iterator first(_base.begin(), _base.end(), regex, -1), last;
         return {first, last};
     }
     
@@ -468,38 +478,40 @@ public:
 #endif
     
     string & erase(size_type pos=0, size_type n=npos);
-    iterator erase(const_iterator pos);
-    iterator erase(const_iterator first, const_iterator last);
+    iterator erase(cxx11_const_iterator pos);
+    iterator erase(cxx11_const_iterator first, cxx11_const_iterator last);
     
 #if 0
 #pragma mark - Replacements
 #endif
     
     template <class InputIterator>
-    string & replace(const_iterator i1, const_iterator i2, InputIterator j1, InputIterator j2);
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, InputIterator j1, InputIterator j2);
     
     template <typename... Args>
     string & replace(size_type pos1, size_type n1, const Args&... args) {
-        return replace(pos1, n1, string(args...));
+        string __s(args...);
+        return replace(pos1, n1, __s);
     }
     template <typename... Args>
-    string & replace(const_iterator i1, const_iterator i2, Args&... args) {
-        return replace(i1, i2, string(args...));
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, Args&... args) {
+        string __s(args...);
+        return replace(i1, i2, __s);
     }
     
     // standard
     string & replace(size_type pos1, size_type n1, const string & str);
     string & replace(size_type pos1, size_type n1, const string & str, size_type pos2, size_type n2);
-    string & replace(const_iterator i1, const_iterator i2, const string& str);
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const string& str);
     
     // char32_t
     string & replace(size_type pos, size_type n1, const_u4pointer s, size_type n2);
     string & replace(size_type pos, size_type n1, const_u4pointer s);
     string & replace(size_type pos, size_type n1, size_type n2, value_type c);
-    string & replace(const_iterator i1, const_iterator i2, const_u4pointer s, size_type n);
-    string & replace(const_iterator i1, const_iterator i2, const_u4pointer s);
-    string & replace(const_iterator i1, const_iterator i2, size_type n, value_type c);
-    string & replace(const_iterator i1, const_iterator i2, std::initializer_list<value_type> __il) {
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const_u4pointer s, size_type n);
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const_u4pointer s);
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, value_type c);
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::initializer_list<value_type> __il) {
         return replace(i1, i2, __il.begin(), __il.end());
     }
     
@@ -507,26 +519,26 @@ public:
     string & replace(size_type pos, size_type n1, const char16_t* s, size_type n2);
     string & replace(size_type pos, size_type n1, const char16_t* s);
     string & replace(size_type pos, size_type n1, size_type n2, char16_t c);
-    string & replace(const_iterator i1, const_iterator i2, const char16_t* s, size_type n);
-    string & replace(const_iterator i1, const_iterator i2, const char16_t* s);
-    string & replace(const_iterator i1, const_iterator i2, size_type n, char16_t c);
-    string & replace(const_iterator i1, const_iterator i2, std::initializer_list<char16_t> __il) {
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char16_t* s, size_type n);
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char16_t* s);
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, char16_t c);
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::initializer_list<char16_t> __il) {
         return replace(i1, i2, __il.begin(), __il.end());
     }
     
     // std::string
     string & replace(size_type pos1, size_type n1, const __base & str);
     string & replace(size_type pos1, size_type n1, const __base & str, size_type pos2, size_type n2);
-    string & replace(const_iterator i1, const_iterator i2, const __base & str);
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const __base & str);
     
     // char
     string & replace(size_type pos, size_type n1, const char * s, size_type n2);
     string & replace(size_type pos, size_type n1, const char * s);
     string & replace(size_type pos, size_type n1, size_type n2, char c);
-    string & replace(const_iterator i1, const_iterator i2, const char * s, size_type n);
-    string & replace(const_iterator i1, const_iterator i2, const char * s);
-    string & replace(const_iterator i1, const_iterator i2, size_type n, char c);
-    string & replace(const_iterator i1, const_iterator i2, std::initializer_list<char> __il) {
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char * s, size_type n);
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char * s);
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, char c);
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::initializer_list<char> __il) {
         return replace(i1, i2, __il.begin(), __il.end());
     }
     
@@ -537,13 +549,13 @@ public:
         { return replace(pos, n1, reinterpret_cast<const char*>(s)); }
     string & replace(size_type pos, size_type n1, size_type n2, xmlChar c)
         { return replace(pos, n1, n2, static_cast<char>(c)); }
-    string & replace(const_iterator i1, const_iterator i2, const xmlChar * s, size_type n)
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const xmlChar * s, size_type n)
         { return replace(i1, i2, reinterpret_cast<const char*>(s), n); }
-    string & replace(const_iterator i1, const_iterator i2, const xmlChar * s)
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const xmlChar * s)
         { return replace(i1, i2, reinterpret_cast<const char*>(s)); }
-    string & replace(const_iterator i1, const_iterator i2, size_type n, xmlChar c)
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, xmlChar c)
         { return replace(i1, i2, n, static_cast<char>(c)); }
-    string & replace(const_iterator i1, const_iterator i2, std::initializer_list<xmlChar> __il) {
+    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::initializer_list<xmlChar> __il) {
         return replace(i1, i2, __il.begin(), __il.end());
     }
     
@@ -884,6 +896,7 @@ protected:
     __base::size_type to_byte_size(size_type __b, size_type __e) const noexcept;
     size_type to_utf32_size(__base::size_type __n) const noexcept;
     size_type to_utf32_size(__base::size_type __b, __base::size_type __e) const noexcept;
+    static size_type utf32_distance(__base::const_iterator first, __base::const_iterator last) noexcept;
     
     static inline constexpr __base::const_pointer _bchar(const xmlChar * c) noexcept { return (__base::const_pointer)(c); }
     static inline constexpr __base::pointer _bchar(xmlChar * c) noexcept { return (__base::pointer)(c); }
@@ -1017,6 +1030,21 @@ protected:
             return __out;
         }
     };
+#elif EPUB_OS(ANDROID)
+    // non-ICU implementation for smaller Android builds
+    template <class _CharT>
+    class _Convert {
+    public:
+        typedef std::string byte_string;
+        typedef std::basic_string<_CharT> wide_string;
+        
+        static byte_string toUTF8(const _CharT* p, size_type pos=0, size_type n=npos);
+        static byte_string toUTF8(const wide_string& s, size_type pos=0, size_type n=npos);
+        static byte_string toUTF8(_CharT c, size_type n=1);
+        
+        static wide_string fromUTF8(const char* utf8, size_type pos=0, size_type n=npos);
+        static wide_string fromUTF8(const byte_string& s, size_type pos=0, size_type n=npos);
+    };
 #else
     // Pure C++11 implementation, works on libc++ and VC++2010
     template <class _CharT>
@@ -1113,6 +1141,87 @@ public:
         return s.substr(pos, n);
     }
 };
+
+#if (!defined(UTF_USE_ICU) || UTF_USE_ICU == 0) && EPUB_OS(ANDROID)
+// ePub::string::_Convert is implemented for Unicode via template specializations here
+template <>
+class string::_Convert<char16_t> {
+public:
+    typedef std::string                 byte_string;
+    typedef std::basic_string<char16_t> wide_string;
+    
+    static byte_string toUTF8(const char16_t *p, size_type pos=0, size_type n=npos) {
+        byte_string __r;
+        size_type len = (n == npos ? std::char_traits<char16_t>::length(p) : n);
+        utf8::utf16to8(p+pos, p+len, std::back_inserter(__r));
+        return __r;
+    }
+    static byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
+        byte_string __r;
+        utf8::utf16to8(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
+        return __r;
+    }
+    static byte_string toUTF8(char16_t c, size_type n=1) {
+        byte_string __t;
+        utf8::utf16to8(&c, (&c)+sizeof(c), std::back_inserter(__t));
+        byte_string __r;
+        for (int __i = 0; __i < n; __i++) {
+            __r.append(__t);
+        }
+        return __r;
+    }
+    static wide_string fromUTF8(const char* p, size_type pos=0, size_type n=npos) {
+        wide_string __r;
+        size_type len = (n == npos ? std::char_traits<char>::length(p) : n);
+        utf8::utf8to16(p+pos, p+len, std::back_inserter(__r));
+        return __r;
+    }
+    static wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
+        wide_string __r;
+        utf8::utf8to16(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
+        return __r;
+    }
+};
+
+template <>
+class string::_Convert<char32_t> {
+public:
+    typedef std::string                 byte_string;
+    typedef std::basic_string<char32_t> wide_string;
+    
+    static byte_string toUTF8(const char32_t *p, size_type pos=0, size_type n=npos) {
+        byte_string __r;
+        size_type len = (n == npos ? std::char_traits<char32_t>::length(p) : n);
+        utf8::utf32to8(p+pos, p+len, std::back_inserter(__r));
+        return __r;
+    }
+    static byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
+        byte_string __r;
+        utf8::utf32to8(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
+        return __r;
+    }
+    static byte_string toUTF8(char32_t c, size_type n=1) {
+        byte_string __t;
+        utf8::utf32to8(&c, (&c)+sizeof(c), std::back_inserter(__t));
+        byte_string __r;
+        for (int __i = 0; __i < n; __i++) {
+            __r.append(__t);
+        }
+        return __r;
+    }
+    static wide_string fromUTF8(const char* p, size_type pos=0, size_type n=npos) {
+        wide_string __r;
+        size_type len = (n == npos ? std::char_traits<char>::length(p) : n);
+        utf8::utf8to32(p+pos, p+len, std::back_inserter(__r));
+        return __r;
+    }
+    static wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
+        wide_string __r;
+        utf8::utf8to32(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
+        return __r;
+    }
+};
+#endif
 
 #if 0
 #pragma mark - Helpers

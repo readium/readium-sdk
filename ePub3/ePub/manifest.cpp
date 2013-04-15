@@ -22,7 +22,7 @@
 #include "manifest.h"
 #include "package.h"
 #include "byte_stream.h"
-#include <regex>
+#include REGEX_INCLUDE
 #include <sstream>
 
 EPUB3_BEGIN_NAMESPACE
@@ -63,9 +63,9 @@ ItemProperties& ItemProperties::operator=(const string& attrStr)
     string lowAttrs = attrStr.tolower();
     
     // NB: this is a C++11 raw-string literal. R"" means 'raw string', and the X(...)X bit are delimiters.
-    std::regex re(R"X(\w+)X", std::regex::icase);
-    auto pos = std::sregex_iterator(lowAttrs.stl_str().begin(), lowAttrs.stl_str().end(), re);
-    auto end = std::sregex_iterator();
+    REGEX_NS::regex re(R"X(\w+)X", REGEX_NS::regex::icase);
+    auto pos = REGEX_NS::sregex_iterator(lowAttrs.stl_str().begin(), lowAttrs.stl_str().end(), re);
+    auto end = REGEX_NS::sregex_iterator();
     
     for ( ; pos != end; pos++ )
     {

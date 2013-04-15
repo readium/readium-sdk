@@ -22,7 +22,7 @@
 #include "iri.h"
 #include "url_util.h"
 #include "cfi.h"
-#include <regex>
+#include REGEX_INCLUDE
 
 EPUB3_BEGIN_NAMESPACE
 

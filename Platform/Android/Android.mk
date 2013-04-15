@@ -62,54 +62,69 @@ LOCAL_EXPORT_C_INCLUDES := $(OPENSSL_INCLUDE_PATH)
 include $(PREBUILT_STATIC_LIBRARY)
 
 ###########################################################
+# Prebuilt libraries for Boost
+
+BOOST_LIB_PATH := ePub3/ThirdParty/boost/lib
+BOOST_INCLUDE_PATH := $(THIRD_PARTY)/boost/include
+
+# Regex
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := boost_regex
+LOCAL_SRC_FILES := $(BOOST_LIB_PATH)/libboost_regex.a
+LOCAL_EXPORT_C_INCLUDES := $(BOOST_INCLUDE_PATH)
+include $(PREBUILT_STATIC_LIBRARY)
+
+###########################################################
 # libxml2
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := xml2
 LOCAL_SRC_FILES := \
-		$(THIRD_PARTY)/libxml2-android/SAX.c \
-		$(THIRD_PARTY)/libxml2-android/entities.c \
-		$(THIRD_PARTY)/libxml2-android/encoding.c \
-		$(THIRD_PARTY)/libxml2-android/error.c \
-		$(THIRD_PARTY)/libxml2-android/parserInternals.c \
-		$(THIRD_PARTY)/libxml2-android/parser.c \
-		$(THIRD_PARTY)/libxml2-android/tree.c \
-		$(THIRD_PARTY)/libxml2-android/hash.c \
-		$(THIRD_PARTY)/libxml2-android/list.c \
-		$(THIRD_PARTY)/libxml2-android/xmlIO.c \
-		$(THIRD_PARTY)/libxml2-android/xmlmemory.c \
-		$(THIRD_PARTY)/libxml2-android/uri.c \
-		$(THIRD_PARTY)/libxml2-android/valid.c \
-		$(THIRD_PARTY)/libxml2-android/xlink.c \
-		$(THIRD_PARTY)/libxml2-android/HTMLparser.c \
-		$(THIRD_PARTY)/libxml2-android/HTMLtree.c \
-		$(THIRD_PARTY)/libxml2-android/debugXML.c \
-		$(THIRD_PARTY)/libxml2-android/xpath.c \
-		$(THIRD_PARTY)/libxml2-android/xpointer.c \
-		$(THIRD_PARTY)/libxml2-android/xinclude.c \
-		$(THIRD_PARTY)/libxml2-android/nanohttp.c \
-		$(THIRD_PARTY)/libxml2-android/nanoftp.c \
-		$(THIRD_PARTY)/libxml2-android/DOCBparser.c \
-		$(THIRD_PARTY)/libxml2-android/catalog.c \
-		$(THIRD_PARTY)/libxml2-android/globals.c \
-		$(THIRD_PARTY)/libxml2-android/threads.c \
-		$(THIRD_PARTY)/libxml2-android/c14n.c \
-		$(THIRD_PARTY)/libxml2-android/xmlstring.c \
-		$(THIRD_PARTY)/libxml2-android/xmlregexp.c \
-		$(THIRD_PARTY)/libxml2-android/xmlschemas.c \
-		$(THIRD_PARTY)/libxml2-android/xmlschemastypes.c \
-		$(THIRD_PARTY)/libxml2-android/xmlunicode.c \
-		$(THIRD_PARTY)/libxml2-android/xmlreader.c \
-		$(THIRD_PARTY)/libxml2-android/relaxng.c \
-		$(THIRD_PARTY)/libxml2-android/dict.c \
-		$(THIRD_PARTY)/libxml2-android/SAX2.c \
-		$(THIRD_PARTY)/libxml2-android/legacy.c \
-		$(THIRD_PARTY)/libxml2-android/chvalid.c \
-		$(THIRD_PARTY)/libxml2-android/pattern.c \
-		$(THIRD_PARTY)/libxml2-android/xmlsave.c \
-		$(THIRD_PARTY)/libxml2-android/xmlmodule.c \
-		$(THIRD_PARTY)/libxml2-android/xmlwriter.c \
-		$(THIRD_PARTY)/libxml2-android/schematron.c
+		ePub3/ThirdParty/libxml2-android/SAX.c \
+		ePub3/ThirdParty/libxml2-android/entities.c \
+		ePub3/ThirdParty/libxml2-android/encoding.c \
+		ePub3/ThirdParty/libxml2-android/error.c \
+		ePub3/ThirdParty/libxml2-android/parserInternals.c \
+		ePub3/ThirdParty/libxml2-android/parser.c \
+		ePub3/ThirdParty/libxml2-android/tree.c \
+		ePub3/ThirdParty/libxml2-android/hash.c \
+		ePub3/ThirdParty/libxml2-android/list.c \
+		ePub3/ThirdParty/libxml2-android/xmlIO.c \
+		ePub3/ThirdParty/libxml2-android/xmlmemory.c \
+		ePub3/ThirdParty/libxml2-android/uri.c \
+		ePub3/ThirdParty/libxml2-android/valid.c \
+		ePub3/ThirdParty/libxml2-android/xlink.c \
+		ePub3/ThirdParty/libxml2-android/HTMLparser.c \
+		ePub3/ThirdParty/libxml2-android/HTMLtree.c \
+		ePub3/ThirdParty/libxml2-android/debugXML.c \
+		ePub3/ThirdParty/libxml2-android/xpath.c \
+		ePub3/ThirdParty/libxml2-android/xpointer.c \
+		ePub3/ThirdParty/libxml2-android/xinclude.c \
+		ePub3/ThirdParty/libxml2-android/nanohttp.c \
+		ePub3/ThirdParty/libxml2-android/nanoftp.c \
+		ePub3/ThirdParty/libxml2-android/DOCBparser.c \
+		ePub3/ThirdParty/libxml2-android/catalog.c \
+		ePub3/ThirdParty/libxml2-android/globals.c \
+		ePub3/ThirdParty/libxml2-android/threads.c \
+		ePub3/ThirdParty/libxml2-android/c14n.c \
+		ePub3/ThirdParty/libxml2-android/xmlstring.c \
+		ePub3/ThirdParty/libxml2-android/xmlregexp.c \
+		ePub3/ThirdParty/libxml2-android/xmlschemas.c \
+		ePub3/ThirdParty/libxml2-android/xmlschemastypes.c \
+		ePub3/ThirdParty/libxml2-android/xmlunicode.c \
+		ePub3/ThirdParty/libxml2-android/xmlreader.c \
+		ePub3/ThirdParty/libxml2-android/relaxng.c \
+		ePub3/ThirdParty/libxml2-android/dict.c \
+		ePub3/ThirdParty/libxml2-android/SAX2.c \
+		ePub3/ThirdParty/libxml2-android/legacy.c \
+		ePub3/ThirdParty/libxml2-android/chvalid.c \
+		ePub3/ThirdParty/libxml2-android/pattern.c \
+		ePub3/ThirdParty/libxml2-android/xmlsave.c \
+		ePub3/ThirdParty/libxml2-android/xmlmodule.c \
+		ePub3/ThirdParty/libxml2-android/xmlwriter.c \
+		ePub3/ThirdParty/libxml2-android/schematron.c
+LOCAL_C_INCLUDES += $(THIRD_PARTY)/libxml2-android/include
 LOCAL_EXPORT_C_INCLUDES := $(THIRD_PARTY)/libxml2-android/include
 
 include $(BUILD_STATIC_LIBRARY)
@@ -129,10 +144,12 @@ LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/ePub3 \
 		$(LOCAL_PATH)/ePub3/utilities \
 		$(LOCAL_PATH)/ePub3/ThirdParty \
-        $(LOCAL_PATH)/ePub3/ThirdParty/google-url/src
+        $(LOCAL_PATH)/ePub3/ThirdParty/google-url/src \
+		$(LOCAL_PATH)/ePub3/ThirdParty/boost/include \
+		$(LOCAL_PATH)/ePub3/ThirdParty/utf8-cpp/include
 LOCAL_C_INCLUDES += ${shell find $(LOCAL_PATH)/ePub3/xml/ -type d}
 LOCAL_C_INCLUDES += ${shell find $(LOCAL_PATH)/ePub3/ePub -type d}
-LOCAL_STATIC_LIBRARIES := icuuc icui18n icuio icudata xml2 crypto
+LOCAL_STATIC_LIBRARIES := icuuc icui18n icuio icudata xml2 crypto boost_regex
 LOCAL_LDLIBS := -lz
 LOCAL_SRC_FILES := \
 		ePub3/ThirdParty/libzip/mkstemp.c \

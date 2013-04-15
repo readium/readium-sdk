@@ -50,7 +50,7 @@ static std::string GetTempFilePath(const std::string& ext)
 #if EPUB_OS(ANDROID)
     int fd = ::mkstemp(buf);
 #else
-    int fd = ::mkstemps(buf, ext.size()+1);
+    int fd = ::mkstemps(buf, static_cast<int>(ext.size()+1));
 #endif
     if ( fd == -1 )
         throw std::runtime_error(std::string("mkstemp() failed: ") + strerror(errno));

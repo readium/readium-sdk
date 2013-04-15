@@ -138,7 +138,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the xmlPattern node selection interface is configured in
  */
-#if 0
+#if 1
 #define LIBXML_PATTERN_ENABLED
 #endif
 

@@ -21,7 +21,7 @@
 
 #include "spine.h"
 #include "package.h"
-#include <regex>
+#include REGEX_INCLUDE
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -40,7 +40,7 @@ SpineItem::SpineItem(xmlNodePtr node, Package * owner) : _ident(), _idref(), _ow
     string properties = _getProp(node, "properties");
     if ( !properties.empty() )
     {
-        for ( auto& property : properties.split(std::regex(",\\s*")) )
+        for ( auto& property : properties.split(REGEX_NS::regex(",\\s*")) )
         {
             _properties.push_back(owner->PropertyIRIFromAttributeValue(property));
         }
