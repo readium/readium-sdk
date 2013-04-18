@@ -42,7 +42,7 @@ public:
         }
     }
     Element(const string & name, const class Namespace & ns = xml::Namespace()) : Node(name, NodeType::Element, "", ns) {}
-    Element(Element &&o) : Node(dynamic_cast<Node&&>(o)) {}
+    Element(Element &&o) : Node(std::move(dynamic_cast<Node&>(o))) {}
     virtual ~Element() {}
 };
 

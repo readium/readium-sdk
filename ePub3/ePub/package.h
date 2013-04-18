@@ -96,9 +96,9 @@ public:
     class UnknownPrefix : public std::domain_error
     {
     public:
-                    UnknownPrefix(const string &str)    : std::domain_error(str.stl_str()) {}
-                    UnknownPrefix(const char* str)      : std::domain_error(str) {}
-        virtual     ~UnknownPrefix() {}
+                    UnknownPrefix(const string &str)    _GCC_NOTHROW    : std::domain_error(str.stl_str())  {}
+                    UnknownPrefix(const char* str)      _GCC_NOTHROW    : std::domain_error(str)            {}
+        virtual     ~UnknownPrefix()                    _GCC_NOTHROW                                        {}
     };
     
 public:

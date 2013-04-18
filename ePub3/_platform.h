@@ -165,6 +165,16 @@
 # define __atomic_or_fetch(mem, val, typ) __sync_or_and_fetch(mem, val)
 # define __atomic_xor_fetch(mem, val, typ)   __sync_xor_and_fetch(mem, val)
 # define __atomic_nand_fetch(mem, val, typ)  __sync_nand_and_fetch(mem, val)
+/*# define __atomic_load                      atomic_load
+# define __atomic_store                     atomic_store
+# define __atomic_exchange                  atomic_exchange*/
+# define __atomic_load                      __sw_atomic_load
+# define __atomic_load_n(a,m)               (*(a))
+# define __atomic_store                     __sw_atomic_store
+# define __atomic_store_n(a,m)              (*(a))
+# define __atomic_exchange                  __sw_atomic_exchange
+# define __atomic_exchange_n                __sw_atomic_exchange
+# include <backup_atomics.h>
 #endif
 
 #if defined(__ARM_PCS_VFP)

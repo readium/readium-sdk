@@ -114,7 +114,7 @@ Document::Document(xmlDocPtr doc) : Node(reinterpret_cast<xmlNodePtr>(doc))
     // ensure the right polymorphic type ptr is installed
     _xml->_private = this;
 }
-Document::Document(Element * rootElement) : Document()
+Document::Document(Element * rootElement) : Document("1.0")
 {
     if ( SetRoot(rootElement) == nullptr )
         throw InternalError("Failed to set document root element");

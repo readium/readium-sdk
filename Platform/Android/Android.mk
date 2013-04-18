@@ -124,8 +124,16 @@ LOCAL_SRC_FILES := \
 		ePub3/ThirdParty/libxml2-android/xmlmodule.c \
 		ePub3/ThirdParty/libxml2-android/xmlwriter.c \
 		ePub3/ThirdParty/libxml2-android/schematron.c
-LOCAL_C_INCLUDES += $(THIRD_PARTY)/libxml2-android/include
+LOCAL_C_INCLUDES += \
+		$(THIRD_PARTY)/libxml2-android/include \
+		$(ICU_INCLUDE_PATH) \
+		$(LOCAL_PATH)/ePub3 \
+		$(LOCAL_PATH)/Platform/Android/src \
+		$(LOCAL_PATH)/Platform/Android/src/gnucxx-clang
+LOCAL_LDLIBS := -lz -lm
+LOCAL_STATIC_LIBRARIES := icuuc icui18n icuio icudata
 LOCAL_EXPORT_C_INCLUDES := $(THIRD_PARTY)/libxml2-android/include
+LOCAL_CFLAGS := -include prefix.h
 
 include $(BUILD_STATIC_LIBRARY)
 
@@ -136,9 +144,9 @@ include $(CLEAR_VARS)
 subdirs := $(addprefix $(LOCAL_PATH)/, )
 
 LOCAL_MODULE := epub3
-LOCAL_CPPFLAGS := -std=gnu++11
-LOCAL_CFLAGS := -std=gnu11
-LOCAL_CXXFLAGS := -std=gnu++11
+LOCAL_CPPFLAGS := -std=gnu++11 -include prefix.h -fpermissive
+LOCAL_CFLAGS := -std=gnu11 -include prefix.h
+LOCAL_CXXFLAGS := -std=gnu++11 -include prefix.h -fpermissive
 LOCAL_CPP_FEATURES += exceptions rtti
 LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/ePub3 \
@@ -146,9 +154,11 @@ LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/ePub3/ThirdParty \
         $(LOCAL_PATH)/ePub3/ThirdParty/google-url/src \
 		$(LOCAL_PATH)/ePub3/ThirdParty/boost/include \
-		$(LOCAL_PATH)/ePub3/ThirdParty/utf8-cpp/include
-LOCAL_C_INCLUDES += ${shell find $(LOCAL_PATH)/ePub3/xml/ -type d}
+		$(LOCAL_PATH)/ePub3/ThirdParty/utf8-cpp/include \
+#		$(LOCAL_PATH)/Platform/Android/src/gnucxx-clang
+LOCAL_C_INCLUDES += ${shell find $(LOCAL_PATH)/ePub3/xml -type d}
 LOCAL_C_INCLUDES += ${shell find $(LOCAL_PATH)/ePub3/ePub -type d}
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/Platform/Android/src
 LOCAL_STATIC_LIBRARIES := icuuc icui18n icuio icudata xml2 crypto boost_regex
 LOCAL_LDLIBS := -lz
 LOCAL_SRC_FILES := \
@@ -258,6 +268,9 @@ LOCAL_SRC_FILES := \
 		ePub3/ePub/object_preprocessor.cpp \
 		ePub3/ePub/media_support_info.cpp \
 		ePub3/utilities/byte_stream.cpp \
-		ePub3/utilities/ring_buffer.cpp
+		ePub3/utilities/ring_buffer.cpp \
+		ePub3/utilities/run_loop.cpp \
+		Platform/Android/src/jni_cache_dir.c \
+		Platform/Android/src/backup_atomics.cpp
 
 include $(BUILD_SHARED_LIBRARY)

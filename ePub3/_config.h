@@ -74,6 +74,8 @@
 
 #define REGEX_INCLUDE <regex>
 #define REGEX_NS std
+#define LOCALE_INCLUDE <locale>
+#define LOCALE_NS std
 
 #if EPUB_OS(WINDOWS)
 # ifndef EPUB3_EXPORT
@@ -94,6 +96,23 @@
 # define REGEX_INCLUDE <boost/regex.hpp>
 # undef REGEX_NS
 # define REGEX_NS boost
+# undef LOCALE_INCLUDE
+# define LOCALE_INCLUDE <boost/locale.hpp>
+# undef LOCALE_NS
+# define LOCALE_NS boost
+# if EPUB_COMPILER(CLANG)
+#  define nan(x) __builtin_nan(x)
+# endif
+#endif
+
+#if EPUB_COMPILER(GCC) && !EPUB_COMPILER(CLANG)
+# if GCC_VERSION_AT_LEAST(4, 7, 0)
+#  define _GCC_NOTHROW noexcept (true)
+# else
+#  define _GCC_NOTHROW throw ()
+# endif
+#else
+# define _GCC_NOTHROW
 #endif
 
 #ifndef _LIBCPP_HIDDEN

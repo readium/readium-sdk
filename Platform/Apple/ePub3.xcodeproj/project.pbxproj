@@ -1890,7 +1890,10 @@
 		AB61CE521694845700299BB1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = /usr/include/libxml2;
+				HEADER_SEARCH_PATHS = (
+					/usr/include/libxml2,
+					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -1898,7 +1901,10 @@
 		AB61CE531694845700299BB1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = /usr/include/libxml2;
+				HEADER_SEARCH_PATHS = (
+					/usr/include/libxml2,
+					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -1917,6 +1923,8 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
 					"$(SRCROOT)/../../ePub3/ThirdParty",
+					"$(SRCROOT)/../../ePub3/ThirdParty/icu4c/include",
+					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				OTHER_LDFLAGS = "-ObjC";
@@ -1940,6 +1948,8 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
 					"$(SRCROOT)/../../ePub3/ThirdParty",
+					"$(SRCROOT)/../../ePub3/ThirdParty/icu4c/include",
+					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				OTHER_LDFLAGS = "-ObjC";
@@ -1960,7 +1970,7 @@
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -1991,7 +2001,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"BUILDING_EPUB3=1",
@@ -2019,6 +2029,7 @@
 					/usr/include/libxml2,
 					"$(SRCROOT)/../../ePub3/ThirdParty",
 					"$(SRCROOT)/../../ePub3/ThirdParty/icu4c/include",
+					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -2037,6 +2048,7 @@
 					/usr/include/libxml2,
 					"$(SRCROOT)/../../ePub3/ThirdParty",
 					"$(SRCROOT)/../../ePub3/ThirdParty/icu4c/include",
+					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

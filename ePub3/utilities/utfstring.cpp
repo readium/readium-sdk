@@ -152,7 +152,7 @@ string::value_type string::at(size_type pos)
 {
     typedef _Convert<value_type> Converter;
     const char * _pos = reinterpret_cast<const char*>(xmlAt(pos));
-    Converter::wide_string wstr = Converter::fromUTF8(_pos, UTF8CharLen(*_pos));
+    Converter::wide_string wstr = Converter::fromUTF8(_pos, 0, UTF8CharLen(*_pos));
     return wstr[0];
 }
 const xmlChar * string::xmlAt(size_type pos) const

@@ -128,7 +128,11 @@ std::locale& PackageBase::Locale()
 }
 void PackageBase::SetLocale(const string &name)
 {
+#if EPUB_OS(ANDROID)
     gCurrentLocale = std::locale(name.c_str());
+#else
+    gCurrentLocale = std::locale(name.stl_str());
+#endif
 }
 void PackageBase::SetLocale(const std::locale &locale)
 {
