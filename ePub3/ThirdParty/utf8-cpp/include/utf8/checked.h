@@ -279,6 +279,14 @@ namespace utf8
           if (it < range_start || it > range_end)
               throw std::out_of_range("Invalid utf-8 iterator position");
       }
+        template <class _Str, typename distance_type>
+        explicit iterator(_Str& str, distance_type pos=0) :
+                it(str.begin()), range_start(it), range_end(str.end())
+        {
+            if (it < range_start || it > range_end)
+                throw std::out_of_range("Invalid utf-8 iterator position");
+            utf8::advance(it, pos, range_end);
+        }
       // the default "big three" are OK
       octet_iterator base () const { return it; }
       uint32_t operator * () const
@@ -286,6 +294,12 @@ namespace utf8
           octet_iterator temp = it;
           return utf8::next(temp, range_end);
       }
+        std::string utf8char() const
+        {
+            octet_iterator temp = it;
+            utf8::next(temp, range_end);
+            return std::string(it, temp);
+        }
       bool operator == (const iterator& rhs) const
       {
           if (range_start != rhs.range_start || range_end != rhs.range_end)
@@ -318,6 +332,27 @@ namespace utf8
           utf8::prior(it, range_start);
           return temp;
       }
+        iterator& operator+(size_t n)
+        {
+            utf8::advance(it, n, range_end);
+            return *this;
+        }
+        iterator& operator-(size_t n)
+        {
+            for (int i = n; i > 0; i--)
+            {
+                utf8::prior(it, range_start);
+            }
+            return *this;
+        }
+        bool operator > (const iterator& rhs) const
+        {
+            return it > rhs.it;
+        }
+        bool operator < (const iterator& rhs) const
+        {
+            return it < rhs.it;
+        }
     }; // class iterator
 
 } // namespace utf8

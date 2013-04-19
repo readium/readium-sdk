@@ -15,6 +15,10 @@
 		AB17B2A0171301C800FD5917 /* run_loop.h in Headers */ = {isa = PBXBuildFile; fileRef = AB17B29D171301C800FD5917 /* run_loop.h */; };
 		AB17B2A817145A1E00FD5917 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB17B2A61714599300FD5917 /* CoreFoundation.framework */; };
 		AB17B2AA17145BF000FD5917 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB17B2A917145BF000FD5917 /* CoreFoundation.framework */; };
+		AB5D104417209D38001D3C95 /* checked.h in Headers */ = {isa = PBXBuildFile; fileRef = AB5D104017209D38001D3C95 /* checked.h */; };
+		AB5D104517209D38001D3C95 /* core.h in Headers */ = {isa = PBXBuildFile; fileRef = AB5D104117209D38001D3C95 /* core.h */; };
+		AB5D104617209D38001D3C95 /* unchecked.h in Headers */ = {isa = PBXBuildFile; fileRef = AB5D104217209D38001D3C95 /* unchecked.h */; };
+		AB5D104717209D38001D3C95 /* utf8.h in Headers */ = {isa = PBXBuildFile; fileRef = AB5D104317209D38001D3C95 /* utf8.h */; };
 		AB61CE4E1694845700299BB1 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB61CE4D1694845700299BB1 /* main.cpp */; };
 		AB61CE501694845700299BB1 /* UnitTests.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = AB61CE4F1694845700299BB1 /* UnitTests.1 */; };
 		AB61CE56169485BD00299BB1 /* string_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB61CE55169485BD00299BB1 /* string_tests.cpp */; };
@@ -358,6 +362,10 @@
 		AB17B2A61714599300FD5917 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		AB17B2A917145BF000FD5917 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk/System/Library/Frameworks/CoreFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		AB5D103C17148E8E001D3C95 /* cf_helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cf_helpers.h; sourceTree = "<group>"; };
+		AB5D104017209D38001D3C95 /* checked.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = checked.h; sourceTree = "<group>"; };
+		AB5D104117209D38001D3C95 /* core.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = core.h; sourceTree = "<group>"; };
+		AB5D104217209D38001D3C95 /* unchecked.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unchecked.h; sourceTree = "<group>"; };
+		AB5D104317209D38001D3C95 /* utf8.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utf8.h; sourceTree = "<group>"; };
 		AB61CE4A1694845700299BB1 /* UnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = UnitTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB61CE4D1694845700299BB1 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		AB61CE4F1694845700299BB1 /* UnitTests.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = UnitTests.1; sourceTree = "<group>"; };
@@ -774,6 +782,33 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AB5D103D17209D38001D3C95 /* utf8-cpp */ = {
+			isa = PBXGroup;
+			children = (
+				AB5D103E17209D38001D3C95 /* include */,
+			);
+			path = "utf8-cpp";
+			sourceTree = "<group>";
+		};
+		AB5D103E17209D38001D3C95 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				AB5D103F17209D38001D3C95 /* utf8 */,
+				AB5D104317209D38001D3C95 /* utf8.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		AB5D103F17209D38001D3C95 /* utf8 */ = {
+			isa = PBXGroup;
+			children = (
+				AB5D104017209D38001D3C95 /* checked.h */,
+				AB5D104117209D38001D3C95 /* core.h */,
+				AB5D104217209D38001D3C95 /* unchecked.h */,
+			);
+			path = utf8;
+			sourceTree = "<group>";
+		};
 		AB61CE3F16947D5000299BB1 /* xmlsec */ = {
 			isa = PBXGroup;
 			children = (
@@ -1091,6 +1126,7 @@
 		ABA4BA1916A740D200161B77 /* ThirdParty */ = {
 			isa = PBXGroup;
 			children = (
+				AB5D103D17209D38001D3C95 /* utf8-cpp */,
 				ABA477FF16E68C8300D96841 /* icu4c */,
 				ABA4BA1A16A7414000161B77 /* google-url */,
 				ABB18FAB1656863300CFC651 /* libzip */,
@@ -1541,6 +1577,10 @@
 				ABA88FC516C1534900F2014B /* byte_stream.h in Headers */,
 				ABA88FCA16C16C3500F2014B /* ring_buffer.h in Headers */,
 				AB17B2A0171301C800FD5917 /* run_loop.h in Headers */,
+				AB5D104417209D38001D3C95 /* checked.h in Headers */,
+				AB5D104517209D38001D3C95 /* core.h in Headers */,
+				AB5D104617209D38001D3C95 /* unchecked.h in Headers */,
+				AB5D104717209D38001D3C95 /* utf8.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1893,6 +1933,7 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
 					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
+					"$(SRCROOT)/../../ePub3/ThirdParty/utf8-cpp/include",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1904,6 +1945,7 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
 					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
+					"$(SRCROOT)/../../ePub3/ThirdParty/utf8-cpp/include",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1925,6 +1967,7 @@
 					"$(SRCROOT)/../../ePub3/ThirdParty",
 					"$(SRCROOT)/../../ePub3/ThirdParty/icu4c/include",
 					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
+					"$(SRCROOT)/../../ePub3/ThirdParty/utf8-cpp/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				OTHER_LDFLAGS = "-ObjC";
@@ -1950,6 +1993,7 @@
 					"$(SRCROOT)/../../ePub3/ThirdParty",
 					"$(SRCROOT)/../../ePub3/ThirdParty/icu4c/include",
 					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
+					"$(SRCROOT)/../../ePub3/ThirdParty/utf8-cpp/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				OTHER_LDFLAGS = "-ObjC";
@@ -2030,6 +2074,7 @@
 					"$(SRCROOT)/../../ePub3/ThirdParty",
 					"$(SRCROOT)/../../ePub3/ThirdParty/icu4c/include",
 					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
+					"$(SRCROOT)/../../ePub3/ThirdParty/utf8-cpp/include",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -2049,6 +2094,7 @@
 					"$(SRCROOT)/../../ePub3/ThirdParty",
 					"$(SRCROOT)/../../ePub3/ThirdParty/icu4c/include",
 					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
+					"$(SRCROOT)/../../ePub3/ThirdParty/utf8-cpp/include",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

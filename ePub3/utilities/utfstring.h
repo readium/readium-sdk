@@ -33,13 +33,7 @@
 #include <stdexcept>
 #include "libxml/xmlstring.h"
 
-#if UTF_USE_ICU
-# include "unicode/ucnv.h"
-#elif EPUB_OS(ANDROID)
 # include <utf8.h>
-#else
-# include <codecvt>
-#endif
 
 // the GNU runtime hasn't updated std::string to the C++11 standard yet, so much of
 // our `const_iterator` usage needs to be plain `iterator` to keep Android happy.
@@ -82,125 +76,7 @@ public:
     
     static const string EmptyString;
     
-    template <class _Iter>
-    class _iterator
-    {
-    public:
-        typedef std::bidirectional_iterator_tag iterator_category;
-        typedef u4pointer                       pointer;
-        typedef difference_type                 difference_type;
-        typedef value_type                      value_type;
-        typedef reference                       reference;
-        
-        inline _iterator() {}
-        inline _iterator(const _iterator &o) : _base(o._base) {}
-        inline _iterator(_iterator &&o) : _base(std::move(o._base)) {}
-        inline _iterator(_Iter &i) : _base(i) {}
-        inline _iterator(_Iter &&i) : _base(i) {}
-        
-        inline value_type operator * () const {
-            return string::utf8_to_utf32(_base);
-        }
-        
-        inline string::__base utf8char() const {
-            size_type __n = utf8_sizes[(*_base)];
-            __base::value_type __buf[6] = {0};
-            __base::traits_type::copy(__buf, &(*_base), __n);
-            return string::__base(__buf, __n);
-        }
-        
-        inline _iterator & operator ++ () {
-            _advance();
-            return *this;
-        }
-        inline const _iterator operator ++ (int) {
-            const _iterator<_Iter> tmp(*this);
-            _advance();
-            return tmp;
-        }
-        inline _iterator & operator -- () {
-            _retreat();
-            return *this;
-        }
-        inline const _iterator operator -- (int) {
-            const _iterator<_Iter> tmp(*this);
-            _retreat();
-            return tmp;
-        }
-        inline _iterator & operator += (int n) {
-            bool adding = (n >= 0);
-            n = abs(n);
-            for ( int i = 0; i < n; i++ )
-            {
-                if ( adding )
-                    _advance();
-                else
-                    _retreat();
-            }
-            return *this;
-        }
-        inline _iterator & operator += (size_type n) {
-            for ( int i = 0; i < n; i++ ) {
-                _advance();
-            }
-            return *this;
-        }
-        inline _iterator & operator -= (int n) {
-            return operator+=(-n);
-        }
-        inline _iterator & operator -= (size_type n) {
-            for ( int i = 0; i < n; i++ ) {
-                _retreat();
-            }
-        }
-        inline _iterator operator + (int n) {
-            return _iterator<_Iter>(*this).operator+=(n);
-        }
-        inline _iterator operator + (size_type n) {
-            return _iterator<_Iter>(*this).operator+=(n);
-        }
-        inline _iterator operator - (int n) {
-            return _iterator<_Iter>(*this).operator-=(n);
-        }
-        inline _iterator operator - (size_type n) {
-            return _iterator<_Iter>(*this).operator-=(n);
-        }
-        inline difference_type operator - (_iterator i) const {
-            if ( *this < i )
-                return 0;
-            return std::distance(i, *this);
-        }
-        
-        inline bool operator == (const _iterator<_Iter> &o) const {
-            return _base == o._base;
-        }
-        inline bool operator != (const _iterator<_Iter> &o) const {
-            return _base != o._base;
-        }
-        inline bool operator > (const _iterator<_Iter> & o) const {
-            return _base > o._base;
-        }
-        inline bool operator >= (const _iterator<_Iter> & o) const {
-            return _base >= o._base;
-        }
-        
-        // weird things happen to auto-indenting when I define these inline here...
-        inline bool operator <= (const _iterator<_Iter> & o) const;
-        inline bool operator < (const _iterator<_Iter> & o) const;
-        
-    protected:
-        _Iter _base;
-        
-        friend class string;
-        inline _Iter & __base() { return _base; }
-        
-        inline void _advance() {
-            string::__base::value_type __c = *_base;
-            string::__base::size_type __n = UTF8CharLen(__c);
-            _base += __n;
-        }
-        inline void _retreat() { do { --_base; } while ( (static_cast<const xmlChar>(*_base) & 0xc0) == 0x80 ); }
-    };
+    
     
     class InvalidUTF8Sequence : std::invalid_argument {
     public:
@@ -208,8 +84,8 @@ public:
         InvalidUTF8Sequence(const char * str) : invalid_argument(str) {}
     };
     
-    typedef _iterator<__base::iterator>        iterator;
-    typedef _iterator<__base::const_iterator>  const_iterator;
+    typedef utf8::iterator<__base::iterator>        iterator;
+    typedef utf8::iterator<__base::const_iterator>  const_iterator;
     
     static const size_type npos;
     
@@ -278,12 +154,12 @@ public:
     void clear() noexcept { _base.clear(); }
     bool empty() const noexcept { return _base.empty(); }
     
-    iterator begin() noexcept { return iterator(_base.begin()); }
-    const_iterator begin() const { return const_iterator(_base.begin()); }
-    const_iterator cbegin() const { return const_iterator(_base.begin()); }
-    iterator end() noexcept { return iterator(_base.end()); }
-    const_iterator end() const { return const_iterator(_base.end()); }
-    const_iterator cend() const { return const_iterator(_base.end()); }
+    iterator begin() noexcept { return iterator(_base.begin(), _base.begin(), _base.end()); }
+    const_iterator begin() const { return const_iterator(_base.begin(), _base.begin(), _base.end()); }
+    const_iterator cbegin() const { return const_iterator(_base.begin(), _base.begin(), _base.end()); }
+    iterator end() noexcept { return iterator(_base.end(), _base.begin(), _base.end()); }
+    const_iterator end() const { return const_iterator(_base.end(), _base.begin(), _base.end()); }
+    const_iterator cend() const { return const_iterator(_base.end(), _base.begin(), _base.end()); }
     
     const value_type at(size_type pos) const;
     value_type at(size_type pos);
@@ -665,17 +541,17 @@ public:
     };
     
     size_type find_first_of(const string& str, size_type pos=0) const noexcept {
-        auto __r = find_first_of(begin()+pos, end(), str.begin(), str.end(), __traits_eq<traits_type>());
+        auto __r = find_first_of(const_iterator(_base, pos), end(), str.begin(), str.end(), __traits_eq<traits_type>());
         if ( __r == end() )
             return npos;
-        return __r - begin();
+        return utf8::distance(begin().base(), __r.base());
     }
     size_type find_first_of(const __base& str, size_type pos=0) const {
         validate_utf8(str.substr(pos));
-        auto __r = find_first_of(begin()+pos, end(), const_iterator(str.begin()), const_iterator(str.end()), __traits_eq<traits_type>());
+        auto __r = find_first_of(const_iterator(_base, pos), end(), const_iterator(str.begin(), str.begin(), str.end()), const_iterator(str.end(), str.begin(), str.end()), __traits_eq<traits_type>());
         if ( __r == end() )
             return npos;
-        return __r - begin();
+        return utf8::distance(begin().base(), __r.base());
     }
     template <typename _CharT>
     size_type find_first_of(const _CharT * s, size_type pos, size_type n) const {
@@ -691,7 +567,7 @@ public:
         auto __r = std::find_first_of(begin()+pos, end(), &c, ((&c) + sizeof(_CharT)));
         if ( __r == end() )
             return npos;
-        return __r - begin();
+        return utf8::distance(begin().base(), __r.base());
     }
     
     size_type find_last_of(const string& str, size_type pos=npos) const noexcept {
@@ -705,7 +581,7 @@ public:
         {
             size_type __r = str.find(*--__ps);
             if ( __r != npos )
-                return __ps - begin();
+                return utf8::distance(begin().base(), __ps.base());
         }
         return npos;
     }
@@ -721,7 +597,7 @@ public:
         {
             size_type __r = str.find((--__ps).utf8char());
             if ( __r != npos )
-                return __ps - begin();
+                return utf8::distance(begin().base(), __ps.base());
         }
         return npos;
     }
@@ -746,7 +622,7 @@ public:
             const_iterator __pe = end();
             for ( const_iterator __ps = __p + pos; __ps != __pe; ++__ps )
                 if ( str.find(*__ps) == npos )
-                    return static_cast<size_type>(__ps - __p);
+                    return utf8::distance(__p.base(), __ps.base());
         }
         return npos;
     }
@@ -759,7 +635,7 @@ public:
             const_iterator __pe = end();
             for ( const_iterator __ps = __p + pos; __ps != __pe; ++__ps )
                 if ( str.find(__ps.utf8char()) == npos )
-                    return static_cast<size_type>(__ps - __p);
+                    return utf8::distance(__p.base(), __ps.base());
         }
         return npos;
     }
@@ -785,7 +661,7 @@ public:
         const_iterator __p = begin();
         for ( const_iterator __ps = __p + pos; __ps != __p; )
             if ( str.find(*--__ps) == npos )
-                return static_cast<size_type>(__ps - __p);
+                return utf8::distance(__p.base(), __ps.base());
         return npos;
     }
     size_type find_last_not_of(const __base& str, size_type pos=npos) const {
@@ -797,7 +673,7 @@ public:
         const_iterator __p = begin();
         for ( const_iterator __ps = __p + pos; __ps != __p; )
             if ( str.find((--__ps).utf8char()) == npos )
-                return static_cast<size_type>(__ps - __p);
+                return utf8::distance(__p.base(), __ps.base());
         return npos;
     }
     template <typename _CharT>
@@ -1030,7 +906,7 @@ protected:
             return __out;
         }
     };
-#elif EPUB_OS(ANDROID)
+#else
     // non-ICU implementation for smaller Android builds
     template <class _CharT>
     class _Convert {
@@ -1045,7 +921,8 @@ protected:
         static wide_string fromUTF8(const char* utf8, size_type pos=0, size_type n=npos);
         static wide_string fromUTF8(const byte_string& s, size_type pos=0, size_type n=npos);
     };
-#else
+#if 0
+
     // Pure C++11 implementation, works on libc++ and VC++2010
     template <class _CharT>
     class _Convert {
@@ -1083,6 +960,7 @@ protected:
             return _cvt().from_bytes(utf8.substr(pos, n));
         }
     };
+#endif
 #endif
 };
 
@@ -1142,7 +1020,7 @@ public:
     }
 };
 
-#if (!defined(UTF_USE_ICU) || UTF_USE_ICU == 0) && EPUB_OS(ANDROID)
+#if (!defined(UTF_USE_ICU) || UTF_USE_ICU == 0)
 // ePub::string::_Convert is implemented for Unicode via template specializations here
 template <>
 class string::_Convert<char16_t> {
@@ -1163,7 +1041,7 @@ public:
     }
     static byte_string toUTF8(char16_t c, size_type n=1) {
         byte_string __t;
-        utf8::utf16to8(&c, (&c)+sizeof(c), std::back_inserter(__t));
+        utf8::utf16to8(&c, (&c)+1, std::back_inserter(__t));
         byte_string __r;
         for (int __i = 0; __i < n; __i++) {
             __r.append(__t);
@@ -1202,7 +1080,7 @@ public:
     }
     static byte_string toUTF8(char32_t c, size_type n=1) {
         byte_string __t;
-        utf8::utf32to8(&c, (&c)+sizeof(c), std::back_inserter(__t));
+        utf8::utf32to8(&c, (&c)+1, std::back_inserter(__t));
         byte_string __r;
         for (int __i = 0; __i < n; __i++) {
             __r.append(__t);
@@ -1311,15 +1189,6 @@ template <class _CharT, class _Traits>
 inline std::basic_ostream<_CharT, _Traits>&
 operator<<(std::basic_ostream<_CharT, _Traits>& __os, const string& __str) {
     return __os << __str.stl_str();
-}
-
-template <class T>
-inline bool string::_iterator<T>::operator<(const _iterator<T> &o) const {
-    return _base < o._base;
-}
-template <class T>
-inline bool string::_iterator<T>::operator<=(const _iterator<T> &o) const {
-    return _base <= o._base;
 }
 
 EPUB3_END_NAMESPACE

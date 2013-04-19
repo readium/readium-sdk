@@ -252,7 +252,7 @@ string IRI::URLEncodeComponent(const string& str)
 string IRI::PercentEncodeUCS(const string& str)
 {
     std::stringstream ss;
-    for ( auto ch : str )
+    for ( char32_t ch : str )
     {
         if ( ch > 0x7F )
         {

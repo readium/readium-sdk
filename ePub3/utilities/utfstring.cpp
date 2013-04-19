@@ -72,7 +72,7 @@ string::string(const __base & s, size_type i, size_type n)
     _base.assign(s, i, n);
 }
 template <>
-string::string(iterator first, iterator last) : _base(first.__base(), last.__base())
+string::string(iterator first, iterator last) : _base(first.base(), last.base())
 {
 }
 template <>
@@ -177,7 +177,7 @@ string::__base string::utf8At(size_type pos) const
 template <>
 string & string::assign(iterator first, iterator last)
 {
-    _base.assign(first.__base(), last.__base());
+    _base.assign(first.base(), last.base());
     return *this;
 }
 template <>
@@ -219,7 +219,7 @@ string& string::assign(const char16_t* s, size_type n)
 template <>
 string & string::append(const_iterator first, const_iterator last)
 {
-    _base.append(first.__base(), last.__base());
+    _base.append(first.base(), last.base());
     return *this;
 }
 template <>
@@ -268,10 +268,11 @@ string::iterator string::insert(iterator pos, iterator first, iterator last)
         return pos;
     
 #if CXX11_STRING_UNAVAILABLE
-    _base.insert(pos.__base(), first.__base(), last.__base());
+    _base.insert(pos.base(), first.base(), last.base());
     return iterator(pos + std::distance(first, last));
 #else
-    return iterator(_base.insert(pos.__base(), first.__base(), last.__base()));
+    __base::iterator inserted(_base.insert(pos.base(), first.base(), last.base()));
+    return iterator(inserted, _base.begin(), _base.end());
 #endif
 }
 template <>
@@ -280,10 +281,11 @@ string::iterator string::insert(iterator pos, __base::iterator first, __base::it
     if ( first == last )
         return pos;
 #if CXX11_STRING_UNAVAILABLE
-    _base.insert(pos.__base(), first, last);
+    _base.insert(pos.base(), first, last);
     return iterator(pos + utf32_distance(first, last));
 #else
-    return iterator(_base.insert(pos.__base(), first, last));
+    __base::iterator inserted(_base.insert(pos.base(), first, last));
+    return iterator(inserted, _base.begin(), _base.end());
 #endif
 }
 string & string::insert(size_type pos, const string &s, size_type b, size_type e)
@@ -322,10 +324,11 @@ string::iterator string::insert(iterator pos, const string &s, size_type b, size
     auto last = (be == npos ? s._base.end() : s._base.begin()+be);
     
 #if CXX11_STRING_UNAVAILABLE
-    _base.insert(pos.__base(), first, last);
+    _base.insert(pos.base(), first, last);
     return iterator(pos + utf32_distance(first, last));
 #else
-    return iterator(_base.insert(pos.__base(), first, last));
+    __base::iterator inserted(_base.insert(pos.base(), first, last));
+    return iterator(inserted, _base.begin(), _base.end());
 #endif
 }
 string & string::insert(size_type pos, const_u4pointer s, size_type e)
@@ -418,10 +421,11 @@ string::iterator string::insert(iterator pos, const_u4pointer s, size_type e)
         return pos;
     auto utf8 = _Convert<value_type>::toUTF8(s, 0, e);
 #if CXX11_STRING_UNAVAILABLE
-    _base.insert(pos.__base(), utf8.begin(), utf8.end());
+    _base.insert(pos.base(), utf8.begin(), utf8.end());
     return iterator(pos + e);
 #else
-    return iterator(_base.insert(pos.__base(), utf8.begin(), utf8.end()));
+    __base::iterator inserted(_base.insert(pos.base(), utf8.begin(), utf8.end()));
+    return iterator(inserted, _base.begin(), _base.end());
 #endif
 }
 string::iterator string::insert(iterator pos, const char16_t* s, size_type e)
@@ -430,10 +434,11 @@ string::iterator string::insert(iterator pos, const char16_t* s, size_type e)
         return pos;
     auto utf8 = _Convert<char16_t>::toUTF8(s, 0, e);
 #if CXX11_STRING_UNAVAILABLE
-    _base.insert(pos.__base(), utf8.begin(), utf8.end());
+    _base.insert(pos.base(), utf8.begin(), utf8.end());
     return iterator(pos + utf32_distance(utf8.begin(), utf8.end()));
 #else
-    return iterator(_base.insert(pos.__base(), utf8.begin(), utf8.end()));
+    __base::iterator inserted(_base.insert(pos.base(), utf8.begin(), utf8.end()));
+    return iterator(inserted, _base.begin(), _base.end());
 #endif
 }
 string::iterator string::insert(iterator pos, size_type n, value_type c)
@@ -447,10 +452,11 @@ string::iterator string::insert(iterator pos, size_type n, value_type c)
     if ( utf8.size() == 1 )
     {
 #if CXX11_STRING_UNAVAILABLE
-        _base.insert(pos.__base(), n, utf8[0]);
+        _base.insert(pos.base(), n, utf8[0]);
         return iterator(pos + n);
 #else
-        return iterator(_base.insert(pos.__base(), n, utf8[0]));
+        __base::iterator inserted(_base.insert(pos.base(), n, utf8[0]));
+        return iterator(inserted, _base.begin(), _base.end());
 #endif
     }
     
@@ -460,10 +466,11 @@ string::iterator string::insert(iterator pos, size_type n, value_type c)
     for ( size_type i = 0; i < n; i++ )
         buf.append(utf8);
 #if CXX11_STRING_UNAVAILABLE
-    _base.insert(pos.__base(), buf.begin(), buf.end());
+    _base.insert(pos.base(), buf.begin(), buf.end());
     return iterator(pos + n);
 #else
-    return iterator(_base.insert(pos.__base(), buf.begin(), buf.end()));
+    auto inserted = _base.insert(pos.base(), buf.begin(), buf.end());
+    return iterator(inserted, _base.begin(), _base.end());
 #endif
 }
 string::iterator string::insert(iterator pos, size_type n, char16_t c)
@@ -477,10 +484,11 @@ string::iterator string::insert(iterator pos, size_type n, char16_t c)
     if ( utf8.size() == 1 )
     {
 #if CXX11_STRING_UNAVAILABLE
-        _base.insert(pos.__base(), n, utf8[0]);
+        _base.insert(pos.base(), n, utf8[0]);
         return iterator(pos + n);
 #else
-        return iterator(_base.insert(pos.__base(), n, utf8[0]));
+        __base::iterator inserted(_base.insert(pos.base(), n, utf8[0]));
+        return iterator(inserted, _base.begin(), _base.end());
 #endif
     }
     
@@ -490,10 +498,11 @@ string::iterator string::insert(iterator pos, size_type n, char16_t c)
     for ( size_type i = 0; i < n; i++ )
         buf.append(utf8);
 #if CXX11_STRING_UNAVAILABLE
-    _base.insert(pos.__base(), buf.begin(), buf.end());
+    _base.insert(pos.base(), buf.begin(), buf.end());
     return iterator(pos + n);
 #else
-    return iterator(_base.insert(pos.__base(), buf.begin(), buf.end()));
+    auto inserted = _base.insert(pos.base(), buf.begin(), buf.end());
+    return iterator(inserted, _base.begin(), _base.end());
 #endif
 }
 string & string::insert(size_type pos, const __base &s, size_type b, size_type e)
@@ -514,10 +523,11 @@ string::iterator string::insert(iterator pos, const __base &s, size_type b, size
 #if CXX11_STRING_UNAVAILABLE
     auto __b = s.begin()+b;
     auto __e = (e == npos ? s.end() : s.begin()+e);
-    _base.insert(pos.__base(), __b, __e);
+    _base.insert(pos.base(), __b, __e);
     return iterator(pos + utf32_distance(__b, __e));
 #else
-    return iterator(_base.insert(pos.__base(), s.begin()+b, (e == npos ? s.end() : s.begin()+e)));
+    auto inserted(_base.insert(pos.base(), s.begin()+b, (e == npos ? s.end() : s.begin()+e)));
+    return iterator(inserted, _base.begin(), _base.end());
 #endif
 }
 string & string::insert(size_type pos, const char *s, size_type b, size_type e)
@@ -542,10 +552,11 @@ string::iterator string::insert(iterator pos, const char * str, size_type b, siz
     if ( e == npos )
         e = strlen(str) - b;
 #if CXX11_STRING_UNAVAILABLE
-    _base.insert(pos.__base(), str+b, str+e);
+    _base.insert(pos.base(), str+b, str+e);
     return iterator(pos + utf32_distance(__base::const_iterator(str+b), __base::const_iterator(str+e)));
 #else
-    return iterator(_base.insert(pos.__base(), str+b, str+e));
+    auto inserted(_base.insert(pos.base(), str+b, str+e));
+    return iterator(inserted, _base.begin(), _base.end());
 #endif
 }
 string::iterator string::insert(iterator pos, size_type n, char c)
@@ -553,10 +564,11 @@ string::iterator string::insert(iterator pos, size_type n, char c)
     if ( pos == end() )
         return append(n, c).end();
 #if CXX11_STRING_UNAVAILABLE
-    _base.insert(pos.__base(), n, c);
+    _base.insert(pos.base(), n, c);
     return iterator(pos + n);
 #else
-    return iterator(_base.insert(pos.__base(), n, c));
+    auto inserted(_base.insert(pos.base(), n, c));
+    return iterator(inserted, _base.begin(), _base.end());
 #endif
 }
 string & string::erase(size_type pos, size_type n)
@@ -588,29 +600,31 @@ string & string::erase(size_type pos, size_type n)
 }
 string::iterator string::erase(cxx11_const_iterator pos)
 {
-    return iterator(_base.erase(pos.__base()));
+    auto modified(_base.erase(pos.base()));
+    return iterator(modified, _base.begin(), _base.end());
 }
 string::iterator string::erase(cxx11_const_iterator first, cxx11_const_iterator last)
 {
-    return iterator(_base.erase(first.__base(), last.__base()));
+    auto modified(_base.erase(first.base(), last.base()));
+    return iterator(modified, _base.begin(), _base.end());
 }
 template <>
 string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, cxx11_const_iterator j1, cxx11_const_iterator j2)
 {
-    _base.replace(i1.__base(), i2.__base(), j1.__base(), j2.__base());
+    _base.replace(i1.base(), i2.base(), j1.base(), j2.base());
     return *this;
 }
 template <>
 string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, __base::const_iterator j1, __base::const_iterator j2)
 {
-    _base.replace(i1.__base(), i2.__base(), j1, j2);
+    _base.replace(i1.base(), i2.base(), j1, j2);
     return *this;
 }
 template <>
 string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::u32string::const_iterator j1, std::u32string::const_iterator j2)
 {
     auto utf8 = _Convert<value_type>::toUTF8(&(*j1), 0, std::distance(j1, j2));
-    _base.replace(i1.__base(), i2.__base(), utf8);
+    _base.replace(i1.base(), i2.base(), utf8);
     return *this;
 }
 string & string::replace(size_type pos1, size_type n1, const string & str)
@@ -625,7 +639,7 @@ string & string::replace(size_type pos1, size_type n1, const string & str, size_
 }
 string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const string& str)
 {
-    _base.replace(i1.__base(), i2.__base(), str._base);
+    _base.replace(i1.base(), i2.base(), str._base);
     return *this;
 }
 string & string::replace(size_type pos, size_type n1, const_u4pointer s, size_type n2)
@@ -694,22 +708,22 @@ string & string::replace(size_type pos, size_type n1, size_type n2, char16_t c)
 }
 string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const_u4pointer s, size_type n)
 {
-    _base.replace(i1.__base(), i2.__base(), _Convert<value_type>::toUTF8(s, 0, n));
+    _base.replace(i1.base(), i2.base(), _Convert<value_type>::toUTF8(s, 0, n));
     return *this;
 }
 string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char16_t* s, size_type n)
 {
-    _base.replace(i1.__base(), i2.__base(), _Convert<char16_t>::toUTF8(s, 0, n));
+    _base.replace(i1.base(), i2.base(), _Convert<char16_t>::toUTF8(s, 0, n));
     return *this;
 }
 string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const_u4pointer s)
 {
-    _base.replace(i1.__base(), i2.__base(), _Convert<value_type>::toUTF8(s));
+    _base.replace(i1.base(), i2.base(), _Convert<value_type>::toUTF8(s));
     return *this;
 }
 string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char16_t* s)
 {
-    _base.replace(i1.__base(), i2.__base(), _Convert<char16_t>::toUTF8(s));
+    _base.replace(i1.base(), i2.base(), _Convert<char16_t>::toUTF8(s));
     return *this;
 }
 string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, char16_t c)
@@ -717,11 +731,11 @@ string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_
     auto utf8 = _Convert<char16_t>::toUTF8(c);
     if ( n == 1 )
     {
-        _base.replace(i1.__base(), i2.__base(), utf8);
+        _base.replace(i1.base(), i2.base(), utf8);
     }
     else if ( utf8.length() == 1 )
     {
-        _base.replace(i1.__base(), i2.__base(), n, utf8[0]);
+        _base.replace(i1.base(), i2.base(), n, utf8[0]);
     }
     else
     {
@@ -729,7 +743,7 @@ string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_
         buf.reserve(utf8.length()*n);
         for ( size_type i = 0; i < n; i++ )
             buf.append(utf8);
-        _base.replace(i1.__base(), i2.__base(), buf);
+        _base.replace(i1.base(), i2.base(), buf);
     }
     
     return *this;
@@ -746,7 +760,7 @@ string & string::replace(size_type pos1, size_type n1, const __base & str, size_
 }
 string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const __base & str)
 {
-    _base.replace(i1.__base(), i2.__base(), str);
+    _base.replace(i1.base(), i2.base(), str);
     return *this;
 }
 string & string::replace(size_type pos, size_type n1, const char * s, size_type n2)
@@ -766,17 +780,17 @@ string & string::replace(size_type pos, size_type n1, size_type n2, char c)
 }
 string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char * s, size_type n)
 {
-    _base.replace(i1.__base(), i2.__base(), s, n);
+    _base.replace(i1.base(), i2.base(), s, n);
     return *this;
 }
 string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char * s)
 {
-    _base.replace(i1.__base(), i2.__base(), s);
+    _base.replace(i1.base(), i2.base(), s);
     return *this;
 }
 string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, char c)
 {
-    _base.replace(i1.__base(), i2.__base(), n, c);
+    _base.replace(i1.base(), i2.base(), n, c);
     return *this;
 }
 string::size_type string::copy(u4pointer s, size_type n, size_type pos) const
