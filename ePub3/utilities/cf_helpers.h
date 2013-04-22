@@ -80,7 +80,7 @@ public:
         __SafeCFRelease(_ref);
     }
     
-    void swap(CFRefCounted&& o) {
+    void swap(CFRefCounted& o) {
         std::swap(_ref, o._ref);
     }
     
@@ -115,9 +115,6 @@ public:
     }
     
     operator bool() const   { return _ref != nullptr; }
-    operator bool()         { return _ref != nullptr; }
-    
-    operator _CF()          { return _ref; }
     operator _CF()  const   { return _ref; }
     
     _CF Abandon() {

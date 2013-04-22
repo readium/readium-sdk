@@ -79,6 +79,17 @@ public:
                             ContentHandler(ContentHandler&& o) : _mediaType(std::move(o._mediaType)), _owner(o._owner) { o._owner = nullptr; }
     virtual                 ~ContentHandler() {}
     
+    virtual ContentHandler& operator=(const ContentHandler& o) {
+        _mediaType = o._mediaType;
+        _owner = o._owner;
+        return *this;
+    }
+    virtual ContentHandler& operator=(ContentHandler&& o) {
+        _mediaType = std::move(o._mediaType);
+        _owner = o._owner; o._owner = nullptr;
+        return *this;
+    }
+    
     ///
     /// Obtains the Package to which this handler applies.
     virtual const Package*  Owner()         const   { return _owner; }
@@ -96,7 +107,7 @@ public:
     
 protected:
     const Package*          _owner;         ///< The Package to which this handler applies.
-    const string            _mediaType;     ///< The resource media-type that this object handles.
+    string                  _mediaType;     ///< The resource media-type that this object handles.
 };
 
 /**

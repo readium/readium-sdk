@@ -23,7 +23,7 @@
 #define __ePub3__iri__
 
 #include "utfstring.h"
-#include "gurl.h"
+#include <gurl.h>
 #include <vector>
 
 EPUB3_BEGIN_NAMESPACE

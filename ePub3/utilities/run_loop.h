@@ -15,6 +15,7 @@
 #include <list>
 #include <mutex>
 #include <atomic>
+#include "ref_counted.h"
 
 //#undef EPUB_USE_CF
 //#define EPUB_OS_ANDROID 1
@@ -22,21 +23,14 @@
 #if EPUB_USE(CF)
 # include <CoreFoundation/CoreFoundation.h>
 #elif EPUB_OS(ANDROID)
-# include <pthread.h>
 # include <time.h>
+struct ALooper;
 #elif EPUB_OS(WINDOWS)
 # error Add Windows code to RunLoop.h
-#endif
-
-#if 1
-
-typedef int timer_t;
-extern int  timer_create(int, struct sigevent*, timer_t*);
-extern int  timer_delete(timer_t);
-extern int  timer_settime(timer_t timerid, int flags, const struct itimerspec *value, struct itimerspec *ovalue);
-extern int  timer_gettime(timer_t timerid, struct itimerspec *value);
-extern int  timer_getoverrun(timer_t  timerid);
-
+#else
+# include <condition_variable>      // GNU libstdc++ 4.7 has this guy in a separate header
+# include <pthread.h>
+# include <time.h>
 #endif
 
 #if EPUB_USE(CF)
@@ -48,27 +42,6 @@ EPUB3_BEGIN_NAMESPACE
 class RunLoop
 {
 public:
-    class Timer;
-    class Observer;
-    class EventSource;
-    
-private:
-#if EPUB_USE(CF)
-    CFRunLoopRef    _cf;                ///< The underlying CF type of the run loop.
-#elif EPUB_OS(ANDROID)
-    std::list<Timer*>       _timers;
-    std::list<Observer*>    _observers;
-    std::list<EventSource*> _sources;
-    std::recursive_mutex    _listLock;
-    std::condition_variable _wakeUp;
-    std::atomic<bool>       _waiting;
-#elif EPUB_OS(WINDOWS)
-#error No Windows RunLoop implementation defined
-#else
-#error I don't know how to make a RunLoop on this platform
-#endif
-    
-public:
     enum class ExitReason : uint8_t
     {
         RunFinished         = 1,    ///< The RunLoop has no timers or event sources to process.
@@ -77,7 +50,7 @@ public:
         RunHandledSource    = 4     ///< The RunLoop processed a single source and was told to return after doing so.
     };
     
-    class Observer
+    class Observer : public RefCountable
     {
     public:
         ///
@@ -103,13 +76,13 @@ public:
     private:
 #if EPUB_USE(CF)
         CFRefCounted<CFRunLoopObserverRef>  _cf;        ///< The underlying CF type of the observer.
-#elif EPUB_OS(ANDROID)
-        ObserverFn              _fn;        ///< The observer callback function.
-        Activity                _acts;      ///< The activities to apply.
 #elif EPUB_OS(WINDOWS)
 #error No Windows RunLoop implementation defined
 #else
-#error I don't know how to make a RunLoop on this platform
+        ObserverFn              _fn;        ///< The observer callback function.
+        Activity                _acts;      ///< The activities to apply.
+        bool                    _repeats;   ///< Whether the observer handles multiple events.
+        bool                    _cancelled; ///< Whether the observer is cancelled.
 #endif
         
         friend class RunLoop;
@@ -151,14 +124,14 @@ public:
         bool            Repeats()                       const;
         ///
         /// Whether the observer has been cancelled.
-        bool            Cancelled()                     const;
+        bool            IsCancelled()                   const;
         
         ///
         /// Cancels the observer, causing it never to fire again.
         void            Cancel();
     };
     
-    class EventSource
+    class EventSource : public RefCountable
     {
     public:
         typedef std::function<void(EventSource&)>   EventHandlerFn;
@@ -168,11 +141,12 @@ public:
         CFRefCounted<CFRunLoopSourceRef>    _cf;    ///< The underlying CF type of the event source.
         std::map<CFRunLoopRef, int>         _rl;    ///< The CFRunLoops with which this CF source is registered.
 #elif EPUB_OS(ANDROID)
-        // nothing more needed here
+        int                                 _evt[2];    ///< The event's pipe file descriptors.
 #elif EPUB_OS(WINDOWS)
 #error No Windows RunLoop implementation defined
 #else
-#error I don't know how to make a RunLoop on this platform
+        std::atomic<bool>                   _signalled; ///< Whether the source has been signalled.
+        bool                                _cancelled; ///< Whether the source is cancelled.
 #endif
         
         EventHandlerFn              _fn;    ///< The function to invoke when the event fires.
@@ -216,13 +190,11 @@ public:
         static void _FireCFSourceEvent(void* __i);
         static void _ScheduleCF(void*, CFRunLoopRef, CFStringRef);
         static void _CancelCF(void*, CFRunLoopRef, CFStringRef);
-#else
-        static void _FireEvent(void* __i);
 #endif
         
     };
     
-    class Timer
+    class Timer : public RefCountable
     {
     public:
         typedef std::function<void(Timer&)>  TimerFn;
@@ -240,10 +212,15 @@ public:
         CFRefCounted<CFRunLoopTimerRef> _cf;        ///< The underlying CF type of the timer.
 #elif EPUB_OS(ANDROID)
         timer_t                         _timer;     ///< The underlying Linux timer.
+        int                             _pipeFDs[2];///< The pipe endpoints used with ALooper.
+        TimerFn                         _fn;        ///< The function to call when the timer fires.
 #elif EPUB_OS(WINDOWS)
 #error No Windows RunLoop implementation defined
 #else
-#error I don't know how to make a RunLoop on this platform
+        Clock::time_point               _fireDate;  ///< The date at which the timer will fire.
+        TimerFn                         _fn;        ///< The function to call when the timer fires.
+        Clock::duration                 _interval;  ///< The interval at which the timer repeats (if any)
+        bool                            _cancelled; ///< Set to `true` when the timer is cancelled.
 #endif
         
         friend class RunLoop;
@@ -332,7 +309,8 @@ public:
         template <class _Duration = typename Clock::duration>
         void            SetNextFireDate(std::chrono::time_point<Clock, _Duration>& when) {
             using namespace std::chrono;
-            return SetNextFireDateTime(time_point_cast<Clock::duration>(when));
+            Clock::time_point __t = time_point_cast<Clock::duration>(when);
+            return SetNextFireDateTime(__t);
         }
         
         ///
@@ -348,7 +326,8 @@ public:
         template <class _Rep, class _Period = std::ratio<1>>
         void            SetNextFireDate(std::chrono::duration<_Rep, _Period>& when) {
             using namespace std::chrono;
-            return SetNextFireDateDuration(duration_cast<Clock::duration>(when));
+            Clock::duration __d = duration_cast<Clock::duration>(when);
+            return SetNextFireDateDuration(__d);
         }
         
     protected:
@@ -359,11 +338,6 @@ public:
         
         Clock::duration GetNextFireDateDuration() const;
         void SetNextFireDateDuration(Clock::duration& when);
-        
-#if EPUB_OS(ANDROID)
-        void            Arm();
-        void            Disarm();
-#endif
     };
     
 public:
@@ -458,6 +432,57 @@ private:
     ///
     /// No move constructor
                     RunLoop(RunLoop&& o) = delete;
+    
+#if EPUB_OS(ANDROID)
+    static int      _ReceiveLoopEvent(int fd, int events, void* data);
+#endif
+#if !EPUB_USE(CF)
+    ///
+    /// Runs all observers matching the given activity
+    void            RunObservers(Observer::Activity activity);
+#endif
+    
+#if !EPUB_OS(ANDROID) && !EPUB_OS(WINDOWS) && !EPUB_USE(CF)
+    ///
+    /// Collects all timers ready to fire
+    std::vector<Timer*>         CollectFiringTimers();
+    ///
+    /// Collects all sources that have been signalled
+    std::vector<EventSource*>   CollectFiringSources(bool onlyOne);
+    ///
+    /// If a timer will fire before the given timeout, returns a new timeout
+    std::chrono::system_clock::time_point   TimeoutOrTimer(std::chrono::system_clock::time_point& timeout);
+#endif
+    
+private:
+#if EPUB_USE(CF)
+    CFRunLoopRef        _cf;            ///< The underlying CF type of the run loop.
+#elif EPUB_OS(ANDROID)
+    ALooper*            _looper;        ///< The Android NDK event loop construct.
+    int                 _wakeFDs[2];    ///< The pipe for waking/stopping/killing the runloop.
+
+    std::recursive_mutex            _listLock;
+    
+    typedef std::map<int,RefCounted<RefCountable>> SourceMap_t;
+    SourceMap_t         _handlers;      ///< Maps event fds to their owners.
+    
+    std::list<RefCounted<Observer>> _observers;
+    Observer::Activity              _observerMask;
+    std::atomic<bool>               _waiting;
+#elif EPUB_OS(WINDOWS)
+#error No Windows RunLoop implementation defined
+#else
+    std::list<RefCounted<Timer>>        _timers;
+    std::list<RefCounted<Observer>>     _observers;
+    std::list<RefCounted<EventSource>>  _sources;
+    std::recursive_mutex                _listLock;
+    std::mutex                          _conditionLock;
+    std::condition_variable             _wakeUp;
+    std::atomic<bool>                   _waiting;
+    std::atomic<bool>                   _stop;
+    Observer::Activity                  _observerMask;
+    const Timer*                        _waitingUntilTimer;
+#endif
 
 };
 

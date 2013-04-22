@@ -31,7 +31,7 @@
 #include "byte_stream.h"
 #include <sstream>
 #include <list>
-#include <regex>
+#include REGEX_INCLUDE
 #include <libxml/xpathInternals.h>
 
 EPUB3_BEGIN_NAMESPACE
@@ -128,7 +128,11 @@ std::locale& PackageBase::Locale()
 }
 void PackageBase::SetLocale(const string &name)
 {
+#if EPUB_OS(ANDROID)
+    gCurrentLocale = std::locale(name.c_str());
+#else
     gCurrentLocale = std::locale(name.stl_str());
+#endif
 }
 void PackageBase::SetLocale(const std::locale &locale)
 {
@@ -200,9 +204,9 @@ IRI PackageBase::MakePropertyIRI(const string &reference, const string& prefix) 
 }
 IRI PackageBase::PropertyIRIFromAttributeValue(const string &attrValue) const
 {
-    static std::regex re("^(?:(.+?):)?(.+)$");
-    std::smatch pieces;
-    if ( std::regex_match(attrValue.stl_str(), pieces, re) == false )
+    static REGEX_NS::regex re("^(?:(.+?):)?(.+)$");
+    REGEX_NS::smatch pieces;
+    if ( REGEX_NS::regex_match(attrValue.stl_str(), pieces, re) == false )
         throw std::invalid_argument(_Str("Attribute '", attrValue, "' doesn't look like a property name to me"));
     
     // there are two captures, at indices 1 and 2
@@ -217,9 +221,10 @@ void PackageBase::InstallPrefixesFromAttributeValue(const ePub3::string &attrVal
     if ( attrValue.empty() )
         return;
     
-    static std::regex re(R"X((\w+):\s*(.+?)(?:\s+|$))X", std::regex::ECMAScript|std::regex::optimize);
-    auto pos = std::sregex_iterator(attrValue.stl_str().begin(), attrValue.stl_str().end(), re);
-    auto end = std::sregex_iterator();
+    static REGEX_NS::regex::flag_type reflags(REGEX_NS::regex::ECMAScript|REGEX_NS::regex::optimize);
+    static REGEX_NS::regex re(R"X((\w+):\s*(.+?)(?:\s+|$))X", reflags);
+    auto pos = REGEX_NS::sregex_iterator(attrValue.stl_str().begin(), attrValue.stl_str().end(), re);
+    auto end = REGEX_NS::sregex_iterator();
     
     while ( pos != end )
     {
@@ -341,7 +346,11 @@ bool Package::Unpack()
         for ( int i = 0; i < manifestNodes->nodeNr; i++ )
         {
             ManifestItem *p = new ManifestItem(manifestNodes->nodeTab[i], this);
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
             _manifest.emplace(p->Identifier(), p);
+#else
+            _manifest[p->Identifier()] = p;
+#endif
         }
         
         SpineItem* cur = nullptr;
@@ -550,7 +559,11 @@ bool Package::Unpack()
         {
             // have to dynamic_cast these guys to get the right pointer type
             class NavigationTable* navTable = dynamic_cast<class NavigationTable*>(table);
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
             _navigation.emplace(navTable->Type(), navTable);
+#else
+            _navigation[navTable->Type()] = navTable;
+#endif
         }
     }
     

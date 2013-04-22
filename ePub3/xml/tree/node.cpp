@@ -56,8 +56,9 @@ std::string TypeString(NodeType type)
         _TYPESTR(NamespaceDeclaration);
         _TYPESTR(XIncludeStart);
         _TYPESTR(XIncludeEnd);
+#ifdef LIBXML_DOCBOOK_ENABLED
         _TYPESTR(DocbookSGMLDocument);
-            
+#endif
         default:
             break;
     }
@@ -88,7 +89,9 @@ Node::Node(const string & name, NodeType type, const string & content, const cla
             break;
             
         case NodeType::CDATASection:
+#ifdef LIBXML_DOCBOOK_ENABLED
         case NodeType::DocbookSGMLDocument:
+#endif
         case NodeType::Document:
         case NodeType::DocumentFragment:
         case NodeType::DTD:
@@ -156,7 +159,9 @@ Namespace * Node::Namespace() const
         case NodeType::DocumentFragment:
         case NodeType::DTD:
         case NodeType::CDATASection:
+#ifdef LIBXML_DOCBOOK_ENABLED
         case NodeType::DocbookSGMLDocument:
+#endif
         case NodeType::HTMLDocument:
         case NodeType::ProcessingInstruction:
             // these types never have namespaces

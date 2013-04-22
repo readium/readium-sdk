@@ -29,6 +29,8 @@
 #ifndef GOOGLEURL_SRC_URL_CANON_H__
 #define GOOGLEURL_SRC_URL_CANON_H__
 
+#include "_config.h"
+
 #include <string.h>
 #include <stdlib.h>
 

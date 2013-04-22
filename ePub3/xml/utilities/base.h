@@ -39,12 +39,12 @@ EPUB3_XML_BEGIN_NAMESPACE
 /**
  @ingroup xml-utils
  */
-template <class _T, typename _N>
-static inline _T * Wrapped(_N * n)
+template <class _Tp, typename _Nm>
+static inline _Tp * Wrapped(_Nm * n)
 {
     if ( n == nullptr ) return nullptr;
-    if ( n->_private != nullptr ) return reinterpret_cast<_T*>(n->_private);
-    return new _T(n);
+    if ( n->_private != nullptr ) return reinterpret_cast<_Tp*>(n->_private);
+    return new _Tp(n);
 }
 
 /**
@@ -77,7 +77,7 @@ class ParserError : public exception {
 public:
     ParserError(const std::string & context, xmlErrorPtr err = NULL) throw () : exception(context.c_str(), err) {}
     ParserError(const char * s, xmlErrorPtr err = NULL) throw () : exception(s, err) {}
-    virtual ~ParserError() {}
+    virtual ~ParserError() throw () {}
 };
 /**
  @ingroup xml-utils
@@ -86,7 +86,7 @@ class ValidationError : public exception  {
 public:
     ValidationError(const std::string & context, xmlErrorPtr err = NULL) throw () : exception(context.c_str(), err) {}
     ValidationError(const char * s, xmlErrorPtr err = NULL) throw () : exception(s, err) {}
-    virtual ~ValidationError() {}
+    virtual ~ValidationError() throw () {}
 };
 /**
  @ingroup xml-utils
@@ -95,7 +95,7 @@ class InternalError : public exception  {
 public:
     InternalError(const std::string & context, xmlErrorPtr err = NULL) throw () : exception(context.c_str(), err) {}
     InternalError(const char * s, xmlErrorPtr err = NULL) throw () : exception(s, err) {}
-    virtual ~InternalError() {}
+    virtual ~InternalError() throw () {}
 };
 
 // note that MOVE is allowed, just not COPY

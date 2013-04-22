@@ -20,9 +20,13 @@
 //
 
 #include "byte_stream.h"
+#include <cstdio>
 #include <libzip/zip.h>
 #include <libzip/zipint.h>          // for internals of zip_file
 #include <sys/stat.h>
+#if EPUB_OS(ANDROID) || EPUB_OS(LINUX)
+# include <condition_variable>
+#endif
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -58,11 +62,11 @@ void AsyncByteStream::Open(std::ios::openmode mode)
 {
     if ( (mode & std::ios::in) == std::ios::in )
     {
-        _readbuf = Shared<RingBuffer>::make_shared(_bufsize);
+        _readbuf = std::make_shared<RingBuffer>(_bufsize);
     }
     if ( (mode & std::ios::out) == std::ios::out )
     {
-        _writebuf = Shared<RingBuffer>::make_shared(_bufsize);
+        _writebuf = std::make_shared<RingBuffer>(_bufsize);
     }
 }
 ByteStream::size_type AsyncByteStream::ReadBytes(void *buf, size_type len)
@@ -220,7 +224,8 @@ ByteStream::size_type FileByteStream::BytesAvailable() const noexcept
         return 0;
     
     struct stat sb;
-    if ( ::fstat(::fileno(const_cast<FILE*>(_file)), &sb) != 0 )
+    int fd = fileno(const_cast<FILE*>(_file));
+    if ( ::fstat(fd, &sb) != 0 )
         return 0;
     
     return (static_cast<size_type>(sb.st_size) - static_cast<size_type>(::ftell(const_cast<FILE*>(_file))));

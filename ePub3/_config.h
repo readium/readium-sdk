@@ -72,6 +72,11 @@
 
 #include "_platform.h"
 
+#define REGEX_INCLUDE <regex>
+#define REGEX_NS std
+#define LOCALE_INCLUDE <locale>
+#define LOCALE_NS std
+
 #if EPUB_OS(WINDOWS)
 # ifndef EPUB3_EXPORT
 #  ifdef BUILDING_EPUB3
@@ -82,6 +87,40 @@
 # endif
 #else
 # define EPUB3_EXPORT
+#endif
+
+#if EPUB_OS(ANDROID)
+//# define UTF_USE_ICU 1
+# define CXX11_STRING_UNAVAILABLE 1
+# undef REGEX_INCLUDE
+# define REGEX_INCLUDE <boost/regex.hpp>
+# undef REGEX_NS
+# define REGEX_NS boost
+# undef LOCALE_INCLUDE
+# define LOCALE_INCLUDE <boost/locale.hpp>
+# undef LOCALE_NS
+# define LOCALE_NS boost
+# if EPUB_COMPILER(CLANG)
+#  define nan(x) __builtin_nan(x)
+# endif
+#endif
+
+#if EPUB_COMPILER(GCC) && !EPUB_COMPILER(CLANG)
+# if GCC_VERSION_AT_LEAST(4, 7, 0)
+#  define _GCC_NOTHROW noexcept (true)
+# else
+#  define _GCC_NOTHROW throw ()
+# endif
+#else
+# define _GCC_NOTHROW
+#endif
+
+#ifndef _LIBCPP_HIDDEN
+# define _LIBCPP_HIDDEN __attribute__ ((__visibility__("hidden")))
+#endif
+
+#ifndef _LIBCPP_INLINE_VISIBILITY
+# define _LIBCPP_INLINE_VISIBILITY __attribute__ ((__visibility__("hidden"), __always_inline__))
 #endif
 
 #endif
