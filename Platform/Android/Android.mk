@@ -160,7 +160,7 @@ LOCAL_C_INCLUDES += ${shell find $(LOCAL_PATH)/ePub3/xml -type d}
 LOCAL_C_INCLUDES += ${shell find $(LOCAL_PATH)/ePub3/ePub -type d}
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/Platform/Android/src
 LOCAL_STATIC_LIBRARIES := icuuc icui18n icuio icudata xml2 crypto boost_regex
-LOCAL_LDLIBS := -lz
+LOCAL_LDLIBS := -lz -landroid
 LOCAL_SRC_FILES := \
 		ePub3/ThirdParty/libzip/mkstemp.c \
 		ePub3/ThirdParty/libzip/zip_add.c \
@@ -269,7 +269,7 @@ LOCAL_SRC_FILES := \
 		ePub3/ePub/media_support_info.cpp \
 		ePub3/utilities/byte_stream.cpp \
 		ePub3/utilities/ring_buffer.cpp \
-		ePub3/utilities/run_loop.cpp \
+		ePub3/utilities/run_loop_android.cpp \
 		Platform/Android/src/jni_cache_dir.c \
 		Platform/Android/src/backup_atomics.cpp
 

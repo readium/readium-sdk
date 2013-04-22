@@ -24,6 +24,9 @@
 #include <libzip/zip.h>
 #include <libzip/zipint.h>          // for internals of zip_file
 #include <sys/stat.h>
+#if EPUB_OS(ANDROID) || EPUB_OS(LINUX)
+# include <condition_variable>
+#endif
 
 EPUB3_BEGIN_NAMESPACE
 
