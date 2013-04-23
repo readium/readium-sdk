@@ -138,7 +138,7 @@ RunLoop::Timer& RunLoop::Timer::operator=(const Timer & o)
 }
 RunLoop::Timer& RunLoop::Timer::operator=(Timer&& o)
 {
-    _cf.swap(std::move(o._cf));
+    _cf = std::move(o._cf);
     return *this;
 }
 bool RunLoop::Timer::operator==(const Timer& o) const
@@ -200,7 +200,7 @@ RunLoop::Observer& RunLoop::Observer::operator=(const Observer & o)
 }
 RunLoop::Observer& RunLoop::Observer::operator=(Observer &&o)
 {
-    _cf.swap(std::move(o._cf));
+    _cf = std::move(o._cf);
     return *this;
 }
 bool RunLoop::Observer::operator==(const Observer &o) const
@@ -251,7 +251,7 @@ RunLoop::EventSource::~EventSource()
 }
 RunLoop::EventSource& RunLoop::EventSource::operator=(EventSource && o)
 {
-    _cf.swap(std::move(o._cf));
+    _cf = std::move(o._cf);
     return *this;
 }
 bool RunLoop::EventSource::operator==(const EventSource & o) const

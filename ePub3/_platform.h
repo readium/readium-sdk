@@ -152,7 +152,7 @@
 || defined(_ARM_)
 #define EPUB_CPU_ARM 1
 
-#if EPUB_COMPILER(CLANG)
+#if EPUB_COMPILER(CLANG) && defined(ANDROID)
 # define __atomic_fetch_add(mem, val, typ)   __sync_fetch_and_add(mem, val)
 # define __atomic_fetch_sub(mem, val, typ)   __sync_fetch_and_sub(mem, val)
 # define __atomic_fetch_and(mem, val, typ)   __sync_fetch_and_and(mem, val)
