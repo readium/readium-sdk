@@ -278,7 +278,7 @@ NavigationList PackageBase::NavTablesFromManifestItem(const ManifestItem* pItem)
     for ( size_t i = 0; i < nodes->nodeNr; i++ )
     {
         xmlNodePtr navNode = nodes->nodeTab[i];
-        tables.push_back(new class NavigationTable(navNode));
+        tables.push_back(new class NavigationTable(navNode, pItem->Href()));
     }
     
     xmlXPathFreeNodeSet(nodes);
