@@ -25,7 +25,9 @@
 #include <ePub3/utilities/basic.h>
 #include <string>
 #include <iterator>
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
 #include <initializer_list>
+#endif
 #include <locale>
 #include <vector>
 #include REGEX_INCLUDE
@@ -103,13 +105,17 @@ public:
     string(const_u4pointer s);   // NUL-delimited
     string(const_u4pointer s, size_type n);
     string(size_type n, value_type c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string(std::initializer_list<value_type> __il) : string(__il.begin(), __il.end()) {}
+#endif
     
     // From char16_t (pure UTF-16)
     string(const char16_t* s);    // NUL-delimited
     string(const char16_t* s, size_type n);
     string(size_type n, char16_t c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string(std::initializer_list<char16_t> __il) : string(__il.begin(), __il.end()) {}
+#endif
     
     // From std::string
     string(const __base &o) : _base(o) {}
@@ -138,26 +144,26 @@ public:
 #pragma mark - Length/Iteration/Indexing
 #endif
     
-    size_type size() const noexcept;
-    size_type length() const noexcept { return size(); }
-    size_type max_size() const noexcept { return _base.max_size()/sizeof(value_type); }
-    size_type capacity() const noexcept { return _base.capacity(); }
+    size_type size() const _NOEXCEPT;
+    size_type length() const _NOEXCEPT { return size(); }
+    size_type max_size() const _NOEXCEPT { return _base.max_size()/sizeof(value_type); }
+    size_type capacity() const _NOEXCEPT { return _base.capacity(); }
     
-    size_type utf8_size() const noexcept { return _base.size(); }
-    size_type utf8_length() const noexcept { return utf8_size(); }
+    size_type utf8_size() const _NOEXCEPT { return _base.size(); }
+    size_type utf8_length() const _NOEXCEPT { return utf8_size(); }
     
     void resize(size_type n, value_type c);
     void resize(size_type n);
     
     void reserve(size_type res_arg = 0) { return _base.reserve(res_arg*4); } // best guess
     void shrink_to_fit() { _base.shrink_to_fit(); }
-    void clear() noexcept { _base.clear(); }
-    bool empty() const noexcept { return _base.empty(); }
+    void clear() _NOEXCEPT { _base.clear(); }
+    bool empty() const _NOEXCEPT { return _base.empty(); }
     
-    iterator begin() noexcept { return iterator(_base.begin(), _base.begin(), _base.end()); }
+    iterator begin() _NOEXCEPT { return iterator(_base.begin(), _base.begin(), _base.end()); }
     const_iterator begin() const { return const_iterator(_base.begin(), _base.begin(), _base.end()); }
     const_iterator cbegin() const { return const_iterator(_base.begin(), _base.begin(), _base.end()); }
-    iterator end() noexcept { return iterator(_base.end(), _base.begin(), _base.end()); }
+    iterator end() _NOEXCEPT { return iterator(_base.end(), _base.begin(), _base.end()); }
     const_iterator end() const { return const_iterator(_base.end(), _base.begin(), _base.end()); }
     const_iterator cend() const { return const_iterator(_base.end(), _base.begin(), _base.end()); }
     
@@ -201,18 +207,26 @@ public:
     // char32_t
     string & assign(const_u4pointer s, size_type n=npos);
     string & assign(size_type n, value_type c) { clear(); resize(n, c); return *this; }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & assign(std::initializer_list<value_type> __il) { return assign(__il.begin(), __il.end()); }
+#endif
     string & operator=(const_u4pointer s) { return assign(s, npos); }
     string & operator=(value_type c) { return assign(1, c); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & operator=(std::initializer_list<value_type> l) { return assign(l); }
+#endif
     
     // char16_t
     string & assign(const char16_t* s, size_type n=npos);
     string & assign(size_type n, char16_t c) { clear(); resize(n, static_cast<value_type>(c)); return *this; }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & assign(std::initializer_list<char16_t> __il) { return assign(__il.begin(), __il.end()); }
+#endif
     string & operator=(const char16_t* s) { return assign(s, npos); }
     string & operator=(char16_t c) { return assign(1, c); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & operator=(std::initializer_list<char16_t> l) { return assign(l); }
+#endif
     
     // std::string
     string & assign(const __base & o) { _base.assign(o); return *this; }
@@ -226,19 +240,27 @@ public:
     string & assign(const char * s, size_type n) { _base.assign(s, n); return *this; }
     string & assign(const char * s) { _base.assign(s); return *this; }
     string & assign(size_type n, char c) { _base.assign(n, c); return *this; }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & assign(std::initializer_list<__base::value_type> __il) { _base.assign(__il); return *this; }
+#endif
     string & operator=(const char * s) { return assign(s, __base::traits_type::length(s)); }
     string & operator=(char c) { return assign(1, c); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & operator=(std::initializer_list<__base::value_type> __il) { return assign(__il); }
+#endif
     
     // xmlChar
     string & assign(const xmlChar * s, size_type n) { _base.assign(reinterpret_cast<const char *>(s), n); return *this; }
     string & assign(const xmlChar * s) { _base.assign(reinterpret_cast<const char *>(s), xmlStrlen(s)); return *this; }
     string & assign(size_type n, xmlChar c) { _base.assign(n, static_cast<char>(c)); return *this; }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & assign(std::initializer_list<xmlChar> __il) { return assign(__il.begin(), __il.end()); }
+#endif
     string & operator=(const xmlChar *s) { return assign(s, xmlStrlen(s)); }
     string & operator=(xmlChar c) { return assign(1, c); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & operator=(std::initializer_list<xmlChar> __il) { return assign(__il); }
+#endif
     
 #if 0
 #pragma mark - Append
@@ -260,18 +282,26 @@ public:
     // char32_t
     string & append(const_u4pointer s, size_type n=npos);
     string & append(size_type n, value_type c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & append(std::initializer_list<value_type> __il) { return append(__il.begin(), __il.end()); }
+#endif
     string & operator+=(const_u4pointer s) { return append(s, npos); }
     string & operator+=(value_type c) { return append(1, c); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & operator+=(std::initializer_list<value_type> __il) { return append(__il); }
+#endif
     
     // char16_t
     string & append(const char16_t* s, size_type n=npos);
     string & append(size_type n, char16_t c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & append(std::initializer_list<char16_t> __il) { return append(__il.begin(), __il.end()); }
+#endif
     string & operator+=(const char16_t* s) { return append(s, npos); }
     string & operator+=(char16_t c) { return append(1, c); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & operator+=(std::initializer_list<char16_t> __il) { return append(__il); }
+#endif
     
     // std::string
     string & append(const __base & o) { _base.append(o); return *this; }
@@ -284,19 +314,27 @@ public:
     string & append(const char * s, size_type n) { _base.append(s, n); return *this; }
     string & append(const char * s) { _base.append(s); return *this; }
     string & append(size_type n, char c) { _base.append(n, c); return *this; }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & append(std::initializer_list<__base::value_type> __il) { _base.append(__il); return *this; }
+#endif
     string & operator+=(const char * s) { return append(s); }
     string & operator+=(char c) { return append(1, c); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & operator+=(std::initializer_list<__base::value_type> __il) { return append(__il); }
+#endif
     
     // xmlChar
     string & append(const xmlChar * s, size_type n) { _base.append(reinterpret_cast<const char *>(s), n); return *this; }
     string & append(const xmlChar * s) { _base.append(reinterpret_cast<const char *>(s), xmlStrlen(s)); return *this; }
     string & append(size_type n, xmlChar c) { _base.append(n, static_cast<char>(c)); return *this; }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & append(std::initializer_list<xmlChar> __il) { return append(__il.begin(), __il.end()); }
+#endif
     string & operator+=(const xmlChar *s) { return append(s, xmlStrlen(s)); }
     string & operator+=(xmlChar c) { return append(1, c); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & operator+=(std::initializer_list<xmlChar> __il) { return append(__il); }
+#endif
     
 #if 0
 #pragma mark - Insertion
@@ -319,14 +357,18 @@ public:
     string & insert(size_type p, size_type n, value_type c);
     iterator insert(iterator p, const_u4pointer s, size_type e=npos);
     iterator insert(iterator p, size_type n, value_type c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     iterator insert(iterator p, std::initializer_list<value_type> __il) { return insert(p, __il.begin(), __il.end()); }
+#endif
     
     // char16_t
     string & insert(size_type p, const char16_t* s, size_type e=npos);
     string & insert(size_type p, size_type n, char16_t c);
     iterator insert(iterator p, const char16_t* s, size_type e=npos);
     iterator insert(iterator p, size_type n, char16_t c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     iterator insert(iterator p, std::initializer_list<char16_t> __il) { return insert(p, __il.begin(), __il.end()); }
+#endif
     
     // std::string
     string & insert(size_type p, const __base &s, size_type b=0, size_type e=npos);
@@ -338,7 +380,9 @@ public:
     string & insert(size_type p, size_type n, char c);
     iterator insert(iterator p, const char * s, size_type b=0, size_type e=npos);
     iterator insert(iterator p, size_type n, char c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     iterator insert(iterator p, std::initializer_list<char> __il) { return insert(p, __il.begin(), __il.end()); }
+#endif
     
     // xmlChar
     string & insert(size_type p, const xmlChar * s, size_type b=0, size_type e=npos)
@@ -347,7 +391,9 @@ public:
     iterator insert(iterator p, const xmlChar * s, size_type b=0, size_type e=npos)
         { return insert(p, reinterpret_cast<const char*>(s), b, e); }
     iterator insert(iterator p, size_type n, xmlChar c) { return insert(p, n, static_cast<char>(c)); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     iterator insert(iterator p, std::initializer_list<xmlChar> __il) { return insert(p, __il.begin(), __il.end()); }
+#endif
     
 #if 0
 #pragma mark - Erasing
@@ -387,9 +433,11 @@ public:
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const_u4pointer s, size_type n);
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const_u4pointer s);
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, value_type c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::initializer_list<value_type> __il) {
         return replace(i1, i2, __il.begin(), __il.end());
     }
+#endif
     
     // char16_t
     string & replace(size_type pos, size_type n1, const char16_t* s, size_type n2);
@@ -398,9 +446,11 @@ public:
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char16_t* s, size_type n);
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char16_t* s);
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, char16_t c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::initializer_list<char16_t> __il) {
         return replace(i1, i2, __il.begin(), __il.end());
     }
+#endif
     
     // std::string
     string & replace(size_type pos1, size_type n1, const __base & str);
@@ -414,9 +464,11 @@ public:
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char * s, size_type n);
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char * s);
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, char c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::initializer_list<char> __il) {
         return replace(i1, i2, __il.begin(), __il.end());
     }
+#endif
     
     // xmlChar
     string & replace(size_type pos, size_type n1, const xmlChar * s, size_type n2)
@@ -430,10 +482,12 @@ public:
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const xmlChar * s)
         { return replace(i1, i2, reinterpret_cast<const char*>(s)); }
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, xmlChar c)
-        { return replace(i1, i2, n, static_cast<char>(c)); }
+            { return replace(i1, i2, n, static_cast<char>(c)); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::initializer_list<xmlChar> __il) {
         return replace(i1, i2, __il.begin(), __il.end());
     }
+#endif
     
 #if 0
 #pragma mark - Outputs
@@ -448,7 +502,7 @@ public:
     
     void swap(string & str)
 #ifdef _LIBCPP_STRING
-    noexcept(!__base::__alloc_traits::propagate_on_container_swap::value || std::__is_nothrow_swappable<__base::__alloc_traits>::value)
+    _NOEXCEPT(!__base::__alloc_traits::propagate_on_container_swap::value || std::__is_nothrow_swappable<__base::__alloc_traits>::value)
 #endif
     {
         _base.swap(str._base);
@@ -460,15 +514,15 @@ public:
     std::u16string utf16string() const;
     inline const char16_t* utf16() const { return utf16string().c_str(); }
     
-    __base::const_pointer c_str() const noexcept { return _base.c_str(); }
-    __base::const_pointer data() const noexcept { return _base.data(); }
+    __base::const_pointer c_str() const _NOEXCEPT { return _base.c_str(); }
+    __base::const_pointer data() const _NOEXCEPT { return _base.data(); }
     
     const __base& stl_str() const { return _base; }
     
     const xmlChar * utf8() const { return reinterpret_cast<const xmlChar *>(c_str()); }
     const xmlChar * xml_str() const { return reinterpret_cast<const xmlChar*>(c_str()); }
     
-    __base::allocator_type get_allocator() const noexcept { return _base.get_allocator(); }
+    __base::allocator_type get_allocator() const _NOEXCEPT { return _base.get_allocator(); }
     
     string& tolower(const std::locale& loc = std::locale(""));
     const string tolower(const std::locale& loc = std::locale("")) const;
@@ -480,48 +534,48 @@ public:
 #pragma mark - Searching
 #endif
     
-    size_type find(const string& str, size_type pos=0) const noexcept {
+    size_type find(const string& str, size_type pos=0) const _NOEXCEPT {
         return to_utf32_size(_base.find(str._base, to_byte_size(pos)));
     }
-    size_type find(const __base& str, size_type pos=0) const noexcept {
+    size_type find(const __base& str, size_type pos=0) const _NOEXCEPT {
         return to_utf32_size(_base.find(str, to_byte_size(pos)));
     }
     template <typename _CharT>
-    size_type find(const _CharT * s, size_type pos, size_type n) const noexcept {
+    size_type find(const _CharT * s, size_type pos, size_type n) const _NOEXCEPT {
         return to_utf32_size(_base.find(_Convert<_CharT>::toUTF8(s, 0, n), to_byte_size(pos)));
     }
     template <typename _CharT>
-    size_type find(const _CharT * s, size_type pos = 0) const noexcept {
+    size_type find(const _CharT * s, size_type pos = 0) const _NOEXCEPT {
         return to_utf32_size(_base.find(_Convert<_CharT>::toUTF8(s), to_byte_size(pos)));
     }
     template <typename _CharT>
-    size_type find(_CharT c, size_type pos = 0) const noexcept {
+    size_type find(_CharT c, size_type pos = 0) const _NOEXCEPT {
         return to_utf32_size(_base.find(_Convert<_CharT>::toUTF8(c), to_byte_size(pos)));
     }
     
-    size_type rfind(const string& str, size_type pos=npos) const noexcept {
+    size_type rfind(const string& str, size_type pos=npos) const _NOEXCEPT {
         return to_utf32_size(_base.rfind(str._base, to_byte_size(pos)));
     }
-    size_type rfind(const __base& str, size_type pos=npos) const noexcept {
+    size_type rfind(const __base& str, size_type pos=npos) const _NOEXCEPT {
         return to_utf32_size(_base.rfind(str, to_byte_size(pos)));
     }
     template <typename _CharT>
-    size_type rfind(const _CharT * s, size_type pos, size_type n) const noexcept {
+    size_type rfind(const _CharT * s, size_type pos, size_type n) const _NOEXCEPT {
         return to_utf32_size(_base.rfind(_Convert<_CharT>::toUTF8(s, 0, n), to_byte_size(pos)));
     }
     template <typename _CharT>
-    size_type rfind(const _CharT * s, size_type pos = npos) const noexcept {
+    size_type rfind(const _CharT * s, size_type pos = npos) const _NOEXCEPT {
         return to_utf32_size(_base.rfind(_Convert<_CharT>::toUTF8(s), to_byte_size(pos)));
     }
     template <typename _CharT>
-    size_type rfind(_CharT c, size_type pos = npos) const noexcept {
+    size_type rfind(_CharT c, size_type pos = npos) const _NOEXCEPT {
         return to_utf32_size(_base.rfind(_Convert<_CharT>::toUTF8(c), to_byte_size(pos)));
     }
     
     template <class _ForwardIterator1, class _ForwardIterator2, class _BinaryPredicate>
     _ForwardIterator1
     find_first_of(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
-                  _ForwardIterator2 __first2, _ForwardIterator2 __last2, _BinaryPredicate __pred) const noexcept
+                  _ForwardIterator2 __first2, _ForwardIterator2 __last2, _BinaryPredicate __pred) const _NOEXCEPT
     {
         for (; __first1 != __last1; ++__first1)
             for (_ForwardIterator2 __j = __first2; __j != __last2; ++__j)
@@ -535,12 +589,12 @@ public:
     {
         typedef typename _Traits::char_type char_type;
         _LIBCPP_INLINE_VISIBILITY
-        bool operator()(const char_type& __x, const char_type& __y) noexcept {
+        bool operator()(const char_type& __x, const char_type& __y) _NOEXCEPT {
             return _Traits::eq(__x, __y);
         }
     };
     
-    size_type find_first_of(const string& str, size_type pos=0) const noexcept {
+    size_type find_first_of(const string& str, size_type pos=0) const _NOEXCEPT {
         auto __r = find_first_of(const_iterator(_base, pos), end(), str.begin(), str.end(), __traits_eq<traits_type>());
         if ( __r == end() )
             return npos;
@@ -563,14 +617,14 @@ public:
         return find_first_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
-    size_type find_first_of(_CharT c, size_type pos = 0) const noexcept {
+    size_type find_first_of(_CharT c, size_type pos = 0) const _NOEXCEPT {
         auto __r = std::find_first_of(begin()+pos, end(), &c, ((&c) + sizeof(_CharT)));
         if ( __r == end() )
             return npos;
         return utf8::distance(begin().base(), __r.base());
     }
     
-    size_type find_last_of(const string& str, size_type pos=npos) const noexcept {
+    size_type find_last_of(const string& str, size_type pos=npos) const _NOEXCEPT {
         size_type __sz = size();
         if ( pos < __sz )
             ++pos;
@@ -610,11 +664,11 @@ public:
         return find_last_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
-    size_type find_last_of(_CharT c, size_type pos = npos) const noexcept {
+    size_type find_last_of(_CharT c, size_type pos = npos) const _NOEXCEPT {
         return rfind(c, pos);
     }
     
-    size_type find_first_not_of(const string& str, size_type pos=0) const noexcept {
+    size_type find_first_not_of(const string& str, size_type pos=0) const _NOEXCEPT {
         size_type __sz = size();
         if ( pos < __sz )
         {
@@ -648,11 +702,11 @@ public:
         return find_first_not_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
-    size_type find_first_not_of(_CharT c, size_type pos = 0) const noexcept {
+    size_type find_first_not_of(_CharT c, size_type pos = 0) const _NOEXCEPT {
         return find_first_not_of(_Convert<_CharT>::toUTF8(c), pos);
     }
     
-    size_type find_last_not_of(const string& str, size_type pos=npos) const noexcept {
+    size_type find_last_not_of(const string& str, size_type pos=npos) const _NOEXCEPT {
         size_type __sz = size();
         if ( pos < __sz )
             ++pos;
@@ -685,7 +739,7 @@ public:
         return find_last_not_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
-    size_type find_last_not_of(_CharT c, size_type pos = npos) const noexcept {
+    size_type find_last_not_of(_CharT c, size_type pos = npos) const _NOEXCEPT {
         return find_last_not_of(_Convert<_CharT>::toUTF8(c), pos);
     }
     
@@ -693,7 +747,7 @@ public:
 #pragma mark - Comparisons
 #endif
     
-    int compare(const string& str) const noexcept {
+    int compare(const string& str) const _NOEXCEPT {
         return _base.compare(str._base);
     }
     int compare(size_type pos1, size_type n1, const string& str) const {
@@ -707,7 +761,7 @@ public:
     
     // there exist specializations for char32_t
     template <typename _CharT>
-    int compare(const _CharT * s) const noexcept {
+    int compare(const _CharT * s) const _NOEXCEPT {
         auto str(_Convert<_CharT>::toUTF8(s));
         return _base.compare(str);
     }
@@ -720,7 +774,7 @@ public:
         return _base.compare(to_byte_size(pos1), to_byte_size(pos1, pos1+n1), _Convert<_CharT>::toUTF8(s, 0, n2));
     }
     template <typename _CharT>
-    int compare(const std::basic_string<_CharT> & s) const noexcept {
+    int compare(const std::basic_string<_CharT> & s) const _NOEXCEPT {
         return _base.compare(_Convert<_CharT>::toUTF8(s));
     }
     template <typename _CharT>
@@ -733,25 +787,25 @@ public:
         return _base.compare(to_byte_size(pos1), to_byte_size(pos1, pos1+n1), _Convert<_CharT>::toUTF8(str, pos2, n2));
     }
     
-    bool operator == (const string & str) const noexcept { return compare(str) == 0; }
-    bool operator != (const string & str) const noexcept { return compare(str) != 0; }
-    bool operator > (const string & str) const noexcept { return compare(str) > 0; }
-    bool operator >= (const string & str) const noexcept { return compare(str) >= 0; }
-    bool operator < (const string & str) const noexcept { return compare(str) < 0; }
-    bool operator <= (const string & str) const noexcept { return compare(str) <= 0; }
+    bool operator == (const string & str) const _NOEXCEPT { return compare(str) == 0; }
+    bool operator != (const string & str) const _NOEXCEPT { return compare(str) != 0; }
+    bool operator > (const string & str) const _NOEXCEPT { return compare(str) > 0; }
+    bool operator >= (const string & str) const _NOEXCEPT { return compare(str) >= 0; }
+    bool operator < (const string & str) const _NOEXCEPT { return compare(str) < 0; }
+    bool operator <= (const string & str) const _NOEXCEPT { return compare(str) <= 0; }
     
     template <typename _CharT>
-    bool operator == (const _CharT * str) const noexcept { return compare<_CharT>(str) == 0; }
+    bool operator == (const _CharT * str) const _NOEXCEPT { return compare<_CharT>(str) == 0; }
     template <typename _CharT>
-    bool operator != (const _CharT * str) const noexcept { return compare<_CharT>(str) != 0; }
+    bool operator != (const _CharT * str) const _NOEXCEPT { return compare<_CharT>(str) != 0; }
     template <typename _CharT>
-    bool operator > (const _CharT * str) const noexcept { return compare<_CharT>(str) > 0; }
+    bool operator > (const _CharT * str) const _NOEXCEPT { return compare<_CharT>(str) > 0; }
     template <typename _CharT>
-    bool operator >= (const _CharT * str) const noexcept { return compare<_CharT>(str) >= 0; }
+    bool operator >= (const _CharT * str) const _NOEXCEPT { return compare<_CharT>(str) >= 0; }
     template <typename _CharT>
-    bool operator < (const _CharT * str) const noexcept { return compare<_CharT>(str) < 0; }
+    bool operator < (const _CharT * str) const _NOEXCEPT { return compare<_CharT>(str) < 0; }
     template <typename _CharT>
-    bool operator <= (const _CharT * str) const noexcept { return compare<_CharT>(str) <= 0; }
+    bool operator <= (const _CharT * str) const _NOEXCEPT { return compare<_CharT>(str) <= 0; }
     
 #ifdef _LIBCPP_VERSION
     bool __invariants() const { return _base.__invariants(); }
@@ -768,14 +822,14 @@ protected:
     void throw_unless_insertable(const char * s, size_type b, size_type e) const;
     void throw_unless_insertable(const xmlChar * s, size_type b, size_type e) const;
     
-    __base::size_type to_byte_size(size_type __n) const noexcept;
-    __base::size_type to_byte_size(size_type __b, size_type __e) const noexcept;
-    size_type to_utf32_size(__base::size_type __n) const noexcept;
-    size_type to_utf32_size(__base::size_type __b, __base::size_type __e) const noexcept;
-    static size_type utf32_distance(__base::const_iterator first, __base::const_iterator last) noexcept;
+    __base::size_type to_byte_size(size_type __n) const _NOEXCEPT;
+    __base::size_type to_byte_size(size_type __b, size_type __e) const _NOEXCEPT;
+    size_type to_utf32_size(__base::size_type __n) const _NOEXCEPT;
+    size_type to_utf32_size(__base::size_type __b, __base::size_type __e) const _NOEXCEPT;
+    static size_type utf32_distance(__base::const_iterator first, __base::const_iterator last) _NOEXCEPT;
     
-    static inline constexpr __base::const_pointer _bchar(const xmlChar * c) noexcept { return (__base::const_pointer)(c); }
-    static inline constexpr __base::pointer _bchar(xmlChar * c) noexcept { return (__base::pointer)(c); }
+    static inline constexpr __base::const_pointer _bchar(const xmlChar * c) _NOEXCEPT { return (__base::const_pointer)(c); }
+    static inline constexpr __base::pointer _bchar(xmlChar * c) _NOEXCEPT { return (__base::pointer)(c); }
     
 #if UTF_USE_ICU
     // ICU version, since GNU libstdc++ hasn't implemented wstring_convert or codecvt_utf8 yet
@@ -1107,10 +1161,10 @@ public:
 
 // C++11 lets us define new literal types, so lets have "something"_xc be an xmlChar *, eh?
 // Sadly, we can't define prefix forms. Boo...
-constexpr inline const xmlChar * operator "" _xc(const char * __s, size_t __n) noexcept {
+constexpr inline const xmlChar * operator "" _xc(const char * __s, size_t __n) _NOEXCEPT {
     return (const xmlChar *)__s;
 }
-static inline constexpr const xmlChar * _xml(const char * __s) noexcept {
+static inline constexpr const xmlChar * _xml(const char * __s) _NOEXCEPT {
     return (const xmlChar*)(__s);
 }
 

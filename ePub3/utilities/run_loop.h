@@ -39,6 +39,10 @@ struct ALooper;
 
 EPUB3_BEGIN_NAMESPACE
 
+#if EPUB_OS(WINDOWS)
+class HandleSet;
+#endif
+
 class RunLoop
 {
 public:
@@ -76,8 +80,6 @@ public:
     private:
 #if EPUB_USE(CF)
         CFRefCounted<CFRunLoopObserverRef>  _cf;        ///< The underlying CF type of the observer.
-#elif EPUB_OS(WINDOWS)
-#error No Windows RunLoop implementation defined
 #else
         ObserverFn              _fn;        ///< The observer callback function.
         Activity                _acts;      ///< The activities to apply.
@@ -143,7 +145,7 @@ public:
 #elif EPUB_OS(ANDROID)
         int                                 _evt[2];    ///< The event's pipe file descriptors.
 #elif EPUB_OS(WINDOWS)
-#error No Windows RunLoop implementation defined
+        HANDLE                              _event;
 #else
         std::atomic<bool>                   _signalled; ///< Whether the source has been signalled.
         bool                                _cancelled; ///< Whether the source is cancelled.
@@ -215,7 +217,11 @@ public:
         int                             _pipeFDs[2];///< The pipe endpoints used with ALooper.
         TimerFn                         _fn;        ///< The function to call when the timer fires.
 #elif EPUB_OS(WINDOWS)
-#error No Windows RunLoop implementation defined
+        HANDLE                          _handle;
+        Clock::time_point               _fireDate;
+        Clock::duration                 _interval;
+        TimerFn                         _fn;
+        bool                            _cancelled;
 #else
         Clock::time_point               _fireDate;  ///< The date at which the timer will fire.
         TimerFn                         _fn;        ///< The function to call when the timer fires.
@@ -452,6 +458,13 @@ private:
     ///
     /// If a timer will fire before the given timeout, returns a new timeout
     std::chrono::system_clock::time_point   TimeoutOrTimer(std::chrono::system_clock::time_point& timeout);
+#elif EPUB_OS(WINDOWS_
+    ///
+    /// Process a firing timer
+    void            ProcessTimer(RefCounted<Timer> timer);
+    ///
+    /// Process a firing event source
+    void            ProcessEventSource(RefCounted<EventSource> source);
 #endif
     
 private:
@@ -470,7 +483,15 @@ private:
     Observer::Activity              _observerMask;
     std::atomic<bool>               _waiting;
 #elif EPUB_OS(WINDOWS)
-#error No Windows RunLoop implementation defined
+    HANDLE                                      _wakeHandle;
+    std::map<HANDLE, RefCounted<Timer>>         _timers;
+    std::map<HANDLE, RefCounted<EventSource>>   _sources;
+    std::list<RefCounted<Observer>>             _observers;
+    std::recursive_mutex                        _listLock;
+    std::atomic<bool>                           _waiting;
+    std::atomic<bool>                           _stop;
+    std::atomic<bool>                           _resetHandles;
+    Observer::Activity                          _observerMask;
 #else
     std::list<RefCounted<Timer>>        _timers;
     std::list<RefCounted<Observer>>     _observers;

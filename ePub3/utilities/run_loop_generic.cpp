@@ -197,11 +197,11 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
         return ExitReason::RunStopped;
     
     _listLock.lock();
-    
+
+    RunObservers(Observer::ActivityFlags::RunLoopEntry);
+
     do
     {
-        RunObservers(Observer::ActivityFlags::RunLoopEntry);
-        
         std::vector<Timer*> timersToFire = CollectFiringTimers();
         if ( !timersToFire.empty() )
         {
@@ -275,6 +275,8 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
         }
     
     } while (timeoutTime > system_clock::now());
+
+    RunObservers(Observer::ActivityFlags::RunLoopExit);
     
     _listLock.unlock();
     return reason;

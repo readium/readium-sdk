@@ -36,6 +36,7 @@ EPUB3_BEGIN_NAMESPACE
 // These template aliases allow the use of shorthand declarations for different
 // pointer types, i.e. Shared<Container> means std::shared_ptr<Container>.
 
+#if EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES)
 template <class _Tp>
 using Shared = std::shared_ptr<_Tp>;
 
@@ -44,10 +45,19 @@ using Auto = std::unique_ptr<_Tp>;
 
 template <class _Tp>
 using Weak = std::weak_ptr<_Tp>;
+#else
+template <class _Tp>
+class Shared : public std::shared_ptr<_Tp> {};
+template <class _Tp>
+class Auto : public std::unique_ptr<_Tp> {};
+template <class _Tp>
+class Weak : std::weak_ptr<_Tp> {};
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // nicer way of constructing a C++ string from randomly-typed arguments
 
+#if EPUB_COMPILER_SUPPORTS(CXX_VARIADIC_TEMPLATES)
 static inline std::stringstream& __format(std::stringstream& s) { return s; }
 
 template <typename Arg1, typename... Args>
@@ -78,16 +88,95 @@ static inline std::string _Str(const Args&... args)
     std::stringstream s;
     return __format(s, args...).str();
 }
+#else   // !EPUB_COMPILER_SUPPORTS(CXX_VARIADIC_TEMPLATES)
+template <typename _A1>
+static inline std::string _Str(const _A1& a1)
+{
+    std::stringstream s;
+    s << a1;
+    return s.str();
+}
+template <typename _A1, typename _A2>
+static inline std::string _Str(const _A1& a1, const _A2& a2)
+{
+    std::stringstream s;
+    s << a1 << a2;
+    return s.str();
+}
+template <typename _A1, typename _A2, typename _A3>
+static inline std::string _Str(const _A1& a1, const _A2& a2, const _A3& a3)
+{
+    std::stringstream s;
+    s << a1 << a2 << a3;
+    return s.str();
+}
+template <typename _A1, typename _A2, typename _A3, typename _A4>
+static inline std::string _Str(const _A1& a1, const _A2& a2, const _A3& a3,
+                               const _A4& a4)
+{
+    std::stringstream s;
+    s << a1 << a2 << a3 << a4;
+    return s.str();
+}
+template <typename _A1, typename _A2, typename _A3, typename _A4, typename _A5>
+static inline std::string _Str(const _A1& a1, const _A2& a2, const _A3& a3,
+                               const _A4& a4, const _A5& a5)
+{
+    std::stringstream s;
+    s << a1 << a2 << a3 << a4 << a5;
+    return s.str();
+}
+template <typename _A1, typename _A2, typename _A3, typename _A4, typename _A5, typename _A6>
+static inline std::string _Str(const _A1& a1, const _A2& a2, const _A3& a3,
+                               const _A4& a4, const _A5& a5, const _A6& a6)
+{
+    std::stringstream s;
+    s << a1 << a2 << a3 << a4 << a5 << a6;
+    return s.str();
+}
+template <typename _A1, typename _A2, typename _A3, typename _A4, typename _A5, typename _A6,
+          typename _A7>
+static inline std::string _Str(const _A1& a1, const _A2& a2, const _A3& a3,
+                               const _A4& a4, const _A5& a5, const _A6& a6,
+                               const _A7& a7)
+{
+    std::stringstream s;
+    s << a1 << a2 << a3 << a4 << a5 << a6 << a7;
+    return s.str();
+}
+template <typename _A1, typename _A2, typename _A3, typename _A4, typename _A5, typename _A6,
+          typename _A7, typename _A8>
+static inline std::string _Str(const _A1& a1, const _A2& a2, const _A3& a3,
+                               const _A4& a4, const _A5& a5, const _A6& a6,
+                               const _A7& a7, const _A8& a8)
+{
+    std::stringstream s;
+    s << a1 << a2 << a3 << a4 << a5 << a6 << a7 << a8;
+    return s.str();
+}
+template <typename _A1, typename _A2, typename _A3, typename _A4, typename _A5, typename _A6,
+          typename _A7, typename _A8, typename _A9>
+static inline std::string _Str(const _A1& a1, const _A2& a2, const _A3& a3,
+                               const _A4& a4, const _A5& a5, const _A6& a6,
+                               const _A7& a7, const _A8& a8, const _A9& a9)
+{
+    std::stringstream s;
+    s << a1 << a2 << a3 << a4 << a5 << a6 << a7 << a8 << a9;
+    return s.str();
+}
+#endif  // !EPUB_COMPILER_SUPPORTS(CXX_VARIADIC_TEMPLATES)
 
+#if EPUB_COMPILER_SUPPORTS(CXX_USER_LITERALS)
 /////////////////////////////////////////////////////////////////////////////
 // C++11 user-defined literals
 
 ///
 /// const xmlChar * xmlString = "this is an xmlChar* string"_xml;
-inline constexpr const xmlChar* operator "" _xml (char const *s, std::size_t len)
+inline CONSTEXPR const xmlChar* operator "" _xml (char const *s, std::size_t len)
 {
     return (const xmlChar*)s;
 }
+#endif  // EPUB_COMPILER_SUPPORTS(CXX_USER_LITERALS)
 
 EPUB3_END_NAMESPACE
 
