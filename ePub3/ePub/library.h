@@ -22,12 +22,12 @@
 #ifndef __ePub3__library__
 #define __ePub3__library__
 
-#include "epub3.h"
-#include "container.h"
-#include "package.h"
-#include "cfi.h"
-#include "utfstring.h"
-#include "byte_stream.h"
+#include <ePub3/epub3.h>
+#include <ePub3/container.h>
+#include <ePub3/package.h>
+#include <ePub3/cfi.h>
+#include <ePub3/utilities/utfstring.h>
+#include <ePub3/utilities/byte_stream.h>
 #include <map>
 
 EPUB3_BEGIN_NAMESPACE

@@ -33,12 +33,12 @@
 
 #include "url_canon_cpp11.h"
 #include "url_canon_internal.h"     // for _itoa_s
-#include "../../../utilities/utfstring.h"   // for UTF8CharLen
+#include <ePub3/utilities/utfstring.h>   // for UTF8CharLen
 #include REGEX_INCLUDE
 #include <locale>
 
 #if EPUB_OS(ANDROID)
-# include <utf8.h>
+# include <utf8/utf8.h>
 #else
 # include <codecvt>
 #endif

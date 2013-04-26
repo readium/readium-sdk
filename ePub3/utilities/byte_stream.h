@@ -22,12 +22,12 @@
 #ifndef __ePub3__byte_stream__
 #define __ePub3__byte_stream__
 
-#include "epub3.h"
-#include "ring_buffer.h"
+#include <ePub3/epub3.h>
+#include <ePub3/utilities/ring_buffer.h>
 #include <functional>
 #include <ios>
 #include <thread>
-#include "run_loop.h"
+#include <ePub3/utilities/run_loop.h>
 
 struct zip;
 struct zip_file;

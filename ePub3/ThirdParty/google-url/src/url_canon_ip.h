@@ -30,7 +30,7 @@
 #ifndef GOOGLEURL_SRC_URL_CANON_IP_H__
 #define GOOGLEURL_SRC_URL_CANON_IP_H__
 
-#include "../base/string16.h"
+#include <google-url/string16.h>
 #include "url_canon.h"
 #include "url_common.h"
 #include "url_parse.h"

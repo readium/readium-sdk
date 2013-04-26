@@ -22,7 +22,7 @@
 #ifndef __ePub3__ref_counted__
 #define __ePub3__ref_counted__
 
-#include "basic.h"
+#include <ePub3/utilities/basic.h>
 
 struct adopt_ref_t {};
 

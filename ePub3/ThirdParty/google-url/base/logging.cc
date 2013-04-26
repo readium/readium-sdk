@@ -33,7 +33,7 @@
 #include <iomanip>
 #include <cstring>
 #if EPUB_OS(ANDROID)
-# include <utf8.h>
+# include <utf8/utf8.h>
 # include <sstream>
 # include <fstream>
 #include REGEX_INCLUDE

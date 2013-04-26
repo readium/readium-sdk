@@ -22,8 +22,8 @@
 #ifndef __ePub3__cfi__
 #define __ePub3__cfi__
 
-#include "epub3.h"
-#include "utfstring.h"
+#include <ePub3/epub3.h>
+#include <ePub3/utilities/utfstring.h>
 #include <vector>
 
 EPUB3_BEGIN_NAMESPACE

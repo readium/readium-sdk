@@ -22,10 +22,10 @@
 #ifndef __ePub3__object_preprocessor__
 #define __ePub3__object_preprocessor__
 
-#include "epub3.h"
-#include "filter.h"
-#include "iri.h"
-#include "content_handler.h"
+#include <ePub3/epub3.h>
+#include <ePub3/filter.h>
+#include <ePub3/utilities/iri.h>
+#include <ePub3/content_handler.h>
 #include REGEX_INCLUDE
 
 EPUB3_BEGIN_NAMESPACE

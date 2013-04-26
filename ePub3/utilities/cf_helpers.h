@@ -9,7 +9,7 @@
 #ifndef ePub3_cf_helpers_h
 #define ePub3_cf_helpers_h
 
-#include "base.h"
+#include <ePub3/base.h>
 
 EPUB3_BEGIN_NAMESPACE
 

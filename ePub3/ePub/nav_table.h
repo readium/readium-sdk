@@ -22,8 +22,8 @@
 #ifndef __ePub3__nav_table__
 #define __ePub3__nav_table__
 
-#include "epub3.h"
-#include "nav_point.h"
+#include <ePub3/epub3.h>
+#include <ePub3/nav_point.h>
 #include <libxml/xpath.h> // for xmlNodeSetPtr
 
 EPUB3_BEGIN_NAMESPACE

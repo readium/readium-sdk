@@ -22,8 +22,8 @@
 #ifndef ePub3_xml_base_h
 #define ePub3_xml_base_h
 
-#include "../../base.h"
-#include "../../utilities/basic.h"
+#include <ePub3/base.h>
+#include <ePub3/utilities/basic.h>
 
 #define EPUB3_XML_BEGIN_NAMESPACE EPUB3_BEGIN_NAMESPACE namespace xml {
 #define EPUB3_XML_END_NAMESPACE } EPUB3_END_NAMESPACE

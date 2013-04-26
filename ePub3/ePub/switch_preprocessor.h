@@ -22,8 +22,8 @@
 #ifndef __ePub3__switch_preprocessor__
 #define __ePub3__switch_preprocessor__
 
-#include "epub3.h"
-#include "filter.h"
+#include <ePub3/epub3.h>
+#include <ePub3/filter.h>
 #include <vector>
 #include REGEX_INCLUDE
 

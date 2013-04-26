@@ -22,8 +22,8 @@
 #ifndef __ePub3__spine__
 #define __ePub3__spine__
 
-#include "epub3.h"
-#include "utfstring.h"
+#include <ePub3/epub3.h>
+#include <ePub3/utilities/utfstring.h>
 #include <vector>
 #include <libxml/tree.h>
 

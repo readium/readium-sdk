@@ -22,7 +22,7 @@
 #ifndef __ePub3__zip_archive__
 #define __ePub3__zip_archive__
 
-#include "archive.h"
+#include <ePub3/archive.h>
 #include <libzip/zip.h>
 #include <list>
 

@@ -2418,36 +2418,37 @@ xmlByteConsumed(xmlParserCtxtPtr ctxt) {
 #ifdef LIBXML_ICONV_ENABLED
 	    } else if (handler->iconv_out != NULL) {
 	        do {
-		    toconv = in->end - cur;
-		    written = 32000;
-		    ret = xmlIconvWrapper(handler->iconv_out, &convbuf[0],
-	                      &written, cur, &toconv);
-		    if (ret < 0) {
-		        if (written > 0)
-			    ret = -2;
-			else
-			    return(-1);
-		    }
-		    unused += written;
-		    cur += toconv;
-		} while (ret == -2);
+    		    toconv = in->end - cur;
+    		    written = 32000;
+    		    ret = xmlIconvWrapper(handler->iconv_out, &convbuf[0],
+    	                      &written, cur, &toconv);
+    		    if (ret < 0) {
+    		        if (written > 0)
+    			    ret = -2;
+    			else
+    			    return(-1);
+    		    }
+    		    unused += written;
+    		    cur += toconv;
+    		} while (ret == -2);
 #endif
 #ifdef LIBXML_ICU_ENABLED
 	    } else if (handler->uconv_out != NULL) {
 	        do {
-		    toconv = in->end - cur;
-		    written = 32000;
-		    ret = xmlUconvWrapper(handler->uconv_out, 0, &convbuf[0],
-	                      &written, cur, &toconv);
-		    if (ret < 0) {
-		        if (written > 0)
-			    ret = -2;
-			else
-			    return(-1);
-		    }
-		    unused += written;
-		    cur += toconv;
-		} while (ret == -2);
+    		    toconv = in->end - cur;
+    		    written = 32000;
+    		    ret = xmlUconvWrapper(handler->uconv_out, 0, &convbuf[0],
+    	                      &written, cur, &toconv);
+    		    if (ret < 0) {
+    		        if (written > 0)
+    			    ret = -2;
+    			else
+    			    return(-1);
+    		    }
+    		    unused += written;
+    		    cur += toconv;
+    		} while (ret == -2);
+#endif
             } else {
 	        /* could not find a converter */
 	        return(-1);
@@ -2459,7 +2460,6 @@ xmlByteConsumed(xmlParserCtxtPtr ctxt) {
     }
     return(in->consumed + (in->cur - in->base));
 }
-#endif
 
 #if !defined(LIBXML_ICONV_ENABLED) && !defined(LIBXML_ICU_ENABLED)
 #ifdef LIBXML_ISO8859X_ENABLED

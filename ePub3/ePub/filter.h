@@ -22,10 +22,10 @@
 #ifndef __ePub3__filter__
 #define __ePub3__filter__
 
-#include "base.h"
-#include "../utilities/basic.h"
-#include "manifest.h"
-#include "encryption.h"
+#include <ePub3/base.h>
+#include <ePub3/utilities/basic.h>
+#include <ePub3/manifest.h>
+#include <ePub3/encryption.h>
 #include <string>
 
 EPUB3_BEGIN_NAMESPACE

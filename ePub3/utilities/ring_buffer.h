@@ -22,8 +22,8 @@
 #ifndef __ePub3__ring_buffer__
 #define __ePub3__ring_buffer__
 
-#include "epub3.h"
-#include "basic.h"
+#include <ePub3/epub3.h>
+#include <ePub3/utilities/basic.h>
 #include <mutex>
 
 EPUB3_BEGIN_NAMESPACE

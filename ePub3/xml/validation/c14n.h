@@ -22,9 +22,9 @@
 #ifndef __ePub3__c14n__
 #define __ePub3__c14n__
 
-#include "base.h"
-#include "io.h"
-#include "utfstring.h"
+#include <ePub3/xml/base.h>
+#include <ePub3/xml/io.h>
+#include <ePub3/utilities/utfstring.h>
 #include <sstream>
 
 EPUB3_XML_BEGIN_NAMESPACE
