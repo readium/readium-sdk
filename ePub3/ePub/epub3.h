@@ -22,9 +22,9 @@
 #ifndef ePub3_epub3_h
 #define ePub3_epub3_h
 
-#include "../base.h"
-#include "../utilities/basic.h"
-#include "../utilities/utfstring.h"
+#include <ePub3/base.h>
+#include <ePub3/utilities/basic.h>
+#include <ePub3/utilities/utfstring.h>
 
 // this chunk will go away once we have the C++ XML interface complete
 #include <string>

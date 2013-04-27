@@ -20,7 +20,7 @@
 //
 
 #include "iri.h"
-#include "url_util.h"
+#include <google-url/url_util.h>
 #include "cfi.h"
 #include REGEX_INCLUDE
 

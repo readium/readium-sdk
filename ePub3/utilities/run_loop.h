@@ -9,13 +9,13 @@
 #ifndef __ePub3__run_loop__
 #define __ePub3__run_loop__
 
-#include "basic.h"
-#include "utfstring.h"
+#include <ePub3/utilities/basic.h>
+#include <ePub3/utilities/utfstring.h>
 #include <chrono>
 #include <list>
 #include <mutex>
 #include <atomic>
-#include "ref_counted.h"
+#include <ePub3/utilities/ref_counted.h>
 
 //#undef EPUB_USE_CF
 //#define EPUB_OS_ANDROID 1

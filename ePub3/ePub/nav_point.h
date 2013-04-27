@@ -22,9 +22,9 @@
 #ifndef __ePub3__nav_point__
 #define __ePub3__nav_point__
 
-#include "epub3.h"
-#include "nav_element.h"
-#include "utfstring.h"
+#include <ePub3/epub3.h>
+#include <ePub3/nav_element.h>
+#include <ePub3/utilities/utfstring.h>
 #include <vector>
 
 EPUB3_BEGIN_NAMESPACE

@@ -22,9 +22,9 @@
 #ifndef __ePub3_xml_element__
 #define __ePub3_xml_element__
 
-#include "base.h"
-#include "node.h"
-#include "ns.h"
+#include <ePub3/xml/base.h>
+#include <ePub3/xml/node.h>
+#include <ePub3/xml/ns.h>
 
 EPUB3_XML_BEGIN_NAMESPACE
 

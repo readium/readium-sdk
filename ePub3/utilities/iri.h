@@ -22,8 +22,8 @@
 #ifndef __ePub3__iri__
 #define __ePub3__iri__
 
-#include "utfstring.h"
-#include <gurl.h>
+#include <ePub3/utilities/utfstring.h>
+#include <google-url/gurl.h>
 #include <vector>
 
 EPUB3_BEGIN_NAMESPACE

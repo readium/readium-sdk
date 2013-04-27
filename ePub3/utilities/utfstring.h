@@ -22,7 +22,7 @@
 #ifndef __ePub3_xml_string__
 #define __ePub3_xml_string__
 
-#include "basic.h"
+#include <ePub3/utilities/basic.h>
 #include <string>
 #include <iterator>
 #include <initializer_list>
@@ -31,9 +31,9 @@
 #include REGEX_INCLUDE
 #include <map>
 #include <stdexcept>
-#include "libxml/xmlstring.h"
+#include <libxml/xmlstring.h>
 
-# include <utf8.h>
+#include <utf8/utf8.h>
 
 // the GNU runtime hasn't updated std::string to the C++11 standard yet, so much of
 // our `const_iterator` usage needs to be plain `iterator` to keep Android happy.

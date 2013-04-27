@@ -31,8 +31,8 @@
 
 #include <stdlib.h>
 
-#include "../base/basictypes.h"
-#include "../base/logging.h"
+#include <google-url/basictypes.h>
+#include <google-url/logging.h>
 #include "url_canon_internal.h"
 
 namespace url_canon {

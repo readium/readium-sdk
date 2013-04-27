@@ -27,7 +27,13 @@ fi
 
 clean=""
 if [ "$1" = "clean" ]; then
+    rm -rf "`pwd`/include"
     clean="clean"
+else
+    cur=`pwd`
+    cd ../..
+    sh ./MakeHeaders.sh Android
+    cd $cur
 fi
 
 $2/ndk-build $clean -C . V=1 NDK_APPLICATION_MK=Application.mk NDK_PROJECT_PATH=`pwd` APP_BUILD_SCRIPT=Android.mk

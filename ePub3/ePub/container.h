@@ -22,10 +22,10 @@
 #ifndef __ePub3__container__
 #define __ePub3__container__
 
-#include "epub3.h"
-#include "encryption.h"
-#include "package.h"
-#include "utfstring.h"
+#include <ePub3/epub3.h>
+#include <ePub3/encryption.h>
+#include <ePub3/package.h>
+#include <ePub3/utilities/utfstring.h>
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 #include <vector>

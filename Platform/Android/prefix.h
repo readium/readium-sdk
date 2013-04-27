@@ -19,7 +19,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <_config.h>
+#include <ePub3/_config.h>
 
 /*
 #include <atomic>

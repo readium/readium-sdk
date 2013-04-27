@@ -22,7 +22,7 @@
 #ifndef __ePub3__signatures__
 #define __ePub3__signatures__
 
-#include "epub3.h"
+#include <ePub3/epub3.h>
 
 EPUB3_BEGIN_NAMESPACE
 

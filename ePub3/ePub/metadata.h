@@ -22,9 +22,9 @@
 #ifndef __ePub3__metadata__
 #define __ePub3__metadata__
 
-#include "epub3.h"
-#include "../utilities/iri.h"
-#include "../utilities/utfstring.h"
+#include <ePub3/epub3.h>
+#include <ePub3/utilities/iri.h>
+#include <ePub3/utilities/utfstring.h>
 #include <vector>
 #include <map>
 #include <string>

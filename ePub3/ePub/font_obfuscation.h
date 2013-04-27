@@ -22,8 +22,8 @@
 #ifndef __ePub3__font_obfuscation__
 #define __ePub3__font_obfuscation__
 
-#include "filter.h"
-#include "encryption.h"
+#include <ePub3/filter.h>
+#include <ePub3/encryption.h>
 #include REGEX_INCLUDE
 #include <cstring>
 

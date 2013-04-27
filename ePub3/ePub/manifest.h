@@ -22,9 +22,9 @@
 #ifndef __ePub3__manifest__
 #define __ePub3__manifest__
 
-#include "epub3.h"
-#include "utfstring.h"
-#include "iri.h"
+#include <ePub3/epub3.h>
+#include <ePub3/utilities/utfstring.h>
+#include <ePub3/utilities/iri.h>
 #include <map>
 #include <libxml/tree.h>
 

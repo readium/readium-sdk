@@ -132,7 +132,6 @@ LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/Platform/Android/src/gnucxx-clang
 LOCAL_LDLIBS := -lz -lm
 LOCAL_STATIC_LIBRARIES := icuuc icui18n icuio icudata
-LOCAL_EXPORT_C_INCLUDES := $(THIRD_PARTY)/libxml2-android/include
 LOCAL_CFLAGS := -include prefix.h
 
 include $(BUILD_STATIC_LIBRARY)
@@ -148,18 +147,19 @@ LOCAL_CPPFLAGS := -std=gnu++11 -include prefix.h -fpermissive
 LOCAL_CFLAGS := -std=gnu11 -include prefix.h
 LOCAL_CXXFLAGS := -std=gnu++11 -include prefix.h -fpermissive
 LOCAL_CPP_FEATURES += exceptions rtti
-LOCAL_C_INCLUDES += \
-		$(LOCAL_PATH)/ePub3 \
-		$(LOCAL_PATH)/ePub3/utilities \
-		$(LOCAL_PATH)/ePub3/ThirdParty \
+LOCAL_C_INCLUDES += include
+#		$(LOCAL_PATH)/ePub3 \
+#		$(LOCAL_PATH)/ePub3/utilities \
+#		$(LOCAL_PATH)/ePub3/ThirdParty \
         $(LOCAL_PATH)/ePub3/ThirdParty/google-url/src \
-		$(LOCAL_PATH)/ePub3/ThirdParty/boost/include \
-		$(LOCAL_PATH)/ePub3/ThirdParty/utf8-cpp/include \
+#		$(LOCAL_PATH)/ePub3/ThirdParty/boost/include \
+#		$(LOCAL_PATH)/ePub3/ThirdParty/utf8-cpp/include \
 #		$(LOCAL_PATH)/Platform/Android/src/gnucxx-clang
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/ePub3 $(LOCAL_PATH)/ePub3/utilities
 LOCAL_C_INCLUDES += ${shell find $(LOCAL_PATH)/ePub3/xml -type d}
 LOCAL_C_INCLUDES += ${shell find $(LOCAL_PATH)/ePub3/ePub -type d}
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/Platform/Android/src
-LOCAL_STATIC_LIBRARIES := icuuc icui18n icuio icudata xml2 crypto boost_regex
+LOCAL_STATIC_LIBRARIES := xml2 crypto boost_regex
 LOCAL_LDLIBS := -lz -landroid
 LOCAL_SRC_FILES := \
 		ePub3/ThirdParty/libzip/mkstemp.c \

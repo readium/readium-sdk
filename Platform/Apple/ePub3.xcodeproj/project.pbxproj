@@ -368,6 +368,7 @@
 		AB5D104217209D38001D3C95 /* unchecked.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unchecked.h; sourceTree = "<group>"; };
 		AB5D104317209D38001D3C95 /* utf8.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utf8.h; sourceTree = "<group>"; };
 		AB5D104B1721A722001D3C95 /* ref_counted.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ref_counted.h; sourceTree = "<group>"; };
+		AB5D1070172AD4AD001D3C95 /* MakeHeaders.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = MakeHeaders.sh; sourceTree = SOURCE_ROOT; };
 		AB61CE4A1694845700299BB1 /* UnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = UnitTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB61CE4D1694845700299BB1 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		AB61CE4F1694845700299BB1 /* UnitTests.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = UnitTests.1; sourceTree = "<group>"; };
@@ -1320,6 +1321,7 @@
 		ABA72C271655382E003125FF /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				AB5D1070172AD4AD001D3C95 /* MakeHeaders.sh */,
 				ABA72C281655382E003125FF /* ePub3-Prefix.pch */,
 				ABA72C291655382E003125FF /* ePub3Proj.xcconfig */,
 				ABA72C2A1655382E003125FF /* ePub3Target.xcconfig */,
@@ -1614,6 +1616,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = ABA4BAEB16ADF5A600161B77 /* Build configuration list for PBXNativeTarget "ePub3-iOS" */;
 			buildPhases = (
+				AB5D1071172AD540001D3C95 /* ShellScript */,
 				ABA4BADC16ADF5A600161B77 /* Sources */,
 				ABA4BADD16ADF5A600161B77 /* Frameworks */,
 				ABA4BADE16ADF5A600161B77 /* CopyFiles */,
@@ -1631,6 +1634,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = ABA72C311655382E003125FF /* Build configuration list for PBXNativeTarget "ePub3" */;
 			buildPhases = (
+				AB5D106F172AD46E001D3C95 /* ShellScript */,
 				ABA72C201655382E003125FF /* Sources */,
 				ABA72C211655382E003125FF /* Frameworks */,
 				ABA72C221655382E003125FF /* Headers */,
@@ -1671,6 +1675,37 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		AB5D106F172AD46E001D3C95 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd ${SRCROOT}/../..\nsh MakeHeaders.sh Apple";
+			showEnvVarsInLog = 0;
+		};
+		AB5D1071172AD540001D3C95 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd ${SRCROOT}/../..\nsh MakeHeaders.sh Apple";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		AB61CE461694845700299BB1 /* Sources */ = {
@@ -1936,8 +1971,7 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
-					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
-					"$(SRCROOT)/../../ePub3/ThirdParty/utf8-cpp/include",
+					"$(SRCROOT)/include",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1948,8 +1982,7 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
-					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
-					"$(SRCROOT)/../../ePub3/ThirdParty/utf8-cpp/include",
+					"$(SRCROOT)/include",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1968,10 +2001,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
-					"$(SRCROOT)/../../ePub3/ThirdParty",
-					"$(SRCROOT)/../../ePub3/ThirdParty/icu4c/include",
-					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
-					"$(SRCROOT)/../../ePub3/ThirdParty/utf8-cpp/include",
+					"$(SRCROOT)/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				OTHER_LDFLAGS = "-ObjC";
@@ -1994,10 +2024,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
-					"$(SRCROOT)/../../ePub3/ThirdParty",
-					"$(SRCROOT)/../../ePub3/ThirdParty/icu4c/include",
-					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
-					"$(SRCROOT)/../../ePub3/ThirdParty/utf8-cpp/include",
+					"$(SRCROOT)/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				OTHER_LDFLAGS = "-ObjC";
@@ -2075,10 +2102,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
-					"$(SRCROOT)/../../ePub3/ThirdParty",
-					"$(SRCROOT)/../../ePub3/ThirdParty/icu4c/include",
-					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
-					"$(SRCROOT)/../../ePub3/ThirdParty/utf8-cpp/include",
+					"$(SRCROOT)/include",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -2095,10 +2119,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
-					"$(SRCROOT)/../../ePub3/ThirdParty",
-					"$(SRCROOT)/../../ePub3/ThirdParty/icu4c/include",
-					"$(SRCROOT)/../../ePub3/ThirdParty/google-url/src",
-					"$(SRCROOT)/../../ePub3/ThirdParty/utf8-cpp/include",
+					"$(SRCROOT)/include",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

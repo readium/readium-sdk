@@ -22,7 +22,7 @@
 #ifndef __ePub3__media_support_info__
 #define __ePub3__media_support_info__
 
-#include "epub3.h"
+#include <ePub3/epub3.h>
 #include <map>
 #include <list>
 
