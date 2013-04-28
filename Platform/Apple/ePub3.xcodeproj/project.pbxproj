@@ -2104,6 +2104,7 @@
 					/usr/include/libxml2,
 					"$(SRCROOT)/include",
 				);
+				LD_DYLIB_INSTALL_NAME = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -2121,6 +2122,7 @@
 					/usr/include/libxml2,
 					"$(SRCROOT)/include",
 				);
+				LD_DYLIB_INSTALL_NAME = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
