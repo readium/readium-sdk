@@ -28,6 +28,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+
 /**
  @ingroup navigation
  */
@@ -36,10 +37,13 @@ class NavigationTable : public NavigationElement
 public:
                             NavigationTable()                               = delete;
                             NavigationTable(xmlNodePtr node);   // requires a HTML <nav> node
-                            NavigationTable(const string& type) : NavigationElement(), _type(type), _title() {}
-                            NavigationTable(std::string&& type) : NavigationElement(), _type(type), _title() {}
+                            NavigationTable(xmlNodePtr node, const string& sourceHref);   // requires a HTML <nav> node
+                            NavigationTable(const string& type) : NavigationElement(), _type(type), _title(), _sourceHref() {}
+                            NavigationTable(std::string&& type) : NavigationElement(), _type(type), _title(), _sourceHref() {}
                             NavigationTable(const NavigationTable&)         = delete;
-                            NavigationTable(NavigationTable&& o) : NavigationElement(o), _type(std::move(o._type)), _title(std::move(o._title)) {}
+                            NavigationTable(NavigationTable&& o) : NavigationElement(o), _type(std::move(o._type)), _title(std::move(o._title)), _sourceHref(std::move(o._sourceHref)) {}
+                                                                                                                        
+        
     virtual                 ~NavigationTable() {}
     
     const string&           Type()                      const   { return _type; }
@@ -49,10 +53,16 @@ public:
     virtual const string&   Title()                     const   { return _title; }
     virtual void            SetTitle(const string& str)         { _title = str; }
     virtual void            SetTitle(string&& str)              { _title = str; }
+
+    const string&           SourceHref()                      const   { return _sourceHref; }
+    void                    SetSourceHref(const string& str)    { _sourceHref = str; }
+    void                    SetSourceHref(string&& str)         { _sourceHref = str; }
+                                                                                                                           
     
 protected:
     string      _type;
     string      _title;     // optional
+    string      _sourceHref;      // heref to the nav item representing the table in the package
     
     bool                    Parse(xmlNodePtr node);
     NavigationElement*      BuildNavigationPoint(xmlNodePtr liNode);
