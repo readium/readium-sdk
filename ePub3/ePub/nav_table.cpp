@@ -36,8 +36,8 @@ NavigationTable::NavigationTable(xmlNodePtr node)
         throw std::invalid_argument("NavigationTable: supplied node does not appear to be a valid navigation document <nav> node");
 }
 
-NavigationTable::NavigationTable(xmlNodePtr node, const string& href)
-    : _href(href)
+NavigationTable::NavigationTable(xmlNodePtr node, const string& sourceHref)
+    : _sourceHref(sourceHref)
 {
     if ( Parse(node) == false )
         throw std::invalid_argument("NavigationTable: supplied node does not appear to be a valid navigation document <nav> node");

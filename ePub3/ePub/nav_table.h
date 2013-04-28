@@ -37,11 +37,11 @@ class NavigationTable : public NavigationElement
 public:
                             NavigationTable()                               = delete;
                             NavigationTable(xmlNodePtr node);   // requires a HTML <nav> node
-                            NavigationTable(xmlNodePtr node, const string& href);   // requires a HTML <nav> node
-                            NavigationTable(const string& type) : NavigationElement(), _type(type), _title(), _href() {}
-                            NavigationTable(std::string&& type) : NavigationElement(), _type(type), _title(), _href() {}
+                            NavigationTable(xmlNodePtr node, const string& sourceHref);   // requires a HTML <nav> node
+                            NavigationTable(const string& type) : NavigationElement(), _type(type), _title(), _sourceHref() {}
+                            NavigationTable(std::string&& type) : NavigationElement(), _type(type), _title(), _sourceHref() {}
                             NavigationTable(const NavigationTable&)         = delete;
-                            NavigationTable(NavigationTable&& o) : NavigationElement(o), _type(std::move(o._type)), _title(std::move(o._title)), _href(std::move(o._href)) {}
+                            NavigationTable(NavigationTable&& o) : NavigationElement(o), _type(std::move(o._type)), _title(std::move(o._title)), _sourceHref(std::move(o._sourceHref)) {}
                                                                                                                         
         
     virtual                 ~NavigationTable() {}
@@ -54,15 +54,15 @@ public:
     virtual void            SetTitle(const string& str)         { _title = str; }
     virtual void            SetTitle(string&& str)              { _title = str; }
 
-    const string&           Href()                      const   { return _href; }
-    void                    SetHref(const string& str)          { _href = str; }
-    void                    SetHref(string&& str)               { _href = str; }
+    const string&           SourceHref()                      const   { return _sourceHref; }
+    void                    SetSourceHref(const string& str)    { _sourceHref = str; }
+    void                    SetSourceHref(string&& str)         { _sourceHref = str; }
                                                                                                                            
     
 protected:
     string      _type;
     string      _title;     // optional
-    string      _href;      // heref to the nav item representing the table in the package
+    string      _sourceHref;      // heref to the nav item representing the table in the package
     
     bool                    Parse(xmlNodePtr node);
     NavigationElement*      BuildNavigationPoint(xmlNodePtr liNode);
