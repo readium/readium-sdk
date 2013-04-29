@@ -36,7 +36,6 @@ class NavigationTable : public NavigationElement
 {
 public:
                             NavigationTable()                               = delete;
-                            NavigationTable(xmlNodePtr node);   // requires a HTML <nav> node
                             NavigationTable(xmlNodePtr node, const string& sourceHref);   // requires a HTML <nav> node
                             NavigationTable(const string& type) : NavigationElement(), _type(type), _title(), _sourceHref() {}
                             NavigationTable(std::string&& type) : NavigationElement(), _type(type), _title(), _sourceHref() {}

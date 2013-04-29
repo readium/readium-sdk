@@ -2104,7 +2104,7 @@
 					/usr/include/libxml2,
 					"$(SRCROOT)/include",
 				);
-				LD_DYLIB_INSTALL_NAME = "";
+				LD_DYLIB_INSTALL_NAME = "$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -2122,7 +2122,7 @@
 					/usr/include/libxml2,
 					"$(SRCROOT)/include",
 				);
-				LD_DYLIB_INSTALL_NAME = "";
+				LD_DYLIB_INSTALL_NAME = "$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

@@ -30,12 +30,6 @@ static std::map<string, bool> AllowedRootNodeNames = {
     { "nav", true }
 };
 
-NavigationTable::NavigationTable(xmlNodePtr node)
-{
-    if ( Parse(node) == false )
-        throw std::invalid_argument("NavigationTable: supplied node does not appear to be a valid navigation document <nav> node");
-}
-
 NavigationTable::NavigationTable(xmlNodePtr node, const string& sourceHref)
     : _sourceHref(sourceHref)
 {
