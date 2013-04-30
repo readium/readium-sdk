@@ -50,9 +50,10 @@ public:
                 Glossary(string&& identifier) : _ident(identifier) {}
                 Glossary(Glossary&& o) : _ident(std::move(o._ident)), _lookup(std::move(o._lookup)) {}
     virtual     ~Glossary() {}
-    
-                Glossary() = delete;
-                Glossary(const Glossary&) = delete;
+
+private:
+                Glossary() _DELETED_;
+                Glossary(const Glossary&) _DELETED_;
     
     virtual const string&   Title()                     const   { return _ident; }
     virtual void            SetTitle(const string& str)         { _ident = str; }

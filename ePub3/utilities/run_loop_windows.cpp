@@ -19,8 +19,6 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <process.h>
-
 // Common pieces used by all platforms
 #include "run_loop_common.ipp"
 
@@ -34,25 +32,31 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+#if EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES)
 using StackLock = std::lock_guard<std::recursive_mutex>;
+#else
+typedef std::lock_guard<std::recursive_mutex> StackLock;
+#endif
 
 // a std::duration type matching the integral type and frequency of
 // a timer's LARGE_INTEGER fire date.
-typedef duration<LONGLONG, std::ratio<1, 10000000>> winDuration;
+typedef std::chrono::duration<LONGLONG, std::ratio<1, 10000000>> winDuration;
+
+#define _THROW_LAST_ERROR() throw std::system_error(static_cast<int>(GetLastError()), std::system_category())
 
 template <class _Clock, class _Rep>
 static inline void TimePointToLargeInteger(std::chrono::time_point<_Clock, _Rep>& tp, LARGE_INTEGER* ft)
 {
-    using std::chrono;
+    using namespace std::chrono;
     winDuration t = duration_cast<winDuration>(tp.time_since_epoch());
-    ft.QuadPart = t.count() + 116444736000000000;
+    ft->QuadPart = t.count() + 116444736000000000;
 }
 
 template <class _Clock, class _Rep>
 static inline void LargeIntegerToTimePoint(LARGE_INTEGER* ft, std::chrono::time_point<_Clock, _Rep>& tp)
 {
-    using std::chrono;
-    winDuration t(ft.QuadPart);
+    using namespace std::chrono;
+    winDuration t(ft->QuadPart);
     tp = duration_cast<_Rep>(winDuration);
 }
 
@@ -60,12 +64,12 @@ RunLoop::RunLoop() : _wakeHandle(NULL), _timers(), _sources(), _observers(), _li
 {
     _wakeHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
     if ( _wakeHandle == NULL )
-        throw std::system_error(static_cast<int>(GetLastError()));
+        _THROW_LAST_ERROR();
 }
 RunLoop::~RunLoop()
 {
-    if ( _wakeEvent != NULL )
-        ::CloseHandle(_wakeEvent);
+    if ( _wakeHandle != NULL )
+        ::CloseHandle(_wakeHandle);
 }
 void RunLoop::PerformFunction(std::function<void ()> fn)
 {
@@ -177,7 +181,7 @@ bool RunLoop::IsWaiting() const
 }
 void RunLoop::WakeUp()
 {
-    SetEvent(_wakeEvent);
+    SetEvent(_wakeHandle);
 }
 RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chrono::nanoseconds& timeout)
 {
@@ -189,7 +193,7 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
     if ( _stop.exchange(false) )
         return ExitReason::RunStopped;
 
-    _wokenForNewHandle = false;
+    _resetHandles = false;
     DWORD handleCount = _timers.size()+_sources.size()+1;
     if ( handleCount == 1 )
         return ExitReason::RunFinished;
@@ -218,7 +222,7 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
             handleCount = _timers.size()+_sources.size()+1;
             if ( handleCount == 1 )
             {
-                reason = ExitReason::RunLoopFinished;
+                reason = ExitReason::RunFinished;
                 break;
             }
             
@@ -247,23 +251,23 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
 
         if ( signaled == WAIT_TIMEOUT )
         {
-            reason = ExitReason::RunLoopTimedOut;
+            reason = ExitReason::RunTimedOut;
             break;
         }
         else if ( signaled = WAIT_FAILED )
         {
             // Q: Is throwing GetLastError() more appropriate?
-            reason = RunLoop::RunLoopFinished;
+            reason = ExitReason::RunFinished;
             break;
         }
         else if ( signaled < WAIT_OBJECT_0+handleCount )
         {
             HANDLE h = pHandles[signaled];
-            if ( h == _wakeEvent )
+            if ( h == _wakeHandle )
             {
                 if ( _stop.exchange(false) )
                 {
-                    reason = ExitReason::RunLoopStopped;
+                    reason = ExitReason::RunStopped;
                     break;
                 }
             }
@@ -280,7 +284,7 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
                     auto sourceIter = _sources.find(h);
                     if ( sourceIter != _sources.end() )
                     {
-                        ProcessSource(sourceIter->second);
+                        ProcessEventSource(sourceIter->second);
                         if ( returnAfterSourceHandled )
                         {
                             reason = ExitReason::RunHandledSource;
@@ -292,7 +296,7 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
         }
         else
         {
-            reason = RunLoop::RunLoopFinished;
+            reason = ExitReason::RunFinished;
             break;
         }
         
@@ -355,7 +359,7 @@ void RunLoop::ProcessEventSource(RefCounted<EventSource> source)
 
     if ( source->IsCancelled() )
     {
-        RemoveSource(source);
+        RemoveEventSource(source);
     }
 }
 
@@ -413,17 +417,21 @@ RunLoop::EventSource::EventSource(EventHandlerFn fn) : _event(NULL), _fn(fn)
 {
     _event = CreateEvent(NULL, FALSE, FALSE, NULL);
     if ( _event == NULL )
-        throw std::system_error(static_cast<int>(::GetLastError()));
+        _THROW_LAST_ERROR();
 }
-RunLoop::EventSource::EventSource(const EventSource& o) : _event(NULL), _fn(o.fn)
+RunLoop::EventSource::EventSource(const EventSource& o) : _event(NULL), _fn(o._fn)
 {
     _event = CreateEvent(NULL, FALSE, FALSE, NULL);
     if ( _event == NULL )
-        throw std::system_error(static_cast<int>(::GetLastError()));
+        _THROW_LAST_ERROR();
 }
 RunLoop::EventSource::EventSource(EventSource&& o) : _event(o._event), _fn(std::move(o._fn))
 {
     o._event = NULL;
+}
+RunLoop::EventSource::~EventSource()
+{
+    Cancel();
 }
 RunLoop::EventSource& RunLoop::EventSource::operator=(const EventSource& o)
 {
@@ -433,7 +441,7 @@ RunLoop::EventSource& RunLoop::EventSource::operator=(const EventSource& o)
     
     _event = CreateEvent(NULL, FALSE, FALSE, NULL);
     if ( _event == NULL )
-        throw std::system_error(static_cast<int>(::GetLastError()));
+        _THROW_LAST_ERROR();
     return *this;
 }
 RunLoop::EventSource& RunLoop::EventSource::operator=(EventSource&& o)
@@ -453,12 +461,12 @@ bool RunLoop::EventSource::IsCancelled() const
 {
     return _event == NULL;
 }
-void RunLoop::Cancel()
+void RunLoop::EventSource::Cancel()
 {
-    ::CloseEvent(_event);
+    ::CloseHandle(_event);
     _event = NULL;
 }
-void RunLoop::Signal()
+void RunLoop::EventSource::Signal()
 {
     if ( _event == NULL )
         return;
@@ -472,37 +480,37 @@ RunLoop::Timer::Timer(Clock::time_point& fireDate, Clock::duration& interval, Ti
 
     _handle = ::CreateWaitableTimer(NULL, FALSE, NULL);
     if ( _handle == NULL )
-        throw std::system_error(static_cast<int>(::GetLastError()));
+        _THROW_LAST_ERROR();
 
     // the type Windows uses to set the timer's fire date
     LARGE_INTEGER due;
     TimePointToLargeInteger(fireDate, &due);
     
-    if ( ::SetWaitableTimer(_handle, &due, static_cast<LONG>(duration_cast<milliseconds>(interval)),
+    if ( ::SetWaitableTimer(_handle, &due, static_cast<LONG>(duration_cast<milliseconds>(interval).count()),
                             NULL, NULL, FALSE) == FALSE )
     {
         ::CloseHandle(_handle);
-        throw std::system_error(static_cast<int>(::GetLastError()));
+        _THROW_LAST_ERROR();
     }
 }
-RunLoop::Timer::Timer(Clock::duration& interval, TimerFn fn) : _fireDate(Clock::now() + interval), _interval(interval), _fn(fn)
+RunLoop::Timer::Timer(Clock::duration& interval, bool repeat, TimerFn fn) : _fireDate(Clock::now() + interval), _interval(interval), _fn(fn)
 {
     using namespace std::chrono;
 
     _handle = ::CreateWaitableTimer(NULL, FALSE, NULL);
     if ( _handle == NULL )
-        throw std::system_error(static_cast<int>(::GetLastError()));
+        _THROW_LAST_ERROR();
 
     // the type Windows uses to set the timer's fire date
     LARGE_INTEGER due;
     TimePointToLargeInteger(_fireDate, &due);
 
     if ( ::SetWaitableTimer(_handle, &due,
-                            (repeat ? static_cast<LONG>(duration_cast<milliseconds>(interval)) : 0L),
+                            (repeat ? static_cast<LONG>(duration_cast<milliseconds>(interval).count()) : 0L),
                             NULL, NULL, FALSE) == FALSE )
     {
         ::CloseHandle(_handle);
-        throw std::system_error(static_cast<int>(::GetLastError()));
+        _THROW_LAST_ERROR();
     }
 }
 RunLoop::Timer::Timer(const Timer& o) : _fireDate(o._fireDate), _interval(o._interval), _fn(o._fn)
@@ -511,18 +519,18 @@ RunLoop::Timer::Timer(const Timer& o) : _fireDate(o._fireDate), _interval(o._int
 
     _handle = ::CreateWaitableTimer(NULL, FALSE, NULL);
     if ( _handle == NULL )
-        throw std::system_error(static_cast<int>(::GetLastError()));
+        _THROW_LAST_ERROR();
 
     // the type Windows uses to set the timer's fire date
     LARGE_INTEGER due;
     TimePointToLargeInteger(_fireDate, &due);
 
     if ( ::SetWaitableTimer(_handle, &due,
-                            (repeat ? static_cast<LONG>(duration_cast<milliseconds>(interval)) : 0L),
+                            (o.Repeats() ? static_cast<LONG>(duration_cast<milliseconds>(_interval).count()) : 0L),
                             NULL, NULL, FALSE) == FALSE )
     {
         ::CloseHandle(_handle);
-        throw std::system_error(static_cast<int>(::GetLastError()));
+        _THROW_LAST_ERROR();
     }
 }
 RunLoop::Timer::Timer(Timer&& o) : _fireDate(std::move(_fireDate)), _interval(std::move(o._interval)), _fn(std::move(o._fn)), _handle(o._handle)
@@ -536,6 +544,8 @@ RunLoop::Timer::~Timer()
 }
 RunLoop::Timer& RunLoop::Timer::operator=(const Timer& o)
 {
+    using namespace std::chrono;
+    
     _fn = o._fn;
     _fireDate = o._fireDate;
     _interval = o._interval;
@@ -550,18 +560,18 @@ RunLoop::Timer& RunLoop::Timer::operator=(const Timer& o)
         {
             _handle = ::CreateWaitableTimer(NULL, FALSE, NULL);
             if ( _handle == NULL )
-                throw std::system_error(static_cast<int>(::GetLastError()));
+                _THROW_LAST_ERROR();
         }
 
         LARGE_INTEGER due;
         TimePointToLargeInteger(_fireDate, &due);
 
         if ( ::SetWaitableTimer(_handle, &due,
-                                (repeat ? static_cast<LONG>(duration_cast<milliseconds>(interval)) : 0L),
+                                (o.Repeats() ? static_cast<LONG>(duration_cast<milliseconds>(_interval).count()) : 0L),
                                 NULL, NULL, FALSE) == FALSE )
         {
             ::CloseHandle(_handle);
-            throw std::system_error(static_cast<int>(::GetLastError()));
+            _THROW_LAST_ERROR();
         }
     }
 
@@ -584,12 +594,12 @@ bool RunLoop::Timer::operator==(const Timer& o) const
 {
     return (_fireDate == o._fireDate) && (_interval == o._interval) && (_fn.target<void>() == o._fn.target<void>());
 }
-void Runloop::Timer::Cancel()
+void RunLoop::Timer::Cancel()
 {
     _cancelled = true;
     ::CancelWaitableTimer(_handle);
 }
-void RunLoop::Timer::IsCancelled() const
+bool RunLoop::Timer::IsCancelled() const
 {
     return _cancelled;
 }
@@ -607,12 +617,13 @@ RunLoop::Timer::Clock::time_point RunLoop::Timer::GetNextFireDateTime() const
 }
 void RunLoop::Timer::SetNextFireDateTime(Clock::time_point& when)
 {
+    using namespace std::chrono;
     if ( _cancelled )
         return;
 
     LARGE_INTEGER due;
     TimePointToLargeInteger(_fireDate, &due);
-    ::SetWaitableTimer(_handle, &due, static_cast<LONG>(duration_cast<milliseconds>(interval)),
+    ::SetWaitableTimer(_handle, &due, static_cast<LONG>(duration_cast<milliseconds>(_interval).count()),
                        NULL, NULL, FALSE);
 }
 RunLoop::Timer::Clock::duration RunLoop::Timer::GetNextFireDateDuration() const
@@ -621,6 +632,7 @@ RunLoop::Timer::Clock::duration RunLoop::Timer::GetNextFireDateDuration() const
 }
 void RunLoop::Timer::SetNextFireDateDuration(Clock::duration& when)
 {
+    using namespace std::chrono;
     if ( _cancelled )
         return;
 
@@ -628,7 +640,7 @@ void RunLoop::Timer::SetNextFireDateDuration(Clock::duration& when)
 
     LARGE_INTEGER due;
     TimePointToLargeInteger(_fireDate, &due);
-    ::SetWaitableTimer(_handle, &due, static_cast<LONG>(duration_cast<milliseconds>(interval)),
+    ::SetWaitableTimer(_handle, &due, static_cast<LONG>(duration_cast<milliseconds>(_interval).count()),
                        NULL, NULL, FALSE);
 }
 

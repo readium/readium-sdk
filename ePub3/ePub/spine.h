@@ -83,19 +83,21 @@ public:
     static const IRI                PageSpreadRightPropertyIRI;
     static const IRI                PageSpreadLeftPropertyIRI;
     
-public:
+private:
     ///
     /// No default constructor.
-                        SpineItem()                                     = delete;
+                        SpineItem()                                     _DELETED_;
+    ///
+    /// There is no copy constructor.
+                        SpineItem(const SpineItem&)                     _DELETED_;
+
+public:
     /**
      Constructs a new SpineItem.
      @param node The `<itemref>` element node for this spine item.
      @param owner The package contaning this spine item.
      */
                         SpineItem(xmlNodePtr node, Package * owner);
-    ///
-    /// There is no copy constructor.
-                        SpineItem(const SpineItem&)                     = delete;
     ///
     /// C++11 move constructor.
                         SpineItem(SpineItem&&);
@@ -193,7 +195,7 @@ public:
      @result A SpineItem.
      @throws std::out_of_range if `idx` is out of bounds.
      */
-    SpineItem*          at(ssize_t idx)                 throw (std::out_of_range);
+    SpineItem*          at(ssize_t idx);
     
     /**
      Retrieves the spine item at a relative index.
@@ -201,7 +203,7 @@ public:
      @result A SpineItem.
      @throws std::out_of_range if `idx` is out of bounds.
      */
-    const SpineItem*    at(ssize_t idx)         const   throw (std::out_of_range);
+    const SpineItem*    at(ssize_t idx)         const;
     
     /**
      Retrieves the spine item at a relative index.
@@ -209,7 +211,7 @@ public:
      @result A SpineItem.
      @throws std::out_of_range if `idx` is out of bounds.
      */
-    SpineItem*          operator[](ssize_t idx)         throw (std::out_of_range) { return at(idx); }
+    SpineItem*          operator[](ssize_t idx)                                   { return at(idx); }
     
     /**
      Retrieves the spine item at a relative index.
@@ -217,7 +219,7 @@ public:
      @result A SpineItem.
      @throws std::out_of_range if `idx` is out of bounds.
      */
-    const SpineItem*    operator[](ssize_t idx) const   throw (std::out_of_range) { return at(idx); }
+    const SpineItem*    operator[](ssize_t idx) const                             { return at(idx); }
     
     /// @}
     

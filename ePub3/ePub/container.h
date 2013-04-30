@@ -62,6 +62,11 @@ public:
     ///
     /// A list of encryption information.
     typedef std::vector<EncryptionInfo*>    EncryptionList;
+
+private:
+    ///
+    /// There is no copy constructor.
+                Container(const Container&)                 _DELETED_;
     
 public:
     /**
@@ -69,9 +74,6 @@ public:
      @param path The filesystem path to the container file (i.e. the .epub file).
      */
                 Container(const string& path);
-    ///
-    /// There is no copy constructor.
-                Container(const Container&)                 = delete;
     ///
     /// C++11 move constructor.
                 Container(Container&& o);
@@ -114,7 +116,7 @@ public:
      @result A std::unique_ptr for a new stream to the specified file, or `nullptr`
      if the file was not found.
      */
-    virtual Auto<ByteStream>        ReadStreamAtPath(const string& path)        const;
+    virtual unique_ptr<ByteStream>        ReadStreamAtPath(const string& path)        const;
     
 protected:
     Archive *       _archive;

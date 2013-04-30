@@ -26,7 +26,14 @@ EPUB3_BEGIN_NAMESPACE
 
 EncryptionInfo::EncryptionInfo(xmlNodePtr node)
 {
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(node->doc, {{"enc", XMLENCNamespaceURI}, {"dsig", XMLDSigNamespaceURI}});
+#else
+    XPathWrangler::NamespaceList nsList;
+    nsList["enc"] = XMLENCNamespaceURI;
+    nsList["dsig"] = XMLDSigNamespaceURI;
+    XPathWrangler xpath(node->doc, nsList);
+#endif
     
     auto strings = xpath.Strings("./enc:EncryptionMethod/@Algorithm", node);
     if ( strings.empty() )

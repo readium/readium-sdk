@@ -32,7 +32,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-Auto<Library> Library::_singleton(nullptr);
+unique_ptr<Library> Library::_singleton(nullptr);
 
 Library::Library(const string& path)
 {
@@ -84,7 +84,7 @@ bool Library::Load(const string& path)
             _containers[thisPath] = nullptr;
             for ( auto uid : uidList )
             {
-                _packages[uid] = {thisPath, nullptr};
+                _packages[uid] = std::make_pair(thisPath, nullptr);
             }
         }
         catch (...)
@@ -130,7 +130,7 @@ void Library::AddPublicationsInContainer(Container* container, const string& pat
     for ( auto pkg : container->Packages() )
     {
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
-        _packages.emplace(pkg->UniqueID(), LookupEntry({path, pkg}));
+        _packages.emplace(pkg->UniqueID(), LookupEntry(std::make_pair(path, pkg)));
 #else
         _packages[pkg->UniqueID()] = LookupEntry({path, pkg});
 #endif
@@ -187,7 +187,7 @@ const ManifestItem* Library::ManifestItemForCFI(const IRI &urlWithCFI, CFI* pRem
     
     return pkg->ManifestItemForCFI(cfi, pRemainingCFI);
 }
-Auto<ByteStream> Library::ReadStreamForEPubURL(const IRI &url, CFI *pRemainingCFI)
+unique_ptr<ByteStream> Library::ReadStreamForEPubURL(const IRI &url, CFI *pRemainingCFI)
 {
     CFI cfi = url.ContentFragmentIdentifier();
     if ( cfi.Empty() )

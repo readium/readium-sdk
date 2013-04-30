@@ -36,10 +36,17 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+#if EPUB_COMPILER_SUPPORTS(CXX_USER_LITERALS)
 static const xmlChar * OPFNamespace = "http://www.idpf.org/2007/opf"_xml;
 static const xmlChar * DCNamespace = "http://purl.org/dc/elements/1.1/"_xml;
 static const xmlChar * MediaTypeElementName = "mediaType"_xml;
+#else
+static const xmlChar * OPFNamespace = (const xmlChar*)"http://www.idpf.org/2007/opf";
+static const xmlChar * DCNamespace = (const xmlChar*)"http://purl.org/dc/elements/1.1/";
+static const xmlChar * MediaTypeElementName = (const xmlChar*)"mediaType";
+#endif
 
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
 const PackageBase::PropertyVocabularyMap PackageBase::gReservedVocabularies({
     { "", "http://idpf.org/epub/vocab/package/#" },
     { "dcterms", "http://purl.org/dc/terms/" },
@@ -71,6 +78,43 @@ const std::map<const string, bool> PackageBase::CoreMediaTypes({
     {"text/css", true},                             // EPUB Style Sheets
     {"text/javascript", true}                       // Scripts
 });
+#else
+typedef PackageBase::PropertyVocabularyMap::value_type __vmap_t;
+typedef std::pair<const string, bool> __mtype_t;
+static const __vmap_t __vmap_values[6] = {
+    __vmap_t("", "http://idpf.org/epub/vocab/package/#"),
+    __vmap_t("dcterms", "http://purl.org/dc/terms/"),
+    __vmap_t("marc", "http://id.loc.gov/vocabulary/"),
+    __vmap_t("media", "http://www.idpf.org/epub/vocab/overlays/#"),
+    __vmap_t("onix", "http://www.editeur.org/ONIX/book/codelists/current.html#"),
+    __vmap_t("xsd", "http://www.w3.org/2001/XMLSchema#")
+};
+static const __mtype_t __mtype_values[14] = {
+    // Image Types
+    __mtype_t("image/gif", true),                            // GIF Images
+    __mtype_t("image/jpeg", true),                           // JPEG Images
+    __mtype_t("image/png", true),                            // PNG Images
+    __mtype_t("image/svg+xml", true),                        // SVG Documents
+
+    // Application Types
+    __mtype_t("application/xhtml+xml", true),                // XHTML Content Documents and the EPUB Navigation Document
+    __mtype_t("application/x-dtbncx+xml", true),             // The superceded NCX
+    __mtype_t("application/vnd.ms-opentype", true),          // OpenType fonts
+    __mtype_t("application/font-woff", true),                // WOFF fonts
+    __mtype_t("application/smil+xml", true),                 // EPUB Media Overlay documents
+    __mtype_t("application/pls+xml", true),                  // Text-to-Speech (TTS) Pronunciation lexicons
+
+    // Audio Types
+    __mtype_t("audio/mpeg", true),                           // MP3 audio
+    __mtype_t("audio/mp4", true),                            // AAC LC audio using MP4 container
+
+    // Text Types
+    __mtype_t("text/css", true),                             // EPUB Style Sheets
+    __mtype_t("text/javascript", true)                       // Scripts
+};
+const PackageBase::PropertyVocabularyMap PackageBase::gReservedVocabularies(&__vmap_values[0], &__vmap_values[6]);
+const std::map<const string, bool> PackageBase::CoreMediaTypes(&__mtype_values[0], &__mtype_values[14]);
+#endif
 
 std::locale PackageBase::gCurrentLocale("");        // NB: std::locale() returns the C locale.
 
@@ -212,7 +256,7 @@ IRI PackageBase::PropertyIRIFromAttributeValue(const string &attrValue) const
     // there are two captures, at indices 1 and 2
     return MakePropertyIRI(pieces.str(2), pieces.str(1));
 }
-Auto<ByteStream> PackageBase::ReadStreamForItemAtPath(const string &path) const
+unique_ptr<ByteStream> PackageBase::ReadStreamForItemAtPath(const string &path) const
 {
     return _archive->ByteStreamAtPath(path.stl_str());
 }
@@ -222,7 +266,7 @@ void PackageBase::InstallPrefixesFromAttributeValue(const ePub3::string &attrVal
         return;
     
     static REGEX_NS::regex::flag_type reflags(REGEX_NS::regex::ECMAScript|REGEX_NS::regex::optimize);
-    static REGEX_NS::regex re(R"X((\w+):\s*(.+?)(?:\s+|$))X", reflags);
+    static REGEX_NS::regex re("X((\\w+):\\s*(.+?)(?:\\s+|$))X", reflags);
     auto pos = REGEX_NS::sregex_iterator(attrValue.stl_str().begin(), attrValue.stl_str().end(), re);
     auto end = REGEX_NS::sregex_iterator();
     
@@ -269,13 +313,19 @@ NavigationList PackageBase::NavTablesFromManifestItem(const ManifestItem* pItem)
         return NavigationList();
     
     // find each <nav> node
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}}); // goddamn I love C++11 initializer list constructors
+#else
+    XPathWrangler::NamespaceList __m;
+    __m["epub"] = ePub3NamespaceURI;
+    XPathWrangler xpath(doc, __m);
+#endif
     xpath.NameDefaultNamespace("html");
     
     xmlNodeSetPtr nodes = xpath.Nodes("//html:nav");
     
     NavigationList tables;
-    for ( size_t i = 0; i < nodes->nodeNr; i++ )
+    for ( int i = 0; i < nodes->nodeNr; i++ )
     {
         xmlNodePtr navNode = nodes->nodeTab[i];
         tables.push_back(new class NavigationTable(navNode));
@@ -328,8 +378,14 @@ bool Package::Unpack()
     
     if ( _spineCFIIndex == 0 )
         return false;       // spineless!
-    
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(_opf, {{"opf", OPFNamespace}, {"dc", DCNamespace}});
+#else
+    XPathWrangler::NamespaceList __m;
+    __m["opf"] = OPFNamespace;
+    __m["dc"] = DCNamespace;
+    XPathWrangler xpath(_opf, __m);
+#endif
     
     // simple things: manifest and spine items
     xmlNodeSetPtr manifestNodes = nullptr;
@@ -610,7 +666,14 @@ string Package::URLSafeUniqueID() const
 }
 string Package::PackageID() const
 {
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(_opf, {{"opf", OPFNamespace}, {"dc", DCNamespace}});
+#else
+    XPathWrangler::NamespaceList __m;
+    __m["opf"] = OPFNamespace;
+    __m["dc"] = DCNamespace;
+    XPathWrangler xpath(_opf, __m);
+#endif
     XPathWrangler::StringList strings = xpath.Strings("//*[@id=/opf:package/@unique-identifier]/text()");
     if ( strings.empty() )
         return string::EmptyString;
@@ -732,12 +795,12 @@ const ManifestItem* Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRemaining
     }
     catch (std::out_of_range& e)
     {
-        throw CFI::InvalidCFI("CFI references out-of-range spine item");
+        throw CFI::InvalidCFI(_Str("CFI references out-of-range spine item: ", e.what()));
     }
     
     return result;
 }
-Auto<ByteStream> Package::ReadStreamForRelativePath(const string &path) const
+unique_ptr<ByteStream> Package::ReadStreamForRelativePath(const string &path) const
 {
     return _archive->ByteStreamAtPath(path.stl_str());
 }

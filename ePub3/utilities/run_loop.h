@@ -9,14 +9,6 @@
 #ifndef __ePub3__run_loop__
 #define __ePub3__run_loop__
 
-#include <ePub3/utilities/basic.h>
-#include <ePub3/utilities/utfstring.h>
-#include <chrono>
-#include <list>
-#include <mutex>
-#include <atomic>
-#include <ePub3/utilities/ref_counted.h>
-
 //#undef EPUB_USE_CF
 //#define EPUB_OS_ANDROID 1
 
@@ -26,22 +18,26 @@
 # include <time.h>
 struct ALooper;
 #elif EPUB_OS(WINDOWS)
-# error Add Windows code to RunLoop.h
+# include <windows.h>
 #else
 # include <condition_variable>      // GNU libstdc++ 4.7 has this guy in a separate header
 # include <pthread.h>
 # include <time.h>
 #endif
 
+#include <ePub3/utilities/basic.h>
+#include <ePub3/utilities/utfstring.h>
+#include <chrono>
+#include <list>
+#include <mutex>
+#include <atomic>
+#include <ePub3/utilities/ref_counted.h>
+
 #if EPUB_USE(CF)
 #include "cf_helpers.h"
 #endif
 
 EPUB3_BEGIN_NAMESPACE
-
-#if EPUB_OS(WINDOWS)
-class HandleSet;
-#endif
 
 class RunLoop
 {
@@ -88,8 +84,8 @@ public:
 #endif
         
         friend class RunLoop;
-        
-                    Observer()                  = delete;
+
+                                Observer()                  _DELETED_;
         
     public:
         /**
@@ -155,7 +151,7 @@ public:
         
         friend class RunLoop;
         
-                        EventSource()                   = delete;
+                        EventSource()                   _DELETED_;
         
     public:
                         EventSource(EventHandlerFn fn);
@@ -203,10 +199,18 @@ public:
         
         ///
         /// Timers always use the system clock.
-#if EPUB_USE(CF)
+#if EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES)
+# if EPUB_USE(CF)
         using Clock = cf_clock;
-#else
+# else
         using Clock = std::chrono::system_clock;
+# endif
+#else
+# if EPUB_USE(CF)
+        typedef cf_clock Clock;
+# else
+        typedef std::chrono::system_clock Clock;
+# endif
 #endif
         
     private:
@@ -233,7 +237,7 @@ public:
         
         ///
         /// No default constructor.
-                        Timer()                 = delete;
+                        Timer()                 _DELETED_;
         
     protected:
         Timer(Clock::time_point& fireDate, Clock::duration& interval, TimerFn fn);
@@ -296,7 +300,7 @@ public:
         
         ///
         /// Retrieves the repeat interval of a timer.
-        template <class _Rep, class _Period = std::ratio<1>>
+        template <class _Rep, class _Period _DEFAULT_(std::ratio<1>)>
         std::chrono::duration<_Rep, _Period>    RepeatInterval()    const {
             using namespace std::chrono;
             return duration_cast<decltype(RepeatInterval<_Rep,_Period>())>(RepeatIntervalInternal());
@@ -304,7 +308,7 @@ public:
         
         ///
         /// Retrieves the date at which the timer will next fire.
-        template <class _Duration = typename Clock::duration>
+        template <class _Duration _DEFAULT_(typename Clock::duration)>
         std::chrono::time_point<Clock, _Duration>  GetNextFireDate()   const {
             using namespace std::chrono;
             return time_point_cast<_Duration>(GetNextFireDateTime());
@@ -312,7 +316,7 @@ public:
         
         ///
         /// Sets the date at whech the timer will next fire.
-        template <class _Duration = typename Clock::duration>
+        template <class _Duration _DEFAULT_(typename Clock::duration)>
         void            SetNextFireDate(std::chrono::time_point<Clock, _Duration>& when) {
             using namespace std::chrono;
             Clock::time_point __t = time_point_cast<Clock::duration>(when);
@@ -321,7 +325,7 @@ public:
         
         ///
         /// Retrieves the timer's next fire date as an interval from the current time.
-        template <class _Rep, class _Period = std::ratio<1>>
+        template <class _Rep, class _Period _DEFAULT_(std::ratio<1>)>
         std::chrono::duration<_Rep, _Period>    GetNextFireDate()   const {
             using namespace std::chrono;
             return duration_cast<_Rep>(GetNextFireDateDuration());
@@ -329,7 +333,7 @@ public:
         
         ///
         /// Sets the timer's next fire date using a relative time interval (from now).
-        template <class _Rep, class _Period = std::ratio<1>>
+        template <class _Rep, class _Period _DEFAULT_(std::ratio<1>)>
         void            SetNextFireDate(std::chrono::duration<_Rep, _Period>& when) {
             using namespace std::chrono;
             Clock::duration __d = duration_cast<Clock::duration>(when);
@@ -397,7 +401,7 @@ public:
      pending timers and a miximum of one event source.
      @result Returns a value defining the reason that the method returned.
      */
-    template <class _Rep = long long, class _Period = std::ratio<1>>
+    template <class _Rep _DEFAULT_(long long), class _Period _DEFAULT_(std::ratio<1>)>
     ExitReason      Run(bool returnAfterSourceHandled,
                         std::chrono::duration<_Rep,_Period> timeout) {
         using namespace std::chrono;
@@ -434,10 +438,10 @@ protected:
 private:
     ///
     /// No copy constructor
-                    RunLoop(const RunLoop& o) = delete;
+                    RunLoop(const RunLoop& o) _DELETED_;
     ///
     /// No move constructor
-                    RunLoop(RunLoop&& o) = delete;
+                    RunLoop(RunLoop&& o) _DELETED_;
     
 #if EPUB_OS(ANDROID)
     static int      _ReceiveLoopEvent(int fd, int events, void* data);
@@ -458,7 +462,7 @@ private:
     ///
     /// If a timer will fire before the given timeout, returns a new timeout
     std::chrono::system_clock::time_point   TimeoutOrTimer(std::chrono::system_clock::time_point& timeout);
-#elif EPUB_OS(WINDOWS_
+#elif EPUB_OS(WINDOWS)
     ///
     /// Process a firing timer
     void            ProcessTimer(RefCounted<Timer> timer);

@@ -8,7 +8,7 @@
 #include "targetver.h"
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
-
+#define NOMINMAX                        // get rid of STUPID min/max defines which clash with SO MANY APIs
 
 
 // TODO: reference additional headers your program requires here

@@ -20,13 +20,14 @@
 //
 
 #include "base.h"
-#include "node.h"
+#include <xml/tree/document.h>
 //#include "document.h"
 //#include "element.h"
 //#include "attribute.h"
-#include "ns.h"
+#include <xml/tree/node.h>
 //#include "dtd.h"
 #include <libxml/globals.h>
+#include <stdio.h>
 
 EPUB3_XML_BEGIN_NAMESPACE
 
@@ -45,20 +46,9 @@ static void __deregisterNode(xmlNodePtr aNode)
     Node::Unwrap(aNode);
 }
 
-__attribute__((constructor))
-static void __setupLibXML(void)
-{
-    xmlInitGlobals();
-    defNodeRegister = xmlRegisterNodeDefault(&__registerNode);
-    defThrNodeDeregister = xmlThrDefRegisterNodeDefault(&__registerNode);
-    defNodeDeregister = xmlDeregisterNodeDefault(&__deregisterNode);
-    defThrNodeDeregister = xmlThrDefDeregisterNodeDefault(&__deregisterNode);
-    
-    xmlSubstituteEntitiesDefault(1);
-    xmlLoadExtDtdDefaultValue = 1;
-}
-
+#if !EPUB_COMPILER(MSVC)
 __attribute__((destructor))
+#endif
 static void __resetLibXMLOverrides(void)
 {
     xmlRegisterNodeDefault(defNodeRegister);
@@ -68,6 +58,21 @@ static void __resetLibXMLOverrides(void)
     
     xmlSubstituteEntitiesDefault(0);
     xmlLoadExtDtdDefaultValue = 0;
+}
+
+INITIALIZER(__setupLibXML)
+{
+    xmlInitGlobals();
+    defNodeRegister = xmlRegisterNodeDefault(&__registerNode);
+    defThrNodeDeregister = xmlThrDefRegisterNodeDefault(&__registerNode);
+    defNodeDeregister = xmlDeregisterNodeDefault(&__deregisterNode);
+    defThrNodeDeregister = xmlThrDefDeregisterNodeDefault(&__deregisterNode);
+
+    xmlSubstituteEntitiesDefault(1);
+    xmlLoadExtDtdDefaultValue = 1;
+#if EPUB_COMPILER(MSVC)
+    atexit(__resetLibXMLOverrides);
+#endif
 }
 
 EPUB3_XML_END_NAMESPACE

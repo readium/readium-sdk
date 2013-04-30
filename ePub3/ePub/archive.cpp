@@ -33,12 +33,12 @@ void Archive::RegisterArchive(CreatorFn creator, SnifferFn sniffer)
 }
 void Archive::Initialize()
 {
-    RegisterArchive([](const std::string& path) { return new ZipArchive(path); },
-                    [](const std::string& path) { return path.rfind(".zip") == path.size()-4; });
-    RegisterArchive([](const std::string& path) { return new ZipArchive(path); },
-                    [](const std::string& path) { return path.rfind(".epub") == path.size()-5; });
+    RegisterArchive([](const string& path) { return new ZipArchive(path); },
+                    [](const string& path) { return path.rfind(".zip") == path.size()-4; });
+    RegisterArchive([](const string& path) { return new ZipArchive(path); },
+                    [](const string& path) { return path.rfind(".epub") == path.size()-5; });
 }
-Archive * Archive::Open(const std::string& path)
+Archive * Archive::Open(const string& path)
 {
     for ( auto& factory : RegistrationDomain )
     {
@@ -48,14 +48,14 @@ Archive * Archive::Open(const std::string& path)
     
     return nullptr;
 }
-bool Archive::ShouldCompress(const std::string &path, const std::string &mimeType, size_t size) const
+bool Archive::ShouldCompress(const string &path, const string &mimeType, size_t size) const
 {
     // check MIME type for known pre-compressed data formats
-    if ( mimeType.find("image/", 0, 6) != std::string::npos && mimeType.find("bmp") == std::string::npos )
+    if ( mimeType.find("image/", 0, 6) != string::npos && mimeType.find("bmp") == string::npos )
         return false;
-    if ( mimeType.find("video/", 0, 6) != std::string::npos )
+    if ( mimeType.find("video/", 0, 6) != string::npos )
         return false;
-    if ( mimeType.find("audio/", 0, 6) != std::string::npos )
+    if ( mimeType.find("audio/", 0, 6) != string::npos )
         return false;
     
     // Under 1KB don't bother compressing anything
@@ -64,7 +64,7 @@ bool Archive::ShouldCompress(const std::string &path, const std::string &mimeTyp
     
     return true;
 }
-ArchiveItemInfo Archive::InfoAtPath(const std::string &path) const
+ArchiveItemInfo Archive::InfoAtPath(const string &path) const
 {
     ArchiveItemInfo info;
     info.SetPath(path);

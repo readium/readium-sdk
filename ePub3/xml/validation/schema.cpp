@@ -19,8 +19,8 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "schema.h"
-#include "document.h"
+#include <xml/validation/schema.h>
+#include <xml/tree/document.h>
 #include <libxml/tree.h>
 #include <libxml/xmlschemas.h>
 

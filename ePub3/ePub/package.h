@@ -101,9 +101,13 @@ public:
         virtual     ~UnknownPrefix()                    _GCC_NOTHROW                                        {}
     };
     
-public:
+private:
     /** There is no default constructor for PackageBase. */
-                            PackageBase() = delete;
+                            PackageBase() _DELETED_;
+    /** There is no copy constructor for PackageBase. */
+                            PackageBase(const PackageBase&) _DELETED_;
+
+public:
     /**
      Constructs a new PackageBase class by reading an XML document from a given
      Archive using the supplied path.
@@ -117,8 +121,6 @@ public:
      element.
      */
                             PackageBase(Archive * archive, const string& path, const string& type);
-    /** There is no copy constructor for PackageBase. */
-                            PackageBase(const PackageBase&) = delete;
     /** C++11 'move' constructor-- claims ownership of its argument's internals. */
                             PackageBase(PackageBase&&);
     virtual                 ~PackageBase();
@@ -300,7 +302,7 @@ public:
      @result An auto-pointer to a new ByteStream instance.
      @ingroup utilities
      */
-    Auto<ByteStream>        ReadStreamForItemAtPath(const string& path)                         const;
+    unique_ptr<ByteStream>        ReadStreamForItemAtPath(const string& path)                         const;
     
     /// Returns the CFI node index for the `<spine>` element within the package
     /// document.
@@ -315,7 +317,7 @@ protected:
     ManifestTable           _manifest;          ///< All manifest items, indexed by unique identifier.
     NavigationMap           _navigation;        ///< All navigation tables, indexed by type.
     ContentHandlerMap       _contentHandlers;   ///< All installed content handlers, indexed by media-type.
-    Auto<SpineItem>         _spine;             ///< The first item in the spine (SpineItems are a linked list).
+    unique_ptr<SpineItem>         _spine;             ///< The first item in the spine (SpineItems are a linked list).
     
     PropertyVocabularyMap   _vocabularyLookup;  ///< A lookup table for property prefix->IRI-stem mappings.
     
@@ -380,10 +382,12 @@ public:
      */
     typedef std::map<string, MediaSupportInfo>          MediaSupportList;
     
+private:
+                            Package()                                   _DELETED_;
+                            Package(const Package&)                     _DELETED_;
+
 public:
-                            Package()                                   = delete;
                             Package(Archive * archive, const string& path, const string& type);
-                            Package(const Package&)                     = delete;
                             Package(Package&& o) : PackageBase(std::move(o)) {}
     virtual                 ~Package() {}
     
@@ -514,7 +518,7 @@ public:
     ArchiveXmlReader*       XmlReaderForRelativePath(const string& path)    const {
         return new ArchiveXmlReader(ReaderForRelativePath(path));
     }
-    Auto<ByteStream>        ReadStreamForRelativePath(const string& path)   const;
+    unique_ptr<ByteStream>        ReadStreamForRelativePath(const string& path)   const;
     
     /// @}
     

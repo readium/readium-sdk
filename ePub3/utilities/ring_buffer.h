@@ -125,27 +125,27 @@ public:
      Obtain the total capacity of a ring buffer.
      @result The maximum number of bytes the buffer can hold.
      */
-    std::size_t     Capacity()              const noexcept  { return _capacity; }
+    std::size_t     Capacity()              const _NOEXCEPT  { return _capacity; }
     
     /**
      @return `true` is there is data in the buffer, `false` otherwise.
      */
-    bool            HasData()               const noexcept  { return _numBytes != 0; }
+    bool            HasData()               const _NOEXCEPT  { return _numBytes != 0; }
     
     /**
      @return The number of bytes available to read from the buffer.
      */
-    std::size_t     BytesAvailable()        const noexcept  { return _numBytes; }
+    std::size_t     BytesAvailable()        const _NOEXCEPT  { return _numBytes; }
     
     /**
      @return `true` if there is room to write data to the buffer.
      */
-    bool            HasSpace()              const noexcept  { return _numBytes != _capacity; }
+    bool            HasSpace()              const _NOEXCEPT  { return _numBytes != _capacity; }
     
     /**
      @return The maximum number of bytes that may currently be written to the buffer.
      */
-    std::size_t     SpaceAvailable()        const noexcept  { return _capacity - _numBytes; }
+    std::size_t     SpaceAvailable()        const _NOEXCEPT  { return _capacity - _numBytes; }
     
     /// @}
     
@@ -177,7 +177,7 @@ public:
      @param len The number of bytes to remove. When `len > _numBytes` the result is
      undefined.
      */
-    void            RemoveBytes(std::size_t len)    noexcept;
+    void            RemoveBytes(std::size_t len)    _NOEXCEPT;
     
     /// @}
     

@@ -247,10 +247,12 @@ class ManifestItem
 public:
     typedef string                  MimeType;
     
+private:
+                        ManifestItem()                                      _DELETED_;
+                        ManifestItem(const ManifestItem&)                   _DELETED_;
+                        
 public:
-                        ManifestItem()                                      = delete;
                         ManifestItem(xmlNodePtr node, const Package* owner);
-                        ManifestItem(const ManifestItem&)                   = delete;
                         ManifestItem(ManifestItem&&);
     virtual             ~ManifestItem();
     
@@ -277,7 +279,7 @@ public:
     xmlDocPtr           ReferencedDocument()                const;
     
     // stream the data
-    Auto<ByteStream>    Reader()                            const;
+    unique_ptr<ByteStream>    Reader()                            const;
     
 protected:
     const class Package*    _owner;

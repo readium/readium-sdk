@@ -43,6 +43,11 @@ protected:
     ///
     /// Matches only mnifest items with a media-type of "application/xhtml+xml" or "text/html".
     static bool ShouldApply(const ManifestItem* item, const EncryptionInfo* encInfo);
+
+private:
+    ///
+    /// No default constructor.
+    ObjectPreprocessor()                                    _DELETED_;
     
 public:
     /**
@@ -51,10 +56,6 @@ public:
      @param pkg The package to which this filter will apply.
      */
     ObjectPreprocessor(const Package* pkg, const string& openButtonTitle = "Open Fullscreen");
-    
-    ///
-    /// No default constructor.
-    ObjectPreprocessor()                                    = delete;
     
     ///
     /// Standard copy constructor.

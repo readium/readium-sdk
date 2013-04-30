@@ -56,7 +56,7 @@ public:
     
     ///
     /// A value to be returned when a real count is not possible.
-    static const size_type          UnknownSize = std::numeric_limits<size_type>::min();
+    static const size_type          UnknownSize = 0;
     
 public:
                             ByteStream()                            {}
@@ -65,18 +65,18 @@ public:
 private:
     ///
     /// ByteStreams cannot be copied, moved, or assigned.
-                            ByteStream(const ByteStream&)           = delete;
-                            ByteStream(ByteStream&&)                = delete;
-    ByteStream&             operator=(const ByteStream&)            = delete;
-    ByteStream&             operator=(ByteStream&& o)               = delete;
+                            ByteStream(const ByteStream&)           _DELETED_;
+                            ByteStream(ByteStream&&)                _DELETED_;
+    ByteStream&             operator=(const ByteStream&)            _DELETED_;
+    ByteStream&             operator=(ByteStream&& o)               _DELETED_;
     
 public:
     ///
     /// Returns the number of bytes that can be read at this time.
-    virtual size_type       BytesAvailable()                        const noexcept  { return UnknownSize; }
+    virtual size_type       BytesAvailable()                        const _NOEXCEPT  { return UnknownSize; }
     ///
     /// Returns the amount of space available for writing at this time.
-    virtual size_type       SpaceAvailable()                        const noexcept  { return UnknownSize; }
+    virtual size_type       SpaceAvailable()                        const _NOEXCEPT  { return UnknownSize; }
     
     /**
      Determine whether the stream is currently open (i.e. usable).
@@ -84,7 +84,7 @@ public:
      I can't define an Open() method on ByteStream here because that would require
      implementation-specific parameters.
      */
-    virtual bool            IsOpen()                                const noexcept  = 0;
+    virtual bool            IsOpen()                                const _NOEXCEPT  = 0;
     ///
     /// Close the stream.
     virtual void            Close()                                                 = 0;
@@ -106,10 +106,10 @@ public:
     
     ///
     /// Returns `true` if an EOF status has occurred.
-    virtual bool            AtEnd()                                 const noexcept  { return _eof; }
+    virtual bool            AtEnd()                                 const _NOEXCEPT  { return _eof; }
     ///
     /// Returns any error code reported by the underlying system.
-    virtual int             Error()                                 const noexcept  { return _err; }
+    virtual int             Error()                                 const _NOEXCEPT  { return _err; }
     
 protected:
     bool                    _eof;   ///< Whether the end of a finite-length data stream has been reached.
@@ -134,7 +134,11 @@ enum class AsyncEvent : uint8_t
 class AsyncByteStream;
 ///
 /// The type of an asynchronous stream's event-handler function.
+#if EPUB_COMPILER_SUPPORTS(ALIAS_TEMPLATES)
 using StreamEventHandler = std::function<void(AsyncEvent, AsyncByteStream*)>;
+#else
+typedef std::function<void(AsyncEvent, AsyncByteStream*)> StreamEventHandler;
+#endif
 
 /**
  An exception posted when a non-duplex stream is used in the wrong direction.
@@ -187,10 +191,10 @@ public:
     virtual                     ~AsyncByteStream();
     
 private:
-                                AsyncByteStream(const AsyncByteStream&)         = delete;
-                                AsyncByteStream(AsyncByteStream&&)              = delete;
-    AsyncByteStream&            operator=(const AsyncByteStream&)               = delete;
-    AsyncByteStream&            operator=(AsyncByteStream&&)                    = delete;
+                                AsyncByteStream(const AsyncByteStream&)         _DELETED_;
+                                AsyncByteStream(AsyncByteStream&&)              _DELETED_;
+    AsyncByteStream&            operator=(const AsyncByteStream&)               _DELETED_;
+    AsyncByteStream&            operator=(AsyncByteStream&&)                    _DELETED_;
     
 public:
     ///
@@ -213,12 +217,12 @@ public:
     
     ///
     /// @copydoc ByteStream::BytesAvailable()
-    virtual size_type           BytesAvailable()                    const noexcept  {
+    virtual size_type           BytesAvailable()                    const _NOEXCEPT  {
         return (_readbuf ? _readbuf->BytesAvailable() : 0);
     }
     ///
     /// @copydoc ByteStream::BytesAvailable()
-    virtual size_type           SpaceAvailable()                    const noexcept  {
+    virtual size_type           SpaceAvailable()                    const _NOEXCEPT  {
         return (_writebuf ? _writebuf->SpaceAvailable() : 0);
     }
     
@@ -252,8 +256,8 @@ public:
     
 private:
     size_type                   _bufsize;           ///< The size of the read/write data buffers.
-    Shared<RingBuffer>          _readbuf;           ///< The read buffer, if opened for reading.
-    Shared<RingBuffer>          _writebuf;          ///< The write buffer, if opened for writing.
+    shared_ptr<RingBuffer>          _readbuf;           ///< The read buffer, if opened for reading.
+    shared_ptr<RingBuffer>          _writebuf;          ///< The write buffer, if opened for writing.
     StreamEventHandler          _eventHandler;      ///< The event-handler function to notify of stream status changes.
     
     static std::thread          _asyncIOThread;     ///< The shared async I/O thread.
@@ -298,22 +302,22 @@ public:
     virtual                 ~FileByteStream();
     
 private:
-                            FileByteStream(const FileByteStream& o)             = delete;
-                            FileByteStream(FileByteStream&& o)                  = delete;
-    FileByteStream&         operator=(FileByteStream&)                          = delete;
-    FileByteStream&         operator=(FileByteStream&&)                         = delete;
+                            FileByteStream(const FileByteStream& o)             _DELETED_;
+                            FileByteStream(FileByteStream&& o)                  _DELETED_;
+    FileByteStream&         operator=(FileByteStream&)                          _DELETED_;
+    FileByteStream&         operator=(FileByteStream&&)                         _DELETED_;
     
 public:
     ///
     /// @copydoc ByteStream::BytesAvailable()
-    virtual size_type       BytesAvailable()                        const noexcept;
+    virtual size_type       BytesAvailable()                        const _NOEXCEPT;
     ///
     /// @copydoc ByteStream::SpaceAvailable()
-    virtual size_type       SpaceAvailable()                        const noexcept;
+    virtual size_type       SpaceAvailable()                        const _NOEXCEPT;
     
     ///
     /// @copydoc ByteStream::IsOpen()
-    virtual bool            IsOpen()                                const noexcept;
+    virtual bool            IsOpen()                                const _NOEXCEPT;
     /**
      Opens the stream for reading and/or writing a file at a given path.
      @param path The filesystem path to the file to access.
@@ -365,22 +369,22 @@ public:
     virtual                 ~ZipFileByteStream();
     
 private:
-                            ZipFileByteStream(const ZipFileByteStream&)         = delete;
-                            ZipFileByteStream(ZipFileByteStream&&)              = delete;
-    ZipFileByteStream&      operator=(const ZipFileByteStream&)                 = delete;
-    ZipFileByteStream&      operator=(ZipFileByteStream&&)                      = delete;
+                            ZipFileByteStream(const ZipFileByteStream&)         _DELETED_;
+                            ZipFileByteStream(ZipFileByteStream&&)              _DELETED_;
+    ZipFileByteStream&      operator=(const ZipFileByteStream&)                 _DELETED_;
+    ZipFileByteStream&      operator=(ZipFileByteStream&&)                      _DELETED_;
     
 public:
     ///
     /// @copydoc ByteStream::BytesAvailable()
-    virtual size_type       BytesAvailable()                        const noexcept;
+    virtual size_type       BytesAvailable()                        const _NOEXCEPT;
     ///
     /// @copydoc ByteStream::SpaceAvailable
-    virtual size_type       SpaceAvailable()                        const noexcept;
+    virtual size_type       SpaceAvailable()                        const _NOEXCEPT;
     
     ///
     /// @copydoc ByteStream::IsOpen()
-    virtual bool            IsOpen()                                const noexcept;
+    virtual bool            IsOpen()                                const _NOEXCEPT;
     /**
      Opens a file within an archive and attaches the stream.
      @param archive The Zip arrchive containing the target file.
@@ -430,24 +434,24 @@ public:
     virtual                 ~AsyncFileByteStream();
     
 private:
-                            AsyncFileByteStream(const AsyncFileByteStream&) = delete;
-                            AsyncFileByteStream(AsyncFileByteStream&&)      = delete;
-    AsyncFileByteStream&    operator=(const AsyncFileByteStream&)           = delete;
-    AsyncFileByteStream&    operator=(AsyncFileByteStream&&)                = delete;
+                            AsyncFileByteStream(const AsyncFileByteStream&) _DELETED_;
+                            AsyncFileByteStream(AsyncFileByteStream&&)      _DELETED_;
+    AsyncFileByteStream&    operator=(const AsyncFileByteStream&)           _DELETED_;
+    AsyncFileByteStream&    operator=(AsyncFileByteStream&&)                _DELETED_;
     
 public:
     // use the ringbuffer-based availability functions from AsyncByteStream
     ///
     /// @copydoc AsyncByteStream::BytesAvailable
-    virtual size_type       BytesAvailable()    const noexcept              { return __A::BytesAvailable(); }
+    virtual size_type       BytesAvailable()    const _NOEXCEPT              { return __A::BytesAvailable(); }
     ///
     /// @copydoc AsyncByteStream::SpaceAvailable
-    virtual size_type       SpaceAvailable()    const noexcept              { return __A::SpaceAvailable(); }
+    virtual size_type       SpaceAvailable()    const _NOEXCEPT              { return __A::SpaceAvailable(); }
     
     // use the file stream's IsOpen()
     ///
     /// @copydoc FileByteStream::IsOpen()
-    virtual bool            IsOpen()            const noexcept              { return __F::IsOpen(); }
+    virtual bool            IsOpen()            const _NOEXCEPT              { return __F::IsOpen(); }
     
     // use the async stream's read/writers
     ///
@@ -498,24 +502,24 @@ public:
     virtual                 ~AsyncZipFileByteStream();
     
 private:
-                            AsyncZipFileByteStream(const AsyncZipFileByteStream&)   = delete;
-                            AsyncZipFileByteStream(AsyncZipFileByteStream&&)        = delete;
-    AsyncZipFileByteStream& operator=(const AsyncZipFileByteStream&)                = delete;
-    AsyncZipFileByteStream& operator=(AsyncZipFileByteStream&&)                     = delete;
+                            AsyncZipFileByteStream(const AsyncZipFileByteStream&)   _DELETED_;
+                            AsyncZipFileByteStream(AsyncZipFileByteStream&&)        _DELETED_;
+    AsyncZipFileByteStream& operator=(const AsyncZipFileByteStream&)                _DELETED_;
+    AsyncZipFileByteStream& operator=(AsyncZipFileByteStream&&)                     _DELETED_;
     
 public:
     // use the ringbuffer-based availability functions from AsyncByteStream
     ///
     /// @copydoc AsyncByteStream::BytesAvailable
-    virtual size_type       BytesAvailable()    const noexcept              { return __A::BytesAvailable(); }
+    virtual size_type       BytesAvailable()    const _NOEXCEPT              { return __A::BytesAvailable(); }
     ///
     /// @copydoc AsyncByteStream::SpaceAvailable
-    virtual size_type       SpaceAvailable()    const noexcept              { return __A::SpaceAvailable(); }
+    virtual size_type       SpaceAvailable()    const _NOEXCEPT              { return __A::SpaceAvailable(); }
     
     // use the file stream's IsOpen()
     ///
     /// @copydoc FileByteStream::IsOpen()
-    virtual bool            IsOpen()            const noexcept              { return __F::IsOpen(); }
+    virtual bool            IsOpen()            const _NOEXCEPT              { return __F::IsOpen(); }
     
     // use the async stream's read/writers
     ///

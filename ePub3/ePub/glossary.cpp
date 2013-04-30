@@ -38,12 +38,12 @@ const Glossary::Entry Glossary::Lookup(const Term &term) const
 }
 bool Glossary::AddDefinition(const Term &term, const Definition &definition)
 {
-    _lookup[term.tolower()] = {term, definition};
+    _lookup[term.tolower()] = std::make_pair(term, definition);
     return true;
 }
 bool Glossary::AddDefinition(const Term &term, Definition &&definition)
 {
-    _lookup[term.tolower()] = {term, definition};
+    _lookup[term.tolower()] = std::make_pair(term, definition);
     return true;
 }
 bool Glossary::Parse(xmlNodePtr node)
@@ -79,7 +79,7 @@ bool Glossary::Parse(xmlNodePtr node)
             Definition def(reinterpret_cast<const char*>(xmlNodeGetContent(child)));
             for ( auto term : terms )
             {
-                _lookup[term.tolower()] = { term, def };
+                _lookup[term.tolower()] = std::make_pair(term, def);
             }
             
             // now clear the terms list

@@ -34,10 +34,11 @@ EPUB3_BEGIN_NAMESPACE
  */
 class NavigationPoint : public NavigationElement
 {
+private:
+                            NavigationPoint(const NavigationPoint&)     _DELETED_;
 public:
                             NavigationPoint() {};
                             NavigationPoint(const std::string& ident, const std::string& label, const std::string& content) : NavigationElement(), _label(label), _content(content) {}
-                            NavigationPoint(const NavigationPoint&)     = delete;
                             NavigationPoint(NavigationPoint&& o) : NavigationElement(o), _label(std::move(o._label)), _content(std::move(o._content)) {}
     virtual                 ~NavigationPoint() {}
     

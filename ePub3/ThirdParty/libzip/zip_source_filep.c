@@ -41,6 +41,13 @@
 
 #include "zipint.h"
 
+#if defined(_MSC_VER)
+# define strdup _strdup
+# define fseeko fseek
+# define ftello ftell
+# define fileno _fileno
+#endif
+
 struct read_file {
     char *fname;	/* name of file to copy from */
     FILE *f;		/* file to copy from */

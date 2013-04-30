@@ -39,8 +39,8 @@ typedef std::vector<NavigationElement*> NavigationList;
 class NavigationElement
 {
 public:
-    explicit            NavigationElement()                             = default;
-    explicit            NavigationElement(const NavigationElement&)     = default;
+    explicit            NavigationElement() : _children() {}
+    explicit            NavigationElement(const NavigationElement& o) : _children(o._children) {}
     explicit            NavigationElement(NavigationElement&& o) : _children(std::move(o._children)) {}
     virtual             ~NavigationElement() {}
     

@@ -35,6 +35,10 @@
 #include <stdexcept>
 #include <libxml/xmlstring.h>
 
+#if EPUB_PLATFORM(WIN)
+# include <codecvt>
+#endif
+
 #include <utf8/utf8.h>
 
 // the GNU runtime hasn't updated std::string to the C++11 standard yet, so much of
@@ -116,6 +120,14 @@ public:
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string(std::initializer_list<char16_t> __il) : string(__il.begin(), __il.end()) {}
 #endif
+
+    // From wchar_t (pure UTF-16)
+    string(const wchar_t* s);    // NUL-delimited
+    string(const wchar_t* s, size_type n);
+    string(size_type n, wchar_t c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+    string(std::initializer_list<wchar_t> __il) : string(__il.begin(), __il.end()) {}
+#endif
     
     // From std::string
     string(const __base &o) : _base(o) {}
@@ -186,8 +198,8 @@ public:
     inline std::vector<string> split(const REGEX_NS::regex& regex) const
     {
         // passing -1 as the submatch index parameter performs splitting
-        REGEX_NS::sregex_token_iterator first(_base.begin(), _base.end(), regex, -1), last;
-        return {first, last};
+        REGEX_NS:: sregex_token_iterator first(_base.begin(), _base.end(), regex, -1), last;
+        return std::vector<string>(first, last);
     }
     
 #if 0
@@ -268,10 +280,10 @@ public:
     
     template <class InputIterator>
     string & append(InputIterator first, InputIterator last);
-    
+#if EPUB_COMPILER_SUPPORTS(VARIADIC_TEMPLATES)
     template <typename... Args>
     string & append(const Args&... args) { return append(string(args...)); }
-    
+#endif
     // standard
     string & append(const string &o) { _base.append(o._base); return *this; }
     string & append(const string &o, size_type i, size_type n=npos);
@@ -342,12 +354,12 @@ public:
     
     template <class InputIterator>
     iterator insert(iterator p, InputIterator first, InputIterator last);
-    
+#if EPUB_COMPILER_SUPPORTS(VARIADIC_TEMPLATES)
     template <typename... Args>
     string & insert(size_type p, const Args&... args) { return insert(p, string(args...)); }
     template <typename... Args>
     iterator insert(iterator p, const Args&... args) { return insert(p, string(args...)); }
-    
+#endif
     // standard
     string & insert(size_type p, const string &s, size_type b=0, size_type e=npos);
     iterator insert(iterator p, const string & s, size_type b=0, size_type e=npos);
@@ -409,7 +421,7 @@ public:
     
     template <class InputIterator>
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, InputIterator j1, InputIterator j2);
-    
+#if EPUB_COMPILER_SUPPORTS(VARIADIC_TEMPLATES)
     template <typename... Args>
     string & replace(size_type pos1, size_type n1, const Args&... args) {
         string __s(args...);
@@ -420,7 +432,7 @@ public:
         string __s(args...);
         return replace(i1, i2, __s);
     }
-    
+#endif
     // standard
     string & replace(size_type pos1, size_type n1, const string & str);
     string & replace(size_type pos1, size_type n1, const string & str, size_type pos2, size_type n2);
@@ -828,8 +840,8 @@ protected:
     size_type to_utf32_size(__base::size_type __b, __base::size_type __e) const _NOEXCEPT;
     static size_type utf32_distance(__base::const_iterator first, __base::const_iterator last) _NOEXCEPT;
     
-    static inline constexpr __base::const_pointer _bchar(const xmlChar * c) _NOEXCEPT { return (__base::const_pointer)(c); }
-    static inline constexpr __base::pointer _bchar(xmlChar * c) _NOEXCEPT { return (__base::pointer)(c); }
+    static inline CONSTEXPR __base::const_pointer _bchar(const xmlChar * c) _NOEXCEPT { return (__base::const_pointer)(c); }
+    static inline CONSTEXPR __base::pointer _bchar(xmlChar * c) _NOEXCEPT { return (__base::pointer)(c); }
     
 #if UTF_USE_ICU
     // ICU version, since GNU libstdc++ hasn't implemented wstring_convert or codecvt_utf8 yet
@@ -960,7 +972,7 @@ protected:
             return __out;
         }
     };
-#else
+#elif !EPUB_PLATFORM(WIN)
     // non-ICU implementation for smaller Android builds
     template <class _CharT>
     class _Convert {
@@ -975,8 +987,7 @@ protected:
         static wide_string fromUTF8(const char* utf8, size_type pos=0, size_type n=npos);
         static wide_string fromUTF8(const byte_string& s, size_type pos=0, size_type n=npos);
     };
-#if 0
-
+#else
     // Pure C++11 implementation, works on libc++ and VC++2010
     template <class _CharT>
     class _Convert {
@@ -1015,7 +1026,6 @@ protected:
         }
     };
 #endif
-#endif
 };
 
 #if 0
@@ -1027,23 +1037,23 @@ class string::_Convert<char> {
 public:
     typedef std::string byte_string;
     typedef std::string wide_string;
-    static byte_string toUTF8(const char *p, size_type pos=0, size_type n=npos) {
+    static inline byte_string toUTF8(const char *p, size_type pos=0, size_type n=npos) {
         if ( n == std::string::npos )
             return std::string(p+pos);
         return std::string(p+pos, n);
     }
-    static byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
+    static inline byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
         return s.substr(pos, n);
     }
-    static byte_string toUTF8(char c, size_type n=1) {
+    static inline byte_string toUTF8(char c, size_type n=1) {
         return std::string(n, c);
     }
-    static wide_string fromUTF8(const char * utf8, size_type pos=0, size_type n=npos) {
+    static inline wide_string fromUTF8(const char * utf8, size_type pos=0, size_type n=npos) {
         if ( n == std::string::npos )
             return std::string(utf8+pos);
         return std::string(utf8+pos, n);
     }
-    static wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
+    static inline wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
         return s.substr(pos, n);
     }
 };
@@ -1053,28 +1063,28 @@ class string::_Convert<xmlChar> {
 public:
     typedef std::string byte_string;
     typedef std::string wide_string;
-    static byte_string toUTF8(const xmlChar *p, size_type pos=0, size_type n=npos) {
+    static inline byte_string toUTF8(const xmlChar *p, size_type pos=0, size_type n=npos) {
         if ( n == std::string::npos )
             return std::string(reinterpret_cast<const char*>(p)+pos);
         return std::string(reinterpret_cast<const char*>(p)+pos, n);
     }
-    static byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
+    static inline byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
         return s.substr(pos, n);
     }
-    static byte_string toUTF8(xmlChar c, size_type n=1) {
+    static inline byte_string toUTF8(xmlChar c, size_type n=1) {
         return std::string(n, static_cast<char>(c));
     }
-    static wide_string fromUTF8(const xmlChar * utf8, size_type pos=0, size_type n=npos) {
+    static inline wide_string fromUTF8(const xmlChar * utf8, size_type pos=0, size_type n=npos) {
         if ( n == std::string::npos )
             return std::string(reinterpret_cast<const char*>(utf8)+pos);
         return std::string(reinterpret_cast<const char*>(utf8)+pos, n);
     }
-    static wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
+    static inline wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
         return s.substr(pos, n);
     }
 };
 
-#if (!defined(UTF_USE_ICU) || UTF_USE_ICU == 0)
+#if (!defined(UTF_USE_ICU) || UTF_USE_ICU == 0) && !EPUB_PLATFORM(WIN)
 // ePub::string::_Convert is implemented for Unicode via template specializations here
 template <>
 class string::_Convert<char16_t> {
@@ -1082,33 +1092,33 @@ public:
     typedef std::string                 byte_string;
     typedef std::basic_string<char16_t> wide_string;
     
-    static byte_string toUTF8(const char16_t *p, size_type pos=0, size_type n=npos) {
+    static inline byte_string toUTF8(const char16_t *p, size_type pos=0, size_type n=npos) {
         byte_string __r;
         size_type len = (n == npos ? std::char_traits<char16_t>::length(p) : n);
         utf8::utf16to8(p+pos, p+len, std::back_inserter(__r));
         return __r;
     }
-    static byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
+    static inline byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
         byte_string __r;
         utf8::utf16to8(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
         return __r;
     }
-    static byte_string toUTF8(char16_t c, size_type n=1) {
+    static inline byte_string toUTF8(char16_t c, size_type n=1) {
         byte_string __t;
         utf8::utf16to8(&c, (&c)+1, std::back_inserter(__t));
         byte_string __r;
-        for (int __i = 0; __i < n; __i++) {
+        for (size_type __i = 0; __i < n; __i++) {
             __r.append(__t);
         }
         return __r;
     }
-    static wide_string fromUTF8(const char* p, size_type pos=0, size_type n=npos) {
+    static inline wide_string fromUTF8(const char* p, size_type pos=0, size_type n=npos) {
         wide_string __r;
         size_type len = (n == npos ? std::char_traits<char>::length(p) : n);
         utf8::utf8to16(p+pos, p+len, std::back_inserter(__r));
         return __r;
     }
-    static wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
+    static inline wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
         wide_string __r;
         utf8::utf8to16(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
         return __r;
@@ -1121,33 +1131,72 @@ public:
     typedef std::string                 byte_string;
     typedef std::basic_string<char32_t> wide_string;
     
-    static byte_string toUTF8(const char32_t *p, size_type pos=0, size_type n=npos) {
+    static inline byte_string toUTF8(const char32_t *p, size_type pos=0, size_type n=npos) {
         byte_string __r;
         size_type len = (n == npos ? std::char_traits<char32_t>::length(p) : n);
         utf8::utf32to8(p+pos, p+len, std::back_inserter(__r));
         return __r;
     }
-    static byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
+    static inline byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
         byte_string __r;
         utf8::utf32to8(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
         return __r;
     }
-    static byte_string toUTF8(char32_t c, size_type n=1) {
+    static inline byte_string toUTF8(char32_t c, size_type n=1) {
         byte_string __t;
         utf8::utf32to8(&c, (&c)+1, std::back_inserter(__t));
         byte_string __r;
-        for (int __i = 0; __i < n; __i++) {
+        for (size_type __i = 0; __i < n; __i++) {
             __r.append(__t);
         }
         return __r;
     }
-    static wide_string fromUTF8(const char* p, size_type pos=0, size_type n=npos) {
+    static inline wide_string fromUTF8(const char* p, size_type pos=0, size_type n=npos) {
         wide_string __r;
         size_type len = (n == npos ? std::char_traits<char>::length(p) : n);
         utf8::utf8to32(p+pos, p+len, std::back_inserter(__r));
         return __r;
     }
-    static wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
+    static inline wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
+        wide_string __r;
+        utf8::utf8to32(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
+        return __r;
+    }
+};
+
+template <>
+class string::_Convert<char32_t> {
+public:
+    typedef std::string                 byte_string;
+    typedef std::basic_string<char32_t> wide_string;
+
+    static inline byte_string toUTF8(const char32_t *p, size_type pos=0, size_type n=npos) {
+        byte_string __r;
+        size_type len = (n == npos ? std::char_traits<char32_t>::length(p) : n);
+        utf8::utf32to8(p+pos, p+len, std::back_inserter(__r));
+        return __r;
+    }
+    static inline byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
+        byte_string __r;
+        utf8::utf32to8(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
+        return __r;
+    }
+    static inline byte_string toUTF8(char32_t c, size_type n=1) {
+        byte_string __t;
+        utf8::utf32to8(&c, (&c)+1, std::back_inserter(__t));
+        byte_string __r;
+        for (size_type __i = 0; __i < n; __i++) {
+            __r.append(__t);
+        }
+        return __r;
+    }
+    static inline wide_string fromUTF8(const char* p, size_type pos=0, size_type n=npos) {
+        wide_string __r;
+        size_type len = (n == npos ? std::char_traits<char>::length(p) : n);
+        utf8::utf8to32(p+pos, p+len, std::back_inserter(__r));
+        return __r;
+    }
+    static inline wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
         wide_string __r;
         utf8::utf8to32(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
         return __r;
@@ -1159,12 +1208,14 @@ public:
 #pragma mark - Helpers
 #endif
 
+#if EPUB_COMPILER_SUPPORTS(CXX_USER_LITERALS)
 // C++11 lets us define new literal types, so lets have "something"_xc be an xmlChar *, eh?
 // Sadly, we can't define prefix forms. Boo...
-constexpr inline const xmlChar * operator "" _xc(const char * __s, size_t __n) _NOEXCEPT {
+CONSTEXPR inline const xmlChar * operator "" _xc(const char * __s, size_t __n) _NOEXCEPT {
     return (const xmlChar *)__s;
 }
-static inline constexpr const xmlChar * _xml(const char * __s) _NOEXCEPT {
+#endif
+static inline CONSTEXPR const xmlChar * _xml(const char * __s) _NOEXCEPT {
     return (const xmlChar*)(__s);
 }
 
@@ -1180,7 +1231,7 @@ static inline string xmlString(const std::string & str) {
 static inline std::string asciiString(const xmlChar * s) {
     return std::string(reinterpret_cast<const char *>(s));
 }
-static inline constexpr const char * ascii(const xmlChar * __x) {
+static inline CONSTEXPR const char * ascii(const xmlChar * __x) {
     return (const char *)__x;
 }
 
@@ -1244,6 +1295,9 @@ inline std::basic_ostream<_CharT, _Traits>&
 operator<<(std::basic_ostream<_CharT, _Traits>& __os, const string& __str) {
     return __os << __str.stl_str();
 }
+
+// template specializations
+#include "utfstringspec.inl"
 
 EPUB3_END_NAMESPACE
 

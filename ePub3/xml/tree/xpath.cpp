@@ -71,7 +71,9 @@ XPathEvaluator::~XPathEvaluator()
         xmlXPathFreeContext(_ctx);
 }
 
+#if 0
 #pragma mark - XPath Environment
+#endif
 
 bool XPathEvaluator::RegisterNamespace(const string &prefix, const string &uri)
 {
@@ -173,7 +175,7 @@ bool XPathEvaluator::RegisterVariable(const string &name, void *data, ObjectType
             if ( set == nullptr )
                 return false;
             
-            for ( int i = 0; i < nodes->size(); i++ )
+            for ( size_t i = 0; i < nodes->size(); i++ )
                 xmlXPathNodeSetAdd(set, nodes->at(i)->xml());
             
             xValue = xmlXPathNewNodeSetList(set);
@@ -217,7 +219,9 @@ bool XPathEvaluator::RegisterVariable(const string &name, void *data, ObjectType
     return ( xmlXPathRegisterVariableNS(_ctx, name.utf8(), namespaceURI.utf8(), xValue) == 0 );
 }
 
+#if 0
 #pragma mark - XPath Evaluation
+#endif
 
 bool XPathEvaluator::Evaluate(const Node *node, ObjectType * resultType)
 {
@@ -237,25 +241,25 @@ bool XPathEvaluator::EvaluateAsBoolean(const Node *node)
     int r = xmlXPathCompiledEvalToBoolean(_compiled, _ctx);
     return ( r != 0 );
 }
-bool XPathEvaluator::BooleanResult() const throw(ePub3::xml::InternalError)
+bool XPathEvaluator::BooleanResult() const
 {
     if ( _lastResult == nullptr )
         throw InternalError(std::string(__PRETTY_FUNCTION__) + " called when no result available");
-    return xmlXPathCastToBoolean(_lastResult);
+    return (xmlXPathCastToBoolean(_lastResult) != 0);
 }
-double XPathEvaluator::NumberResult() const throw(ePub3::xml::InternalError)
+double XPathEvaluator::NumberResult() const
 {
     if ( _lastResult == nullptr )
         throw InternalError(std::string(__PRETTY_FUNCTION__) + " called when no result available");
     return xmlXPathCastToNumber(_lastResult);
 }
-string XPathEvaluator::StringResult() const throw(ePub3::xml::InternalError)
+string XPathEvaluator::StringResult() const
 {
     if ( _lastResult == nullptr )
         throw InternalError(std::string(__PRETTY_FUNCTION__) + " called when no result available");
     return xmlXPathCastToString(_lastResult);
 }
-ePub3::xml::NodeSet XPathEvaluator::NodeSetResult() const throw(ePub3::xml::InternalError, std::domain_error)
+ePub3::xml::NodeSet XPathEvaluator::NodeSetResult() const
 {
     if ( _lastResult == nullptr )
         throw InternalError(std::string(__PRETTY_FUNCTION__) + " called when no result available");

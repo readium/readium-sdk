@@ -50,7 +50,7 @@ public:
 public:
     ///
     /// Creates a new EncryptionInfo with no details filled in.
-                EncryptionInfo()                            = default;
+                EncryptionInfo() : _algorithm(), _path() {}
     /**
      Creates a new EncryptionInfo from an EncryptionData XML element node.
      @param node An XML node, which *must* be an `EncryptionData` node as defined in

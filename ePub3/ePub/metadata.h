@@ -99,10 +99,15 @@ public:
     /// An extension to an existing property, providing additional related metadata.
     class Extension
     {
-    public:
+    private:
         ///
         /// No default constructor.
-                    Extension()                         = delete;
+                    Extension()                         _DELETED_;
+        ///
+        /// No copy constructor.
+                    Extension(const Extension&)         _DELETED_;
+
+    public:
         /**
          Create a new Extension.
          @param node The XML element node from which this item is to be created.
@@ -110,9 +115,6 @@ public:
          IRI resolution.
          */
                     Extension(xmlNodePtr node, const Package* owner);
-        ///
-        /// No copy constructor.
-                    Extension(const Extension&)         = delete;
         ///
         /// C++11 move constructor.
                     Extension(Extension&&);
@@ -143,10 +145,15 @@ public:
     /// A list of Extension objects.
     typedef std::vector<Extension*>  ExtensionList;
     
-public:
+private:
     ///
     /// No default constructor.
-                    Metadata()                          = delete;
+                    Metadata()                          _DELETED_;
+    ///
+    /// No copy constructor.
+                    Metadata(const Metadata&)           _DELETED_;
+
+public:
     /**
      Create a new Metadata item.
      @param node The XML element node describing this metadata item.
@@ -154,9 +161,6 @@ public:
      resolution.
      */
                     Metadata(xmlNodePtr node, const Package* owner);
-    ///
-    /// No copy constructor.
-                    Metadata(const Metadata&)           = delete;
     ///
     /// C++11 move constructor.
                     Metadata(Metadata&&);

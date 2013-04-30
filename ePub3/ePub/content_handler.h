@@ -26,6 +26,7 @@
 #include <ePub3/utilities/utfstring.h>
 #include <ePub3/utilities/iri.h>
 #include <map>
+#include <functional>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -60,6 +61,11 @@ public:
     ///
     /// A list of key/value pairs a resource's invocation parameters.
     typedef std::map<string, string>        ParameterList;
+
+private:
+    ///
+    /// No default constructor.
+                            ContentHandler() _DELETED_;
     
 public:
     /**
@@ -68,9 +74,6 @@ public:
      @param pkg The Package to which this handler is assigned.
      */
                             ContentHandler(const string& mediaType, const Package* pkg=nullptr) : _mediaType(mediaType), _owner(pkg) {}
-    ///
-    /// No default constructor.
-                            ContentHandler() = delete;
     ///
     /// Copy constructor.
                             ContentHandler(const ContentHandler& o) : _mediaType(o._mediaType), _owner(o._owner) {}
@@ -118,6 +121,11 @@ protected:
  */
 class MediaHandler : public ContentHandler
 {
+private:
+    ///
+    /// No default constructor.
+    MediaHandler() _DELETED_;
+    
 public:
     /**
      Creates a media handler.
@@ -127,9 +135,6 @@ public:
      `mediaType` resources.
      */
                         MediaHandler(const Package* pkg, const string& mediaType, const string& handlerPath);
-    ///
-    /// No default constructor.
-                        MediaHandler() = delete;
     ///
     /// Copy constructor.
                         MediaHandler(const MediaHandler& o) : ContentHandler(o), _handlerIRI(o._handlerIRI) {}
@@ -179,6 +184,11 @@ public:
      @param pkg The Package containing the resource.
      */
     typedef std::function<void(const string& src, const Package* pkg)>  RendererImpl;
+
+private:
+    ///
+    /// No default constructor.
+    CustomRenderer() _DELETED_;
     
 public:
     /**
@@ -188,9 +198,6 @@ public:
      @param impl A callback function to the native renderer.
      */
                         CustomRenderer(const string& mediaType, const Package* pkg, RendererImpl impl) : ContentHandler(mediaType, pkg), _impl(impl) {}
-    ///
-    /// No default constructor.
-                        CustomRenderer() = delete;
     ///
     /// Copy constructor.
                         CustomRenderer(const CustomRenderer& o) : ContentHandler(o), _impl(o._impl) {}

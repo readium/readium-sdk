@@ -23,13 +23,14 @@
 #define __ePub3__ref_counted__
 
 #include <ePub3/utilities/basic.h>
+#include <atomic>
 
 struct adopt_ref_t {};
 
-#if BUILDING_EPUB3
+#if BUILDING_EPUB3 || !EPUB_COMPILER_SUPPORTS(CXX_CONSTEXPR)
 extern const adopt_ref_t adopt_ref;
 #else
-constexpr adopt_ref_t adopt_ref = adopt_ref_t();
+CONSTEXPR adopt_ref_t adopt_ref = adopt_ref_t();
 #endif
 
 EPUB3_BEGIN_NAMESPACE
@@ -39,7 +40,7 @@ EPUB3_BEGIN_NAMESPACE
 class RefCountable
 {
 private:
-    std::atomic_int     _refs;          ///< The number of references.
+    std::atomic<int>     _refs;          ///< The number of references.
     
 public:
     ///
@@ -71,7 +72,7 @@ public:
     RefCounted(_Tp* __p) : _ref(__p) { _ref->retain(); }
     RefCounted(_Tp* __p, adopt_ref_t) : _ref(__p) {}
     RefCounted(const RefCounted& o) : _ref(o._ref) { _ref->retain(); }
-    RefCounted(RefCounted& o) : _ref(o._ref) { o._ref = nullptr; }
+    RefCounted(RefCounted&& o) : _ref(o._ref) { o._ref = nullptr; }
     ~RefCounted() { if (_ref != nullptr) delete _ref; }
     
     void swap(RefCounted& o) {

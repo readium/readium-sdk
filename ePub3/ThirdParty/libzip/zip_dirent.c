@@ -42,6 +42,13 @@
 
 #include "zipint.h"
 
+#if defined(_MSC_VER)
+# define strdup _strdup
+# define fseeko fseek
+# define ftello ftell
+# define fileno _fileno
+#endif
+
 static time_t _zip_d2u_time(int, int);
 static char *_zip_readfpstr(FILE *, unsigned int, int, struct zip_error *);
 static char *_zip_readstr(unsigned char **, int, int, struct zip_error *);

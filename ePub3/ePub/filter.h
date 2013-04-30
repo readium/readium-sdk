@@ -27,6 +27,7 @@
 #include <ePub3/manifest.h>
 #include <ePub3/encryption.h>
 #include <string>
+#include <functional>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -73,10 +74,12 @@ public:
      */
     typedef std::function<bool(const ManifestItem* item, const EncryptionInfo* encInfo)> TypeSnifferFn;
     
-public:
+private:
     ///
     /// No default constructor.
-    ContentFilter() = delete;
+    ContentFilter() _DELETED_;
+
+public:
     ///
     /// Copy constructor.
     ContentFilter(const ContentFilter& o) : _sniffer(o._sniffer), _next(nullptr) {}
@@ -135,7 +138,7 @@ public:
     
 protected:
     TypeSnifferFn       _sniffer;
-    Auto<ContentFilter> _next;
+    unique_ptr<ContentFilter> _next;
 };
 
 EPUB3_END_NAMESPACE

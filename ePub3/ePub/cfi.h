@@ -222,21 +222,18 @@ protected:
         ////////////////////////////////////////////////////////////////////////////
         
         ///
-        /// Creates a default component with a node index of zero.
-                        Component() : Component(0) {}
-        ///
         /// Creates a component from a string.
                         Component(const string& str);
         ///
         /// Creates a numeric component with no flags.
-                        Component(uint32_t __nodeIdx) : flags(0), nodeIndex(__nodeIdx), qualifier(), characterOffset(0), temporalOffset(), spatialOffset(), textQualifier() {}
+                        Component(uint32_t __nodeIdx=0) : flags(0), nodeIndex(__nodeIdx), qualifier(), characterOffset(0), temporalOffset(), spatialOffset(), textQualifier() {}
         ///
         /// Copy constructor.
-                        Component(const Component& o)           = default;
+                        Component(const Component& o) : flags(o.flags), nodeIndex(o.nodeIndex), qualifier(o.qualifier), characterOffset(o.characterOffset), temporalOffset(o.temporalOffset), spatialOffset(o.spatialOffset), textQualifier(o.textQualifier) {}
         ///
         /// Move constructor.
                         Component(Component&& o) : flags(o.flags), nodeIndex(o.nodeIndex), qualifier(std::move(o.qualifier)), characterOffset(o.characterOffset), temporalOffset(o.temporalOffset), spatialOffset(o.spatialOffset), textQualifier(std::move(o.textQualifier)) {}
-                        ~Component() = default;
+                        ~Component() {};
         
         ///
         /// Compare conpoments for equality.

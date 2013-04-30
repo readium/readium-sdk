@@ -42,8 +42,18 @@ inline const url_parse::Component ComponentForString(const string& str)
 IRI::IRI(const string& iriStr) : _url(new GURL(iriStr.stl_str())), _pureIRI(iriStr)
 {
 }
-IRI::IRI(const string& nameID, const string& namespacedString) : _urnComponents{gURNScheme, nameID, namespacedString}, _pureIRI(_Str("urn:", nameID, ":", namespacedString)), _url(new GURL(_pureIRI.stl_str()))
+IRI::IRI(const string& nameID, const string& namespacedString) :
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+    _urnComponents{gURNScheme, nameID, namespacedString},
+#endif
+    _pureIRI(_Str("urn:", nameID, ":", namespacedString)),
+    _url(new GURL(_pureIRI.stl_str()))
 {
+#if !EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+    _urnComponents.push_back(gURNScheme);
+    _urnComponents.push_back(nameID);
+    _urnComponents.push_back(namespacedString);
+#endif
 }
 IRI::IRI(const string& scheme, const string& host, const string& path, const string& query, const string& fragment) : _urnComponents(), _url(nullptr)
 {
@@ -180,7 +190,7 @@ void IRI::AddPathComponent(const string& component)
     
     if ( !_pureIRI.empty() && !_url->has_query() && !_url->has_ref() )
     {
-        if ( _pureIRI[_pureIRI.size()-1] != U'/' )
+        if ( _pureIRI[_pureIRI.size()-1] != char32_t('/') )
             _pureIRI += '/';
         _pureIRI += component;
     }

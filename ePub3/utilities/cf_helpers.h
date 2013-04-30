@@ -33,7 +33,7 @@ struct cf_adopt_ref_t {};
 #if BUILDING_EPUB3
 extern const cf_adopt_ref_t cf_adopt_ref;
 #else
-constexpr cf_adopt_ref_t cf_adopt_ref = cf_adopt_ref_t();
+CONSTEXPR cf_adopt_ref_t cf_adopt_ref = cf_adopt_ref_t();
 #endif
 
 template <class _CF>

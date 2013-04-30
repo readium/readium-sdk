@@ -34,7 +34,7 @@ SpineItem::SpineItem(xmlNodePtr node, Package * owner) : _ident(), _idref(), _ow
     _next = nullptr;
     _ident = _getProp(node, "id");
     _idref = _getProp(node, "idref");
-    if ( _getProp(node, "linear").tolower() == U"false" )
+    if ( _getProp(node, "linear").tolower() == "false" )
         _linear = false;
     
     string properties = _getProp(node, "properties");
@@ -106,7 +106,7 @@ const SpineItem* SpineItem::PriorStep() const
 {
     return const_cast<SpineItem*>(this)->PriorStep();
 }
-SpineItem* SpineItem::at(ssize_t idx) throw (std::out_of_range)
+SpineItem* SpineItem::at(ssize_t idx)
 {
     SpineItem* result(this);
     ssize_t i = idx;
@@ -134,7 +134,7 @@ SpineItem* SpineItem::at(ssize_t idx) throw (std::out_of_range)
     
     return result;
 }
-const SpineItem* SpineItem::at(ssize_t idx) const throw (std::out_of_range)
+const SpineItem* SpineItem::at(ssize_t idx) const
 {
     return const_cast<SpineItem*>(this)->at(idx);
 }

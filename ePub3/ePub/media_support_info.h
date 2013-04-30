@@ -62,7 +62,7 @@ public:
 public:
     ///
     /// The default constructor creates an object with no information.
-                    MediaSupportInfo() : MediaSupportInfo("", SupportType::Unsupported) {}
+                    MediaSupportInfo();
     ///
     /// A simple constructor, normally used to define intrinsic support.
                     MediaSupportInfo(const string& mediaType, bool supported=true);

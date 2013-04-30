@@ -40,6 +40,7 @@
  check for both cxx_rvalue_references as well as the unrelated cxx_nonstatic_member_init feature which we know was added in 4.3 */
 #define EPUB_COMPILER_SUPPORTS_CXX_RVALUE_REFERENCES __has_extension(cxx_rvalue_references) && __has_extension(cxx_nonstatic_member_init)
 
+#define EPUB_COMPILER_SUPPORTS_CXX_NONSTATIC_MEMBER_INIT __has_extension(cxx_nonstatic_member_init)
 #define EPUB_COMPILER_SUPPORTS_CXX_DELETED_FUNCTIONS __has_extension(cxx_deleted_functions)
 #define EPUB_COMPILER_SUPPORTS_CXX_NULLPTR __has_feature(cxx_nullptr)
 #define EPUB_COMPILER_SUPPORTS_CXX_EXPLICIT_CONVERSIONS __has_feature(cxx_explicit_conversions)
@@ -126,6 +127,7 @@
 #if EPUB_COMPILER(GCC) && !EPUB_COMPILER(CLANG)
 #if GCC_VERSION_AT_LEAST(4, 7, 0) && defined(__cplusplus) && __cplusplus >= 201103L
 #define EPUB_COMPILER_SUPPORTS_CXX_RVALUE_REFERENCES 1
+#define EPUB_COMPILER_SUPPORTS_CXX_NONSTATIC_MEMBER_INIT 1
 #define EPUB_COMPILER_SUPPORTS_CXX_DELETED_FUNCTIONS 1
 #define EPUB_COMPILER_SUPPORTS_CXX_NULLPTR 1
 #define EPUB_COMPILER_SUPPORTS_CXX_OVERRIDE_CONTROL 1

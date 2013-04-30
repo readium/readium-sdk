@@ -19,11 +19,11 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "node.h"
-#include "io.h"
-#include "ns.h"
-#include "xpath.h"
-#include "document.h"
+#include <xml/tree/node.h>
+#include <xml/utilities/io.h>
+#include <xml/validation/ns.h>
+#include <xml/tree/xpath.h>
+#include <xml/tree/document.h>
 #include <string>
 #include <sstream>
 #include <cstdlib>
@@ -132,7 +132,9 @@ Node::~Node()
         xmlFreeNode(_xml);
 }
 
+#if 0
 #pragma mark - Properties
+#endif
 
 string Node::Name() const
 {
@@ -244,7 +246,9 @@ int Node::Line() const
     return static_cast<int>(XML_GET_LINE(_xml));
 }
 
+#if 0
 #pragma mark - Values
+#endif
 
 string Node::XMLString() const
 {
@@ -279,7 +283,9 @@ bool Node::BoolValue() const
     return (std::atoi(str.c_str()) != 0);
 }
 
+#if 0
 #pragma mark - Hierarchy
+#endif
 
 Document * Node::Document()
 {
@@ -427,7 +433,9 @@ void Node::Detach()
     xmlUnlinkNode(_xml);
 }
 
+#if 0
 #pragma mark - XPath Utilities
+#endif
 
 string Node::Path() const
 {
@@ -454,7 +462,9 @@ NodeSet Node::FindByXPath(const string &xpath, const NamespaceMap &namespaces) c
     return NodeSet();
 }
 
+#if 0
 #pragma mark - Internal Methods
+#endif
 
 WrapperBase * Node::Wrap(_xmlNode *aNode)
 {

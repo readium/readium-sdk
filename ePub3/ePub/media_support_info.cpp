@@ -25,6 +25,9 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+MediaSupportInfo::MediaSupportInfo() : _mediaType(""), _support(SupportType::Unsupported)
+{
+}
 MediaSupportInfo::MediaSupportInfo(const string& mediaType, bool supported)
   : _mediaType(mediaType),
     _support(supported ? SupportType::IntrinsicSupport : SupportType::Unsupported)

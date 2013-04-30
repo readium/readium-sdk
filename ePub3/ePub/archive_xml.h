@@ -35,7 +35,6 @@ class ArchiveXmlReader : public xml::InputBuffer
 {
 public:
     ArchiveXmlReader(ArchiveReader * r);
-    ArchiveXmlReader(const ArchiveXmlReader&) = delete;
     ArchiveXmlReader(ArchiveXmlReader&& o);
     virtual ~ArchiveXmlReader();
     
@@ -47,6 +46,8 @@ protected:
     
     virtual size_t read(uint8_t * buf, size_t len);
     virtual bool close();
+
+    ArchiveXmlReader(const ArchiveXmlReader&) _DELETED_;
 };
 
 /**
@@ -56,7 +57,6 @@ class ArchiveXmlWriter : public xml::OutputBuffer
 {
 public:
     ArchiveXmlWriter(ArchiveWriter * r);
-    ArchiveXmlWriter(const ArchiveXmlWriter&&) = delete;
     ArchiveXmlWriter(ArchiveXmlWriter&& o);
     virtual ~ArchiveXmlWriter();
     
@@ -68,6 +68,8 @@ protected:
     
     virtual bool write(const uint8_t *p, size_t len);
     virtual bool close();
+
+    ArchiveXmlWriter(const ArchiveXmlWriter&&) _DELETED_;
 };
 
 EPUB3_END_NAMESPACE

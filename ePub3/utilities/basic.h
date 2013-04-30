@@ -34,25 +34,12 @@ EPUB3_BEGIN_NAMESPACE
 // shorthand forms of C++11 pointer objects
 
 // These template aliases allow the use of shorthand declarations for different
-// pointer types, i.e. Shared<Container> means std::shared_ptr<Container>.
+// pointer types, i.e. Shared<Container> means
+// std::shared_ptr<Container>.
 
-#if EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES)
-template <class _Tp>
-using Shared = std::shared_ptr<_Tp>;
-
-template <class _Tp>
-using Auto = std::unique_ptr<_Tp>;
-
-template <class _Tp>
-using Weak = std::weak_ptr<_Tp>;
-#else
-template <class _Tp>
-class Shared : public std::shared_ptr<_Tp> {};
-template <class _Tp>
-class Auto : public std::unique_ptr<_Tp> {};
-template <class _Tp>
-class Weak : std::weak_ptr<_Tp> {};
-#endif
+using std::shared_ptr;
+using std::weak_ptr;
+using std::unique_ptr;
 
 //////////////////////////////////////////////////////////////////////////////
 // nicer way of constructing a C++ string from randomly-typed arguments

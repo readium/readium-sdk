@@ -30,7 +30,7 @@ var groups = {
     "libzip" : ["ePub3\\ThirdParty\\libzip\\*.h"],
     "ePub3" : ["ePub3\\*.h", "ePub3\\ePub\\*.h"],
     "ePub3\\xml" : ["ePub3\\xml\\utilities\\*.h", "ePub3\\xml\\tree\\*.h", "ePub3\\xml\\validation\\*.h"],
-    "ePub3\\utilities" : ["ePub3\\utilities\\*.h"]
+    "ePub3\\utilities" : ["ePub3\\utilities\\*.h", "ePub3\\utilities\\*.inl"]
 };
 
 if (!fso.FolderExists(includeDir))

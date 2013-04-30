@@ -24,7 +24,7 @@
 #include <libzip/zip.h>
 #include <libzip/zipint.h>          // for internals of zip_file
 #include <sys/stat.h>
-#if EPUB_OS(ANDROID) || EPUB_OS(LINUX)
+#if EPUB_OS(ANDROID) || EPUB_OS(LINUX) || EPUB_OS(WINDOWS)
 # include <condition_variable>
 #endif
 
@@ -33,7 +33,11 @@ EPUB3_BEGIN_NAMESPACE
 std::thread AsyncByteStream::_asyncIOThread;
 RunLoop*    AsyncByteStream::_asyncRunLoop(nullptr);
 
-AsyncByteStream::AsyncByteStream(size_type bufsize) : AsyncByteStream(nullptr, bufsize)
+AsyncByteStream::AsyncByteStream(size_type bufsize)
+  : _bufsize(bufsize),
+    _eventHandler(nullptr),
+    _eventSource(nullptr),
+    _event(ReadSpaceAvailable)
 {
 }
 AsyncByteStream::AsyncByteStream(StreamEventHandler handler, size_type bufsize)
@@ -55,7 +59,7 @@ void AsyncByteStream::Close()
         delete _eventSource;
     }
     
-    _readbuf = nullptr;
+    this->_readbuf = nullptr;
     _writebuf = nullptr;
 }
 void AsyncByteStream::Open(std::ios::openmode mode)
@@ -98,8 +102,8 @@ void AsyncByteStream::InitAsyncHandler()
     if ( _eventSource != nullptr )
         throw std::logic_error("This stream is already set up for async operation.");
     
-    Weak<RingBuffer> weakReadBuf = _readbuf;
-    Weak<RingBuffer> weakWriteBuf = _writebuf;
+    weak_ptr<RingBuffer> weakReadBuf = _readbuf;
+    weak_ptr<RingBuffer> weakWriteBuf = _writebuf;
     
     _eventSource = new RunLoop::EventSource([=](RunLoop::EventSource&) {
         // atomically pull out the event flags here
@@ -109,8 +113,8 @@ void AsyncByteStream::InitAsyncHandler()
         
         uint8_t buf[4096];
         
-        Shared<RingBuffer> readBuf = weakReadBuf.lock();
-        Shared<RingBuffer> writeBuf = weakWriteBuf.lock();
+        shared_ptr<RingBuffer> readBuf = weakReadBuf.lock();
+        shared_ptr<RingBuffer> writeBuf = weakWriteBuf.lock();
         
         if ( (t & ReadSpaceAvailable) == ReadSpaceAvailable && readBuf )
         {
@@ -170,8 +174,8 @@ void AsyncByteStream::InitAsyncHandler()
             // only spin an empty run loop a certain amount of time before giving up
             // and exiting the thread entirely
             // FIXME: There's a gap here where a race could lose an EventSource addition
-            static constexpr unsigned kMaxEmptyTicks(1000);
-            static constexpr std::chrono::milliseconds kTickLen(10);
+            static CONSTEXPR unsigned kMaxEmptyTicks(1000);
+            static CONSTEXPR std::chrono::milliseconds kTickLen(10);
             unsigned __emptyTickCounter = 0;
             
             do
@@ -188,6 +192,7 @@ void AsyncByteStream::InitAsyncHandler()
                 
                 // by definition not an empty runloop
                 __emptyTickCounter = 0;
+                
             } while (1);
             
             // nullify the global before we quit
@@ -215,7 +220,7 @@ FileByteStream::~FileByteStream()
 {
     Close();
 }
-ByteStream::size_type FileByteStream::BytesAvailable() const noexcept
+ByteStream::size_type FileByteStream::BytesAvailable() const _NOEXCEPT
 {
     if ( !IsOpen() )
         return 0;
@@ -224,18 +229,22 @@ ByteStream::size_type FileByteStream::BytesAvailable() const noexcept
         return 0;
     
     struct stat sb;
+#if EPUB_PLATFORM(WIN)
+    int fd = _fileno(const_cast<FILE*>(_file));
+#else
     int fd = fileno(const_cast<FILE*>(_file));
+#endif
     if ( ::fstat(fd, &sb) != 0 )
         return 0;
     
     return (static_cast<size_type>(sb.st_size) - static_cast<size_type>(::ftell(const_cast<FILE*>(_file))));
 }
-ByteStream::size_type FileByteStream::SpaceAvailable() const noexcept
+ByteStream::size_type FileByteStream::SpaceAvailable() const _NOEXCEPT
 {
     // essentially unlimited, it seems
     return (std::numeric_limits<size_type>::max());
 }
-bool FileByteStream::IsOpen() const noexcept
+bool FileByteStream::IsOpen() const _NOEXCEPT
 {
     return _file != nullptr;
 }
@@ -293,13 +302,13 @@ bool FileByteStream::Open(const string &path, std::ios::openmode mode)
             return false;
     }
     
-    _file = fopen(path.c_str(), __mdstr);
+    _file = ::fopen(path.c_str(), __mdstr);
     if ( _file == nullptr )
         return false;
     
     if ( mode & (std::ios::ate | std::ios::app) )
     {
-        if ( ::fseeko(_file, 0, SEEK_END) != 0 )
+        if ( ::fseek(_file, 0, SEEK_END) != 0 )
         {
             Close();
             return false;
@@ -355,7 +364,7 @@ ByteStream::size_type FileByteStream::Seek(size_type by, std::ios::seekdir dir)
 #pragma mark -
 #endif
 
-ZipFileByteStream::ZipFileByteStream(struct zip* archive, const string& path, int flags) : ZipFileByteStream()
+ZipFileByteStream::ZipFileByteStream(struct zip* archive, const string& path, int flags) : ByteStream(), _file(nullptr)
 {
     Open(archive, path, flags);
 }
@@ -363,18 +372,18 @@ ZipFileByteStream::~ZipFileByteStream()
 {
     Close();
 }
-ByteStream::size_type ZipFileByteStream::BytesAvailable() const noexcept
+ByteStream::size_type ZipFileByteStream::BytesAvailable() const _NOEXCEPT
 {
     if ( _file == nullptr )
         return 0;
     return _file->bytes_left;
 }
-ByteStream::size_type ZipFileByteStream::SpaceAvailable() const noexcept
+ByteStream::size_type ZipFileByteStream::SpaceAvailable() const _NOEXCEPT
 {
     // no write support just now
     return 0;
 }
-bool ZipFileByteStream::IsOpen() const noexcept
+bool ZipFileByteStream::IsOpen() const _NOEXCEPT
 {
     return _file != nullptr;
 }

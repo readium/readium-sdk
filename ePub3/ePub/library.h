@@ -87,7 +87,7 @@ public:
     // may instantiate a Container & store it, so non-const
     const ManifestItem* ManifestItemForCFI(const IRI& urlWithCFI, CFI* pRemainingCFI);
     
-    Auto<ByteStream>    ReadStreamForEPubURL(const IRI& url, CFI* pRemainingCFI);
+    unique_ptr<ByteStream>    ReadStreamForEPubURL(const IRI& url, CFI* pRemainingCFI);
     
     // file format is sort-of CSV
     // each line starts with a container locator's string representation followed by a
@@ -106,7 +106,7 @@ protected:
     ContainerLookup         _containers;
     PackageLookup           _packages;
     
-    static Auto<Library>    _singleton;
+    static unique_ptr<Library>    _singleton;
 };
 
 EPUB3_END_NAMESPACE

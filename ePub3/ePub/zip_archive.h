@@ -47,15 +47,12 @@ class ZipArchive : public Archive
     };
     
 private:
-    static std::string TempFilePath();
+    static string TempFilePath();
     
 public:
     ///
-    /// Creates a new empty ZipArchive.
-    ZipArchive() : ZipArchive(TempFilePath()) {}
-    ///
     /// Opens the ZipArchive at a given filesystem path.
-    ZipArchive(const std::string & path);
+    ZipArchive(const string & path="");
     ///
     /// move constructos.
     ZipArchive(ZipArchive &&o) : _zip(o._zip) { o._zip = nullptr; }
@@ -68,17 +65,17 @@ public:
     /// Move assignment.
     Archive & operator = (ZipArchive &&o);
     
-    virtual bool ContainsItem(const std::string & path) const;
-    virtual bool DeleteItem(const std::string & path);
+    virtual bool ContainsItem(const string & path) const;
+    virtual bool DeleteItem(const string & path);
     
-    virtual bool CreateFolder(const std::string & path);
+    virtual bool CreateFolder(const string & path);
     
-    virtual Auto<ByteStream> ByteStreamAtPath(const std::string& path) const;
+    virtual unique_ptr<ByteStream> ByteStreamAtPath(const string& path) const;
     
-    virtual ArchiveReader* ReaderAtPath(const std::string & path) const;
-    virtual ArchiveWriter* WriterAtPath(const std::string & path, bool compress=true, bool create=true);
+    virtual ArchiveReader* ReaderAtPath(const string & path) const;
+    virtual ArchiveWriter* WriterAtPath(const string & path, bool compress=true, bool create=true);
         
-    virtual ArchiveItemInfo InfoAtPath(const std::string & path) const;
+    virtual ArchiveItemInfo InfoAtPath(const string & path) const;
     
 protected:
     struct zip *    _zip;           ///< Pointer to the underlying `libzip` data type.
@@ -88,7 +85,7 @@ protected:
     
     ///
     /// Sanitizes a path string, since `libzip` can be finnicky about them.
-    std::string Sanitized(const std::string& path) const;
+    string Sanitized(const string& path) const;
 };
 
 EPUB3_END_NAMESPACE
