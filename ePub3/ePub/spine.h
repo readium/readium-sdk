@@ -80,8 +80,8 @@ class SpineItem
 public:
     typedef std::vector<IRI>        PropertyList;
     
-    static const IRI                PageSpreadRightPropertyIRI;
-    static const IRI                PageSpreadLeftPropertyIRI;
+    static EPUB3_EXPORT const IRI                PageSpreadRightPropertyIRI;
+    static EPUB3_EXPORT const IRI                PageSpreadLeftPropertyIRI;
     
 private:
     ///
@@ -97,10 +97,10 @@ public:
      @param node The `<itemref>` element node for this spine item.
      @param owner The package contaning this spine item.
      */
-                        SpineItem(xmlNodePtr node, Package * owner);
+    EPUB3_EXPORT        SpineItem(xmlNodePtr node, Package * owner);
     ///
     /// C++11 move constructor.
-                        SpineItem(SpineItem&&);
+    EPUB3_EXPORT        SpineItem(SpineItem&&);
     
     // NB: deleting a spine item will delete its next, etc.
     // It will also reach back into _prev and nullify its _next
@@ -134,7 +134,7 @@ public:
     
     ///
     /// Page-spread identifiers.
-    enum class PageSpread : uint8_t
+    enum class EPUB3_EXPORT PageSpread : uint8_t
     {
         Either,             ///< No page spread property was defined, or both were.
         Left,               ///< Item has the `page-spread-left` property.
@@ -143,6 +143,7 @@ public:
     
     ///
     /// Determine the spread location for this item (or for the first page thereof).
+    EPUB3_EXPORT
     PageSpread          Spread()            const;
     
     /// @}
@@ -165,15 +166,19 @@ public:
     
     ///
     /// Retrieves a pointer to the next linear item in the spine, or `nullptr`.
+    EPUB3_EXPORT
     SpineItem*          NextStep();
     ///
     /// Retrieves a pointer to the next linear item in the spine, or `nullptr`.
+    EPUB3_EXPORT
     const SpineItem*    NextStep()          const;
     ///
     /// Retrieves a pointer to the previous linear item in the spine, or `nullptr`.
+    EPUB3_EXPORT
     SpineItem*          PriorStep();
     ///
     /// Retrieves a pointer to the previous linear item in the spine, or `nullptr`.
+    EPUB3_EXPORT
     const SpineItem*    PriorStep()         const;
     
     /// @}
@@ -195,6 +200,7 @@ public:
      @result A SpineItem.
      @throws std::out_of_range if `idx` is out of bounds.
      */
+    EPUB3_EXPORT
     SpineItem*          at(ssize_t idx);
     
     /**
@@ -203,6 +209,7 @@ public:
      @result A SpineItem.
      @throws std::out_of_range if `idx` is out of bounds.
      */
+    EPUB3_EXPORT
     const SpineItem*    at(ssize_t idx)         const;
     
     /**

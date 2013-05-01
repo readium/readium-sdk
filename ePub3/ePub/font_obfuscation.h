@@ -43,7 +43,7 @@ class FontObfuscator : public ContentFilter
 protected:
     static const size_t         KeySize = 20;       // SHA-1 key size = 20 bytes
     static const REGEX_NS::regex     TypeCheck;
-    CONSTEXPR static const char * const   FontObfuscationAlgorithmID
+    CONSTEXPR static EPUB3_EXPORT const char * const   FontObfuscationAlgorithmID
 #if EPUB_COMPILER_SUPPORTS(CXX_NONSTATIC_MEMBER_INIT)
             = "http://www.idpf.org/2008/embedding"
 #endif
@@ -113,6 +113,7 @@ protected:
      @result Always returns `true`.
      @see http://www.idpf.org/epub/30/spec/epub30-ocf.html#fobfus-keygen
      */
+    EPUB3_EXPORT
     bool BuildKey(const Container* container);
 };
 

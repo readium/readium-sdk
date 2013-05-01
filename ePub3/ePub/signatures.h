@@ -54,11 +54,11 @@ public:
      XML-DSig.
      @see http://www.w3.org/TR/xmldsig-core1/#sec-Signature
      */
-                DigitalSignature(xmlNodePtr signatureNode);
+    EPUB3_EXPORT    DigitalSignature(xmlNodePtr signatureNode);
     ///
     /// Move constructor.
-                DigitalSignature(DigitalSignature&& o) : _signedInfo(std::move(o._signedInfo)), _keyInfo(std::move(o._keyInfo)), _object(std::move(o._object)) {}
-    virtual     ~DigitalSignature() {}
+                    DigitalSignature(DigitalSignature&& o) : _signedInfo(std::move(o._signedInfo)), _keyInfo(std::move(o._keyInfo)), _object(std::move(o._object)) {}
+    virtual         ~DigitalSignature() {}
 
 private:
     ///
@@ -88,6 +88,7 @@ public:
     
     ///
     /// Performs validation of the digital signature.
+    EPUB3_EXPORT
     bool                        Validate()                          const;
     
 protected:

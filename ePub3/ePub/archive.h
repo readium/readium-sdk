@@ -58,16 +58,16 @@ public:
     
     ///
     /// Use the default compression level for the archive type.
-    static const CompressionLevel DefaultCompression = -1;
+    static EPUB3_EXPORT const CompressionLevel DefaultCompression = -1;
     ///
     /// Don't compress.
-    static const CompressionLevel Uncompressed = 0;
+    static EPUB3_EXPORT const CompressionLevel Uncompressed = 0;
     ///
     /// Fastest operation, usually the least compression.
-    static const CompressionLevel FastestCompression = 1;
+    static EPUB3_EXPORT const CompressionLevel FastestCompression = 1;
     ///
     /// Smallest compressed file size, usually the slowest to compress/decompress.
-    static const CompressionLevel SmallestCompression = 9;
+    static EPUB3_EXPORT const CompressionLevel SmallestCompression = 9;
     
 protected:
     ///
@@ -114,11 +114,13 @@ protected:
      `true` if it represents an archive which can be opened using the function object
      in the `creator` argument.
      */
+    EPUB3_EXPORT
     static void RegisterArchive(CreatorFn creator, SnifferFn sniffer);
     
 public:
     ///
     /// Initialize the library, registering the default archive types.
+    EPUB3_EXPORT
     static void Initialize();
     
     /**
@@ -126,6 +128,7 @@ public:
      @param path A filesystem path to an archive file.
      @result An opened instance of an Archive subclass or `nullptr`.
      */
+    EPUB3_EXPORT
     static Archive * Open(const string& path);
     
 public:

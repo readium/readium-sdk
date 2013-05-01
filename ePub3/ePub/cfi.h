@@ -50,13 +50,13 @@ public:
      range.
      @param end A relative CFI denoting the path from `base` to the end of a range.
      */
-                    CFI(const CFI& base, const CFI& start, const CFI& end);
+    EPUB3_EXPORT    CFI(const CFI& base, const CFI& start, const CFI& end);
     /**
      Create a CFI from a string representation.
      @param str A string representation of a CFI; the `epubcfi(...)` wrapping is
      optional.
      */
-                    CFI(const string& str);
+    EPUB3_EXPORT    CFI(const string& str);
     ///
     /// Create a copy of an existing CFI.
                     CFI(const CFI& o) : _components(o._components), _rangeStart(o._rangeStart), _rangeEnd(o._rangeEnd), _options(o._options) {}
@@ -77,10 +77,10 @@ public:
      @param o A CFI from which to extract a sub-component.
      @param fromIndex The index in `o` at which to start copying components.
      */
-                    CFI(const CFI& o, size_t fromIndex);
+    EPUB3_EXPORT    CFI(const CFI& o, size_t fromIndex);
     ///
     /// C++11 move constructor.
-                    CFI(CFI&& o) : _components(std::move(o._components)), _rangeStart(std::move(o._rangeStart)), _rangeEnd(std::move(o._rangeEnd)), _options(o._options) {}
+    EPUB3_EXPORT    CFI(CFI&& o) : _components(std::move(o._components)), _rangeStart(std::move(o._rangeStart)), _rangeEnd(std::move(o._rangeEnd)), _options(o._options) {}
     virtual         ~CFI() {}
     
     /**
@@ -106,35 +106,43 @@ public:
     
     ///
     /// Determines whether two CFIs are equal.
+    EPUB3_EXPORT
     bool            operator==(const CFI& o)        const;
     ///
     /// Determines whether a CFI is equal to a CFI string representation.
+    EPUB3_EXPORT
     bool            operator==(const string& str)   const;
     ///
     /// Determines whether two CFIs are inequal.
+    EPUB3_EXPORT
     bool            operator!=(const CFI& o)        const;
     ///
     /// Determines whether a CFI is inequal to a CFI string representation.
+    EPUB3_EXPORT
     bool            operator!=(const string& str)   const;
     
     ///
     /// Assigns a new value to a CFI by copying.
+    EPUB3_EXPORT
     CFI&            Assign(const CFI& o);
     CFI&            operator=(const CFI& o)                 { return Assign(o); }
     
     ///
     /// Assigns a new value to a CFI by moving.
+    EPUB3_EXPORT
     CFI&            Assign(CFI&& o);
     CFI&            operator=(CFI&& o)                      { return Assign(std::move(o)); }
     
     ///
     /// Assigns a new value to a CFI using a sub-path of another CFI
     /// @see CFI(const CFI&, size_t)
+    EPUB3_EXPORT
     CFI&            Assign(const CFI& o, size_t fromIndex);
     
     ///
     /// Assigns a new value to a CFI from a CFI string representation.
     CFI&            operator=(const string& str)            { return Assign(str); }
+    EPUB3_EXPORT
     CFI&            Assign(const string& str);
     
     /**
@@ -142,6 +150,7 @@ public:
      @note It is not possible to append components to a ranged CFI.
      @throws RangedCFIAppendAttempt if the LHS is a ranged CFI.
      */
+    EPUB3_EXPORT
     CFI&            Append(const CFI& cfi);
     CFI&            operator+=(const CFI& cfi)              { return Append(cfi); }
     CFI             operator+(const CFI& cfi)       const   { return CFI(*this).Append(cfi); }
@@ -151,6 +160,7 @@ public:
      @note It is not possible to append components to a ranged CFI.
      @throws RangedCFIAppendAttempt if the LHS is a ranged CFI.
      */
+    EPUB3_EXPORT
     CFI&            Append(const string& str);
     CFI&            operator+=(const string& str)           { return Append(str); }
     CFI             operator+(const string& str)    const   { return CFI(*this).Append(str); }

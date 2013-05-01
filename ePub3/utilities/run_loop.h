@@ -42,7 +42,7 @@ EPUB3_BEGIN_NAMESPACE
 class RunLoop
 {
 public:
-    enum class ExitReason : uint8_t
+    enum class EPUB3_EXPORT ExitReason : uint8_t
     {
         RunFinished         = 1,    ///< The RunLoop has no timers or event sources to process.
         RunStopped          = 2,    ///< The RunLoop was stopped by a call to RunLoop::Stop().
@@ -94,38 +94,49 @@ public:
          @param repeats Whether the observer should fire more than once.
          @param fn The function to call when an observed activity occurs.
          */
+        EPUB3_EXPORT
         Observer(Activity activities, bool repeats, ObserverFn fn);
         ///
         /// Copy constructor
+        EPUB3_EXPORT
         Observer(const Observer&);
         ///
         /// Move constructor
+        EPUB3_EXPORT
         Observer(Observer&& o);
-        
+
+        EPUB3_EXPORT
         ~Observer();
-        
+
+        EPUB3_EXPORT
         Observer&       operator=(const Observer&);
         ///
         /// Move assignment
+        EPUB3_EXPORT
         Observer&       operator=(Observer&&o);
         
         ///
         /// Test for equality with another observer
+        EPUB3_EXPORT
         bool            operator==(const Observer&)     const;
         bool            operator!=(const Observer&o)    const   { return this->operator==(o) == false; }
         
         ///
         /// Retrieves the activities monitored by this observer.
+        EPUB3_EXPORT
         Activity        GetActivities()                 const;
         ///
         /// Whether this observer will post multiple events.
+        EPUB3_EXPORT
         bool            Repeats()                       const;
         ///
         /// Whether the observer has been cancelled.
+        EPUB3_EXPORT
         bool            IsCancelled()                   const;
         
         ///
         /// Cancels the observer, causing it never to fire again.
+        EPUB3_EXPORT
         void            Cancel();
     };
     
@@ -154,33 +165,39 @@ public:
                         EventSource()                   _DELETED_;
         
     public:
-                        EventSource(EventHandlerFn fn);
-                        EventSource(const EventSource& o);
-                        EventSource(EventSource&& o);
-                        ~EventSource();
+        EPUB3_EXPORT    EventSource(EventHandlerFn fn);
+        EPUB3_EXPORT    EventSource(const EventSource& o);
+        EPUB3_EXPORT    EventSource(EventSource&& o);
+        EPUB3_EXPORT    ~EventSource();
         
         ///
         /// Copy assignment
+        EPUB3_EXPORT
         EventSource&    operator=(const EventSource&);
         ///
         /// Move assignment
+        EPUB3_EXPORT
         EventSource&    operator=(EventSource&&);
         
         ///
         /// Test for equality.
+        EPUB3_EXPORT
         bool            operator==(const EventSource&)  const;
         bool            operator!=(const EventSource&o) const   { return this->operator==(o) == false; }
         
         ///
         /// Whether the event source has been cancelled.
+        EPUB3_EXPORT
         bool            IsCancelled()                   const;
         
         ///
         /// Cancel the event source, so it will never fire again.
+        EPUB3_EXPORT
         void            Cancel();
         
         ///
         /// Signal the event source, causing it to fire on one of its associated RunLoops.
+        EPUB3_EXPORT
         void            Signal();
         
     protected:
@@ -240,7 +257,9 @@ public:
                         Timer()                 _DELETED_;
         
     protected:
+        EPUB3_EXPORT
         Timer(Clock::time_point& fireDate, Clock::duration& interval, TimerFn fn);
+        EPUB3_EXPORT
         Timer(Clock::duration& interval, bool repeat, TimerFn fn);
         
     public:
@@ -267,35 +286,41 @@ public:
         
         ///
         /// Copy constructor
-                        Timer(const Timer& o);
+        EPUB3_EXPORT    Timer(const Timer& o);
         
         ///
         /// Move constructor
-                        Timer(Timer&& o);
-        
-                        ~Timer();
+        EPUB3_EXPORT    Timer(Timer&& o);
+
+        EPUB3_EXPORT    ~Timer();
         
         ///
         /// Copy assignment
+        EPUB3_EXPORT
         Timer&          operator=(const Timer&);
         ///
         /// Move assignment
+        EPUB3_EXPORT
         Timer&          operator=(Timer&&);
         
         ///
         /// Test for equality
+        EPUB3_EXPORT
         bool            operator==(const Timer&) const;
         bool            operator!=(const Timer&o) const { return this->operator==(o) == false; }
         
         ///
         /// Cancels the timer, causing it to never fire again.
+        EPUB3_EXPORT
         void            Cancel();
         ///
         /// Tests whether a timer has been cancelled.
+        EPUB3_EXPORT
         bool            IsCancelled()   const;
         
         ///
         /// Tests whether a timer is set to repeat.
+        EPUB3_EXPORT
         bool            Repeats()       const;
         
         ///
@@ -341,54 +366,70 @@ public:
         }
         
     protected:
+        EPUB3_EXPORT
         Clock::duration RepeatIntervalInternal() const;
-        
+
+        EPUB3_EXPORT
         Clock::time_point GetNextFireDateTime() const;
+        EPUB3_EXPORT
         void SetNextFireDateTime(Clock::time_point& when);
-        
+
+        EPUB3_EXPORT
         Clock::duration GetNextFireDateDuration() const;
+        EPUB3_EXPORT
         void SetNextFireDateDuration(Clock::duration& when);
     };
     
 public:
     ///
     /// This is the only way to obtain a RunLoop. Use it wisely.
+    EPUB3_EXPORT
     static RunLoop* CurrentRunLoop();
-    
-                    ~RunLoop();
+
+    EPUB3_EXPORT    ~RunLoop();
     
     ///
     /// Call a function on the run loop's assigned thread.
+    EPUB3_EXPORT
     void            PerformFunction(std::function<void()> fn);
     
     ///
     /// Adds a timer to the run loop.
+    EPUB3_EXPORT
     void            AddTimer(Timer* timer);
     ///
     /// Whether a timer is registered on this runloop.
+    EPUB3_EXPORT
     bool            ContainsTimer(Timer* timer)               const;
     ///
     /// Removes the timer from this RunLoop (without cancelling it).
+    EPUB3_EXPORT
     void            RemoveTimer(Timer* timer);
     
     ///
     /// Adds an event source to the run loop.
+    EPUB3_EXPORT
     void            AddEventSource(EventSource* source);
     ///
     /// Whether an event source is registered on this runloop.
+    EPUB3_EXPORT
     bool            ContainsEventSource(EventSource* source)  const;
     ///
     /// Removes an event source from this RunLoop (without cancelling it).
+    EPUB3_EXPORT
     void            RemoveEventSource(EventSource* source);
     
     ///
     /// Adds an observer to the run loop.
+    EPUB3_EXPORT
     void            AddObserver(Observer* observer);
     ///
     /// Whether an observer is registered on this runloop.
+    EPUB3_EXPORT
     bool            ContainsObserver(Observer* observer)      const;
     ///
     /// Removes an observer from this RunLoop (without cancelling it).
+    EPUB3_EXPORT
     void            RemoveObserver(Observer* observer);
     
     /**
@@ -411,29 +452,34 @@ public:
     
     ///
     /// Runs the RunLoop forever, or until Stop() is called.
+    EPUB3_EXPORT
     void            Run();
     
     ///
     /// Stops the RunLoop, exiting any invocations of Run() or Run(bool, std::chrono::duration).
+    EPUB3_EXPORT
     void            Stop();
     
     ///
     /// Whether the RunLoop is currently waiting for an event or timer to fire.
+    EPUB3_EXPORT
     bool            IsWaiting()                                     const;
     
     ///
     /// Explicitly wake the RunLoop, causing it to check timers and event sources.
+    EPUB3_EXPORT
     void            WakeUp();
     
 protected:
     ///
     /// Internal Run function which takes an explicit timeout duration type.
+    EPUB3_EXPORT
     ExitReason      RunInternal(bool returnAfterSourceHandled, std::chrono::nanoseconds& timeout);
     
     
     ///
     /// Obtains the run loop for the current thread.
-                    RunLoop();
+    EPUB3_EXPORT    RunLoop();
     
 private:
     ///

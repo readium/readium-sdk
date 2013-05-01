@@ -52,6 +52,7 @@ private:
 public:
     ///
     /// Opens the ZipArchive at a given filesystem path.
+    EPUB3_EXPORT
     ZipArchive(const string & path="");
     ///
     /// move constructos.
@@ -63,6 +64,7 @@ public:
     
     ///
     /// Move assignment.
+    EPUB3_EXPORT
     Archive & operator = (ZipArchive &&o);
     
     virtual bool ContainsItem(const string & path) const;

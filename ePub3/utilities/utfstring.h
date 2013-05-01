@@ -54,7 +54,7 @@ EPUB3_BEGIN_NAMESPACE
 class string;
 typedef std::map<string, string>  NamespaceMap;
 
-extern const size_t utf8_sizes[256];
+extern EPUB3_EXPORT const size_t utf8_sizes[256];
 #define UTF8CharLen(c) ePub3::utf8_sizes[static_cast<xmlChar>(c)]
 
 /**
@@ -63,7 +63,7 @@ extern const size_t utf8_sizes[256];
 class string
 {
 public:
-    typedef std::string __base;
+    typedef std::string                 __base;
     
     typedef __base::size_type           size_type;
     typedef __base::difference_type     difference_type;
@@ -82,12 +82,11 @@ public:
     
     static const string EmptyString;
     
-    
-    
     class InvalidUTF8Sequence : std::invalid_argument {
     public:
-        InvalidUTF8Sequence(const std::string & str) : invalid_argument(str) {}
-        InvalidUTF8Sequence(const char * str) : invalid_argument(str) {}
+        EPUB3_EXPORT InvalidUTF8Sequence(const string & str) : invalid_argument(str.stl_str()) {}
+        EPUB3_EXPORT InvalidUTF8Sequence(const char * str) : invalid_argument(str) {}
+        virtual ~InvalidUTF8Sequence() {}
     };
     
     typedef utf8::iterator<__base::iterator>        iterator;
@@ -106,25 +105,25 @@ public:
     string(const string & s, size_type i, size_type n=npos) : _base(s._base, s.to_byte_size(i), s.to_byte_size(i,n)) {}
     
     // From char32_t (value_type)
-    string(const_u4pointer s);   // NUL-delimited
-    string(const_u4pointer s, size_type n);
-    string(size_type n, value_type c);
+    EPUB3_EXPORT string(const_u4pointer s);   // NUL-delimited
+    EPUB3_EXPORT string(const_u4pointer s, size_type n);
+    EPUB3_EXPORT string(size_type n, value_type c);
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string(std::initializer_list<value_type> __il) : string(__il.begin(), __il.end()) {}
 #endif
     
     // From char16_t (pure UTF-16)
-    string(const char16_t* s);    // NUL-delimited
-    string(const char16_t* s, size_type n);
-    string(size_type n, char16_t c);
+    EPUB3_EXPORT string(const char16_t* s);    // NUL-delimited
+    EPUB3_EXPORT string(const char16_t* s, size_type n);
+    EPUB3_EXPORT string(size_type n, char16_t c);
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string(std::initializer_list<char16_t> __il) : string(__il.begin(), __il.end()) {}
 #endif
 
     // From wchar_t (pure UTF-16)
-    string(const wchar_t* s);    // NUL-delimited
-    string(const wchar_t* s, size_type n);
-    string(size_type n, wchar_t c);
+    EPUB3_EXPORT string(const wchar_t* s);    // NUL-delimited
+    EPUB3_EXPORT string(const wchar_t* s, size_type n);
+    EPUB3_EXPORT string(size_type n, wchar_t c);
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string(std::initializer_list<wchar_t> __il) : string(__il.begin(), __il.end()) {}
 #endif
@@ -132,7 +131,7 @@ public:
     // From std::string
     string(const __base &o) : _base(o) {}
     string(__base &&o) : _base(o) {}
-    string(const __base &s, size_type i, size_type n=npos);
+    EPUB3_EXPORT string(const __base &s, size_type i, size_type n=npos);
     
     // From char
     string(const char * s) : _base(s) {}
@@ -145,7 +144,7 @@ public:
     string(size_type n, xmlChar c) : _base(n, static_cast<char>(c)) {}
     
     template <class InputIterator>
-    string(InputIterator begin, InputIterator end);
+    EPUB3_EXPORT string(InputIterator begin, InputIterator end);
     /*
     template <typename... Args>
     string(const Args&... args) : _base(_Str(args...)) {}
@@ -156,7 +155,7 @@ public:
 #pragma mark - Length/Iteration/Indexing
 #endif
     
-    size_type size() const _NOEXCEPT;
+    EPUB3_EXPORT size_type size() const _NOEXCEPT;
     size_type length() const _NOEXCEPT { return size(); }
     size_type max_size() const _NOEXCEPT { return _base.max_size()/sizeof(value_type); }
     size_type capacity() const _NOEXCEPT { return _base.capacity(); }
@@ -164,8 +163,8 @@ public:
     size_type utf8_size() const _NOEXCEPT { return _base.size(); }
     size_type utf8_length() const _NOEXCEPT { return utf8_size(); }
     
-    void resize(size_type n, value_type c);
-    void resize(size_type n);
+    EPUB3_EXPORT void resize(size_type n, value_type c);
+    EPUB3_EXPORT void resize(size_type n);
     
     void reserve(size_type res_arg = 0) { return _base.reserve(res_arg*4); } // best guess
     void shrink_to_fit() { _base.shrink_to_fit(); }
@@ -179,16 +178,16 @@ public:
     const_iterator end() const { return const_iterator(_base.end(), _base.begin(), _base.end()); }
     const_iterator cend() const { return const_iterator(_base.end(), _base.begin(), _base.end()); }
     
-    const value_type at(size_type pos) const;
-    value_type at(size_type pos);
+    EPUB3_EXPORT const value_type at(size_type pos) const;
+    EPUB3_EXPORT value_type at(size_type pos);
     
     const value_type operator[](size_type pos) const { return at(pos); }
     value_type operator[](size_type pos) { return at(pos); }
     
-    const xmlChar * xmlAt(size_type pos) const;
-    xmlChar * xmlAt(size_type pos);
+    EPUB3_EXPORT const xmlChar * xmlAt(size_type pos) const;
+    EPUB3_EXPORT xmlChar * xmlAt(size_type pos);
     
-    __base utf8At(size_type pos) const;
+    EPUB3_EXPORT __base utf8At(size_type pos) const;
     
 #if 0
 #pragma mark - Splitting
@@ -207,17 +206,17 @@ public:
 #endif
     
     template <class InputIterator>
-    string & assign(InputIterator first, InputIterator last);
+    EPUB3_EXPORT string & assign(InputIterator first, InputIterator last);
     
     // standard
     string & assign(const string &o) { _base.assign(o._base); return *this; }
-    string & assign(const string &o, size_type i, size_type n=npos);
+    EPUB3_EXPORT string & assign(const string &o, size_type i, size_type n=npos);
     string & assign(string &&o) { _base.assign(std::move(o._base)); return *this; }
     string & operator=(const string & o) { return assign(o); }
     string & operator=(string &&o) { return assign(o); }
     
     // char32_t
-    string & assign(const_u4pointer s, size_type n=npos);
+    EPUB3_EXPORT string & assign(const_u4pointer s, size_type n=npos);
     string & assign(size_type n, value_type c) { clear(); resize(n, c); return *this; }
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & assign(std::initializer_list<value_type> __il) { return assign(__il.begin(), __il.end()); }
@@ -229,7 +228,7 @@ public:
 #endif
     
     // char16_t
-    string & assign(const char16_t* s, size_type n=npos);
+    EPUB3_EXPORT string & assign(const char16_t* s, size_type n=npos);
     string & assign(size_type n, char16_t c) { clear(); resize(n, static_cast<value_type>(c)); return *this; }
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & assign(std::initializer_list<char16_t> __il) { return assign(__il.begin(), __il.end()); }
@@ -241,7 +240,7 @@ public:
 #endif
     
     // std::string
-    string & assign(const __base & o) { _base.assign(o); return *this; }
+    EPUB3_EXPORT string & assign(const __base & o) { _base.assign(o); return *this; }
     string & assign(const __base & o, size_type i, size_type n=npos)
         { _base.assign(o, i, n); return *this; }
     string & assign(__base &&o) { _base.assign(o); return *this; }
@@ -279,21 +278,21 @@ public:
 #endif
     
     template <class InputIterator>
-    string & append(InputIterator first, InputIterator last);
+    EPUB3_EXPORT string & append(InputIterator first, InputIterator last);
 #if EPUB_COMPILER_SUPPORTS(VARIADIC_TEMPLATES)
     template <typename... Args>
     string & append(const Args&... args) { return append(string(args...)); }
 #endif
     // standard
     string & append(const string &o) { _base.append(o._base); return *this; }
-    string & append(const string &o, size_type i, size_type n=npos);
+    EPUB3_EXPORT string & append(const string &o, size_type i, size_type n=npos);
     string & append(string &&o) { _base.append(std::move(o._base)); return *this; }
     string & operator+=(const string & o) { return append(o); }
     string & operator+=(string &&o) { return append(o); }
     
     // char32_t
-    string & append(const_u4pointer s, size_type n=npos);
-    string & append(size_type n, value_type c);
+    EPUB3_EXPORT string & append(const_u4pointer s, size_type n=npos);
+    EPUB3_EXPORT string & append(size_type n, value_type c);
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & append(std::initializer_list<value_type> __il) { return append(__il.begin(), __il.end()); }
 #endif
@@ -304,8 +303,8 @@ public:
 #endif
     
     // char16_t
-    string & append(const char16_t* s, size_type n=npos);
-    string & append(size_type n, char16_t c);
+    EPUB3_EXPORT string & append(const char16_t* s, size_type n=npos);
+    EPUB3_EXPORT string & append(size_type n, char16_t c);
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & append(std::initializer_list<char16_t> __il) { return append(__il.begin(), __il.end()); }
 #endif
@@ -353,7 +352,7 @@ public:
 #endif
     
     template <class InputIterator>
-    iterator insert(iterator p, InputIterator first, InputIterator last);
+    EPUB3_EXPORT iterator insert(iterator p, InputIterator first, InputIterator last);
 #if EPUB_COMPILER_SUPPORTS(VARIADIC_TEMPLATES)
     template <typename... Args>
     string & insert(size_type p, const Args&... args) { return insert(p, string(args...)); }
@@ -361,37 +360,37 @@ public:
     iterator insert(iterator p, const Args&... args) { return insert(p, string(args...)); }
 #endif
     // standard
-    string & insert(size_type p, const string &s, size_type b=0, size_type e=npos);
-    iterator insert(iterator p, const string & s, size_type b=0, size_type e=npos);
+    EPUB3_EXPORT string & insert(size_type p, const string &s, size_type b=0, size_type e=npos);
+    EPUB3_EXPORT iterator insert(iterator p, const string & s, size_type b=0, size_type e=npos);
     
     // char32_t
-    string & insert(size_type p, const_u4pointer s, size_type e=npos);
-    string & insert(size_type p, size_type n, value_type c);
-    iterator insert(iterator p, const_u4pointer s, size_type e=npos);
-    iterator insert(iterator p, size_type n, value_type c);
+    EPUB3_EXPORT string & insert(size_type p, const_u4pointer s, size_type e=npos);
+    EPUB3_EXPORT string & insert(size_type p, size_type n, value_type c);
+    EPUB3_EXPORT iterator insert(iterator p, const_u4pointer s, size_type e=npos);
+    EPUB3_EXPORT iterator insert(iterator p, size_type n, value_type c);
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     iterator insert(iterator p, std::initializer_list<value_type> __il) { return insert(p, __il.begin(), __il.end()); }
 #endif
     
     // char16_t
-    string & insert(size_type p, const char16_t* s, size_type e=npos);
-    string & insert(size_type p, size_type n, char16_t c);
-    iterator insert(iterator p, const char16_t* s, size_type e=npos);
-    iterator insert(iterator p, size_type n, char16_t c);
+    EPUB3_EXPORT string & insert(size_type p, const char16_t* s, size_type e=npos);
+    EPUB3_EXPORT string & insert(size_type p, size_type n, char16_t c);
+    EPUB3_EXPORT iterator insert(iterator p, const char16_t* s, size_type e=npos);
+    EPUB3_EXPORT iterator insert(iterator p, size_type n, char16_t c);
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     iterator insert(iterator p, std::initializer_list<char16_t> __il) { return insert(p, __il.begin(), __il.end()); }
 #endif
     
     // std::string
-    string & insert(size_type p, const __base &s, size_type b=0, size_type e=npos);
-    string & insert(size_type p, __base::iterator b, __base::iterator e);
-    iterator insert(iterator p, const __base & s, size_type b=0, size_type e=npos);
+    EPUB3_EXPORT string & insert(size_type p, const __base &s, size_type b=0, size_type e=npos);
+    EPUB3_EXPORT string & insert(size_type p, __base::iterator b, __base::iterator e);
+    EPUB3_EXPORT iterator insert(iterator p, const __base & s, size_type b=0, size_type e=npos);
     
     // char
-    string & insert(size_type p, const char * s, size_type b=0, size_type e=npos);
-    string & insert(size_type p, size_type n, char c);
-    iterator insert(iterator p, const char * s, size_type b=0, size_type e=npos);
-    iterator insert(iterator p, size_type n, char c);
+    EPUB3_EXPORT string & insert(size_type p, const char * s, size_type b=0, size_type e=npos);
+    EPUB3_EXPORT string & insert(size_type p, size_type n, char c);
+    EPUB3_EXPORT iterator insert(iterator p, const char * s, size_type b=0, size_type e=npos);
+    EPUB3_EXPORT iterator insert(iterator p, size_type n, char c);
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     iterator insert(iterator p, std::initializer_list<char> __il) { return insert(p, __il.begin(), __il.end()); }
 #endif
@@ -411,16 +410,16 @@ public:
 #pragma mark - Erasing
 #endif
     
-    string & erase(size_type pos=0, size_type n=npos);
-    iterator erase(cxx11_const_iterator pos);
-    iterator erase(cxx11_const_iterator first, cxx11_const_iterator last);
+    EPUB3_EXPORT string & erase(size_type pos=0, size_type n=npos);
+    EPUB3_EXPORT iterator erase(cxx11_const_iterator pos);
+    EPUB3_EXPORT iterator erase(cxx11_const_iterator first, cxx11_const_iterator last);
     
 #if 0
 #pragma mark - Replacements
 #endif
     
     template <class InputIterator>
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, InputIterator j1, InputIterator j2);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, InputIterator j1, InputIterator j2);
 #if EPUB_COMPILER_SUPPORTS(VARIADIC_TEMPLATES)
     template <typename... Args>
     string & replace(size_type pos1, size_type n1, const Args&... args) {
@@ -434,17 +433,17 @@ public:
     }
 #endif
     // standard
-    string & replace(size_type pos1, size_type n1, const string & str);
-    string & replace(size_type pos1, size_type n1, const string & str, size_type pos2, size_type n2);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const string& str);
+    EPUB3_EXPORT string & replace(size_type pos1, size_type n1, const string & str);
+    EPUB3_EXPORT string & replace(size_type pos1, size_type n1, const string & str, size_type pos2, size_type n2);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const string& str);
     
     // char32_t
-    string & replace(size_type pos, size_type n1, const_u4pointer s, size_type n2);
-    string & replace(size_type pos, size_type n1, const_u4pointer s);
-    string & replace(size_type pos, size_type n1, size_type n2, value_type c);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const_u4pointer s, size_type n);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const_u4pointer s);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, value_type c);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, const_u4pointer s, size_type n2);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, const_u4pointer s);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, size_type n2, value_type c);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const_u4pointer s, size_type n);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const_u4pointer s);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, value_type c);
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::initializer_list<value_type> __il) {
         return replace(i1, i2, __il.begin(), __il.end());
@@ -452,12 +451,12 @@ public:
 #endif
     
     // char16_t
-    string & replace(size_type pos, size_type n1, const char16_t* s, size_type n2);
-    string & replace(size_type pos, size_type n1, const char16_t* s);
-    string & replace(size_type pos, size_type n1, size_type n2, char16_t c);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char16_t* s, size_type n);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char16_t* s);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, char16_t c);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, const char16_t* s, size_type n2);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, const char16_t* s);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, size_type n2, char16_t c);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char16_t* s, size_type n);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char16_t* s);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, char16_t c);
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::initializer_list<char16_t> __il) {
         return replace(i1, i2, __il.begin(), __il.end());
@@ -465,17 +464,17 @@ public:
 #endif
     
     // std::string
-    string & replace(size_type pos1, size_type n1, const __base & str);
-    string & replace(size_type pos1, size_type n1, const __base & str, size_type pos2, size_type n2);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const __base & str);
+    EPUB3_EXPORT string & replace(size_type pos1, size_type n1, const __base & str);
+    EPUB3_EXPORT string & replace(size_type pos1, size_type n1, const __base & str, size_type pos2, size_type n2);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const __base & str);
     
     // char
-    string & replace(size_type pos, size_type n1, const char * s, size_type n2);
-    string & replace(size_type pos, size_type n1, const char * s);
-    string & replace(size_type pos, size_type n1, size_type n2, char c);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char * s, size_type n);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char * s);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, char c);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, const char * s, size_type n2);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, const char * s);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, size_type n2, char c);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char * s, size_type n);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char * s);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, char c);
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::initializer_list<char> __il) {
         return replace(i1, i2, __il.begin(), __il.end());
@@ -505,12 +504,12 @@ public:
 #pragma mark - Outputs
 #endif
     
-    size_type copy(u4pointer s, size_type n, size_type pos=0) const;
-    size_type copy(char16_t* s, size_type n, size_type pos=0) const;
+    EPUB3_EXPORT size_type copy(u4pointer s, size_type n, size_type pos=0) const;
+    EPUB3_EXPORT size_type copy(char16_t* s, size_type n, size_type pos=0) const;
     size_type copyC(char * s, size_type n, size_type pos=0) const { return _base.copy(s, n, pos); }
     size_type copyXML(xmlChar * s, size_type n, size_type pos=0) const { return _base.copy(reinterpret_cast<char*>(s), n, pos); }
     
-    string substr(size_type pos=0, size_type n=npos) const;
+    EPUB3_EXPORT string substr(size_type pos=0, size_type n=npos) const;
     
     void swap(string & str)
 #ifdef _LIBCPP_VERSION      // specific to LLVM libc++ runtime
@@ -520,10 +519,10 @@ public:
         _base.swap(str._base);
     }
     
-    std::u32string utf32string() const;
+    EPUB3_EXPORT std::u32string utf32string() const;
     inline const_u4pointer utf32() const { return utf32string().c_str(); }
     
-    std::u16string utf16string() const;
+    EPUB3_EXPORT std::u16string utf16string() const;
     inline const char16_t* utf16() const { return utf16string().c_str(); }
     
     __base::const_pointer c_str() const _NOEXCEPT { return _base.c_str(); }
@@ -536,11 +535,11 @@ public:
     
     __base::allocator_type get_allocator() const _NOEXCEPT { return _base.get_allocator(); }
     
-    string& tolower(const std::locale& loc = std::locale(""));
-    const string tolower(const std::locale& loc = std::locale("")) const;
+    EPUB3_EXPORT string& tolower(const std::locale& loc = std::locale(""));
+    EPUB3_EXPORT const string tolower(const std::locale& loc = std::locale("")) const;
     
-    string& toupper(const std::locale& loc = std::locale(""));
-    const string toupper(const std::locale& loc = std::locale("")) const;
+    EPUB3_EXPORT string& toupper(const std::locale& loc = std::locale(""));
+    EPUB3_EXPORT const string toupper(const std::locale& loc = std::locale("")) const;
     
 #if 0
 #pragma mark - Searching

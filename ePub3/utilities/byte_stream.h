@@ -121,7 +121,7 @@ protected:
  Event codes for asynchronous stream events.
  @ingroup utilities
  */
-enum class AsyncEvent : uint8_t
+enum class EPUB3_EXPORT AsyncEvent : uint8_t
 {
     None,                   ///< No event (invalid code, or maybe just a wakeup call)
     OpenCompleted,          ///< The stream opened successfully.
@@ -146,8 +146,9 @@ typedef std::function<void(AsyncEvent, AsyncByteStream*)> StreamEventHandler;
 class InvalidDuplexStreamOperationError : public std::logic_error
 {
 public:
-    InvalidDuplexStreamOperationError(const std::string& str) : std::logic_error(str) {}
-    InvalidDuplexStreamOperationError(const char* str) : std::logic_error(str) {}
+    EPUB3_EXPORT InvalidDuplexStreamOperationError(const string& str) : std::logic_error(str.stl_str()) {}
+    EPUB3_EXPORT InvalidDuplexStreamOperationError(const char* str) : std::logic_error(str) {}
+    EPUB3_EXPORT ~InvalidDuplexStreamOperationError() {}
 };
 
 /**
@@ -181,13 +182,13 @@ public:
      Create a new AsyncByteStream.
      @param bufsize The size, in bytes, of the read/write buffers. The default is 4KiB.
      */
-                                AsyncByteStream(size_type bufsize=4096);
+    EPUB3_EXPORT                AsyncByteStream(size_type bufsize=4096);
     /**
      Create a new AsyncByteStream with an event handler.
      @param handler The event-handling function to call when the stream's status changes.
      @param bufsize The size, in bytes, of the read/write buffers. The default is 4KiB.
      */
-                                AsyncByteStream(StreamEventHandler handler, size_type bufsize=4096);
+    EPUB3_EXPORT                AsyncByteStream(StreamEventHandler handler, size_type bufsize=4096);
     virtual                     ~AsyncByteStream();
     
 private:
@@ -298,7 +299,7 @@ public:
      @param mode Whether to open with read and/or write access. Default is to open
      for both reading and writing.
      */
-                            FileByteStream(const string& pathToOpen, std::ios::openmode mode = std::ios::in | std::ios::out);
+    EPUB3_EXPORT            FileByteStream(const string& pathToOpen, std::ios::openmode mode = std::ios::in | std::ios::out);
     virtual                 ~FileByteStream();
     
 private:
@@ -365,7 +366,7 @@ public:
      @param pathToOpen The path within the archive of the resource to open.
      @param zipFlags Flags such as whether to read the raw compressed data.
      */
-                            ZipFileByteStream(struct zip* archive, const string& pathToOpen, int zipFlags=0);
+    EPUB3_EXPORT            ZipFileByteStream(struct zip* archive, const string& pathToOpen, int zipFlags=0);
     virtual                 ~ZipFileByteStream();
     
 private:

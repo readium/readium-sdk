@@ -61,7 +61,7 @@ class RingBuffer
 public:
     ///
     /// Constructs a new RingBuffer instance.
-                    RingBuffer(std::size_t size=4096);
+    EPUB3_EXPORT    RingBuffer(std::size_t size=4096);
     ///
     /// Destructor.
     virtual         ~RingBuffer();
@@ -69,11 +69,11 @@ public:
     ///
     /// Copy constructor (identical input class).
     /// @note This locks its argument before accessing.
-                    RingBuffer(const RingBuffer& o);
+    EPUB3_EXPORT    RingBuffer(const RingBuffer& o);
     ///
     /// Move constructor.
     /// @note This locks its argument before accessing.
-                    RingBuffer(RingBuffer&& o);
+    EPUB3_EXPORT    RingBuffer(RingBuffer&& o);
     
     /// @{
     /// @name Assignment Operators
@@ -82,11 +82,13 @@ public:
      Copy operator.
      @note This locks its parameter before copying.
      */
+    EPUB3_EXPORT
     RingBuffer&     operator=(const RingBuffer& o);
     /**
      Move operator.
      @note This locks its parameter before copying.
      */
+    EPUB3_EXPORT
     RingBuffer&     operator=(RingBuffer&& o);
     
     /// @}
@@ -159,6 +161,7 @@ public:
      enough bytes are available, a smaller amount will be copied.
      @result The number of bytes actually copied into `buf`.
      */
+    EPUB3_EXPORT
     std::size_t     ReadBytes(uint8_t* buf, std::size_t len);
     
     /**
@@ -169,6 +172,7 @@ public:
      enough space available, a smaller amount will be copied.
      @result The number of bytes actually copied into the ring buffer.
      */
+    EPUB3_EXPORT
     std::size_t     WriteBytes(const uint8_t* buf, std::size_t len);
     
     /**
@@ -177,6 +181,7 @@ public:
      @param len The number of bytes to remove. When `len > _numBytes` the result is
      undefined.
      */
+    EPUB3_EXPORT
     void            RemoveBytes(std::size_t len)    _NOEXCEPT;
     
     /// @}

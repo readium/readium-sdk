@@ -36,7 +36,7 @@ class Package;
 
 ///
 /// Enumeration for writing direction values.
-enum class Direction
+enum class EPUB3_EXPORT Direction
 {
     Natural,                ///< Natural direction for the text's locale.
     LeftToRight,            ///< Characters flow left to right, lines from top to bottom.
@@ -67,7 +67,7 @@ class Metadata
 public:
     ///
     /// Enumerated constants for the DCMES metadata attributes used by EPUB 3.
-    enum class DCType : uint32_t
+    enum class EPUB3_EXPORT DCType : uint32_t
     {
         Invalid,        ///< An invalid value.
         
@@ -114,26 +114,30 @@ public:
          @param owner The Package to which the metadata belongs; used for property
          IRI resolution.
          */
-                    Extension(xmlNodePtr node, const Package* owner);
+        EPUB3_EXPORT    Extension(xmlNodePtr node, const Package* owner);
         ///
         /// C++11 move constructor.
-                    Extension(Extension&&);
-        virtual     ~Extension();
+        EPUB3_EXPORT    Extension(Extension&&);
+        virtual         ~Extension();
         
         ///
         /// Retrieves the extension's property IRI, declaring its type.
         const IRI&  Property()          const       { return _property; }
         ///
         /// Retrieves a scheme constant which determines how the Value() is interpreted.
+        EPUB3_EXPORT
         string      Scheme()            const;
         ///
         /// The extension's value.
+        EPUB3_EXPORT
         string      Value()             const;
         ///
         /// The XML identifier of3 this item (used to link items together).
+        EPUB3_EXPORT
         string      Identifier()        const;
         ///
         /// The language of the item (if applicable).
+        EPUB3_EXPORT
         string      Language()          const;
         
     protected:
@@ -160,10 +164,10 @@ public:
      @param owner The Package to which the metadata belongs; used for property IRI
      resolution.
      */
-                    Metadata(xmlNodePtr node, const Package* owner);
+    EPUB3_EXPORT    Metadata(xmlNodePtr node, const Package* owner);
     ///
     /// C++11 move constructor.
-                    Metadata(Metadata&&);
+    EPUB3_EXPORT    Metadata(Metadata&&);
     virtual         ~Metadata();
     
     /// @{
@@ -177,12 +181,15 @@ public:
     const IRI&              Property()      const           { return _property; }
     ///
     /// The XML identifier for this item (used to associate Extensions).
+    EPUB3_EXPORT
     string                  Identifier()    const;
     ///
     /// The value of this metadata item.
+    EPUB3_EXPORT
     string                  Value()         const;
     ///
     /// The language in which the metadata value is rendered, if applicable.
+    EPUB3_EXPORT
     string                  Language()      const;
     
     /// @}
@@ -197,6 +204,7 @@ public:
      @result A localized version of the Metadata item's value if available, or else
      returns the non-localized value.
      */
+    EPUB3_EXPORT
     string                  LocalizedValue()                            const;
     /**
      Obtains the value according to a given locale, if one is available.
@@ -204,6 +212,7 @@ public:
      @result A localized version of the Metadata item's value if available, or else
      returns the non-localized value.
      */
+    EPUB3_EXPORT
     string                  LocalizedValue(const std::locale& locale)   const;
     
     /// @}
@@ -220,12 +229,14 @@ public:
      @result An Extension with the given property IRI, if one was found. Otherwise
      returns `nullptr`.
      */
+    EPUB3_EXPORT
     const Extension*        ExtensionWithProperty(const IRI& property) const;
     /**
      Retrieves all extensions with a given type (property IRI).
      @param property A property IRI.
      @result A list of all Extensions whose property matches `property`.
      */
+    EPUB3_EXPORT
     const ExtensionList     AllExtensionsWithProperty(const IRI& property) const;
     
     /**
@@ -235,6 +246,7 @@ public:
      @param owner The Package to which the metadata belongs; used for property IRI
      resolution.
      */
+    EPUB3_EXPORT
     void                    AddExtension(xmlNodePtr node, const Package* owner);
     
     /// @}
@@ -244,12 +256,14 @@ public:
      @param type The optimized type code.
      @result The canonical property IRI for the provided DCMES type.
      */
+    EPUB3_EXPORT
     static const IRI        IRIForDCType(DCType type);
     
 public:
     // Some things to help with debugging
     typedef std::vector<std::pair<string, string>>   ValueMap;
-    
+
+    EPUB3_EXPORT
     const ValueMap          DebugValues()   const;
     
 protected:
@@ -258,7 +272,8 @@ protected:
     xmlNodePtr      _node;
     ExtensionList   _extensions;
     IRI             _property;
-    
+
+    EPUB3_EXPORT
     bool            Decode(const Package* owner);
     
     static std::map<string, DCType> NameToIDMap;

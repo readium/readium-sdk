@@ -55,6 +55,7 @@ public:
      it can obtain foreign media handler details.
      @param pkg The package to which this filter will apply.
      */
+    EPUB3_EXPORT
     ObjectPreprocessor(const Package* pkg, const string& openButtonTitle = "Open Fullscreen");
     
     ///

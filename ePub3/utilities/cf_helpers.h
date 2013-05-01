@@ -14,7 +14,7 @@
 EPUB3_BEGIN_NAMESPACE
 
 #if EPUB_USE(CF)
-class cf_clock
+class EPUB3_EXPORT cf_clock
 {
 public:
     typedef std::chrono::duration<CFTimeInterval>   duration;

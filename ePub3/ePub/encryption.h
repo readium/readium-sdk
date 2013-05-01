@@ -50,21 +50,21 @@ public:
 public:
     ///
     /// Creates a new EncryptionInfo with no details filled in.
-                EncryptionInfo() : _algorithm(), _path() {}
+                    EncryptionInfo() : _algorithm(), _path() {}
     /**
      Creates a new EncryptionInfo from an EncryptionData XML element node.
      @param node An XML node, which *must* be an `EncryptionData` node as defined in
      XML-ENC.
      @see http://www.w3.org/TR/xmlenc-core1/#sec-EncryptedData
      */
-                EncryptionInfo(xmlNodePtr node);
+    EPUB3_EXPORT    EncryptionInfo(xmlNodePtr node);
     ///
     /// Copy constructor.
-                EncryptionInfo(const EncryptionInfo& o) : _algorithm(o._algorithm), _path(o._path) {}
+                    EncryptionInfo(const EncryptionInfo& o) : _algorithm(o._algorithm), _path(o._path) {}
     ///
     /// Move constructor.
-                EncryptionInfo(EncryptionInfo&& o) : _algorithm(std::move(o._algorithm)), _path(std::move(o._path)) {}
-    virtual     ~EncryptionInfo() {}
+                    EncryptionInfo(EncryptionInfo&& o) : _algorithm(std::move(o._algorithm)), _path(std::move(o._path)) {}
+    virtual         ~EncryptionInfo() {}
     
     ///
     /// Returns an algorithm URI as defined in XML-ENC or OCF.

@@ -96,8 +96,8 @@ public:
     class UnknownPrefix : public std::domain_error
     {
     public:
-                    UnknownPrefix(const string &str)    _GCC_NOTHROW    : std::domain_error(str.stl_str())  {}
-                    UnknownPrefix(const char* str)      _GCC_NOTHROW    : std::domain_error(str)            {}
+        EPUB3_EXPORT UnknownPrefix(const string &str)    _GCC_NOTHROW    : std::domain_error(str.stl_str())  {}
+        EPUB3_EXPORT UnknownPrefix(const char* str)      _GCC_NOTHROW    : std::domain_error(str)            {}
         virtual     ~UnknownPrefix()                    _GCC_NOTHROW                                        {}
     };
     
@@ -120,9 +120,9 @@ public:
      @param type The MIME type of the document, as read from the OCF `root-file`
      element.
      */
-                            PackageBase(Archive * archive, const string& path, const string& type);
+    EPUB3_EXPORT            PackageBase(Archive * archive, const string& path, const string& type);
     /** C++11 'move' constructor-- claims ownership of its argument's internals. */
-                            PackageBase(PackageBase&&);
+    EPUB3_EXPORT            PackageBase(PackageBase&&);
     virtual                 ~PackageBase();
     
     /**
@@ -146,18 +146,21 @@ public:
      SetLocale(const string&) or SetLocale(const std::locale&).
      @return A reference to the current C++11 locale object.
      */
+    EPUB3_EXPORT
     static std::locale&     Locale();
     
     /**
      Sets the current locale using a standard locale name.
      @param name A string containing a canonical locale name.
      */
+    EPUB3_EXPORT
     static void             SetLocale(const string& name);
     
     /**
      Sets the current locale to a given `std::locale` instance.
      @param locale The new locale.
      */
+    EPUB3_EXPORT
     static void             SetLocale(const std::locale& locale);
     
     /// @}
@@ -205,8 +208,10 @@ public:
      @result A pointer to the requested spine item, or `nullptr` if the index was
      out of bounds.
      */
+    EPUB3_EXPORT
     const SpineItem *       SpineItemAt(size_t idx) const;
-    
+
+    EPUB3_EXPORT
     size_t                  IndexOfSpineItemWithIDRef(const string& idref)  const;
     
     /// @}
@@ -219,6 +224,7 @@ public:
      @param ident The unique identifier for the item to retrieve.
      @result A pointer to the requested item, or `nullptr` if no such item exists.
      */
+    EPUB3_EXPORT
     const ManifestItem *    ManifestItemWithID(const string& ident)         const;
     
     /**
@@ -239,6 +245,7 @@ public:
      allowed to have a CFI which directly references a manifest item in the case
      where it's not referenced by a spine item?
      */
+    EPUB3_EXPORT
     string                  CFISubpathForManifestItemWithID(const string& ident) const;
     
     /**
@@ -246,6 +253,7 @@ public:
      @param A vector of manifest `<item>` property names, e.g. `"nav"`, `"cover"`, etc.
      @result A vector containing pointers to any matching manifest items.
      */
+    EPUB3_EXPORT
     const std::vector<const ManifestItem*> ManifestItemsWithProperties(PropertyList properties) const;
     
     /// @}
@@ -256,6 +264,7 @@ public:
      @result A pointer to the relevant navigation table, or `nullptr` if no such
      table was found.
      */
+    EPUB3_EXPORT
     const NavigationTable * NavigationTable(const string& type)            const;
     
     /// @{
@@ -266,6 +275,7 @@ public:
      @param prefix The prefix used to identify the vocabulary IRI stem.
      @param iriStem The stem of the IRI for this vocabulary.
      */
+    EPUB3_EXPORT
     void                    RegisterPrefixIRIStem(const string& prefix, const string& iriStem);
     
     /**
@@ -279,6 +289,7 @@ public:
      @result The canonical IRI used to identify the property.
      @throws UnknownPrefix if the prefix has not been registered.
      */
+    EPUB3_EXPORT
     IRI                     MakePropertyIRI(const string& reference, const string& prefix="")   const;
     
     /**
@@ -292,6 +303,7 @@ public:
      @throws std::invalid_argument If the value doesn't look to be in the correct
      format.
      */
+    EPUB3_EXPORT
     IRI                     PropertyIRIFromAttributeValue(const string& attrValue)              const;
     
     /// @}
@@ -302,6 +314,7 @@ public:
      @result An auto-pointer to a new ByteStream instance.
      @ingroup utilities
      */
+    EPUB3_EXPORT
     unique_ptr<ByteStream>        ReadStreamForItemAtPath(const string& path)                         const;
     
     /// Returns the CFI node index for the `<spine>` element within the package
@@ -387,7 +400,7 @@ private:
                             Package(const Package&)                     _DELETED_;
 
 public:
-                            Package(Archive * archive, const string& path, const string& type);
+    EPUB3_EXPORT            Package(Archive * archive, const string& path, const string& type);
                             Package(Package&& o) : PackageBase(std::move(o)) {}
     virtual                 ~Package() {}
     
@@ -440,6 +453,7 @@ public:
      @param idref The IDRef for which to search.
      @result A pointer to the located SpineItem, or `nullptr` if none was found.
      */
+    EPUB3_EXPORT
     const SpineItem *       SpineItemWithIDRef(const string& idref)         const;
     
     /**
@@ -447,6 +461,7 @@ public:
      @param item A pointer to the ManifestItem to locate.
      @result A new CFI, as specific as possible, for the input ManifestItem.
      */
+    EPUB3_EXPORT
     const CFI               CFIForManifestItem(const ManifestItem* item)    const;
     
     /**
@@ -454,6 +469,7 @@ public:
      @param item A pointer to the SpineItem to locate.
      @result A new CFI, as specific as possible, for the input SpineItem.
      */
+    EPUB3_EXPORT
     const CFI               CFIForSpineItem(const SpineItem* item)          const;
     
     // note that the CFI is purposely non-const so the package can correct it (cf. epub-cfi §3.5)
@@ -471,6 +487,7 @@ public:
         to the empty CFI.
      @result The ManifestItem corresponding to the input CFI, or `nullptr` otherwise.
      */
+    EPUB3_EXPORT
     const ManifestItem *    ManifestItemForCFI(CFI& cfi, CFI* pRemainingCFI) const;
     
     /**
@@ -518,6 +535,7 @@ public:
     ArchiveXmlReader*       XmlReaderForRelativePath(const string& path)    const {
         return new ArchiveXmlReader(ReaderForRelativePath(path));
     }
+    EPUB3_EXPORT
     unique_ptr<ByteStream>        ReadStreamForRelativePath(const string& path)   const;
     
     /// @}
@@ -551,6 +569,7 @@ public:
      @param type The type of the attribute to fetch.
      @result A MetadataMap containing all the metadata items with this DC type.
      */
+    EPUB3_EXPORT
     const MetadataMap       MetadataItemsWithDCType(Metadata::DCType type) const;
     
     /**
@@ -558,6 +577,7 @@ public:
      @param iri The IRI identifying the type of metadata item to fetch.
      @result A MetadataMap containing all the metadata items with this type.
      */
+    EPUB3_EXPORT
     const MetadataMap       MetadataItemsWithProperty(const IRI& iri) const;
     
     /**
@@ -567,6 +587,7 @@ public:
      PackageBase::Locale().
      @result The title of the publication.
      */
+    EPUB3_EXPORT
     const string            Title(bool localized=true)              const;
     
     /**
@@ -576,6 +597,7 @@ public:
      PackageBase::Locale().
      @result The subtitle of the publication.
      */
+    EPUB3_EXPORT
     const string            Subtitle(bool localized=true)           const;
     
     /**
@@ -585,6 +607,7 @@ public:
      PackageBase::Locale().
      @result The complete title of the publication.
      */
+    EPUB3_EXPORT
     const string            FullTitle(bool localized=true)          const;
     
     ///
@@ -598,6 +621,7 @@ public:
      PackageBase::Locale().
      @result A list of authors, each name suitable for display.
      */
+    EPUB3_EXPORT
     const AttributionList   AuthorNames(bool localized=true)        const;
     
     /**
@@ -611,6 +635,7 @@ public:
      PackageBase::Locale().
      @result A list of authors, suitable for sorting.
      */
+    EPUB3_EXPORT
     const AttributionList   AttributionNames(bool localized=true)   const;
     
     /**
@@ -620,6 +645,7 @@ public:
      PackageBase::Locale().
      @result A list of authors, collated and ready for display.
      */
+    EPUB3_EXPORT
     const string            Authors(bool localized=true)            const;
     
     /**
@@ -629,6 +655,7 @@ public:
      PackageBase::Locale().
      @result A list of contributors, each in display format.
      */
+    EPUB3_EXPORT
     const AttributionList   ContributorNames(bool localized=true)   const;
     
     /**
@@ -638,12 +665,14 @@ public:
      PackageBase::Locale().
      @result A list of contributors, collated and ready for display.
      */
+    EPUB3_EXPORT
     const string            Contributors(bool localized=true)       const;
     
     /**
      Retrieves the language of the publication, if available.
      @result The publication's original language.
      */
+    EPUB3_EXPORT
     const string            Language()                              const;
     
     /**
@@ -653,6 +682,7 @@ public:
      PackageBase::Locale().
      @result The publication's original source.
      */
+    EPUB3_EXPORT
     const string            Source(bool localized=true)             const;
     
     /**
@@ -662,18 +692,21 @@ public:
      PackageBase::Locale().
      @result The publication's copyright ownership/assignment statement.
      */
+    EPUB3_EXPORT
     const string            CopyrightOwner(bool localized=true)     const;
     
     /**
      Retrieves a string indicating the last modification date of this package.
      @result The package's modification date, if specified.
      */
+    EPUB3_EXPORT
     const string            ModificationDate()                      const;
     
     /**
      Returns the publication's ISBN number, if available.
      @result An ISBN, or the empty string if none is specified.
      */
+    EPUB3_EXPORT
     const string            ISBN()                                  const;
     
     typedef std::vector<string>                     StringList;
@@ -685,6 +718,7 @@ public:
      PackageBase::Locale().
      @result The publication's subjects.
      */
+    EPUB3_EXPORT
     const StringList        Subjects(bool localized=true)           const;
     
     /// @}
@@ -694,6 +728,7 @@ public:
     
     ///
     /// A list of media types which have an installed handler of class MediaHandler.
+    EPUB3_EXPORT
     const StringList            MediaTypesWithDHTMLHandlers()                   const;
     
     /**
@@ -701,6 +736,7 @@ public:
      @param mediaType The media-type whose handler list to retrieve.
      @result A list of installed handlers for this media type.
      */
+    EPUB3_EXPORT
     const ContentHandlerList    HandlersForMediaType(const string& mediaType)   const;
     
     /**
@@ -708,13 +744,16 @@ public:
      @param mediaType The media-type whose handler to retrieve.
      @result The handler for this media type.
      */
+    EPUB3_EXPORT
     const MediaHandler*         OPFHandlerForMediaType(const string& mediaType) const;
     
     ///
     /// Returns a list of all media types seen in the manifest.
+    EPUB3_EXPORT
     const StringList        AllMediaTypes()                 const;
     ///
     /// Returns a list of all unsupported media types.
+    EPUB3_EXPORT
     const StringList        UnsupportedMediaTypes()         const;
     
     /**
@@ -759,6 +798,7 @@ protected:
     virtual bool            Unpack();
     
     // default is `true`
+    EPUB3_EXPORT
     static bool             gValidateSchema;
     
 public:

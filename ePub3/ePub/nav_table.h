@@ -38,7 +38,7 @@ private:
                             NavigationTable(const NavigationTable&)         _DELETED_;
 
 public:
-                            NavigationTable(xmlNodePtr node);   // requires a HTML <nav> node
+   EPUB3_EXPORT             NavigationTable(xmlNodePtr node);   // requires a HTML <nav> node
                             NavigationTable(const string& type) : NavigationElement(), _type(type), _title() {}
                             NavigationTable(std::string&& type) : NavigationElement(), _type(type), _title() {}
                             NavigationTable(NavigationTable&& o) : NavigationElement(o), _type(std::move(o._type)), _title(std::move(o._title)) {}

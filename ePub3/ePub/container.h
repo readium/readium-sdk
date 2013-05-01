@@ -73,11 +73,11 @@ public:
      Create a new Container.
      @param path The filesystem path to the container file (i.e. the .epub file).
      */
-                Container(const string& path);
+    EPUB3_EXPORT    Container(const string& path);
     ///
     /// C++11 move constructor.
-                Container(Container&& o);
-    virtual     ~Container();
+    EPUB3_EXPORT    Container(Container&& o);
+    virtual         ~Container();
     
     ///
     /// Retrieves the paths for all Package documents in the container.

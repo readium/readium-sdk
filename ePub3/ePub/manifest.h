@@ -82,12 +82,12 @@ public:
      Creates a new instance from an XML `properties` attribute string.
      @param attrStr The value of a manifest `item` element's `properties` attribute.
      */
-                    ItemProperties(const string& attrStr);
+    EPUB3_EXPORT    ItemProperties(const string& attrStr);
     /**
      Creates a new instance from a canonical property IRI.
      @param iri The IRI for a single property. This *must* be a manifest item property.
      */
-                    ItemProperties(const IRI& iri);
+    EPUB3_EXPORT    ItemProperties(const IRI& iri);
     /**
      Creates a new instance with a given value (or None).
      @param v The bitfield value representing the property or properties set.
@@ -201,7 +201,9 @@ public:
     /// Cast to a raw bitfield.
     operator        value_type ()                           const   { return _p; }
     ///
-    /// Cast to a string value suitable for use as the `properties` attribute of an XML manifest `item` element.
+    /// Cast to a string value suitable for use as the `properties`
+    /// attribute of an XML manifest `item` element.
+    EPUB3_EXPORT
     string          str()                                   const;
     
     /// @}
@@ -252,33 +254,40 @@ private:
                         ManifestItem(const ManifestItem&)                   _DELETED_;
                         
 public:
-                        ManifestItem(xmlNodePtr node, const Package* owner);
-                        ManifestItem(ManifestItem&&);
+    EPUB3_EXPORT        ManifestItem(xmlNodePtr node, const Package* owner);
+    EPUB3_EXPORT        ManifestItem(ManifestItem&&);
     virtual             ~ManifestItem();
     
     const Package*      Package()                           const   { return _owner; }
-    
+
+    EPUB3_EXPORT
     string              AbsolutePath()                      const;
     
     const string&       Identifier()                        const   { return _identifier; }
     const string&       Href()                              const   { return _href; }
     const MimeType&     MediaType()                         const   { return _mediaType; }
     const string&       MediaOverlayID()                    const   { return _mediaOverlayID; }
+    EPUB3_EXPORT
     const ManifestItem* MediaOverlay()                      const;
     const string&       FallbackID()                        const   { return _fallbackID; }
+    EPUB3_EXPORT
     const ManifestItem* Fallback()                          const;
     
     // strips any query/fragment from the href before returning
+    EPUB3_EXPORT
     string              BaseHref()                          const;
     
     bool                HasProperty(const string& property) const   { return _properties.HasProperty(ItemProperties(property)); }
     bool                HasProperty(ItemProperties::value_type prop)    const   { return _properties.HasProperty(prop); }
+    EPUB3_EXPORT
     bool                HasProperty(const std::vector<IRI>& properties)  const;
     
     // one-shot XML document loader
+    EPUB3_EXPORT
     xmlDocPtr           ReferencedDocument()                const;
     
     // stream the data
+    EPUB3_EXPORT
     unique_ptr<ByteStream>    Reader()                            const;
     
 protected:
