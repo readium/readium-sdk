@@ -59,7 +59,7 @@ RunLoop::~RunLoop()
 }
 void RunLoop::PerformFunction(std::function<void ()> fn)
 {
-    RefCounted<EventSource> ev(new EventSource([fn](EventSource& __e){fn();}, adopt_ref);
+    RefCounted<EventSource> ev(new EventSource([fn](EventSource& __e){fn();}), adopt_ref);
     AddEventSource(ev);
     ev->Signal();
 }

@@ -76,7 +76,7 @@ ItemProperties& ItemProperties::operator=(const string& attrStr)
     string lowAttrs = attrStr.tolower();
     
     // NB: this is a C++11 raw-string literal. R"" means 'raw string', and the X(...)X bit are delimiters.
-    REGEX_NS::regex re("X(\\w+)X", REGEX_NS::regex::icase);
+    REGEX_NS::regex re("\\w+", REGEX_NS::regex::icase);
     auto pos = REGEX_NS::sregex_iterator(lowAttrs.stl_str().begin(), lowAttrs.stl_str().end(), re);
     auto end = REGEX_NS::sregex_iterator();
     

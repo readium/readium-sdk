@@ -22,6 +22,8 @@
 // this header is designed to be included directly by utfstring.h -- do
 // not use it in any other fashion
 
+#define UTFSTRING_SPECIALIZATIONS_INLINED
+
 template <>
 FORCE_INLINE string & string::assign(iterator first, iterator last)
 {

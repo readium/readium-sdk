@@ -19,9 +19,9 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <xml/tree/document.h>
-#include <xml/tree/element.h>
-#include <xml/validation/dtd.h>
+#include <ePub3/xml/document.h>
+#include <ePub3/xml/element.h>
+#include <ePub3/xml/dtd.h>
 #include <libxml/xinclude.h>
 
 typedef std::map<ePub3::xml::Node*, xmlElementType> NodeMap;

@@ -154,7 +154,7 @@ typedef signed long ssize_t;
     static void __cdecl f(void)
 #else
 # define INITIALIZER(f) \
-    static void f(void) __attribute__((constructor));
+    static void f(void) __attribute__((constructor)); \
     static void f(void)
 #endif
 

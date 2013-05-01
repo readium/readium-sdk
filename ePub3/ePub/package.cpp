@@ -243,7 +243,14 @@ IRI PackageBase::MakePropertyIRI(const string &reference, const string& prefix) 
 {
     auto found = _vocabularyLookup.find(prefix);
     if ( found == _vocabularyLookup.end() )
+    {
+        xmlChar* mem = nullptr;
+        int size = 0;
+        xmlDocDumpMemory(_opf, &mem, &size);
+        printf("%s\n", reinterpret_cast<char*>(mem));
+        xmlFree(mem);
         throw UnknownPrefix(_Str("Unknown prefix '", prefix, "'"));
+    }
     return IRI(found->second + reference);
 }
 IRI PackageBase::PropertyIRIFromAttributeValue(const string &attrValue) const
@@ -266,7 +273,7 @@ void PackageBase::InstallPrefixesFromAttributeValue(const ePub3::string &attrVal
         return;
     
     static REGEX_NS::regex::flag_type reflags(REGEX_NS::regex::ECMAScript|REGEX_NS::regex::optimize);
-    static REGEX_NS::regex re("X((\\w+):\\s*(.+?)(?:\\s+|$))X", reflags);
+    static REGEX_NS::regex re("(\\w+):\\s*(.+?)(?:\\s+|$)", reflags);
     auto pos = REGEX_NS::sregex_iterator(attrValue.stl_str().begin(), attrValue.stl_str().end(), re);
     auto end = REGEX_NS::sregex_iterator();
     

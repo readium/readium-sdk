@@ -69,7 +69,7 @@ private:
     /// There is no default constructor.
     FontObfuscator() _DELETED_;
 
-private:
+public:
     /**
      Create a font obfuscation filter.
      

@@ -20,11 +20,11 @@
 //
 
 #include "base.h"
-#include <xml/tree/document.h>
+#include <ePub3/xml/document.h>
 //#include "document.h"
 //#include "element.h"
 //#include "attribute.h"
-#include <xml/tree/node.h>
+#include <ePub3/xml/node.h>
 //#include "dtd.h"
 #include <libxml/globals.h>
 #include <stdio.h>

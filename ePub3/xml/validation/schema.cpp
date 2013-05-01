@@ -19,8 +19,8 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <xml/validation/schema.h>
-#include <xml/tree/document.h>
+#include <ePub3/xml/schema.h>
+#include <ePub3/xml/document.h>
 #include <libxml/tree.h>
 #include <libxml/xmlschemas.h>
 

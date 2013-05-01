@@ -138,16 +138,23 @@ void Container::LoadEncryption()
     if ( enc == nullptr )
         return;
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-    XPathWrangler xpath(_ocf, {{"enc", XMLENCNamespaceURI}, {"ocf", OCFNamespaceURI}});
+    XPathWrangler xpath(enc, {{"enc", XMLENCNamespaceURI}, {"ocf", OCFNamespaceURI}});
 #else
     XPathWrangler::NamespaceList __ns;
     __ns["ocf"] = OCFNamespaceURI;
     __ns["enc"] = XMLENCNamespaceURI;
-    XPathWrangler xpath(_ocf, __ns);
+    XPathWrangler xpath(enc, __ns);
 #endif
     xmlNodeSetPtr nodes = xpath.Nodes("/ocf:encryption/enc:EncryptedData");
     if ( nodes == nullptr || nodes->nodeNr == 0 )
+    {
+        xmlChar* mem = nullptr;
+        int size = 0;
+        xmlDocDumpMemory(enc, &mem, &size);
+        printf("%s\n", reinterpret_cast<char*>(mem));
+        xmlFree(mem);
         return;     // should be a hard error?
+    }
     
     for ( int i = 0; i < nodes->nodeNr; i++ )
     {

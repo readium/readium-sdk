@@ -513,7 +513,7 @@ public:
     string substr(size_type pos=0, size_type n=npos) const;
     
     void swap(string & str)
-#ifdef _LIBCPP_STRING
+#ifdef _LIBCPP_VERSION      // specific to LLVM libc++ runtime
     _NOEXCEPT(!__base::__alloc_traits::propagate_on_container_swap::value || std::__is_nothrow_swappable<__base::__alloc_traits>::value)
 #endif
     {
@@ -1164,26 +1164,59 @@ public:
     }
 };
 
-template <>
-class string::_Convert<char32_t> {
-public:
-    typedef std::string                 byte_string;
-    typedef std::basic_string<char32_t> wide_string;
 
-    static inline byte_string toUTF8(const char32_t *p, size_type pos=0, size_type n=npos) {
+template <size_t wchar_size>
+struct _LIBCPP_HIDDEN _WCharConvert
+{
+};
+
+template <>
+struct _WCharConvert<2>
+{
+    template <typename wchar_iterator, typename octet_iterator>
+    static FORCE_INLINE octet_iterator to8(wchar_iterator start, wchar_iterator end, octet_iterator result) {
+        return utf8::utf16to8(start, end, result);
+    }
+    template <typename wchar_iterator, typename octet_iterator>
+    static FORCE_INLINE wchar_iterator from8(octet_iterator start, octet_iterator end, wchar_iterator result) {
+        return utf8::utf8to16(start, end, result);
+    }
+};
+template <>
+struct _WCharConvert<4>
+{
+    template <typename wchar_iterator, typename octet_iterator>
+    static FORCE_INLINE octet_iterator to8(wchar_iterator start, wchar_iterator end, octet_iterator result) {
+        return utf8::utf32to8(start, end, result);
+    }
+    template <typename wchar_iterator, typename octet_iterator>
+    static FORCE_INLINE wchar_iterator from8(octet_iterator start, octet_iterator end, wchar_iterator result) {
+        return utf8::utf8to32(start, end, result);
+    }
+};
+
+template <>
+class string::_Convert<wchar_t> {
+public:
+    typedef std::string     byte_string;
+    typedef std::wstring    wide_string;
+    
+public:
+    
+    static inline byte_string toUTF8(const wchar_t *p, size_type pos=0, size_type n=npos) {
         byte_string __r;
-        size_type len = (n == npos ? std::char_traits<char32_t>::length(p) : n);
-        utf8::utf32to8(p+pos, p+len, std::back_inserter(__r));
+        size_type len = (n == npos ? std::char_traits<wchar_t>::length(p) : n);
+        _WCharConvert<sizeof(wchar_t)>::to8(p+pos, p+len, std::back_inserter(__r));
         return __r;
     }
     static inline byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
         byte_string __r;
-        utf8::utf32to8(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
+        _WCharConvert<sizeof(wchar_t)>::to8(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
         return __r;
     }
     static inline byte_string toUTF8(char32_t c, size_type n=1) {
         byte_string __t;
-        utf8::utf32to8(&c, (&c)+1, std::back_inserter(__t));
+        _WCharConvert<sizeof(wchar_t)>::to8(&c, (&c)+1, std::back_inserter(__t));
         byte_string __r;
         for (size_type __i = 0; __i < n; __i++) {
             __r.append(__t);
@@ -1193,12 +1226,12 @@ public:
     static inline wide_string fromUTF8(const char* p, size_type pos=0, size_type n=npos) {
         wide_string __r;
         size_type len = (n == npos ? std::char_traits<char>::length(p) : n);
-        utf8::utf8to32(p+pos, p+len, std::back_inserter(__r));
+        _WCharConvert<sizeof(wchar_t)>::from8(p+pos, p+len, std::back_inserter(__r));
         return __r;
     }
     static inline wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
         wide_string __r;
-        utf8::utf8to32(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
+        _WCharConvert<sizeof(wchar_t)>::from8(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
         return __r;
     }
 };
@@ -1296,8 +1329,10 @@ operator<<(std::basic_ostream<_CharT, _Traits>& __os, const string& __str) {
     return __os << __str.stl_str();
 }
 
-// template specializations
-#include "utfstringspec.inl"
+// template specializations -- MSVC wants these in the header
+#if EPUB_COMPILER(MSVC)
+# include "utfstringspec.inl"
+#endif
 
 EPUB3_END_NAMESPACE
 

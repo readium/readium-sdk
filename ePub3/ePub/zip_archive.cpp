@@ -56,7 +56,7 @@ static string GetTempFilePath(const string& ext)
     string r(tmpFile);
     return r;
 #else
-    stringstream ss;
+    std::stringstream ss;
 #if EPUB_OS(ANDROID)
     ss << gAndroidCacheDir << "epub3.XXXXXX";
 #else

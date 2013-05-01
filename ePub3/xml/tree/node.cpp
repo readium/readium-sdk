@@ -19,11 +19,11 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <xml/tree/node.h>
-#include <xml/utilities/io.h>
-#include <xml/validation/ns.h>
-#include <xml/tree/xpath.h>
-#include <xml/tree/document.h>
+#include <ePub3/xml/node.h>
+#include <ePub3/xml/io.h>
+#include <ePub3/xml/ns.h>
+#include <ePub3/xml/xpath.h>
+#include <ePub3/xml/document.h>
 #include <string>
 #include <sstream>
 #include <cstdlib>

@@ -21,5 +21,5 @@
 
 #if BUILDING_EPUB3 || !EPUB_COMPILER_SUPPORTS(CXX_CONSTEXPR)
 #include <ePub3/utilities/ref_counted.h>
-const adopt_ref_t adopt_ref;
+const adopt_ref_t adopt_ref = {};
 #endif

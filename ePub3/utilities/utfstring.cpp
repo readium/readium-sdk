@@ -39,22 +39,6 @@ const size_t utf8_sizes[256] = {
 const string::size_type string::npos = string::__base::npos;
 const string string::EmptyString = string();
 
-template <>
-string::string(iterator first, iterator last) : _base(first.base(), last.base())
-{
-}
-template <>
-string::string(__base::const_iterator pos, __base::const_iterator end) : _base(pos, end)
-{
-}
-template <>
-string::string(const char * pos, const char * end) : _base(pos, end-pos)
-{
-}
-template <>
-string::string(const xmlChar * pos, const xmlChar * end) : _base(reinterpret_cast<const char*>(pos), end-pos)
-{
-}
 string::string(const_u4pointer s)
 {
     _base.append(_Convert<value_type>::toUTF8(s));
@@ -99,6 +83,22 @@ string::string(const __base & s, size_type i, size_type n)
     // ensure we're looking at a valid location in the base string (not in the middle of a multi-byte character)j
     throw_unless_insertable(s, i, n);
     _base.assign(s, i, n);
+}
+template <>
+string::string(iterator first, iterator last) : _base(first.base(), last.base())
+{
+}
+template <>
+string::string(__base::const_iterator pos, __base::const_iterator end) : _base(pos, end)
+{
+}
+template <>
+string::string(const char * pos, const char * end) : _base(pos, end-pos)
+{
+}
+template <>
+string::string(const xmlChar * pos, const xmlChar * end) : _base(reinterpret_cast<const char*>(pos), end-pos)
+{
 }
 string::size_type string::size() const _NOEXCEPT
 {
@@ -187,6 +187,26 @@ string::__base string::utf8At(size_type pos) const
     size_t charLen = utf8_sizes[_base[bpos]];
     return _base.substr(bpos, charLen);
 }
+#ifndef UTFSTRING_SPECIALIZATIONS_INLINED
+template <>
+string & string::assign(iterator first, iterator last)
+{
+    _base.assign(first.base(), last.base());
+    return *this;
+}
+template <>
+string & string::assign(__base::const_iterator first, __base::const_iterator last)
+{
+    _base.assign(first, last);
+    return *this;
+}
+template <>
+string & string::assign(const char *first, const char *last)
+{
+    _base.assign(first, last-first);
+    return *this;
+}
+#endif
 string & string::assign(const string &o, size_type i, size_type n)
 {
     // byte offset of character i
@@ -211,6 +231,26 @@ string& string::assign(const char16_t* s, size_type n)
     _base.assign(_Convert<char16_t>::toUTF8(s, 0, n));
     return *this;
 }
+#ifndef UTFSTRING_SPECIALIZATIONS_INLINED
+template <>
+string & string::append(const_iterator first, const_iterator last)
+{
+    _base.append(first.base(), last.base());
+    return *this;
+}
+template <>
+string & string::append(__base::const_iterator first, __base::const_iterator last)
+{
+    _base.append(first, last);
+    return *this;
+}
+template <>
+string & string::append(const char * first, const char * last)
+{
+    _base.append(first, last-first);
+    return *this;
+}
+#endif
 string & string::append(const string &o, size_type i, size_type n)
 {
     if ( n == npos )
@@ -238,6 +278,35 @@ string & string::append(size_type n, char16_t c)
     append(n, static_cast<char32_t>(c));
     return *this;
 }
+#ifndef UTFSTRING_SPECIALIZATIONS_INLINED
+template <>
+string::iterator string::insert(iterator pos, iterator first, iterator last)
+{
+    if ( first == last )
+        return pos;
+    
+#if CXX11_STRING_UNAVAILABLE
+    _base.insert(pos.base(), first.base(), last.base());
+    return iterator(pos + std::distance(first, last));
+#else
+    __base::iterator inserted(_base.insert(pos.base(), first.base(), last.base()));
+    return iterator(inserted, _base.begin(), _base.end());
+#endif
+}
+template <>
+string::iterator string::insert(iterator pos, __base::iterator first, __base::iterator last)
+{
+    if ( first == last )
+        return pos;
+#if CXX11_STRING_UNAVAILABLE
+    _base.insert(pos.base(), first, last);
+    return iterator(pos + utf32_distance(first, last));
+#else
+    __base::iterator inserted(_base.insert(pos.base(), first, last));
+    return iterator(inserted, _base.begin(), _base.end());
+#endif
+}
+#endif
 string & string::insert(size_type pos, const string &s, size_type b, size_type e)
 {
     if ( b == e )
@@ -558,6 +627,27 @@ string::iterator string::erase(cxx11_const_iterator first, cxx11_const_iterator 
     auto modified(_base.erase(first.base(), last.base()));
     return iterator(modified, _base.begin(), _base.end());
 }
+#ifndef UTFSTRING_SPECIALIZATIONS_INLINED
+template <>
+string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, cxx11_const_iterator j1, cxx11_const_iterator j2)
+{
+    _base.replace(i1.base(), i2.base(), j1.base(), j2.base());
+    return *this;
+}
+template <>
+string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, __base::const_iterator j1, __base::const_iterator j2)
+{
+    _base.replace(i1.base(), i2.base(), j1, j2);
+    return *this;
+}
+template <>
+string & string::replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::u32string::const_iterator j1, std::u32string::const_iterator j2)
+{
+    auto utf8 = _Convert<value_type>::toUTF8(&(*j1), 0, std::distance(j1, j2));
+    _base.replace(i1.base(), i2.base(), utf8);
+    return *this;
+}
+#endif
 string & string::replace(size_type pos1, size_type n1, const string & str)
 {
     _base.replace(to_byte_size(pos1), to_byte_size(pos1, pos1+n1), str._base);
@@ -776,20 +866,254 @@ const string string::toupper(const std::locale& loc) const
 {
     return string(*this).toupper(loc);
 }
+#ifndef UTFSTRING_SPECIALIZATIONS_INLINED
+template <>
+string::size_type string::find_first_of<char>(const char * s, size_type pos, size_type n) const {
+    validate_utf8(s+pos, npos);
+    return find_first_of(_Convert<char>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_first_of<char>(const char * s, size_type pos) const  {
+    validate_utf8(s+pos, npos);
+    return find_first_of(_Convert<char>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_first_of<xmlChar>(const xmlChar * s, size_type pos, size_type n) const {
+    validate_utf8(s+pos, npos);
+    return find_first_of(_Convert<xmlChar>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_first_of<xmlChar>(const xmlChar * s, size_type pos) const {
+    validate_utf8(s+pos, npos);
+    return find_first_of(_Convert<xmlChar>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_last_of<char>(const char * s, size_type pos, size_type n) const {
+    validate_utf8(s+pos, npos);
+    return find_last_of(_Convert<char>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_last_of<char>(const char * s, size_type pos) const {
+    validate_utf8(s+pos, npos);
+    return find_last_of(_Convert<char>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_last_of<xmlChar>(const xmlChar * s, size_type pos, size_type n) const {
+    validate_utf8(s+pos, npos);
+    return find_last_of(_Convert<xmlChar>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_last_of<xmlChar>(const xmlChar * s, size_type pos) const {
+    validate_utf8(s+pos, npos);
+    return find_last_of(_Convert<xmlChar>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_first_not_of<char>(const char * s, size_type pos, size_type n) const {
+    validate_utf8(s+pos, npos);
+    return find_first_not_of(_Convert<char>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_first_not_of<char>(const char * s, size_type pos) const {
+    validate_utf8(s+pos, npos);
+    return find_first_not_of(_Convert<char>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_first_not_of<xmlChar>(const xmlChar * s, size_type pos, size_type n) const {
+    validate_utf8(s+pos, npos);
+    return find_first_not_of(_Convert<xmlChar>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_first_not_of<xmlChar>(const xmlChar * s, size_type pos) const {
+    validate_utf8(s+pos, npos);
+    return find_first_not_of(_Convert<xmlChar>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_last_not_of<char>(const char * s, size_type pos, size_type n) const {
+    validate_utf8(s+pos, npos);
+    return find_last_not_of(_Convert<char>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_last_not_of<char>(const char * s, size_type pos) const {
+    validate_utf8(s+pos, npos);
+    return find_last_not_of(_Convert<char>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_last_not_of<xmlChar>(const xmlChar * s, size_type pos, size_type n) const {
+    validate_utf8(s+pos, npos);
+    return find_last_not_of(_Convert<xmlChar>::toUTF8(s), pos);
+}
+template <>
+string::size_type string::find_last_not_of<xmlChar>(const xmlChar * s, size_type pos) const {
+    validate_utf8(s+pos, npos);
+    return find_last_not_of(_Convert<xmlChar>::toUTF8(s), pos);
+}
+template <>
+int string::compare(const value_type * s) const noexcept
+{
+    if ( s == nullptr )
+        return 1;
+    
+    size_type sz = size();
+    size_type len = traits_type::length(s);
+    size_type n = std::min(sz, len);
+    
+    auto pos = cbegin();
+    for ( ; n; pos++, s++ )
+    {
+        if ( traits_type::lt(*pos, *s) )
+            return -1;
+        if ( traits_type::lt(*s, *pos) )
+            return 1;
+    }
+    
+    if ( sz < len )
+        return -1;
+    if ( sz > len )
+        return 1;
+    return 0;
+}
+template <>
+int string::compare(size_type pos1, size_type n1, const_u4pointer s) const
+{
+    if ( s == nullptr )
+        return 1;
+    if ( n1 == 0 && *s != 0 )
+        return -1;
+    
+    size_type sz = (n1 == npos ? size() - pos1 : n1);
+    size_type len = traits_type::length(s);
+    size_type n = std::min(sz, len);
+    
+    auto pos = cbegin()+pos1;
+    for ( ; n; pos++, s++ )
+    {
+        if ( traits_type::lt(*pos, *s) )
+            return -1;
+        if ( traits_type::lt(*s, *pos) )
+            return 1;
+    }
+    
+    if ( sz < len )
+        return -1;
+    if ( sz > len )
+        return 1;
+    return 0;
+}
+template <>
+int string::compare(size_type pos1, size_type n1, const_u4pointer s, size_type n2) const
+{
+    if ( s == nullptr )
+        return 1;
+    if ( n1 == 0 && *s != 0 )
+        return -1;
+    
+    size_type sz = (n1 == npos ? size() - pos1 : n1);
+    size_type len = std::min(traits_type::length(s), n2);
+    size_type n = std::min(sz, len);
+    
+    auto pos = cbegin()+pos1;
+    for ( ; n; pos++, s++ )
+    {
+        if ( traits_type::lt(*pos, *s) )
+            return -1;
+        if ( traits_type::lt(*s, *pos) )
+            return 1;
+    }
+    
+    if ( sz < len )
+        return -1;
+    if ( sz > len )
+        return 1;
+    return 0;
+}
+template <>
+int string::compare(const std::u32string & s) const noexcept
+{
+    size_type sz = size();
+    size_type len = s.size();
+    size_type n = std::min(sz, len);
+    
+    auto pos = cbegin();
+    auto spos = s.cbegin();
+    for ( ; n; pos++, spos++ )
+    {
+        if ( traits_type::lt(*pos, *spos) )
+            return -1;
+        if ( traits_type::lt(*spos, *pos) )
+            return 1;
+    }
+    
+    if ( sz < len )
+        return -1;
+    if ( sz > len )
+        return 1;
+    return 0;
+}
+template <>
+int string::compare(size_type pos1, size_type n1, const std::u32string& str) const
+{
+    if ( n1 == 0 && !str.empty() )
+        return -1;
+    
+    size_type sz = (n1 == npos ? size() - pos1 : n1);
+    size_type len = str.size();
+    size_type n = std::min(sz, len);
+    
+    auto pos = cbegin()+pos1;
+    auto spos = str.cbegin();
+    for ( ; n; pos++, spos++ )
+    {
+        if ( traits_type::lt(*pos, *spos) )
+            return -1;
+        if ( traits_type::lt(*spos, *pos) )
+            return 1;
+    }
+    
+    if ( sz < len )
+        return -1;
+    if ( sz > len )
+        return 1;
+    return 0;
+}
+template <>
+int string::compare(size_type pos1, size_type n1, const std::u32string& str,
+                    size_type pos2, size_type n2) const
+{
+    if ( n1 == 0 && n2 > 0 )
+        return -1;
+    
+    size_type sz = (n1 == npos ? size() - pos1 : n1);
+    size_type len = (n2 == npos ? str.size() - pos2 : n2);
+    size_type n = std::min(sz, len);
+    
+    auto pos = cbegin()+pos1;
+    auto spos = str.cbegin();
+    for ( ; n; pos++, spos++ )
+    {
+        if ( traits_type::lt(*pos, *spos) )
+            return -1;
+        if ( traits_type::lt(*spos, *pos) )
+            return 1;
+    }
+    
+    if ( sz < len )
+        return -1;
+    if ( sz > len )
+        return 1;
+    return 0;
+}
+#endif
 void string::validate_utf8(const __base &s) const
 {
-    validate_utf8(s.c_str(), s.size());
+    if ( utf8::is_valid(s.begin(), s.end()) == false )
+        throw InvalidUTF8Sequence(std::string("Invalid UTF-8 byte sequence: ") + s);
 }
 void string::validate_utf8(const char *s, size_type sz) const
 {
     if ( sz == npos )
         sz = strlen(s);
     
-    size_type t = 0;
-    while ( t < sz )
-        t += UTF8CharLen(s[t]);
-    
-    if ( t > sz )
+    if ( utf8::is_valid(s, s + sz) == false )
         throw InvalidUTF8Sequence(std::string("Invalid UTF-8 byte sequence: ") + s);
 }
 void string::validate_utf8(const xmlChar *s, size_type sz) const
