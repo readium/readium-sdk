@@ -22,9 +22,10 @@
 #ifndef __ePub3__font_obfuscation__
 #define __ePub3__font_obfuscation__
 
-#include "filter.h"
-#include "encryption.h"
-#include <regex>
+#include <ePub3/filter.h>
+#include <ePub3/encryption.h>
+#include REGEX_INCLUDE
+#include <cstring>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -41,7 +42,7 @@ class FontObfuscator : public ContentFilter
 {
 protected:
     static const size_t         KeySize = 20;       // SHA-1 key size = 20 bytes
-    static const std::regex     TypeCheck;
+    static const REGEX_NS::regex     TypeCheck;
     constexpr static const char * const   FontObfuscationAlgorithmID = "http://www.idpf.org/2008/embedding";
     
     /**
@@ -56,7 +57,7 @@ protected:
     static bool FontTypeSniffer(const ManifestItem* item, const EncryptionInfo* encInfo) {
         if ( encInfo == nullptr || encInfo->Algorithm() != FontObfuscationAlgorithmID )
             return false;
-        return std::regex_match(item->MediaType().stl_str(), TypeCheck);
+        return REGEX_NS::regex_match(item->MediaType().stl_str(), TypeCheck);
     }
     
 public:

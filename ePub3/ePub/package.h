@@ -22,22 +22,22 @@
 #ifndef __ePub3__package__
 #define __ePub3__package__
 
-#include "epub3.h"
+#include <ePub3/epub3.h>
 #include <string>
 #include <vector>
 #include <map>
 #include <list>
 #include <libxml/tree.h>
-#include "spine.h"
-#include "manifest.h"
-#include "metadata.h"
-#include "cfi.h"
-#include "nav_element.h"
-#include "archive_xml.h"
-#include "utfstring.h"
-#include "iri.h"
-#include "content_handler.h"
-#include "media_support_info.h"
+#include <ePub3/spine.h>
+#include <ePub3/manifest.h>
+#include <ePub3/metadata.h>
+#include <ePub3/cfi.h>
+#include <ePub3/nav_element.h>
+#include <ePub3/archive_xml.h>
+#include <ePub3/utilities/utfstring.h>
+#include <ePub3/utilities/iri.h>
+#include <ePub3/content_handler.h>
+#include <ePub3/media_support_info.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -96,9 +96,9 @@ public:
     class UnknownPrefix : public std::domain_error
     {
     public:
-                    UnknownPrefix(const string &str)    : std::domain_error(str.stl_str()) {}
-                    UnknownPrefix(const char* str)      : std::domain_error(str) {}
-        virtual     ~UnknownPrefix() {}
+                    UnknownPrefix(const string &str)    _GCC_NOTHROW    : std::domain_error(str.stl_str())  {}
+                    UnknownPrefix(const char* str)      _GCC_NOTHROW    : std::domain_error(str)            {}
+        virtual     ~UnknownPrefix()                    _GCC_NOTHROW                                        {}
     };
     
 public:
@@ -585,7 +585,7 @@ public:
     
     ///
     /// A simple type which lists the names of a publication's creators.
-    typedef std::vector<const string>               AttributionList;
+    typedef std::vector<string>                 AttributionList;
     
     /**
      Retrieves the names of all authors/creators credited for this publication.
@@ -672,7 +672,7 @@ public:
      */
     const string            ISBN()                                  const;
     
-    typedef std::vector<const string>               StringList;
+    typedef std::vector<string>                     StringList;
     
     /**
      Retrieves a list of the publication's subjects.

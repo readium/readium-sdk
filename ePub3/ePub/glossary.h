@@ -22,7 +22,7 @@
 #ifndef __ePub3__glossary__
 #define __ePub3__glossary__
 
-#include "nav_element.h"
+#include <ePub3/nav_element.h>
 #include <map>
 
 EPUB3_BEGIN_NAMESPACE

@@ -22,8 +22,8 @@
 #ifndef __ePub3_xml_xpath__
 #define __ePub3_xml_xpath__
 
-#include "base.h"
-#include "node.h"
+#include <ePub3/xml/base.h>
+#include <ePub3/xml/node.h>
 #include <libxml/xpath.h>
 #include <pthread.h>
 

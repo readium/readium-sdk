@@ -152,11 +152,36 @@
 || defined(_ARM_)
 #define EPUB_CPU_ARM 1
 
+#if EPUB_COMPILER(CLANG) && defined(ANDROID)
+# define __atomic_fetch_add(mem, val, typ)   __sync_fetch_and_add(mem, val)
+# define __atomic_fetch_sub(mem, val, typ)   __sync_fetch_and_sub(mem, val)
+# define __atomic_fetch_and(mem, val, typ)   __sync_fetch_and_and(mem, val)
+# define __atomic_fetch_or(mem, val, typ)    __sync_fetch_and_or(mem, val)
+# define __atomic_fetch_xor(mem, val, typ)   __sync_fetch_and_xor(mem, val)
+# define __atomic_fetch_nand(mem, val, typ)  __sync_fetch_and_nand(mem, val)
+# define __atomic_add_fetch(mem, val, typ)   __sync_add_and_fetch(mem, val)
+# define __atomic_sub_fetch(mem, val, typ)   __sync_sub_and_fetch(mem, val)
+# define __atomic_and_fetch(mem, val, typ)   __sync_and_and_fetch(mem, val)
+# define __atomic_or_fetch(mem, val, typ) __sync_or_and_fetch(mem, val)
+# define __atomic_xor_fetch(mem, val, typ)   __sync_xor_and_fetch(mem, val)
+# define __atomic_nand_fetch(mem, val, typ)  __sync_nand_and_fetch(mem, val)
+/*# define __atomic_load                      atomic_load
+# define __atomic_store                     atomic_store
+# define __atomic_exchange                  atomic_exchange*/
+# define __atomic_load                      __sw_atomic_load
+# define __atomic_load_n(a,m)               (*(a))
+# define __atomic_store                     __sw_atomic_store
+# define __atomic_store_n(a,m)              (*(a))
+# define __atomic_exchange                  __sw_atomic_exchange
+# define __atomic_exchange_n                __sw_atomic_exchange
+# include <backup_atomics.h>
+#endif
+
 #if defined(__ARM_PCS_VFP)
 #define EPUB_CPU_ARM_HARDFP 1
 #endif
 
-#if defined(__ARMEB__) || (COMPILER(RVCT) && defined(__BIG_ENDIAN))
+#if defined(__ARMEB__) || (EPUB_COMPILER(RVCT) && defined(__BIG_ENDIAN))
 #define EPUB_CPU_BIG_ENDIAN 1
 
 #elif !defined(__ARM_EABI__) \
@@ -168,7 +193,7 @@
 
 #endif
 
-#define EPUB_ARM_ARCH_AT_LEAST(N) (CPU(ARM) && EPUB_ARM_ARCH_VERSION >= N)
+#define EPUB_ARM_ARCH_AT_LEAST(N) (EPUB_CPU(ARM) && EPUB_ARM_ARCH_VERSION >= N)
 
 /* Set EPUB_ARM_ARCH_VERSION */
 #if   defined(__ARM_ARCH_4__) \
@@ -274,7 +299,7 @@
 #  else
 #    error "Not supported ARM architecture"
 #  endif
-#elif CPU(ARM_TRADITIONAL) && CPU(ARM_THUMB2) /* Sanity Check */
+#elif EPUB_CPU(ARM_TRADITIONAL) && EPUB_CPU(ARM_THUMB2) /* Sanity Check */
 #  error "Cannot use both of EPUB_CPU_ARM_TRADITIONAL and EPUB_CPU_ARM_THUMB2 platforms"
 #endif /* !defined(EPUB_CPU_ARM_TRADITIONAL) && !defined(EPUB_CPU_ARM_THUMB2) */
 
@@ -411,6 +436,11 @@
 #define EPUB_OS_UNIX 1
 #endif
 
+/* EPUB_OS(BSD) - Any BSD-like system */
+#if EPUB_OS(DARWIN) || EPUB_OS(FREEBSD) || EPUB_OS(NETBSD) || EPUB_OS(OPENBSD)
+#define EPUB_OS_BSD 1
+#endif
+
 /* Operating environments */
 
 /* FIXME: these are all mixes of OS, operating environment and policy choices. */
@@ -466,6 +496,7 @@
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
 #define EPUB_HAVE_XPC 1
 #endif
+#define EPUB_HAVE_ACL 1
 #define EPUB_USE_CF 1
 #define EPUB_HAVE_READLINE 1
 #define EPUB_HAVE_RUNLOOP_TIMER 1
@@ -535,6 +566,12 @@
 #endif
 #endif
 
+#if defined(__GLIBC__) && GCC_VERSION_AT_LEAST(4, 8, 0)
+// this is here because GCC 4.7 does NOT have emplace() in std::map,
+// etc. and I need something to switch on when using it
+#define EPUB_HAVE_CXX_MAP_EMPLACE 1
+#endif
+
 #if !EPUB_OS(WINDOWS) && !EPUB_OS(SOLARIS) && !EPUB_OS(ANDROID)
 #define EPUB_HAVE_TM_GMTOFF 1
 #define EPUB_HAVE_TM_ZONE 1
@@ -543,6 +580,7 @@
 
 #if EPUB_OS(DARWIN)
 
+#define EPUB_HAVE_CXX_MAP_EMPLACE 1
 #define EPUB_HAVE_MERGESORT 1
 #define EPUB_HAVE_SYS_TIMEB_H 1
 #define EPUB_USE_ACCELERATE 1

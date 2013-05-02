@@ -6,7 +6,7 @@
 
 #include <string>
 #include <cstring>
-#include <strstream>
+#include <sstream>
 #if _WIN32 || _WIN64
 # include <tchar.h>
 #else
@@ -219,9 +219,9 @@ struct CheckOpString {
 // be out of line, while the "Impl" code should be inline.
 template<class t1, class t2>
 std::string* MakeCheckOpString(const t1& v1, const t2& v2, const char* names) {
-  std::ostrstream ss;
+  std::ostringstream ss;
   ss << names << " (" << v1 << " vs. " << v2 << ")";
-  return new std::string(ss.str(), ss.pcount());
+  return new std::string(ss.str());
 }
 
 extern std::string* MakeCheckOpStringIntInt(int v1, int v2, const char* names);
@@ -443,7 +443,7 @@ class LogMessage {
   void Init(const char* file, int line);
 
   LogSeverity severity_;
-  std::ostrstream stream_;
+  std::ostringstream stream_;
   int message_start_;  // offset of the start of the message (past prefix info).
 
   DISALLOW_EVIL_CONSTRUCTORS(LogMessage);

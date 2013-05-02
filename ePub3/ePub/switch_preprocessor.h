@@ -22,10 +22,10 @@
 #ifndef __ePub3__switch_preprocessor__
 #define __ePub3__switch_preprocessor__
 
-#include "epub3.h"
-#include "filter.h"
+#include <ePub3/epub3.h>
+#include <ePub3/filter.h>
 #include <vector>
-#include <regex>
+#include REGEX_INCLUDE
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -122,23 +122,23 @@ private:
      commented-out epub:switch block (i.e. where the publisher has chosen to comment
      out the whole thing and provide only the default content).
      */
-    static std::regex   CommentedSwitchIdentifier;
+    static REGEX_NS::regex   CommentedSwitchIdentifier;
     
     /**
      This expression locates and isolates the content of each epub:switch element.
      */
-    static std::regex   SwitchContentExtractor;
+    static REGEX_NS::regex   SwitchContentExtractor;
     
     /**
      This expression locates and extracts the contents and types of each epub:case
      element.
      */
-    static std::regex   CaseContentExtractor;
+    static REGEX_NS::regex   CaseContentExtractor;
     
     /**
      This expression locates and extracts the content of the epub:default element.
      */
-    static std::regex   DefaultContentExtractor;
+    static REGEX_NS::regex   DefaultContentExtractor;
     
 };
 

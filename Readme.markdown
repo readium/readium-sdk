@@ -29,6 +29,16 @@ available from the Readium Foundation directly; see the [CONTRIBUTING](CONTRIBUT
 information on how to apply to become an official contributor or sponsor, and to
 apply for a commercial license.
 
+## Platform Support
+
+At present, the project compiles for OS X and iOS using the version of Clang in Xcode 4.6
+and the LLVM C++ standard library, `libc++`.
+
+On Android, the project is build using GCC 4.7 and release 8e of the Android NDK. See
+[Platform/Android/README.markdown](Platform/Android/README.markdown) for more information.
+
+Build support for Windows using Visual Studio 2012 is forthcoming.
+
 ### Architecture
 
 The SDK consists of three major components, corresponding roughly to *Model*, *View*,

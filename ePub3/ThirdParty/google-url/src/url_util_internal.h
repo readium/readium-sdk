@@ -32,7 +32,7 @@
 
 #include <string>
 
-#include "../base/string16.h"
+#include <google-url/string16.h>
 #include "url_common.h"
 #include "url_parse.h"
 

@@ -33,8 +33,15 @@
 
 #include "url_canon_cpp11.h"
 #include "url_canon_internal.h"     // for _itoa_s
-#include "../../../utilities/utfstring.h"   // for UTF8CharLen
-#include <regex>
+#include <ePub3/utilities/utfstring.h>   // for UTF8CharLen
+#include REGEX_INCLUDE
+#include <locale>
+
+#if EPUB_OS(ANDROID)
+# include <utf8/utf8.h>
+#else
+# include <codecvt>
+#endif
 
 #if USING_ICU
 // the only pieces of ICU that we still need
@@ -82,9 +89,87 @@ void appendURLEscapedChar(void *context, char* buf, int32_t bufLen,
 }
     
 }; // anonymous namespace
+
+#if EPUB_OS(ANDROID)
+class __conv16
+{
+public:
+    typedef std::basic_string<char>     byte_string;
+    typedef std::basic_string<char16_t> wide_string;
     
+    template <class _Iter>
+    byte_string to_bytes(_Iter first, _Iter last) const
+    {
+        byte_string __r;
+        utf8::utf16to8(first, last, std::back_inserter(__r));
+        return __r;
+    }
+    byte_string to_bytes(const char16_t* s)
+    {
+        return to_bytes(s, s+std::char_traits<char16_t>::length(s));
+    }
+    byte_string to_bytes(const wide_string& s)
+    {
+        return to_bytes(s.begin(), s.end());
+    }
+    template <class _Iter>
+    wide_string from_bytes(_Iter first, _Iter last) const
+    {
+        wide_string __r;
+        utf8::utf8to16(first, last, std::back_inserter(__r));
+        return __r;
+    }
+    wide_string from_bytes(const char* s)
+    {
+        return from_bytes(s, s+std::char_traits<char>::length(s));
+    }
+    wide_string from_bytes(const byte_string& s)
+    {
+        return from_bytes(s.begin(), s.end());
+    }
+};
+    
+class __conv32
+{
+public:
+    typedef std::basic_string<char>     byte_string;
+    typedef std::basic_string<char32_t> wide_string;
+    
+    template <class _Iter>
+    byte_string to_bytes(_Iter first, _Iter last) const
+    {
+        byte_string __r;
+        utf8::utf32to8(first, last, std::back_inserter(__r));
+        return __r;
+    }
+    byte_string to_bytes(const char32_t* s)
+    {
+        return to_bytes(s, s+std::char_traits<char32_t>::length(s));
+    }
+    byte_string to_bytes(const wide_string& s)
+    {
+        return to_bytes(s.begin(), s.end());
+    }
+    template <class _Iter>
+    wide_string from_bytes(_Iter first, _Iter last) const
+    {
+        wide_string __r;
+        utf8::utf8to32(first, last, std::back_inserter(__r));
+        return __r;
+    }
+    wide_string from_bytes(const char* s)
+    {
+        return from_bytes(s, s+std::char_traits<char>::length(s));
+    }
+    wide_string from_bytes(const byte_string& s)
+    {
+        return from_bytes(s.begin(), s.end());
+    }
+};
+#else
 typedef std::wstring_convert<std::codecvt_utf8<char16>, char16> __conv16;
 typedef std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> __conv32;
+#endif
 
 CXX11CharsetConverter::CXX11CharsetConverter()
 {
@@ -137,8 +222,8 @@ bool IDNToASCII(const char16* src, int src_len, CanonOutputW* output) {
         output->Resize(output->capacity() * 2);
     }
 #else
-    static std::basic_regex<char> invalidCharFinder("[^a-zA-Z0-9\\-]");
-    if ( std::regex_match(ePub3::string(src, src_len).stl_str(), invalidCharFinder) )
+    static REGEX_NS::basic_regex<char> invalidCharFinder("[^a-zA-Z0-9\\-]");
+    if ( REGEX_NS::regex_match(ePub3::string(src, src_len).stl_str(), invalidCharFinder) )
         return false;       // contains an invalid character somewhere, and we can't convert it
     
     if ( src_len > output->capacity() )

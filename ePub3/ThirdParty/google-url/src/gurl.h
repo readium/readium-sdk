@@ -30,10 +30,12 @@
 #ifndef GOOGLEURL_SRC_GURL_H__
 #define GOOGLEURL_SRC_GURL_H__
 
+#include <ePub3/_config.h>
+
 #include <iosfwd>
 #include <string>
 
-#include "../base/string16.h"
+#include <google-url/string16.h>
 #include "url_canon.h"
 #include "url_canon_stdstring.h"
 #include "url_common.h"

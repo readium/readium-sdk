@@ -35,7 +35,7 @@
 
 #include <string>
 
-#include "../ base/string16.h"
+#include <google-url/string16.h>
 #include "url_canon_internal.h"
 //#include "testing/gtest/include/gtest/gtest.h"
 

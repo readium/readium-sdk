@@ -20,9 +20,9 @@
 //
 
 #include "iri.h"
-#include "url_util.h"
+#include <google-url/url_util.h>
 #include "cfi.h"
-#include <regex>
+#include REGEX_INCLUDE
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -252,7 +252,7 @@ string IRI::URLEncodeComponent(const string& str)
 string IRI::PercentEncodeUCS(const string& str)
 {
     std::stringstream ss;
-    for ( auto ch : str )
+    for ( char32_t ch : str )
     {
         if ( ch > 0x7F )
         {

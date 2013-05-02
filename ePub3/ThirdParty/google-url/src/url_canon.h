@@ -29,10 +29,12 @@
 #ifndef GOOGLEURL_SRC_URL_CANON_H__
 #define GOOGLEURL_SRC_URL_CANON_H__
 
+#include <ePub3/_config.h>
+
 #include <string.h>
 #include <stdlib.h>
 
-#include "../base/string16.h"
+#include <google-url/string16.h>
 #include "url_common.h"
 #include "url_parse.h"
 

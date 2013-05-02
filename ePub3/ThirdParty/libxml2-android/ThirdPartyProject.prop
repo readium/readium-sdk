@@ -1,0 +1,9 @@
+# Copyright 2010 Google Inc. All Rights Reserved.
+#Fri Jul 16 10:03:09 PDT 2010
+currentVersion=2.7.6
+version=2.7.3
+isNative=true
+name=libxml2
+keywords=libxml2
+onDevice=true
+homepage=http\://xmlsoft.org/

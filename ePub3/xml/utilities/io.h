@@ -22,7 +22,7 @@
 #ifndef __ePub3_xml_io__
 #define __ePub3_xml_io__
 
-#include "base.h"
+#include <ePub3/xml/base.h>
 #include <iostream>
 #include <libxml/xmlIO.h>
 #include <libxml/HTMLtree.h>

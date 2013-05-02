@@ -22,9 +22,9 @@
 #ifndef __ePub3__c14n__
 #define __ePub3__c14n__
 
-#include "base.h"
-#include "io.h"
-#include "utfstring.h"
+#include <ePub3/xml/base.h>
+#include <ePub3/xml/io.h>
+#include <ePub3/utilities/utfstring.h>
 #include <sstream>
 
 EPUB3_XML_BEGIN_NAMESPACE
@@ -97,11 +97,11 @@ struct C14N
     static const C14NParams<C14NVersion::v2_0, false> C14N2Parameters(InputBuffer & input);
     static const C14NParams<C14NVersion::v2_0, false> C14N2Parameters(const Element * element);
     
-    template<C14NVersion _V, bool _C>
-    static bool Canonicalize(const Document * doc, OutputBuffer & output, const C14NParams<_V,_C> & params);
+    template<C14NVersion _Version, bool _WithComments>
+    static bool Canonicalize(const Document * doc, OutputBuffer & output, const C14NParams<_Version,_WithComments> & params);
     
-    template<C14NVersion _V, bool _C>
-    static string Canonicalize(const Document * doc, const C14NParams<_V,_C> & params)
+    template<C14NVersion _Version, bool _WithComments>
+    static string Canonicalize(const Document * doc, const C14NParams<_Version,_WithComments> & params)
     {
         std::ostringstream __o;
         if ( !Canonicalize(doc, StreamOutputBuffer(__o), params) )

@@ -22,9 +22,9 @@
 #ifndef __ePub3_xml_element__
 #define __ePub3_xml_element__
 
-#include "base.h"
-#include "node.h"
-#include "ns.h"
+#include <ePub3/xml/base.h>
+#include <ePub3/xml/node.h>
+#include <ePub3/xml/ns.h>
 
 EPUB3_XML_BEGIN_NAMESPACE
 
@@ -42,7 +42,7 @@ public:
         }
     }
     Element(const string & name, const class Namespace & ns = xml::Namespace()) : Node(name, NodeType::Element, "", ns) {}
-    Element(Element &&o) : Node(dynamic_cast<Node&&>(o)) {}
+    Element(Element &&o) : Node(std::move(dynamic_cast<Node&>(o))) {}
     virtual ~Element() {}
 };
 

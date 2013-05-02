@@ -24,8 +24,8 @@
 #ifndef __ePub3__xpath_wrangler__
 #define __ePub3__xpath_wrangler__
 
-#include "epub3.h"
-#include "utfstring.h"
+#include <ePub3/epub3.h>
+#include <ePub3/utilities/utfstring.h>
 #include <libxml/xpath.h>
 #include <map>
 #include <vector>

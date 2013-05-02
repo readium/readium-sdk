@@ -22,8 +22,8 @@
 #ifndef __ePub3__cfi__
 #define __ePub3__cfi__
 
-#include "epub3.h"
-#include "utfstring.h"
+#include <ePub3/epub3.h>
+#include <ePub3/utilities/utfstring.h>
 #include <vector>
 
 EPUB3_BEGIN_NAMESPACE
@@ -160,18 +160,18 @@ public:
     class InvalidCFI : public std::logic_error
     {
     public:
-        InvalidCFI(const std::string& str) : std::logic_error(str) {}
-        InvalidCFI(const char * str) : std::logic_error(str) {}
-        virtual ~InvalidCFI() {}
+        InvalidCFI(const std::string& str) _GCC_NOTHROW : std::logic_error(str) {}
+        InvalidCFI(const char * str) _GCC_NOTHROW : std::logic_error(str) {}
+        virtual ~InvalidCFI() _GCC_NOTHROW {}
     };
     ///
     /// An attempt was made to append components to a ranged CFI, which is not valid.
     class RangedCFIAppendAttempt : public std::logic_error
     {
     public:
-        RangedCFIAppendAttempt(const std::string& str) : std::logic_error(str) {}
-        RangedCFIAppendAttempt(const char * str) : std::logic_error(str) {}
-        virtual ~RangedCFIAppendAttempt() {}
+        RangedCFIAppendAttempt(const std::string& str) _GCC_NOTHROW : std::logic_error(str) {}
+        RangedCFIAppendAttempt(const char * str) _GCC_NOTHROW : std::logic_error(str) {}
+        virtual ~RangedCFIAppendAttempt() _GCC_NOTHROW {}
     };
     
 protected:

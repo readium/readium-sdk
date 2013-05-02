@@ -22,9 +22,9 @@
 #ifndef __ePub3__archive_xml__
 #define __ePub3__archive_xml__
 
-#include "epub3.h"
-#include "archive.h"
-#include "../xml/utilities/io.h"
+#include <ePub3/epub3.h>
+#include <ePub3/archive.h>
+#include <ePub3/xml/io.h>
 
 EPUB3_BEGIN_NAMESPACE
 

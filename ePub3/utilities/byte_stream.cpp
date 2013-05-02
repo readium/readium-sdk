@@ -20,21 +20,26 @@
 //
 
 #include "byte_stream.h"
+#include <cstdio>
 #include <libzip/zip.h>
 #include <libzip/zipint.h>          // for internals of zip_file
 #include <sys/stat.h>
+#if EPUB_OS(ANDROID) || EPUB_OS(LINUX)
+# include <condition_variable>
+#endif
 
 EPUB3_BEGIN_NAMESPACE
+
+std::thread AsyncByteStream::_asyncIOThread;
+RunLoop*    AsyncByteStream::_asyncRunLoop(nullptr);
 
 AsyncByteStream::AsyncByteStream(size_type bufsize) : AsyncByteStream(nullptr, bufsize)
 {
 }
 AsyncByteStream::AsyncByteStream(StreamEventHandler handler, size_type bufsize)
-  : _ringbuf(bufsize),
+  : _bufsize(bufsize),
     _eventHandler(handler),
-    _asyncIOThread(),
-    _condMutex(),
-    _threadSignal(),
+    _eventSource(nullptr),
     _event(ReadSpaceAvailable)
 {
 }
@@ -44,75 +49,158 @@ AsyncByteStream::~AsyncByteStream()
 }
 void AsyncByteStream::Close()
 {
-    if ( _asyncIOThread.joinable() )
+    if ( _eventSource != nullptr )
     {
-        _event = Terminate;
-        _threadSignal.notify_all();
-        _asyncIOThread.join();
+        _eventSource->Cancel();
+        delete _eventSource;
+    }
+    
+    _readbuf = nullptr;
+    _writebuf = nullptr;
+}
+void AsyncByteStream::Open(std::ios::openmode mode)
+{
+    if ( (mode & std::ios::in) == std::ios::in )
+    {
+        _readbuf = std::make_shared<RingBuffer>(_bufsize);
+    }
+    if ( (mode & std::ios::out) == std::ios::out )
+    {
+        _writebuf = std::make_shared<RingBuffer>(_bufsize);
     }
 }
 ByteStream::size_type AsyncByteStream::ReadBytes(void *buf, size_type len)
 {
-    size_type result =_ringbuf.ReadBytes(reinterpret_cast<uint8_t*>(buf), len);
-    _event |= ReadSpaceAvailable;
-    _threadSignal.notify_all();
+    if ( !_readbuf )
+        throw new InvalidDuplexStreamOperationError("Stream not opened for reading");
+    
+    size_type result =_readbuf->ReadBytes(reinterpret_cast<uint8_t*>(buf), len);
+    if ( result > 0 )
+    {
+        _readbuf->RemoveBytes(result);
+        _event |= ReadSpaceAvailable;
+        _eventSource->Signal();
+    }
     return result;
 }
 ByteStream::size_type AsyncByteStream::WriteBytes(const void *buf, size_type len)
 {
-    size_type result = _ringbuf.WriteBytes(reinterpret_cast<const uint8_t*>(buf), len);
+    if ( !_writebuf )
+        throw new InvalidDuplexStreamOperationError("Stream not opened for writing");
+    
+    size_type result = _writebuf->WriteBytes(reinterpret_cast<const uint8_t*>(buf), len);
     _event |= DataToWrite;
-    _threadSignal.notify_all();
+    _eventSource->Signal();
     return result;
 }
 void AsyncByteStream::InitAsyncHandler()
 {
-    if ( _asyncIOThread.joinable() )
-        throw std::logic_error("The async IO thread already been started");
+    if ( _eventSource != nullptr )
+        throw std::logic_error("This stream is already set up for async operation.");
     
-    _asyncIOThread = std::thread([&](){
+    Weak<RingBuffer> weakReadBuf = _readbuf;
+    Weak<RingBuffer> weakWriteBuf = _writebuf;
+    
+    _eventSource = new RunLoop::EventSource([=](RunLoop::EventSource&) {
         // atomically pull out the event flags here
         ThreadEvent t = _event.exchange(Wait);
-        if ( t == Terminate )
-        {
-            return;
-        }
         
         bool hasRead = false, hasWritten = false;
         
         uint8_t buf[4096];
         
-        if ( (t & ReadSpaceAvailable) == ReadSpaceAvailable )
+        Shared<RingBuffer> readBuf = weakReadBuf.lock();
+        Shared<RingBuffer> writeBuf = weakWriteBuf.lock();
+        
+        if ( (t & ReadSpaceAvailable) == ReadSpaceAvailable && readBuf )
         {
-            std::lock_guard<RingBuffer> _(_ringbuf);
-            size_type read = this->read_for_async(buf, _ringbuf.SpaceAvailable());
+            std::lock_guard<RingBuffer> _(*readBuf);
+            size_type read = this->read_for_async(buf, readBuf->SpaceAvailable());
             if ( read != 0 )
             {
-                _ringbuf.WriteBytes(buf, read);
+                readBuf->WriteBytes(buf, read);
                 hasRead = true;
             }
         }
-        if ( (t & DataToWrite) == DataToWrite )
+        if ( (t & DataToWrite) == DataToWrite && writeBuf )
         {
-            std::lock_guard<RingBuffer> _(_ringbuf);
-            size_type written = _ringbuf.ReadBytes(buf, _ringbuf.BytesAvailable());
+            std::lock_guard<RingBuffer> _(*writeBuf);
+            size_type written = writeBuf->ReadBytes(buf, writeBuf->BytesAvailable());
             written = this->write_for_async(buf, written);
             if ( written != 0 )
             {
                 // only remove as much as actually went out
-                _ringbuf.RemoveBytes(written);
+                writeBuf->RemoveBytes(written);
                 hasWritten = true;
             }
         }
         
-        if ( hasRead )
-            _eventHandler(AsyncEvent::HasBytesAvailable, this);
-        if ( hasWritten )
-            _eventHandler(AsyncEvent::HasSpaceAvailable, this);
+        auto invocation = [this, hasRead, hasWritten] () {
+            if ( hasRead )
+                _eventHandler(AsyncEvent::HasBytesAvailable, this);
+            if ( hasWritten )
+                _eventHandler(AsyncEvent::HasSpaceAvailable, this);
+        };
         
-        std::unique_lock<std::mutex> __l(_condMutex);
-        _threadSignal.wait(__l, [&](){ return _event != Wait; });
+        if ( _targetRunLoop != nullptr )
+        {
+            _targetRunLoop->PerformFunction(invocation);
+        }
+        else
+        {
+            invocation();
+        }
     });
+    
+    if ( _asyncRunLoop == nullptr )
+    {
+        std::mutex __mut;
+        std::condition_variable __inited;
+        
+        std::unique_lock<std::mutex> __lock(__mut);
+        _asyncIOThread = std::thread([&](){
+            AsyncByteStream::_asyncRunLoop = RunLoop::CurrentRunLoop();
+            {
+                std::unique_lock<std::mutex> __(__mut);
+                __inited.notify_all();
+            }
+            
+            // now run the run loop
+            
+            // only spin an empty run loop a certain amount of time before giving up
+            // and exiting the thread entirely
+            // FIXME: There's a gap here where a race could lose an EventSource addition
+            static constexpr unsigned kMaxEmptyTicks(1000);
+            static constexpr std::chrono::milliseconds kTickLen(10);
+            unsigned __emptyTickCounter = 0;
+            
+            do
+            {
+                RunLoop::ExitReason __r = RunLoop::CurrentRunLoop()->Run(true, std::chrono::seconds(20));
+                if ( __r == RunLoop::ExitReason::RunFinished )
+                {
+                    if ( ++__emptyTickCounter == kMaxEmptyTicks )
+                        break;      // exit the thread
+                    
+                    // wait a bit and try again
+                    std::this_thread::sleep_for(kTickLen);
+                }
+                
+                // by definition not an empty runloop
+                __emptyTickCounter = 0;
+            } while (1);
+            
+            // nullify the global before we quit
+            // deletion isn't necessary, it's done by TLS in run_loop.cpp
+            _asyncRunLoop = nullptr;
+        });
+        
+        // wait for the runloop to be set
+        __inited.wait(__lock, [&](){return _asyncRunLoop != nullptr;});
+    }
+    
+    // install the event source into the run loop, then we're all done
+    _asyncRunLoop->AddEventSource(_eventSource);
 }
 
 #if 0
@@ -136,7 +224,8 @@ ByteStream::size_type FileByteStream::BytesAvailable() const noexcept
         return 0;
     
     struct stat sb;
-    if ( ::fstat(::fileno(const_cast<FILE*>(_file)), &sb) != 0 )
+    int fd = fileno(const_cast<FILE*>(_file));
+    if ( ::fstat(fd, &sb) != 0 )
         return 0;
     
     return (static_cast<size_type>(sb.st_size) - static_cast<size_type>(::ftell(const_cast<FILE*>(_file))));

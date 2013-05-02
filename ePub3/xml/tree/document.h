@@ -22,10 +22,10 @@
 #ifndef __ePub3_xml_document__
 #define __ePub3_xml_document__
 
-#include "node.h"
-#include "element.h"
-#include "io.h"
-#include "c14n.h"
+#include <ePub3/xml/node.h>
+#include <ePub3/xml/element.h>
+#include <ePub3/xml/io.h>
+#include <ePub3/xml/c14n.h>
 
 EPUB3_XML_BEGIN_NAMESPACE
 
@@ -90,8 +90,8 @@ public:
     //////////////////////////////////////////////////////////////////////////////
     // Output
     
-    template <C14NVersion _V, bool _C>
-    string Canonicalize(const C14NParams<_V, _C> & params) const;
+    template <C14NVersion _Version, bool _WithComments>
+    string Canonicalize(const C14NParams<_Version, _WithComments> & params) const;
     
     void WriteXML(OutputBuffer & outbuf) const;
     void WriteXML(string & string) const;
