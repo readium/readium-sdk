@@ -1,6 +1,8 @@
 ## Building for Android
 
-This library is all set up to compile as a shared library for Android. At present it targets android-9 and uses clang v3.2. There is no real JNI layer at present, and it has only been built on OS X. I assume that a working NDK on any platform will have success, though.
+This library is all set up to compile as a shared library for Android. At present it targets android-9 and uses gcc v4.7. There is no real JNI layer at present, and it has only been built on OS X. I assume that a working NDK on any platform will have success, though.
+
+Please refer to the file HACKING at the root of the project for low-level details you'll need to write portable code in this project.
 
 ### Prerequisites
 
@@ -12,6 +14,8 @@ This library is all set up to compile as a shared library for Android. At presen
 1. From a Terminal, go into the Platform/Android subdirectory of the readium-sdk repository (this directory).
 2. Run `ndk-build.sh build <path-to-ndk>` to build. My invocation looks like this, for example:
 
-    sh ndk-build.sh build /Applications/Android-Dev-Tools/ndk
+```bash
+sh ndk-build.sh build /Applications/Android-Dev-Tools/ndk
+```
 
 Everything else should be set up appropriately by that script.

@@ -2,6 +2,13 @@
 
 #### Copyright (c) 2012–2013 The Readium Foundation and contributors.
 
+### Release Notes
+
+Version 0.4 includes support for building a shared or static library for Android devices
+using the Android NDK r8e. See the [Platform Support](#platform-support) section for more information.
+
+## About
+
 The Readium SDK is an ePub reader SDK of similar scope and capability to
 Adobe's Reader Mobile SDK (RMSDK).  As such, it is designed to implement an ePub3-
 compliant Reading System, although its initial form will concentrate solely on the
@@ -29,7 +36,7 @@ available from the Readium Foundation directly; see the [CONTRIBUTING](CONTRIBUT
 information on how to apply to become an official contributor or sponsor, and to
 apply for a commercial license.
 
-## Platform Support
+### Platform Support<a id="platform-support"></a>
 
 At present, the project compiles for OS X and iOS using the version of Clang in Xcode 4.6
 and the LLVM C++ standard library, `libc++`.
@@ -37,7 +44,14 @@ and the LLVM C++ standard library, `libc++`.
 On Android, the project is build using GCC 4.7 and release 8e of the Android NDK. See
 [Platform/Android/README.markdown](Platform/Android/README.markdown) for more information.
 
-Build support for Windows using Visual Studio 2012 is forthcoming.
+Build support for Windows using Visual Studio 2012 is due in release 0.5.
+
+
+### Headers And Libraries
+
+The SDK is built into a single library on all platforms. Headers are placed into an `include` folder by the build process for each platform, located within the appropriate `Platform` subfolder.  For instance, OS X and iOS headers are within `Platform/Apple/include`, Windows headers are within `Platform/Windows/include`.
+
+This folder is designed to be passed directly to the compiler using the `-I` argument or similar.
 
 ### Architecture
 
