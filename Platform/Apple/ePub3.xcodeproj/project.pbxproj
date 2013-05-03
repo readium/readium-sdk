@@ -20,8 +20,6 @@
 		AB5D104617209D38001D3C95 /* unchecked.h in Headers */ = {isa = PBXBuildFile; fileRef = AB5D104217209D38001D3C95 /* unchecked.h */; };
 		AB5D104717209D38001D3C95 /* utf8.h in Headers */ = {isa = PBXBuildFile; fileRef = AB5D104317209D38001D3C95 /* utf8.h */; };
 		AB5D104E1721A722001D3C95 /* ref_counted.h in Headers */ = {isa = PBXBuildFile; fileRef = AB5D104B1721A722001D3C95 /* ref_counted.h */; };
-		AB5D107C17315B54001D3C95 /* ref_counted.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB5D107B17315B53001D3C95 /* ref_counted.cpp */; };
-		AB5D107D17315B54001D3C95 /* ref_counted.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB5D107B17315B53001D3C95 /* ref_counted.cpp */; };
 		AB61CE4E1694845700299BB1 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB61CE4D1694845700299BB1 /* main.cpp */; };
 		AB61CE501694845700299BB1 /* UnitTests.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = AB61CE4F1694845700299BB1 /* UnitTests.1 */; };
 		AB61CE56169485BD00299BB1 /* string_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB61CE55169485BD00299BB1 /* string_tests.cpp */; };
@@ -371,7 +369,6 @@
 		AB5D104317209D38001D3C95 /* utf8.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utf8.h; sourceTree = "<group>"; };
 		AB5D104B1721A722001D3C95 /* ref_counted.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ref_counted.h; sourceTree = "<group>"; };
 		AB5D1070172AD4AD001D3C95 /* MakeHeaders.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = MakeHeaders.sh; sourceTree = SOURCE_ROOT; };
-		AB5D107B17315B53001D3C95 /* ref_counted.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ref_counted.cpp; sourceTree = "<group>"; };
 		AB61CE4A1694845700299BB1 /* UnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = UnitTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB61CE4D1694845700299BB1 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		AB61CE4F1694845700299BB1 /* UnitTests.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = UnitTests.1; sourceTree = "<group>"; };
@@ -858,7 +855,6 @@
 				AB17B29D171301C800FD5917 /* run_loop.h */,
 				AB5D103C17148E8E001D3C95 /* cf_helpers.h */,
 				AB5D104B1721A722001D3C95 /* ref_counted.h */,
-				AB5D107B17315B53001D3C95 /* ref_counted.cpp */,
 			);
 			path = utilities;
 			sourceTree = "<group>";
@@ -1841,7 +1837,6 @@
 				3418BA7D16C4151E009AA7EF /* ring_buffer.cpp in Sources */,
 				ABA88FD916C4415D00F2014B /* ios_get_progname.m in Sources */,
 				AB17B29F171301C800FD5917 /* run_loop_cf.cpp in Sources */,
-				AB5D107D17315B54001D3C95 /* ref_counted.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1957,7 +1952,6 @@
 				ABA88FC316C1534900F2014B /* byte_stream.cpp in Sources */,
 				ABA88FD216C2B4ED00F2014B /* ring_buffer.cpp in Sources */,
 				AB17B29E171301C800FD5917 /* run_loop_cf.cpp in Sources */,
-				AB5D107C17315B54001D3C95 /* ref_counted.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2010,6 +2004,7 @@
 					"$(SRCROOT)/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2032,6 +2027,7 @@
 					"$(SRCROOT)/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2101,7 +2097,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "../../ePub3/ePub3-Prefix.pch";
+				GCC_PREFIX_HEADER = "../../ePub3-iOS/ePub3-iOS-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"USING_ICU=1",
@@ -2121,7 +2117,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "../../ePub3/ePub3-Prefix.pch";
+				GCC_PREFIX_HEADER = "../../ePub3-iOS/ePub3-iOS-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"USING_ICU=1",
