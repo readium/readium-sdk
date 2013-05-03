@@ -42,7 +42,13 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#if defined(_MSC_VER)
+# include <windows.h>
+# include <io.h>
+# define open _open
+#else
+# include <unistd.h>
+#endif
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -55,16 +61,29 @@ _zip_mkstemp(char *path)
 {
 	int fd;   
 	char *start, *trv;
-	struct stat sbuf;
+    struct stat sbuf;
+
+#if defined(_MSC_VER)
+    unsigned long long pid;
+    {
+        SYSTEMTIME st;
+        FILETIME ft;
+
+        GetSystemTime(&st);
+        SystemTimeToFileTime(&st, &ft);
+
+        pid = ((unsigned long long)ft.dwHighDateTime << 32) | (unsigned long long)ft.dwLowDateTime;
+    }
+#else
 	pid_t pid;
+    pid = getpid();
+#endif
 
 	/* To guarantee multiple calls generate unique names even if
 	   the file is not created. 676 different possibilities with 7
 	   or more X's, 26 with 6 or less. */
-	static char xtra[2] = "aa";
+	static char xtra[2] = {'a','a'};
 	int xcnt = 0;
-
-	pid = getpid();
 
 	/* Move to end of path and count trailing X's. */
 	for (trv = path; *trv; ++trv)
@@ -107,7 +126,7 @@ _zip_mkstemp(char *path)
 			*trv = '\0';
 			if (stat(path, &sbuf))
 				return (0);
-			if (!S_ISDIR(sbuf.st_mode)) {
+			if ((sbuf.st_mode & S_IFDIR) != S_IFDIR) {
 				errno = ENOTDIR;
 				return (0);
 			}

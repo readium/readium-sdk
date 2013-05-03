@@ -23,15 +23,15 @@
 #include "package.h"
 
 static const REGEX_NS::regex::flag_type regexFlags(REGEX_NS::regex::ECMAScript|REGEX_NS::regex::optimize);
-static const REGEX_NS::regex reEscaper(R"X(\\\.\(\)\[\]\$\^\*\+\?\:\=\|)X", regexFlags);
+static const REGEX_NS::regex reEscaper("\\\\\\.\\(\\)\\[\\]\\$\\^\\*\\+\\?\\:\\=\\|", regexFlags);
 
 EPUB3_BEGIN_NAMESPACE
 
-static REGEX_NS::regex ParamMatcher(R"X(<param[^>]+(name|value)="([^"]*)"[^>]*?(value|name)="([^"]*)"(.|\n|\r)*?>)X", regexFlags);
-static REGEX_NS::regex SourceFinder("data=\"([^\"]*)\"", regexFlags);
-static REGEX_NS::regex IDFinder("id=\"([^\"]*)\"", regexFlags);
+static REGEX_NS::regex ParamMatcher("<param[^>]+(name|value)=\"([^\"]*)\"[^>]*?(value|name)=\"([^\"]*)\"(.|\\n|\\r)*?>", regexFlags);
+static REGEX_NS::regex SourceFinder("data=\\\"([^\\\"]*)\\\"", regexFlags);
+static REGEX_NS::regex IDFinder("id=\\\"([^\\\"]*)\\\"", regexFlags);
 
-bool ObjectPreprocessor::ShouldApply(const ePub3::ManifestItem *item, const ePub3::EncryptionInfo *encInfo __unused)
+bool ObjectPreprocessor::ShouldApply(const ePub3::ManifestItem *item, const ePub3::EncryptionInfo *encInfo)
 {
     return (item->MediaType() == "application/xhtml+xml" || item->MediaType() == "text/html");
 }
@@ -41,12 +41,12 @@ ObjectPreprocessor::ObjectPreprocessor(const Package* pkg, const string& buttonT
     if ( mediaTypes.empty() )
     {
         // No work for the filter to do here -- disable all matches
-        SetTypeSniffer([](const ManifestItem* __unused, const EncryptionInfo* __unused){return false;});
+        SetTypeSniffer([](const ManifestItem*, const EncryptionInfo*){return false;});
         return;
     }
     
     std::stringstream ss;
-    ss << R"X(<object\s+?([^>]*?(?:media-)?type="()X";
+    ss << "<object\\s+?([^>]*?(?:media-)?type=\"(";
     
     auto pos = mediaTypes.begin();
     auto end = mediaTypes.end();
@@ -54,14 +54,14 @@ ObjectPreprocessor::ObjectPreprocessor(const Package* pkg, const string& buttonT
     while ( pos != end )
     {
         auto here = pos++;
-        std::string str = REGEX_NS::regex_replace(here->stl_str(), reEscaper, R"X($`\\$&$')X");    // yes, double-backslash, so it doesn't escape whatever '$&' is (i.e. the character which needs to be escaped)
+        std::string str = REGEX_NS::regex_replace(here->stl_str(), reEscaper, "$`\\\\$&$'");    // yes, double-backslash, so it doesn't escape whatever '$&' is (i.e. the character which needs to be escaped)
         if ( pos == end )
             ss << str;
         else
             ss << str << "|";
     }
     
-    ss << R"X()"[^>]*?)>((?:.|\n|\r)*?)</object>)X";
+    ss << ")\"[^>]*?)>((?:.|\\n|\\r)*?)</object>";
     std::string reStr = ss.str();
     _objectMatcher = REGEX_NS::regex(reStr, regexFlags);
     
@@ -102,7 +102,8 @@ void* ObjectPreprocessor::FilterData(void *data, size_t len, size_t *outputLen)
         }
         
         const MediaHandler& handler = found->second;
-        ContentHandler::ParameterList params({{"type", type}});
+        ContentHandler::ParameterList params;
+        params["type"] = type;
         
         // find the data source
         REGEX_NS::smatch m;

@@ -38,6 +38,10 @@
 
 #include "zipint.h"
 
+#if defined(_MSC_VER)
+# define strdup _strdup
+#endif
+
 
 
 int

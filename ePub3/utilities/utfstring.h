@@ -25,13 +25,19 @@
 #include <ePub3/utilities/basic.h>
 #include <string>
 #include <iterator>
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
 #include <initializer_list>
+#endif
 #include <locale>
 #include <vector>
 #include REGEX_INCLUDE
 #include <map>
 #include <stdexcept>
 #include <libxml/xmlstring.h>
+
+#if EPUB_PLATFORM(WIN)
+# include <codecvt>
+#endif
 
 #include <utf8/utf8.h>
 
@@ -48,7 +54,7 @@ EPUB3_BEGIN_NAMESPACE
 class string;
 typedef std::map<string, string>  NamespaceMap;
 
-extern const size_t utf8_sizes[256];
+extern EPUB3_EXPORT const size_t utf8_sizes[256];
 #define UTF8CharLen(c) ePub3::utf8_sizes[static_cast<xmlChar>(c)]
 
 /**
@@ -57,7 +63,7 @@ extern const size_t utf8_sizes[256];
 class string
 {
 public:
-    typedef std::string __base;
+    typedef std::string                 __base;
     
     typedef __base::size_type           size_type;
     typedef __base::difference_type     difference_type;
@@ -76,12 +82,11 @@ public:
     
     static const string EmptyString;
     
-    
-    
     class InvalidUTF8Sequence : std::invalid_argument {
     public:
-        InvalidUTF8Sequence(const std::string & str) : invalid_argument(str) {}
-        InvalidUTF8Sequence(const char * str) : invalid_argument(str) {}
+        EPUB3_EXPORT InvalidUTF8Sequence(const string & str) : invalid_argument(str.stl_str()) {}
+        EPUB3_EXPORT InvalidUTF8Sequence(const char * str) : invalid_argument(str) {}
+        virtual ~InvalidUTF8Sequence() {}
     };
     
     typedef utf8::iterator<__base::iterator>        iterator;
@@ -100,21 +105,33 @@ public:
     string(const string & s, size_type i, size_type n=npos) : _base(s._base, s.to_byte_size(i), s.to_byte_size(i,n)) {}
     
     // From char32_t (value_type)
-    string(const_u4pointer s);   // NUL-delimited
-    string(const_u4pointer s, size_type n);
-    string(size_type n, value_type c);
+    EPUB3_EXPORT string(const_u4pointer s);   // NUL-delimited
+    EPUB3_EXPORT string(const_u4pointer s, size_type n);
+    EPUB3_EXPORT string(size_type n, value_type c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string(std::initializer_list<value_type> __il) : string(__il.begin(), __il.end()) {}
+#endif
     
     // From char16_t (pure UTF-16)
-    string(const char16_t* s);    // NUL-delimited
-    string(const char16_t* s, size_type n);
-    string(size_type n, char16_t c);
+    EPUB3_EXPORT string(const char16_t* s);    // NUL-delimited
+    EPUB3_EXPORT string(const char16_t* s, size_type n);
+    EPUB3_EXPORT string(size_type n, char16_t c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string(std::initializer_list<char16_t> __il) : string(__il.begin(), __il.end()) {}
+#endif
+
+    // From wchar_t (pure UTF-16)
+    EPUB3_EXPORT string(const wchar_t* s);    // NUL-delimited
+    EPUB3_EXPORT string(const wchar_t* s, size_type n);
+    EPUB3_EXPORT string(size_type n, wchar_t c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+    string(std::initializer_list<wchar_t> __il) : string(__il.begin(), __il.end()) {}
+#endif
     
     // From std::string
     string(const __base &o) : _base(o) {}
     string(__base &&o) : _base(o) {}
-    string(const __base &s, size_type i, size_type n=npos);
+    EPUB3_EXPORT string(const __base &s, size_type i, size_type n=npos);
     
     // From char
     string(const char * s) : _base(s) {}
@@ -127,7 +144,7 @@ public:
     string(size_type n, xmlChar c) : _base(n, static_cast<char>(c)) {}
     
     template <class InputIterator>
-    string(InputIterator begin, InputIterator end);
+    EPUB3_EXPORT string(InputIterator begin, InputIterator end);
     /*
     template <typename... Args>
     string(const Args&... args) : _base(_Str(args...)) {}
@@ -138,39 +155,39 @@ public:
 #pragma mark - Length/Iteration/Indexing
 #endif
     
-    size_type size() const noexcept;
-    size_type length() const noexcept { return size(); }
-    size_type max_size() const noexcept { return _base.max_size()/sizeof(value_type); }
-    size_type capacity() const noexcept { return _base.capacity(); }
+    EPUB3_EXPORT size_type size() const _NOEXCEPT;
+    size_type length() const _NOEXCEPT { return size(); }
+    size_type max_size() const _NOEXCEPT { return _base.max_size()/sizeof(value_type); }
+    size_type capacity() const _NOEXCEPT { return _base.capacity(); }
     
-    size_type utf8_size() const noexcept { return _base.size(); }
-    size_type utf8_length() const noexcept { return utf8_size(); }
+    size_type utf8_size() const _NOEXCEPT { return _base.size(); }
+    size_type utf8_length() const _NOEXCEPT { return utf8_size(); }
     
-    void resize(size_type n, value_type c);
-    void resize(size_type n);
+    EPUB3_EXPORT void resize(size_type n, value_type c);
+    EPUB3_EXPORT void resize(size_type n);
     
     void reserve(size_type res_arg = 0) { return _base.reserve(res_arg*4); } // best guess
     void shrink_to_fit() { _base.shrink_to_fit(); }
-    void clear() noexcept { _base.clear(); }
-    bool empty() const noexcept { return _base.empty(); }
+    void clear() _NOEXCEPT { _base.clear(); }
+    bool empty() const _NOEXCEPT { return _base.empty(); }
     
-    iterator begin() noexcept { return iterator(_base.begin(), _base.begin(), _base.end()); }
+    iterator begin() _NOEXCEPT { return iterator(_base.begin(), _base.begin(), _base.end()); }
     const_iterator begin() const { return const_iterator(_base.begin(), _base.begin(), _base.end()); }
     const_iterator cbegin() const { return const_iterator(_base.begin(), _base.begin(), _base.end()); }
-    iterator end() noexcept { return iterator(_base.end(), _base.begin(), _base.end()); }
+    iterator end() _NOEXCEPT { return iterator(_base.end(), _base.begin(), _base.end()); }
     const_iterator end() const { return const_iterator(_base.end(), _base.begin(), _base.end()); }
     const_iterator cend() const { return const_iterator(_base.end(), _base.begin(), _base.end()); }
     
-    const value_type at(size_type pos) const;
-    value_type at(size_type pos);
+    EPUB3_EXPORT const value_type at(size_type pos) const;
+    EPUB3_EXPORT value_type at(size_type pos);
     
     const value_type operator[](size_type pos) const { return at(pos); }
     value_type operator[](size_type pos) { return at(pos); }
     
-    const xmlChar * xmlAt(size_type pos) const;
-    xmlChar * xmlAt(size_type pos);
+    EPUB3_EXPORT const xmlChar * xmlAt(size_type pos) const;
+    EPUB3_EXPORT xmlChar * xmlAt(size_type pos);
     
-    __base utf8At(size_type pos) const;
+    EPUB3_EXPORT __base utf8At(size_type pos) const;
     
 #if 0
 #pragma mark - Splitting
@@ -180,8 +197,8 @@ public:
     inline std::vector<string> split(const REGEX_NS::regex& regex) const
     {
         // passing -1 as the submatch index parameter performs splitting
-        REGEX_NS::sregex_token_iterator first(_base.begin(), _base.end(), regex, -1), last;
-        return {first, last};
+        REGEX_NS:: sregex_token_iterator first(_base.begin(), _base.end(), regex, -1), last;
+        return std::vector<string>(first, last);
     }
     
 #if 0
@@ -189,33 +206,41 @@ public:
 #endif
     
     template <class InputIterator>
-    string & assign(InputIterator first, InputIterator last);
+    EPUB3_EXPORT string & assign(InputIterator first, InputIterator last);
     
     // standard
     string & assign(const string &o) { _base.assign(o._base); return *this; }
-    string & assign(const string &o, size_type i, size_type n=npos);
+    EPUB3_EXPORT string & assign(const string &o, size_type i, size_type n=npos);
     string & assign(string &&o) { _base.assign(std::move(o._base)); return *this; }
     string & operator=(const string & o) { return assign(o); }
     string & operator=(string &&o) { return assign(o); }
     
     // char32_t
-    string & assign(const_u4pointer s, size_type n=npos);
+    EPUB3_EXPORT string & assign(const_u4pointer s, size_type n=npos);
     string & assign(size_type n, value_type c) { clear(); resize(n, c); return *this; }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & assign(std::initializer_list<value_type> __il) { return assign(__il.begin(), __il.end()); }
+#endif
     string & operator=(const_u4pointer s) { return assign(s, npos); }
     string & operator=(value_type c) { return assign(1, c); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & operator=(std::initializer_list<value_type> l) { return assign(l); }
+#endif
     
     // char16_t
-    string & assign(const char16_t* s, size_type n=npos);
+    EPUB3_EXPORT string & assign(const char16_t* s, size_type n=npos);
     string & assign(size_type n, char16_t c) { clear(); resize(n, static_cast<value_type>(c)); return *this; }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & assign(std::initializer_list<char16_t> __il) { return assign(__il.begin(), __il.end()); }
+#endif
     string & operator=(const char16_t* s) { return assign(s, npos); }
     string & operator=(char16_t c) { return assign(1, c); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & operator=(std::initializer_list<char16_t> l) { return assign(l); }
+#endif
     
     // std::string
-    string & assign(const __base & o) { _base.assign(o); return *this; }
+    EPUB3_EXPORT string & assign(const __base & o) { _base.assign(o); return *this; }
     string & assign(const __base & o, size_type i, size_type n=npos)
         { _base.assign(o, i, n); return *this; }
     string & assign(__base &&o) { _base.assign(o); return *this; }
@@ -226,52 +251,68 @@ public:
     string & assign(const char * s, size_type n) { _base.assign(s, n); return *this; }
     string & assign(const char * s) { _base.assign(s); return *this; }
     string & assign(size_type n, char c) { _base.assign(n, c); return *this; }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & assign(std::initializer_list<__base::value_type> __il) { _base.assign(__il); return *this; }
+#endif
     string & operator=(const char * s) { return assign(s, __base::traits_type::length(s)); }
     string & operator=(char c) { return assign(1, c); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & operator=(std::initializer_list<__base::value_type> __il) { return assign(__il); }
+#endif
     
     // xmlChar
     string & assign(const xmlChar * s, size_type n) { _base.assign(reinterpret_cast<const char *>(s), n); return *this; }
     string & assign(const xmlChar * s) { _base.assign(reinterpret_cast<const char *>(s), xmlStrlen(s)); return *this; }
     string & assign(size_type n, xmlChar c) { _base.assign(n, static_cast<char>(c)); return *this; }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & assign(std::initializer_list<xmlChar> __il) { return assign(__il.begin(), __il.end()); }
+#endif
     string & operator=(const xmlChar *s) { return assign(s, xmlStrlen(s)); }
     string & operator=(xmlChar c) { return assign(1, c); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & operator=(std::initializer_list<xmlChar> __il) { return assign(__il); }
+#endif
     
 #if 0
 #pragma mark - Append
 #endif
     
     template <class InputIterator>
-    string & append(InputIterator first, InputIterator last);
-    
+    EPUB3_EXPORT string & append(InputIterator first, InputIterator last);
+#if EPUB_COMPILER_SUPPORTS(VARIADIC_TEMPLATES)
     template <typename... Args>
     string & append(const Args&... args) { return append(string(args...)); }
-    
+#endif
     // standard
     string & append(const string &o) { _base.append(o._base); return *this; }
-    string & append(const string &o, size_type i, size_type n=npos);
+    EPUB3_EXPORT string & append(const string &o, size_type i, size_type n=npos);
     string & append(string &&o) { _base.append(std::move(o._base)); return *this; }
     string & operator+=(const string & o) { return append(o); }
     string & operator+=(string &&o) { return append(o); }
     
     // char32_t
-    string & append(const_u4pointer s, size_type n=npos);
-    string & append(size_type n, value_type c);
+    EPUB3_EXPORT string & append(const_u4pointer s, size_type n=npos);
+    EPUB3_EXPORT string & append(size_type n, value_type c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & append(std::initializer_list<value_type> __il) { return append(__il.begin(), __il.end()); }
+#endif
     string & operator+=(const_u4pointer s) { return append(s, npos); }
     string & operator+=(value_type c) { return append(1, c); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & operator+=(std::initializer_list<value_type> __il) { return append(__il); }
+#endif
     
     // char16_t
-    string & append(const char16_t* s, size_type n=npos);
-    string & append(size_type n, char16_t c);
+    EPUB3_EXPORT string & append(const char16_t* s, size_type n=npos);
+    EPUB3_EXPORT string & append(size_type n, char16_t c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & append(std::initializer_list<char16_t> __il) { return append(__il.begin(), __il.end()); }
+#endif
     string & operator+=(const char16_t* s) { return append(s, npos); }
     string & operator+=(char16_t c) { return append(1, c); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & operator+=(std::initializer_list<char16_t> __il) { return append(__il); }
+#endif
     
     // std::string
     string & append(const __base & o) { _base.append(o); return *this; }
@@ -284,61 +325,75 @@ public:
     string & append(const char * s, size_type n) { _base.append(s, n); return *this; }
     string & append(const char * s) { _base.append(s); return *this; }
     string & append(size_type n, char c) { _base.append(n, c); return *this; }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & append(std::initializer_list<__base::value_type> __il) { _base.append(__il); return *this; }
+#endif
     string & operator+=(const char * s) { return append(s); }
     string & operator+=(char c) { return append(1, c); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & operator+=(std::initializer_list<__base::value_type> __il) { return append(__il); }
+#endif
     
     // xmlChar
     string & append(const xmlChar * s, size_type n) { _base.append(reinterpret_cast<const char *>(s), n); return *this; }
     string & append(const xmlChar * s) { _base.append(reinterpret_cast<const char *>(s), xmlStrlen(s)); return *this; }
     string & append(size_type n, xmlChar c) { _base.append(n, static_cast<char>(c)); return *this; }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & append(std::initializer_list<xmlChar> __il) { return append(__il.begin(), __il.end()); }
+#endif
     string & operator+=(const xmlChar *s) { return append(s, xmlStrlen(s)); }
     string & operator+=(xmlChar c) { return append(1, c); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & operator+=(std::initializer_list<xmlChar> __il) { return append(__il); }
+#endif
     
 #if 0
 #pragma mark - Insertion
 #endif
     
     template <class InputIterator>
-    iterator insert(iterator p, InputIterator first, InputIterator last);
-    
+    EPUB3_EXPORT iterator insert(iterator p, InputIterator first, InputIterator last);
+#if EPUB_COMPILER_SUPPORTS(VARIADIC_TEMPLATES)
     template <typename... Args>
     string & insert(size_type p, const Args&... args) { return insert(p, string(args...)); }
     template <typename... Args>
     iterator insert(iterator p, const Args&... args) { return insert(p, string(args...)); }
-    
+#endif
     // standard
-    string & insert(size_type p, const string &s, size_type b=0, size_type e=npos);
-    iterator insert(iterator p, const string & s, size_type b=0, size_type e=npos);
+    EPUB3_EXPORT string & insert(size_type p, const string &s, size_type b=0, size_type e=npos);
+    EPUB3_EXPORT iterator insert(iterator p, const string & s, size_type b=0, size_type e=npos);
     
     // char32_t
-    string & insert(size_type p, const_u4pointer s, size_type e=npos);
-    string & insert(size_type p, size_type n, value_type c);
-    iterator insert(iterator p, const_u4pointer s, size_type e=npos);
-    iterator insert(iterator p, size_type n, value_type c);
+    EPUB3_EXPORT string & insert(size_type p, const_u4pointer s, size_type e=npos);
+    EPUB3_EXPORT string & insert(size_type p, size_type n, value_type c);
+    EPUB3_EXPORT iterator insert(iterator p, const_u4pointer s, size_type e=npos);
+    EPUB3_EXPORT iterator insert(iterator p, size_type n, value_type c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     iterator insert(iterator p, std::initializer_list<value_type> __il) { return insert(p, __il.begin(), __il.end()); }
+#endif
     
     // char16_t
-    string & insert(size_type p, const char16_t* s, size_type e=npos);
-    string & insert(size_type p, size_type n, char16_t c);
-    iterator insert(iterator p, const char16_t* s, size_type e=npos);
-    iterator insert(iterator p, size_type n, char16_t c);
+    EPUB3_EXPORT string & insert(size_type p, const char16_t* s, size_type e=npos);
+    EPUB3_EXPORT string & insert(size_type p, size_type n, char16_t c);
+    EPUB3_EXPORT iterator insert(iterator p, const char16_t* s, size_type e=npos);
+    EPUB3_EXPORT iterator insert(iterator p, size_type n, char16_t c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     iterator insert(iterator p, std::initializer_list<char16_t> __il) { return insert(p, __il.begin(), __il.end()); }
+#endif
     
     // std::string
-    string & insert(size_type p, const __base &s, size_type b=0, size_type e=npos);
-    string & insert(size_type p, __base::iterator b, __base::iterator e);
-    iterator insert(iterator p, const __base & s, size_type b=0, size_type e=npos);
+    EPUB3_EXPORT string & insert(size_type p, const __base &s, size_type b=0, size_type e=npos);
+    EPUB3_EXPORT string & insert(size_type p, __base::iterator b, __base::iterator e);
+    EPUB3_EXPORT iterator insert(iterator p, const __base & s, size_type b=0, size_type e=npos);
     
     // char
-    string & insert(size_type p, const char * s, size_type b=0, size_type e=npos);
-    string & insert(size_type p, size_type n, char c);
-    iterator insert(iterator p, const char * s, size_type b=0, size_type e=npos);
-    iterator insert(iterator p, size_type n, char c);
+    EPUB3_EXPORT string & insert(size_type p, const char * s, size_type b=0, size_type e=npos);
+    EPUB3_EXPORT string & insert(size_type p, size_type n, char c);
+    EPUB3_EXPORT iterator insert(iterator p, const char * s, size_type b=0, size_type e=npos);
+    EPUB3_EXPORT iterator insert(iterator p, size_type n, char c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     iterator insert(iterator p, std::initializer_list<char> __il) { return insert(p, __il.begin(), __il.end()); }
+#endif
     
     // xmlChar
     string & insert(size_type p, const xmlChar * s, size_type b=0, size_type e=npos)
@@ -347,23 +402,25 @@ public:
     iterator insert(iterator p, const xmlChar * s, size_type b=0, size_type e=npos)
         { return insert(p, reinterpret_cast<const char*>(s), b, e); }
     iterator insert(iterator p, size_type n, xmlChar c) { return insert(p, n, static_cast<char>(c)); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     iterator insert(iterator p, std::initializer_list<xmlChar> __il) { return insert(p, __il.begin(), __il.end()); }
+#endif
     
 #if 0
 #pragma mark - Erasing
 #endif
     
-    string & erase(size_type pos=0, size_type n=npos);
-    iterator erase(cxx11_const_iterator pos);
-    iterator erase(cxx11_const_iterator first, cxx11_const_iterator last);
+    EPUB3_EXPORT string & erase(size_type pos=0, size_type n=npos);
+    EPUB3_EXPORT iterator erase(cxx11_const_iterator pos);
+    EPUB3_EXPORT iterator erase(cxx11_const_iterator first, cxx11_const_iterator last);
     
 #if 0
 #pragma mark - Replacements
 #endif
     
     template <class InputIterator>
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, InputIterator j1, InputIterator j2);
-    
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, InputIterator j1, InputIterator j2);
+#if EPUB_COMPILER_SUPPORTS(VARIADIC_TEMPLATES)
     template <typename... Args>
     string & replace(size_type pos1, size_type n1, const Args&... args) {
         string __s(args...);
@@ -374,49 +431,55 @@ public:
         string __s(args...);
         return replace(i1, i2, __s);
     }
-    
+#endif
     // standard
-    string & replace(size_type pos1, size_type n1, const string & str);
-    string & replace(size_type pos1, size_type n1, const string & str, size_type pos2, size_type n2);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const string& str);
+    EPUB3_EXPORT string & replace(size_type pos1, size_type n1, const string & str);
+    EPUB3_EXPORT string & replace(size_type pos1, size_type n1, const string & str, size_type pos2, size_type n2);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const string& str);
     
     // char32_t
-    string & replace(size_type pos, size_type n1, const_u4pointer s, size_type n2);
-    string & replace(size_type pos, size_type n1, const_u4pointer s);
-    string & replace(size_type pos, size_type n1, size_type n2, value_type c);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const_u4pointer s, size_type n);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const_u4pointer s);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, value_type c);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, const_u4pointer s, size_type n2);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, const_u4pointer s);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, size_type n2, value_type c);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const_u4pointer s, size_type n);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const_u4pointer s);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, value_type c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::initializer_list<value_type> __il) {
         return replace(i1, i2, __il.begin(), __il.end());
     }
+#endif
     
     // char16_t
-    string & replace(size_type pos, size_type n1, const char16_t* s, size_type n2);
-    string & replace(size_type pos, size_type n1, const char16_t* s);
-    string & replace(size_type pos, size_type n1, size_type n2, char16_t c);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char16_t* s, size_type n);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char16_t* s);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, char16_t c);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, const char16_t* s, size_type n2);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, const char16_t* s);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, size_type n2, char16_t c);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char16_t* s, size_type n);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char16_t* s);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, char16_t c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::initializer_list<char16_t> __il) {
         return replace(i1, i2, __il.begin(), __il.end());
     }
+#endif
     
     // std::string
-    string & replace(size_type pos1, size_type n1, const __base & str);
-    string & replace(size_type pos1, size_type n1, const __base & str, size_type pos2, size_type n2);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const __base & str);
+    EPUB3_EXPORT string & replace(size_type pos1, size_type n1, const __base & str);
+    EPUB3_EXPORT string & replace(size_type pos1, size_type n1, const __base & str, size_type pos2, size_type n2);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const __base & str);
     
     // char
-    string & replace(size_type pos, size_type n1, const char * s, size_type n2);
-    string & replace(size_type pos, size_type n1, const char * s);
-    string & replace(size_type pos, size_type n1, size_type n2, char c);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char * s, size_type n);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char * s);
-    string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, char c);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, const char * s, size_type n2);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, const char * s);
+    EPUB3_EXPORT string & replace(size_type pos, size_type n1, size_type n2, char c);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char * s, size_type n);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const char * s);
+    EPUB3_EXPORT string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, char c);
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::initializer_list<char> __il) {
         return replace(i1, i2, __il.begin(), __il.end());
     }
+#endif
     
     // xmlChar
     string & replace(size_type pos, size_type n1, const xmlChar * s, size_type n2)
@@ -430,98 +493,100 @@ public:
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, const xmlChar * s)
         { return replace(i1, i2, reinterpret_cast<const char*>(s)); }
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, size_type n, xmlChar c)
-        { return replace(i1, i2, n, static_cast<char>(c)); }
+            { return replace(i1, i2, n, static_cast<char>(c)); }
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string & replace(cxx11_const_iterator i1, cxx11_const_iterator i2, std::initializer_list<xmlChar> __il) {
         return replace(i1, i2, __il.begin(), __il.end());
     }
+#endif
     
 #if 0
 #pragma mark - Outputs
 #endif
     
-    size_type copy(u4pointer s, size_type n, size_type pos=0) const;
-    size_type copy(char16_t* s, size_type n, size_type pos=0) const;
+    EPUB3_EXPORT size_type copy(u4pointer s, size_type n, size_type pos=0) const;
+    EPUB3_EXPORT size_type copy(char16_t* s, size_type n, size_type pos=0) const;
     size_type copyC(char * s, size_type n, size_type pos=0) const { return _base.copy(s, n, pos); }
     size_type copyXML(xmlChar * s, size_type n, size_type pos=0) const { return _base.copy(reinterpret_cast<char*>(s), n, pos); }
     
-    string substr(size_type pos=0, size_type n=npos) const;
+    EPUB3_EXPORT string substr(size_type pos=0, size_type n=npos) const;
     
     void swap(string & str)
-#ifdef _LIBCPP_STRING
-    noexcept(!__base::__alloc_traits::propagate_on_container_swap::value || std::__is_nothrow_swappable<__base::__alloc_traits>::value)
+#ifdef _LIBCPP_VERSION      // specific to LLVM libc++ runtime
+    _NOEXCEPT(!__base::__alloc_traits::propagate_on_container_swap::value || std::__is_nothrow_swappable<__base::__alloc_traits>::value)
 #endif
     {
         _base.swap(str._base);
     }
     
-    std::u32string utf32string() const;
+    EPUB3_EXPORT std::u32string utf32string() const;
     inline const_u4pointer utf32() const { return utf32string().c_str(); }
     
-    std::u16string utf16string() const;
+    EPUB3_EXPORT std::u16string utf16string() const;
     inline const char16_t* utf16() const { return utf16string().c_str(); }
     
-    __base::const_pointer c_str() const noexcept { return _base.c_str(); }
-    __base::const_pointer data() const noexcept { return _base.data(); }
+    __base::const_pointer c_str() const _NOEXCEPT { return _base.c_str(); }
+    __base::const_pointer data() const _NOEXCEPT { return _base.data(); }
     
     const __base& stl_str() const { return _base; }
     
     const xmlChar * utf8() const { return reinterpret_cast<const xmlChar *>(c_str()); }
     const xmlChar * xml_str() const { return reinterpret_cast<const xmlChar*>(c_str()); }
     
-    __base::allocator_type get_allocator() const noexcept { return _base.get_allocator(); }
+    __base::allocator_type get_allocator() const _NOEXCEPT { return _base.get_allocator(); }
     
-    string& tolower(const std::locale& loc = std::locale(""));
-    const string tolower(const std::locale& loc = std::locale("")) const;
+    EPUB3_EXPORT string& tolower(const std::locale& loc = std::locale(""));
+    EPUB3_EXPORT const string tolower(const std::locale& loc = std::locale("")) const;
     
-    string& toupper(const std::locale& loc = std::locale(""));
-    const string toupper(const std::locale& loc = std::locale("")) const;
+    EPUB3_EXPORT string& toupper(const std::locale& loc = std::locale(""));
+    EPUB3_EXPORT const string toupper(const std::locale& loc = std::locale("")) const;
     
 #if 0
 #pragma mark - Searching
 #endif
     
-    size_type find(const string& str, size_type pos=0) const noexcept {
+    size_type find(const string& str, size_type pos=0) const _NOEXCEPT {
         return to_utf32_size(_base.find(str._base, to_byte_size(pos)));
     }
-    size_type find(const __base& str, size_type pos=0) const noexcept {
+    size_type find(const __base& str, size_type pos=0) const _NOEXCEPT {
         return to_utf32_size(_base.find(str, to_byte_size(pos)));
     }
     template <typename _CharT>
-    size_type find(const _CharT * s, size_type pos, size_type n) const noexcept {
+    size_type find(const _CharT * s, size_type pos, size_type n) const _NOEXCEPT {
         return to_utf32_size(_base.find(_Convert<_CharT>::toUTF8(s, 0, n), to_byte_size(pos)));
     }
     template <typename _CharT>
-    size_type find(const _CharT * s, size_type pos = 0) const noexcept {
+    size_type find(const _CharT * s, size_type pos = 0) const _NOEXCEPT {
         return to_utf32_size(_base.find(_Convert<_CharT>::toUTF8(s), to_byte_size(pos)));
     }
     template <typename _CharT>
-    size_type find(_CharT c, size_type pos = 0) const noexcept {
+    size_type find(_CharT c, size_type pos = 0) const _NOEXCEPT {
         return to_utf32_size(_base.find(_Convert<_CharT>::toUTF8(c), to_byte_size(pos)));
     }
     
-    size_type rfind(const string& str, size_type pos=npos) const noexcept {
+    size_type rfind(const string& str, size_type pos=npos) const _NOEXCEPT {
         return to_utf32_size(_base.rfind(str._base, to_byte_size(pos)));
     }
-    size_type rfind(const __base& str, size_type pos=npos) const noexcept {
+    size_type rfind(const __base& str, size_type pos=npos) const _NOEXCEPT {
         return to_utf32_size(_base.rfind(str, to_byte_size(pos)));
     }
     template <typename _CharT>
-    size_type rfind(const _CharT * s, size_type pos, size_type n) const noexcept {
+    size_type rfind(const _CharT * s, size_type pos, size_type n) const _NOEXCEPT {
         return to_utf32_size(_base.rfind(_Convert<_CharT>::toUTF8(s, 0, n), to_byte_size(pos)));
     }
     template <typename _CharT>
-    size_type rfind(const _CharT * s, size_type pos = npos) const noexcept {
+    size_type rfind(const _CharT * s, size_type pos = npos) const _NOEXCEPT {
         return to_utf32_size(_base.rfind(_Convert<_CharT>::toUTF8(s), to_byte_size(pos)));
     }
     template <typename _CharT>
-    size_type rfind(_CharT c, size_type pos = npos) const noexcept {
+    size_type rfind(_CharT c, size_type pos = npos) const _NOEXCEPT {
         return to_utf32_size(_base.rfind(_Convert<_CharT>::toUTF8(c), to_byte_size(pos)));
     }
     
     template <class _ForwardIterator1, class _ForwardIterator2, class _BinaryPredicate>
     _ForwardIterator1
     find_first_of(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
-                  _ForwardIterator2 __first2, _ForwardIterator2 __last2, _BinaryPredicate __pred) const noexcept
+                  _ForwardIterator2 __first2, _ForwardIterator2 __last2, _BinaryPredicate __pred) const _NOEXCEPT
     {
         for (; __first1 != __last1; ++__first1)
             for (_ForwardIterator2 __j = __first2; __j != __last2; ++__j)
@@ -535,12 +600,12 @@ public:
     {
         typedef typename _Traits::char_type char_type;
         _LIBCPP_INLINE_VISIBILITY
-        bool operator()(const char_type& __x, const char_type& __y) noexcept {
+        bool operator()(const char_type& __x, const char_type& __y) _NOEXCEPT {
             return _Traits::eq(__x, __y);
         }
     };
     
-    size_type find_first_of(const string& str, size_type pos=0) const noexcept {
+    size_type find_first_of(const string& str, size_type pos=0) const _NOEXCEPT {
         auto __r = find_first_of(const_iterator(_base, pos), end(), str.begin(), str.end(), __traits_eq<traits_type>());
         if ( __r == end() )
             return npos;
@@ -563,14 +628,14 @@ public:
         return find_first_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
-    size_type find_first_of(_CharT c, size_type pos = 0) const noexcept {
+    size_type find_first_of(_CharT c, size_type pos = 0) const _NOEXCEPT {
         auto __r = std::find_first_of(begin()+pos, end(), &c, ((&c) + sizeof(_CharT)));
         if ( __r == end() )
             return npos;
         return utf8::distance(begin().base(), __r.base());
     }
     
-    size_type find_last_of(const string& str, size_type pos=npos) const noexcept {
+    size_type find_last_of(const string& str, size_type pos=npos) const _NOEXCEPT {
         size_type __sz = size();
         if ( pos < __sz )
             ++pos;
@@ -610,11 +675,11 @@ public:
         return find_last_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
-    size_type find_last_of(_CharT c, size_type pos = npos) const noexcept {
+    size_type find_last_of(_CharT c, size_type pos = npos) const _NOEXCEPT {
         return rfind(c, pos);
     }
     
-    size_type find_first_not_of(const string& str, size_type pos=0) const noexcept {
+    size_type find_first_not_of(const string& str, size_type pos=0) const _NOEXCEPT {
         size_type __sz = size();
         if ( pos < __sz )
         {
@@ -648,11 +713,11 @@ public:
         return find_first_not_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
-    size_type find_first_not_of(_CharT c, size_type pos = 0) const noexcept {
+    size_type find_first_not_of(_CharT c, size_type pos = 0) const _NOEXCEPT {
         return find_first_not_of(_Convert<_CharT>::toUTF8(c), pos);
     }
     
-    size_type find_last_not_of(const string& str, size_type pos=npos) const noexcept {
+    size_type find_last_not_of(const string& str, size_type pos=npos) const _NOEXCEPT {
         size_type __sz = size();
         if ( pos < __sz )
             ++pos;
@@ -685,7 +750,7 @@ public:
         return find_last_not_of(_Convert<_CharT>::toUTF8(s), pos);
     }
     template <typename _CharT>
-    size_type find_last_not_of(_CharT c, size_type pos = npos) const noexcept {
+    size_type find_last_not_of(_CharT c, size_type pos = npos) const _NOEXCEPT {
         return find_last_not_of(_Convert<_CharT>::toUTF8(c), pos);
     }
     
@@ -693,7 +758,7 @@ public:
 #pragma mark - Comparisons
 #endif
     
-    int compare(const string& str) const noexcept {
+    int compare(const string& str) const _NOEXCEPT {
         return _base.compare(str._base);
     }
     int compare(size_type pos1, size_type n1, const string& str) const {
@@ -707,7 +772,7 @@ public:
     
     // there exist specializations for char32_t
     template <typename _CharT>
-    int compare(const _CharT * s) const noexcept {
+    int compare(const _CharT * s) const _NOEXCEPT {
         auto str(_Convert<_CharT>::toUTF8(s));
         return _base.compare(str);
     }
@@ -720,7 +785,7 @@ public:
         return _base.compare(to_byte_size(pos1), to_byte_size(pos1, pos1+n1), _Convert<_CharT>::toUTF8(s, 0, n2));
     }
     template <typename _CharT>
-    int compare(const std::basic_string<_CharT> & s) const noexcept {
+    int compare(const std::basic_string<_CharT> & s) const _NOEXCEPT {
         return _base.compare(_Convert<_CharT>::toUTF8(s));
     }
     template <typename _CharT>
@@ -733,25 +798,25 @@ public:
         return _base.compare(to_byte_size(pos1), to_byte_size(pos1, pos1+n1), _Convert<_CharT>::toUTF8(str, pos2, n2));
     }
     
-    bool operator == (const string & str) const noexcept { return compare(str) == 0; }
-    bool operator != (const string & str) const noexcept { return compare(str) != 0; }
-    bool operator > (const string & str) const noexcept { return compare(str) > 0; }
-    bool operator >= (const string & str) const noexcept { return compare(str) >= 0; }
-    bool operator < (const string & str) const noexcept { return compare(str) < 0; }
-    bool operator <= (const string & str) const noexcept { return compare(str) <= 0; }
+    bool operator == (const string & str) const _NOEXCEPT { return compare(str) == 0; }
+    bool operator != (const string & str) const _NOEXCEPT { return compare(str) != 0; }
+    bool operator > (const string & str) const _NOEXCEPT { return compare(str) > 0; }
+    bool operator >= (const string & str) const _NOEXCEPT { return compare(str) >= 0; }
+    bool operator < (const string & str) const _NOEXCEPT { return compare(str) < 0; }
+    bool operator <= (const string & str) const _NOEXCEPT { return compare(str) <= 0; }
     
     template <typename _CharT>
-    bool operator == (const _CharT * str) const noexcept { return compare<_CharT>(str) == 0; }
+    bool operator == (const _CharT * str) const _NOEXCEPT { return compare<_CharT>(str) == 0; }
     template <typename _CharT>
-    bool operator != (const _CharT * str) const noexcept { return compare<_CharT>(str) != 0; }
+    bool operator != (const _CharT * str) const _NOEXCEPT { return compare<_CharT>(str) != 0; }
     template <typename _CharT>
-    bool operator > (const _CharT * str) const noexcept { return compare<_CharT>(str) > 0; }
+    bool operator > (const _CharT * str) const _NOEXCEPT { return compare<_CharT>(str) > 0; }
     template <typename _CharT>
-    bool operator >= (const _CharT * str) const noexcept { return compare<_CharT>(str) >= 0; }
+    bool operator >= (const _CharT * str) const _NOEXCEPT { return compare<_CharT>(str) >= 0; }
     template <typename _CharT>
-    bool operator < (const _CharT * str) const noexcept { return compare<_CharT>(str) < 0; }
+    bool operator < (const _CharT * str) const _NOEXCEPT { return compare<_CharT>(str) < 0; }
     template <typename _CharT>
-    bool operator <= (const _CharT * str) const noexcept { return compare<_CharT>(str) <= 0; }
+    bool operator <= (const _CharT * str) const _NOEXCEPT { return compare<_CharT>(str) <= 0; }
     
 #ifdef _LIBCPP_VERSION
     bool __invariants() const { return _base.__invariants(); }
@@ -768,14 +833,14 @@ protected:
     void throw_unless_insertable(const char * s, size_type b, size_type e) const;
     void throw_unless_insertable(const xmlChar * s, size_type b, size_type e) const;
     
-    __base::size_type to_byte_size(size_type __n) const noexcept;
-    __base::size_type to_byte_size(size_type __b, size_type __e) const noexcept;
-    size_type to_utf32_size(__base::size_type __n) const noexcept;
-    size_type to_utf32_size(__base::size_type __b, __base::size_type __e) const noexcept;
-    static size_type utf32_distance(__base::const_iterator first, __base::const_iterator last) noexcept;
+    __base::size_type to_byte_size(size_type __n) const _NOEXCEPT;
+    __base::size_type to_byte_size(size_type __b, size_type __e) const _NOEXCEPT;
+    size_type to_utf32_size(__base::size_type __n) const _NOEXCEPT;
+    size_type to_utf32_size(__base::size_type __b, __base::size_type __e) const _NOEXCEPT;
+    static size_type utf32_distance(__base::const_iterator first, __base::const_iterator last) _NOEXCEPT;
     
-    static inline constexpr __base::const_pointer _bchar(const xmlChar * c) noexcept { return (__base::const_pointer)(c); }
-    static inline constexpr __base::pointer _bchar(xmlChar * c) noexcept { return (__base::pointer)(c); }
+    static inline CONSTEXPR __base::const_pointer _bchar(const xmlChar * c) _NOEXCEPT { return (__base::const_pointer)(c); }
+    static inline CONSTEXPR __base::pointer _bchar(xmlChar * c) _NOEXCEPT { return (__base::pointer)(c); }
     
 #if UTF_USE_ICU
     // ICU version, since GNU libstdc++ hasn't implemented wstring_convert or codecvt_utf8 yet
@@ -906,7 +971,7 @@ protected:
             return __out;
         }
     };
-#else
+#elif !EPUB_PLATFORM(WIN)
     // non-ICU implementation for smaller Android builds
     template <class _CharT>
     class _Convert {
@@ -921,8 +986,7 @@ protected:
         static wide_string fromUTF8(const char* utf8, size_type pos=0, size_type n=npos);
         static wide_string fromUTF8(const byte_string& s, size_type pos=0, size_type n=npos);
     };
-#if 0
-
+#else
     // Pure C++11 implementation, works on libc++ and VC++2010
     template <class _CharT>
     class _Convert {
@@ -961,7 +1025,6 @@ protected:
         }
     };
 #endif
-#endif
 };
 
 #if 0
@@ -973,23 +1036,23 @@ class string::_Convert<char> {
 public:
     typedef std::string byte_string;
     typedef std::string wide_string;
-    static byte_string toUTF8(const char *p, size_type pos=0, size_type n=npos) {
+    static inline byte_string toUTF8(const char *p, size_type pos=0, size_type n=npos) {
         if ( n == std::string::npos )
             return std::string(p+pos);
         return std::string(p+pos, n);
     }
-    static byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
+    static inline byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
         return s.substr(pos, n);
     }
-    static byte_string toUTF8(char c, size_type n=1) {
+    static inline byte_string toUTF8(char c, size_type n=1) {
         return std::string(n, c);
     }
-    static wide_string fromUTF8(const char * utf8, size_type pos=0, size_type n=npos) {
+    static inline wide_string fromUTF8(const char * utf8, size_type pos=0, size_type n=npos) {
         if ( n == std::string::npos )
             return std::string(utf8+pos);
         return std::string(utf8+pos, n);
     }
-    static wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
+    static inline wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
         return s.substr(pos, n);
     }
 };
@@ -999,28 +1062,28 @@ class string::_Convert<xmlChar> {
 public:
     typedef std::string byte_string;
     typedef std::string wide_string;
-    static byte_string toUTF8(const xmlChar *p, size_type pos=0, size_type n=npos) {
+    static inline byte_string toUTF8(const xmlChar *p, size_type pos=0, size_type n=npos) {
         if ( n == std::string::npos )
             return std::string(reinterpret_cast<const char*>(p)+pos);
         return std::string(reinterpret_cast<const char*>(p)+pos, n);
     }
-    static byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
+    static inline byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
         return s.substr(pos, n);
     }
-    static byte_string toUTF8(xmlChar c, size_type n=1) {
+    static inline byte_string toUTF8(xmlChar c, size_type n=1) {
         return std::string(n, static_cast<char>(c));
     }
-    static wide_string fromUTF8(const xmlChar * utf8, size_type pos=0, size_type n=npos) {
+    static inline wide_string fromUTF8(const xmlChar * utf8, size_type pos=0, size_type n=npos) {
         if ( n == std::string::npos )
             return std::string(reinterpret_cast<const char*>(utf8)+pos);
         return std::string(reinterpret_cast<const char*>(utf8)+pos, n);
     }
-    static wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
+    static inline wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
         return s.substr(pos, n);
     }
 };
 
-#if (!defined(UTF_USE_ICU) || UTF_USE_ICU == 0)
+#if (!defined(UTF_USE_ICU) || UTF_USE_ICU == 0) && !EPUB_PLATFORM(WIN)
 // ePub::string::_Convert is implemented for Unicode via template specializations here
 template <>
 class string::_Convert<char16_t> {
@@ -1028,33 +1091,33 @@ public:
     typedef std::string                 byte_string;
     typedef std::basic_string<char16_t> wide_string;
     
-    static byte_string toUTF8(const char16_t *p, size_type pos=0, size_type n=npos) {
+    static inline byte_string toUTF8(const char16_t *p, size_type pos=0, size_type n=npos) {
         byte_string __r;
         size_type len = (n == npos ? std::char_traits<char16_t>::length(p) : n);
         utf8::utf16to8(p+pos, p+len, std::back_inserter(__r));
         return __r;
     }
-    static byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
+    static inline byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
         byte_string __r;
         utf8::utf16to8(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
         return __r;
     }
-    static byte_string toUTF8(char16_t c, size_type n=1) {
+    static inline byte_string toUTF8(char16_t c, size_type n=1) {
         byte_string __t;
         utf8::utf16to8(&c, (&c)+1, std::back_inserter(__t));
         byte_string __r;
-        for (int __i = 0; __i < n; __i++) {
+        for (size_type __i = 0; __i < n; __i++) {
             __r.append(__t);
         }
         return __r;
     }
-    static wide_string fromUTF8(const char* p, size_type pos=0, size_type n=npos) {
+    static inline wide_string fromUTF8(const char* p, size_type pos=0, size_type n=npos) {
         wide_string __r;
         size_type len = (n == npos ? std::char_traits<char>::length(p) : n);
         utf8::utf8to16(p+pos, p+len, std::back_inserter(__r));
         return __r;
     }
-    static wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
+    static inline wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
         wide_string __r;
         utf8::utf8to16(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
         return __r;
@@ -1067,35 +1130,107 @@ public:
     typedef std::string                 byte_string;
     typedef std::basic_string<char32_t> wide_string;
     
-    static byte_string toUTF8(const char32_t *p, size_type pos=0, size_type n=npos) {
+    static inline byte_string toUTF8(const char32_t *p, size_type pos=0, size_type n=npos) {
         byte_string __r;
         size_type len = (n == npos ? std::char_traits<char32_t>::length(p) : n);
         utf8::utf32to8(p+pos, p+len, std::back_inserter(__r));
         return __r;
     }
-    static byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
+    static inline byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
         byte_string __r;
         utf8::utf32to8(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
         return __r;
     }
-    static byte_string toUTF8(char32_t c, size_type n=1) {
+    static inline byte_string toUTF8(char32_t c, size_type n=1) {
         byte_string __t;
         utf8::utf32to8(&c, (&c)+1, std::back_inserter(__t));
         byte_string __r;
-        for (int __i = 0; __i < n; __i++) {
+        for (size_type __i = 0; __i < n; __i++) {
             __r.append(__t);
         }
         return __r;
     }
-    static wide_string fromUTF8(const char* p, size_type pos=0, size_type n=npos) {
+    static inline wide_string fromUTF8(const char* p, size_type pos=0, size_type n=npos) {
         wide_string __r;
         size_type len = (n == npos ? std::char_traits<char>::length(p) : n);
         utf8::utf8to32(p+pos, p+len, std::back_inserter(__r));
         return __r;
     }
-    static wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
+    static inline wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
         wide_string __r;
         utf8::utf8to32(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
+        return __r;
+    }
+};
+
+
+template <size_t wchar_size>
+struct _LIBCPP_HIDDEN _WCharConvert
+{
+};
+
+template <>
+struct _WCharConvert<2>
+{
+    template <typename wchar_iterator, typename octet_iterator>
+    static FORCE_INLINE octet_iterator to8(wchar_iterator start, wchar_iterator end, octet_iterator result) {
+        return utf8::utf16to8(start, end, result);
+    }
+    template <typename wchar_iterator, typename octet_iterator>
+    static FORCE_INLINE wchar_iterator from8(octet_iterator start, octet_iterator end, wchar_iterator result) {
+        return utf8::utf8to16(start, end, result);
+    }
+};
+template <>
+struct _WCharConvert<4>
+{
+    template <typename wchar_iterator, typename octet_iterator>
+    static FORCE_INLINE octet_iterator to8(wchar_iterator start, wchar_iterator end, octet_iterator result) {
+        return utf8::utf32to8(start, end, result);
+    }
+    template <typename wchar_iterator, typename octet_iterator>
+    static FORCE_INLINE wchar_iterator from8(octet_iterator start, octet_iterator end, wchar_iterator result) {
+        return utf8::utf8to32(start, end, result);
+    }
+};
+
+template <>
+class string::_Convert<wchar_t> {
+public:
+    typedef std::string     byte_string;
+    typedef std::wstring    wide_string;
+    
+public:
+    
+    static inline byte_string toUTF8(const wchar_t *p, size_type pos=0, size_type n=npos) {
+        byte_string __r;
+        size_type len = (n == npos ? std::char_traits<wchar_t>::length(p) : n);
+        _WCharConvert<sizeof(wchar_t)>::to8(p+pos, p+len, std::back_inserter(__r));
+        return __r;
+    }
+    static inline byte_string toUTF8(const wide_string & s, size_type pos=0, size_type n=npos) {
+        byte_string __r;
+        _WCharConvert<sizeof(wchar_t)>::to8(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
+        return __r;
+    }
+    static inline byte_string toUTF8(char32_t c, size_type n=1) {
+        byte_string __t;
+        _WCharConvert<sizeof(wchar_t)>::to8(&c, (&c)+1, std::back_inserter(__t));
+        byte_string __r;
+        for (size_type __i = 0; __i < n; __i++) {
+            __r.append(__t);
+        }
+        return __r;
+    }
+    static inline wide_string fromUTF8(const char* p, size_type pos=0, size_type n=npos) {
+        wide_string __r;
+        size_type len = (n == npos ? std::char_traits<char>::length(p) : n);
+        _WCharConvert<sizeof(wchar_t)>::from8(p+pos, p+len, std::back_inserter(__r));
+        return __r;
+    }
+    static inline wide_string fromUTF8(const byte_string & s, size_type pos=0, size_type n=npos) {
+        wide_string __r;
+        _WCharConvert<sizeof(wchar_t)>::from8(s.begin() + pos, (n == npos ? s.end() : s.begin() + n), std::back_inserter(__r));
         return __r;
     }
 };
@@ -1105,12 +1240,14 @@ public:
 #pragma mark - Helpers
 #endif
 
+#if EPUB_COMPILER_SUPPORTS(CXX_USER_LITERALS)
 // C++11 lets us define new literal types, so lets have "something"_xc be an xmlChar *, eh?
 // Sadly, we can't define prefix forms. Boo...
-constexpr inline const xmlChar * operator "" _xc(const char * __s, size_t __n) noexcept {
+CONSTEXPR inline const xmlChar * operator "" _xc(const char * __s, size_t __n) _NOEXCEPT {
     return (const xmlChar *)__s;
 }
-static inline constexpr const xmlChar * _xml(const char * __s) noexcept {
+#endif
+static inline CONSTEXPR const xmlChar * _xml(const char * __s) _NOEXCEPT {
     return (const xmlChar*)(__s);
 }
 
@@ -1126,7 +1263,7 @@ static inline string xmlString(const std::string & str) {
 static inline std::string asciiString(const xmlChar * s) {
     return std::string(reinterpret_cast<const char *>(s));
 }
-static inline constexpr const char * ascii(const xmlChar * __x) {
+static inline CONSTEXPR const char * ascii(const xmlChar * __x) {
     return (const char *)__x;
 }
 
@@ -1190,6 +1327,11 @@ inline std::basic_ostream<_CharT, _Traits>&
 operator<<(std::basic_ostream<_CharT, _Traits>& __os, const string& __str) {
     return __os << __str.stl_str();
 }
+
+// template specializations -- MSVC wants these in the header
+#if EPUB_COMPILER(MSVC)
+# include "utfstringspec.inl"
+#endif
 
 EPUB3_END_NAMESPACE
 

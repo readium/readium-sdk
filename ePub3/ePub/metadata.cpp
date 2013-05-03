@@ -49,6 +49,7 @@ static string __lang_from_locale(const std::locale& loc)
     return string(lname);
 }
 
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
 // C++11 FTW
 std::map<string, Metadata::DCType> Metadata::NameToIDMap = {
     {"meta", Metadata::DCType::Custom},
@@ -86,6 +87,48 @@ static std::map<Metadata::DCType, string> IDToNameMap = {
     {Metadata::DCType::Subject, "subject"},
     {Metadata::DCType::Type, "type"}
 };
+#else
+typedef std::pair<string, Metadata::DCType> __to_code_pair;
+typedef std::pair<Metadata::DCType, string> __to_str_pair;
+static __to_code_pair __to_code_pairs[16] = {
+    __to_code_pair("meta", Metadata::DCType::Custom),
+    __to_code_pair("identifier", Metadata::DCType::Identifier),
+    __to_code_pair("title", Metadata::DCType::Title),
+    __to_code_pair("language", Metadata::DCType::Language),
+    __to_code_pair("contributor", Metadata::DCType::Contributor),
+    __to_code_pair("coverage", Metadata::DCType::Coverage),
+    __to_code_pair("creator", Metadata::DCType::Creator),
+    __to_code_pair("date", Metadata::DCType::Date),
+    __to_code_pair("description", Metadata::DCType::Description),
+    __to_code_pair("format", Metadata::DCType::Format),
+    __to_code_pair("publisher", Metadata::DCType::Publisher),
+    __to_code_pair("relation", Metadata::DCType::Relation),
+    __to_code_pair("rights", Metadata::DCType::Rights),
+    __to_code_pair("source", Metadata::DCType::Source),
+    __to_code_pair("subject", Metadata::DCType::Subject),
+    __to_code_pair("type", Metadata::DCType::Type)
+};
+std::map<string, Metadata::DCType> Metadata::NameToIDMap(&__to_code_pairs[0], &__to_code_pairs[16]);
+
+static __to_str_pair __to_str_pairs[16] = {
+    __to_str_pair(Metadata::DCType::Identifier, "identifier"),
+    __to_str_pair(Metadata::DCType::Title, "title"),
+    __to_str_pair(Metadata::DCType::Language, "language"),
+    __to_str_pair(Metadata::DCType::Contributor, "contributor"),
+    __to_str_pair(Metadata::DCType::Coverage, "coverage"),
+    __to_str_pair(Metadata::DCType::Creator, "creator"),
+    __to_str_pair(Metadata::DCType::Date, "date"),
+    __to_str_pair(Metadata::DCType::Description, "description"),
+    __to_str_pair(Metadata::DCType::Format, "format"),
+    __to_str_pair(Metadata::DCType::Publisher, "publisher"),
+    __to_str_pair(Metadata::DCType::Relation, "relation"),
+    __to_str_pair(Metadata::DCType::Rights, "rights"),
+    __to_str_pair(Metadata::DCType::Source, "source"),
+    __to_str_pair(Metadata::DCType::Subject, "subject"),
+    __to_str_pair(Metadata::DCType::Type, "type")
+};
+static std::map<Metadata::DCType, string> IDToNameMap(&__to_str_pairs[0], &__to_str_pairs[16]);
+#endif
 
 Metadata::Metadata(xmlNodePtr node, const Package* owner) : _node(node), _type(DCType::Invalid), _extensions(), _property()
 {
@@ -213,7 +256,8 @@ const IRI Metadata::IRIForDCType(DCType type)
 }
 const Metadata::ValueMap Metadata::DebugValues() const
 {
-    ValueMap values({{Property().IRIString(), Value()}});
+    ValueMap values;
+    values.emplace_back(Property().IRIString(), Value());
     for ( const Extension* extension : _extensions )
     {
         values.emplace_back(_Str("  ", extension->Property().IRIString()), extension->Value());

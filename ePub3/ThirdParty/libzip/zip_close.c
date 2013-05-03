@@ -36,12 +36,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _MSC_VER
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #include "zipint.h"
+
+#if defined(_MSC_VER)
+# define strdup _strdup
+# define fseeko fseek
+# define ftello ftell
+# define fileno _fileno
+# define fdopen _fdopen
+# define strcasecmp _stricmp
+typedef unsigned short mode_t;
+# define mkstemp _zip_mkstemp
+# define close(x) _close(x)
+extern int _zip_mkstemp(char *path);
+#endif
 
 static int add_data(struct zip *, struct zip_source *, struct zip_dirent *,
 		    FILE *);
@@ -116,7 +133,7 @@ zip_close(struct zip *za)
     
     /* archive comment is special for torrentzip */
     if (zip_get_archive_flag(za, ZIP_AFL_TORRENT, 0)) {
-        cd->comment = _zip_memdup(TORRENT_SIG "XXXXXXXX",
+        cd->comment = (char*)_zip_memdup((void*)(TORRENT_SIG "XXXXXXXX"),
                                   TORRENT_SIG_LEN + TORRENT_CRC_LEN,
                                   &za->error);
         if (cd->comment == NULL) {
@@ -310,10 +327,11 @@ zip_close(struct zip *za)
         }
         return -1;
     }
+#ifndef _MSC_VER
     mask = umask(0);
     umask(mask);
     chmod(za->zn, 0666&~mask);
-    
+#endif
     _zip_free(za);
     free(temp);
     
@@ -595,14 +613,14 @@ static int
 _zip_cdir_set_comment(struct zip_cdir *dest, struct zip *src)
 {
     if (src->ch_comment_len != -1) {
-	dest->comment = _zip_memdup(src->ch_comment,
+	dest->comment = (char*)_zip_memdup(src->ch_comment,
 				    src->ch_comment_len, &src->error);
 	if (dest->comment == NULL)
 	    return -1;
 	dest->comment_len = src->ch_comment_len;
     } else {
 	if (src->cdir && src->cdir->comment) {
-	    dest->comment = _zip_memdup(src->cdir->comment,
+	    dest->comment = (char*)_zip_memdup(src->cdir->comment,
 					src->cdir->comment_len, &src->error);
 	    if (dest->comment == NULL)
 		return -1;

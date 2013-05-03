@@ -27,6 +27,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
 const ItemProperties::PropertyMap ItemProperties::PropertyLookupTable = {
     { "cover-image", ItemProperties::CoverImage },
     { "mathml", ItemProperties::ContainsMathML },
@@ -36,6 +37,18 @@ const ItemProperties::PropertyMap ItemProperties::PropertyLookupTable = {
     { "svg", ItemProperties::ContainsSVG },
     { "switch", ItemProperties::ContainsSwitch }
 };
+#else
+const std::pair<string,ItemProperties::value_type> __pm_pairs[7] = {
+    std::pair<string,ItemProperties::value_type>("cover-image", ItemProperties::CoverImage),
+    std::pair<string,ItemProperties::value_type>("mathml", ItemProperties::ContainsMathML),
+    std::pair<string,ItemProperties::value_type>("nav", ItemProperties::Navigation),
+    std::pair<string,ItemProperties::value_type>("remote-resources", ItemProperties::HasRemoteResources),
+    std::pair<string,ItemProperties::value_type>("scripted", ItemProperties::HasScriptedContent),
+    std::pair<string,ItemProperties::value_type>("svg", ItemProperties::ContainsSVG),
+    std::pair<string,ItemProperties::value_type>("switch", ItemProperties::ContainsSwitch)
+};
+const ItemProperties::PropertyMap ItemProperties::PropertyLookupTable(&__pm_pairs[0], &__pm_pairs[7]);
+#endif
 
 ItemProperties::ItemProperties(const string& attrStr) : _p(None)
 {
@@ -63,7 +76,7 @@ ItemProperties& ItemProperties::operator=(const string& attrStr)
     string lowAttrs = attrStr.tolower();
     
     // NB: this is a C++11 raw-string literal. R"" means 'raw string', and the X(...)X bit are delimiters.
-    REGEX_NS::regex re(R"X(\w+)X", REGEX_NS::regex::icase);
+    REGEX_NS::regex re("\\w+", REGEX_NS::regex::icase);
     auto pos = REGEX_NS::sregex_iterator(lowAttrs.stl_str().begin(), lowAttrs.stl_str().end(), re);
     auto end = REGEX_NS::sregex_iterator();
     
@@ -125,7 +138,7 @@ string ItemProperties::str() const
     
     std::stringstream builder;
     builder << vec[0];
-    for ( int i = 0; i < vec.size(); i++ )
+    for ( decltype(vec.size()) i = 0; i < vec.size(); i++ )
     {
         builder << ", " << vec[i];
     }
@@ -219,7 +232,7 @@ xmlDocPtr ManifestItem::ReferencedDocument() const
     
     return result;
 }
-Auto<ByteStream> ManifestItem::Reader() const
+unique_ptr<ByteStream> ManifestItem::Reader() const
 {
     return _owner->ReadStreamForRelativePath(BaseHref());
 }

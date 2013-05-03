@@ -6,12 +6,15 @@
 
 #include <string>
 #include <cstring>
-#include <sstream>
 #if _WIN32 || _WIN64
+# include <strstream>
 # include <tchar.h>
+typedef std::ostrstream STR_STREAM;
 #else
+#include <sstream>
 typedef char TCHAR;
 typedef FILE* HANDLE;
+typedef std::ostringstream STR_STREAM;
 #endif
 
 #include "basictypes.h"
@@ -219,7 +222,7 @@ struct CheckOpString {
 // be out of line, while the "Impl" code should be inline.
 template<class t1, class t2>
 std::string* MakeCheckOpString(const t1& v1, const t2& v2, const char* names) {
-  std::ostringstream ss;
+  STR_STREAM ss;
   ss << names << " (" << v1 << " vs. " << v2 << ")";
   return new std::string(ss.str());
 }
@@ -443,7 +446,7 @@ class LogMessage {
   void Init(const char* file, int line);
 
   LogSeverity severity_;
-  std::ostringstream stream_;
+  STR_STREAM stream_;
   int message_start_;  // offset of the start of the message (past prefix info).
 
   DISALLOW_EVIL_CONSTRUCTORS(LogMessage);

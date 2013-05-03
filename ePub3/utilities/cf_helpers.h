@@ -14,7 +14,7 @@
 EPUB3_BEGIN_NAMESPACE
 
 #if EPUB_USE(CF)
-class cf_clock
+class EPUB3_EXPORT cf_clock
 {
 public:
     typedef std::chrono::duration<CFTimeInterval>   duration;
@@ -33,7 +33,7 @@ struct cf_adopt_ref_t {};
 #if BUILDING_EPUB3
 extern const cf_adopt_ref_t cf_adopt_ref;
 #else
-constexpr cf_adopt_ref_t cf_adopt_ref = cf_adopt_ref_t();
+CONSTEXPR cf_adopt_ref_t cf_adopt_ref = cf_adopt_ref_t();
 #endif
 
 template <class _CF>

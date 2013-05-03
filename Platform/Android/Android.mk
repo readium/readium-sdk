@@ -143,9 +143,9 @@ include $(CLEAR_VARS)
 subdirs := $(addprefix $(LOCAL_PATH)/, )
 
 LOCAL_MODULE := epub3
-LOCAL_CPPFLAGS := -std=gnu++11 -include prefix.h -fpermissive
-LOCAL_CFLAGS := -std=gnu11 -include prefix.h
-LOCAL_CXXFLAGS := -std=gnu++11 -include prefix.h -fpermissive
+LOCAL_CPPFLAGS := -std=gnu++11 -include prefix.h -fpermissive -DBUILDING_EPUB3
+LOCAL_CFLAGS := -std=gnu11 -include prefix.h -DBUILDING_EPUB3
+LOCAL_CXXFLAGS := -std=gnu++11 -include prefix.h -fpermissive -DBUILDING_EPUB3
 LOCAL_CPP_FEATURES += exceptions rtti
 LOCAL_C_INCLUDES += include
 #		$(LOCAL_PATH)/ePub3 \
@@ -269,8 +269,8 @@ LOCAL_SRC_FILES := \
 		ePub3/ePub/media_support_info.cpp \
 		ePub3/utilities/byte_stream.cpp \
 		ePub3/utilities/ring_buffer.cpp \
+		ePub3/utilities/ref_counted.cpp \
 		ePub3/utilities/run_loop_android.cpp \
-		Platform/Android/src/jni_cache_dir.c \
-		Platform/Android/src/backup_atomics.cpp
+		Platform/Android/src/jni_cache_dir.c
 
 include $(BUILD_SHARED_LIBRARY)

@@ -47,25 +47,29 @@ public:
     typedef string          algorithm_type;
     
 public:
-                DigitalSignature()                                  = default;
+                DigitalSignature() : _signedInfo(), _keyInfo(), _object() {}
     /**
      Creates a new DigitalSignature from a `<Signature>` XML element node.
      @param node An XML node, which *must* be a `<Signature>` node as defined in
      XML-DSig.
      @see http://www.w3.org/TR/xmldsig-core1/#sec-Signature
      */
-                DigitalSignature(xmlNodePtr signatureNode);
-    ///
-    /// No copy constructor.
-                DigitalSignature(const DigitalSignature&)           = delete;
+    EPUB3_EXPORT    DigitalSignature(xmlNodePtr signatureNode);
     ///
     /// Move constructor.
-                DigitalSignature(DigitalSignature&& o) : _signedInfo(std::move(o._signedInfo)), _keyInfo(std::move(o._keyInfo)), _object(std::move(o._object)) {}
-    virtual     ~DigitalSignature() {}
-    
+                    DigitalSignature(DigitalSignature&& o) : _signedInfo(std::move(o._signedInfo)), _keyInfo(std::move(o._keyInfo)), _object(std::move(o._object)) {}
+    virtual         ~DigitalSignature() {}
+
+private:
+    ///
+    /// No copy constructor.
+                DigitalSignature(const DigitalSignature&)           _DELETED_;
     ///
     /// No copy assignment operator.
-    DigitalSignature&           operator=(const DigitalSignature&)  = delete;
+                DigitalSignature&           operator=(const DigitalSignature&)  _DELETED_;
+
+public:
+    
     ///
     /// Move assignment operator.
     virtual DigitalSignature&   operator=(DigitalSignature&&);
@@ -84,12 +88,13 @@ public:
     
     ///
     /// Performs validation of the digital signature.
+    EPUB3_EXPORT
     bool                        Validate()                          const;
     
 protected:
-    Auto<class SignedInfo>        _signedInfo;
-    Auto<class KeyInfo>           _keyInfo;
-    Auto<class SignatureObject>   _object;
+    unique_ptr<class SignedInfo>        _signedInfo;
+    unique_ptr<class KeyInfo>           _keyInfo;
+    unique_ptr<class SignatureObject>   _object;
     
 };
 

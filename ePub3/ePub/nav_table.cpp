@@ -26,9 +26,17 @@ EPUB3_BEGIN_NAMESPACE
 
 // upside: nice syntax for checking
 // downside: operator[] always creates a new item
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
 static std::map<string, bool> AllowedRootNodeNames = {
     { "nav", true }
 };
+#else
+typedef std::pair<string, bool> __name_pair_t;
+static __name_pair_t __name_pairs[1] = {
+    __name_pair_t("nav", true)
+};
+static std::map<string, bool> AllowedRootNodeNames(&__name_pairs[0], &__name_pairs[1]);
+#endif
 
 NavigationTable::NavigationTable(xmlNodePtr node, const string& sourceHref)
     : _sourceHref(sourceHref)
@@ -49,8 +57,14 @@ bool NavigationTable::Parse(xmlNodePtr node)
     _type = _getProp(node, "type", ePub3NamespaceURI);
     if ( _type.empty() )
         return false;
-    
+
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(node->doc, {{"epub", ePub3NamespaceURI}}); // goddamn I love C++11 initializer list constructors
+#else
+    XPathWrangler::NamespaceList __ns;
+    __ns["epub"] = ePub3NamespaceURI;
+    XPathWrangler xpath(node->doc, __ns);
+#endif
     xpath.NameDefaultNamespace("html");
     
     // look for optional <h2> title
@@ -80,12 +94,18 @@ bool NavigationTable::Parse(xmlNodePtr node)
 
 void NavigationTable::LoadChildElements(NavigationElement *pElement, xmlNodePtr olNode)
 {
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(olNode->doc, {{"epub", ePub3NamespaceURI}});
+#else
+    XPathWrangler::NamespaceList __ns;
+    __ns["ePub3"] = ePub3NamespaceURI;
+    XPathWrangler xpath(olNode->doc, __ns);
+#endif
     xpath.NameDefaultNamespace("html");
 
     xmlNodeSetPtr liNodes = xpath.Nodes("./html:li", olNode);
 
-    for ( size_t i = 0; i < liNodes->nodeNr; i++ )
+    for ( int i = 0; i < liNodes->nodeNr; i++ )
     {
         NavigationElement* childElement = BuildNavigationPoint(liNodes->nodeTab[i]);
         if(childElement != nullptr)

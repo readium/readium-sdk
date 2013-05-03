@@ -25,7 +25,7 @@
 /* CPU() - the target CPU architecture */
 #define EPUB_CPU(EPUB_FEATURE) (defined EPUB_CPU_##EPUB_FEATURE  && EPUB_CPU_##EPUB_FEATURE)
 /* HAVE() - specific system features (headers, functions or similar) that are present or not */
-#define EPUB_HAVE(EPUB_FEATURE) (defined EPUB_HAVE_##EPUB_FEATURE  && HAVE_##EPUB_FEATURE)
+#define EPUB_HAVE(EPUB_FEATURE) (defined EPUB_HAVE_##EPUB_FEATURE  && EPUB_HAVE_##EPUB_FEATURE)
 /* OS() - underlying operating system; only to be used for mandated low-level services like
  virtual memory, not to choose a GUI toolkit */
 #define EPUB_OS(EPUB_FEATURE) (defined EPUB_OS_##EPUB_FEATURE  && EPUB_OS_##EPUB_FEATURE)
@@ -609,6 +609,7 @@
 #if EPUB_OS(WINDOWS)
 #define EPUB_HAVE_VIRTUALALLOC 1
 #define EPUB_USE_OS_RANDOMNESS 1
+#define EPUB_HAVE_CXX_MAP_EMPLACE 1
 #endif
 
 #if EPUB_OS(QNX)

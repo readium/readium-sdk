@@ -25,8 +25,13 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#if EPUB_OS(UNIX)
 #include <unistd.h>
+#endif
 #include <fcntl.h>
+#if EPUB_PLATFORM(WIN)
+#include <windows.h>
+#endif
 
 #if EPUB_OS(ANDROID)
 extern "C" char* gAndroidCacheDir;
@@ -34,21 +39,38 @@ extern "C" char* gAndroidCacheDir;
 
 EPUB3_BEGIN_NAMESPACE
 
-static std::string GetTempFilePath(const std::string& ext)
+static string GetTempFilePath(const string& ext)
 {
+#if EPUB_PLATFORM(WIN)
+    TCHAR tmpPath[MAX_PATH];
+    TCHAR tmpFile[MAX_PATH];
+
+    DWORD pathLen = ::GetTempPath(MAX_PATH, tmpPath);
+    if ( pathLen == 0 || pathLen > MAX_PATH )
+        throw std::system_error(static_cast<int>(::GetLastError()), std::system_category());
+
+    UINT fileLen = ::GetTempFileName(tmpPath, TEXT("ZIP"), 0, tmpFile);
+    if ( fileLen == 0 )
+        throw std::system_error(static_cast<int>(::GetLastError()), std::system_category());
+
+    string r(tmpFile);
+    return r;
+#else
     std::stringstream ss;
 #if EPUB_OS(ANDROID)
     ss << gAndroidCacheDir << "epub3.XXXXXX";
 #else
     ss << "/tmp/epub3.XXXXXX." << ext;
 #endif
-    std::string path(ss.str());
+    string path(ss.str());
     
     char *buf = new char[path.length()];
     std::char_traits<char>::copy(buf, ss.str().c_str(), sizeof(buf));
 
 #if EPUB_OS(ANDROID)
     int fd = ::mkstemp(buf);
+#elif EPUB_PLATFORM(WIN)
+    
 #else
     int fd = ::mkstemps(buf, static_cast<int>(ext.size()+1));
 #endif
@@ -56,7 +78,8 @@ static std::string GetTempFilePath(const std::string& ext)
         throw std::runtime_error(std::string("mkstemp() failed: ") + strerror(errno));
     
     ::close(fd);
-    return std::string(buf);
+    return string(buf);
+#endif
 }
 
 class ZipReader : public ArchiveReader
@@ -78,26 +101,34 @@ class ZipWriter : public ArchiveWriter
     class DataBlob
     {
     public:
-        DataBlob() : _tmpPath(GetTempFilePath("tmp")), _fs(_tmpPath, std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc) {}
-        DataBlob(const DataBlob&) = delete;
-        DataBlob(DataBlob&& o) : _tmpPath(std::move(o._tmpPath)), _fs(_tmpPath, std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc) {}
-        ~DataBlob() { _fs.close(); ::unlink(_tmpPath.c_str()); }
+        DataBlob() : _tmpPath(GetTempFilePath("tmp")), _fs(_tmpPath.c_str(), std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc) {}
+        DataBlob(DataBlob&& o) : _tmpPath(std::move(o._tmpPath)), _fs(_tmpPath.c_str(), std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc) {}
+        ~DataBlob() {
+            _fs.close();
+#if EPUB_PLATFORM(WIN)
+            ::_unlink(_tmpPath.c_str());
+#else
+            ::unlink(_tmpPath.c_str());
+#endif
+        }
         
         void Append(const void * data, size_t len);
         size_t Read(void *buf, size_t len);
         
-        size_t Size() { return _fs.tellp(); }
+        size_t Size() { return static_cast<size_t>(_fs.tellp()); }
         size_t Size() const { return const_cast<DataBlob*>(this)->Size(); }
-        size_t Avail() { return Size() - _fs.tellg(); }
+        size_t Avail() { return Size() - static_cast<size_t>(_fs.tellg()); }
         size_t Avail() const { return const_cast<DataBlob*>(this)->Avail(); }
         
     protected:
-        std::string     _tmpPath;
+        string          _tmpPath;
         std::fstream    _fs;
+
+        DataBlob(const DataBlob&) _DELETED_;
     };
     
 public:
-    ZipWriter(struct zip* zip, const std::string& path, bool compressed);
+    ZipWriter(struct zip* zip, const string& path, bool compressed);
     ZipWriter(ZipWriter&& o);
     virtual ~ZipWriter() { if (_zsrc != nullptr) zip_source_free(_zsrc); }
     
@@ -124,11 +155,11 @@ ZipArchive::ZipItemInfo::ZipItemInfo(struct zip_stat & info)
     SetUncompressedSize(static_cast<size_t>(info.size));
 }
 
-std::string ZipArchive::TempFilePath()
+string ZipArchive::TempFilePath()
 {
     return GetTempFilePath("zip");
 }
-ZipArchive::ZipArchive(const std::string & path)
+ZipArchive::ZipArchive(const string & path)
 {
     int zerr = 0;
     _zip = zip_open(path.c_str(), ZIP_CREATE, &zerr);
@@ -149,26 +180,26 @@ Archive & ZipArchive::operator = (ZipArchive &&o)
     o._zip = nullptr;
     return dynamic_cast<Archive&>(*this);
 }
-bool ZipArchive::ContainsItem(const std::string & path) const
+bool ZipArchive::ContainsItem(const string & path) const
 {
     return (zip_name_locate(_zip, Sanitized(path).c_str(), 0) >= 0);
 }
-bool ZipArchive::DeleteItem(const std::string & path)
+bool ZipArchive::DeleteItem(const string & path)
 {
     int idx = zip_name_locate(_zip, Sanitized(path).c_str(), 0);
     if ( idx >= 0 )
         return (zip_delete(_zip, idx) >= 0);
     return false;
 }
-bool ZipArchive::CreateFolder(const std::string & path)
+bool ZipArchive::CreateFolder(const string & path)
 {
     return (zip_add_dir(_zip, Sanitized(path).c_str()) >= 0);
 }
-Auto<ByteStream> ZipArchive::ByteStreamAtPath(const std::string &path) const
+unique_ptr<ByteStream> ZipArchive::ByteStreamAtPath(const string &path) const
 {
-    return Auto<ByteStream>(new ZipFileByteStream(_zip, path));
+    return unique_ptr<ByteStream>(new ZipFileByteStream(_zip, path));
 }
-ArchiveReader* ZipArchive::ReaderAtPath(const std::string & path) const
+ArchiveReader* ZipArchive::ReaderAtPath(const string & path) const
 {
     if (_zip == nullptr)
         return nullptr;
@@ -179,7 +210,7 @@ ArchiveReader* ZipArchive::ReaderAtPath(const std::string & path) const
     
     return new ZipReader(file);
 }
-ArchiveWriter* ZipArchive::WriterAtPath(const std::string & path, bool compressed, bool create)
+ArchiveWriter* ZipArchive::WriterAtPath(const string & path, bool compressed, bool create)
 {
     if (_zip == nullptr)
         return nullptr;
@@ -197,14 +228,14 @@ ArchiveWriter* ZipArchive::WriterAtPath(const std::string & path, bool compresse
     
     return writer;
 }
-ArchiveItemInfo ZipArchive::InfoAtPath(const std::string & path) const
+ArchiveItemInfo ZipArchive::InfoAtPath(const string & path) const
 {
     struct zip_stat sbuf;
     if ( zip_stat(_zip, Sanitized(path).c_str(), 0, &sbuf) < 0 )
-        throw std::runtime_error(std::string("zip_stat("+path+") - " + zip_strerror(_zip)));
+        throw std::runtime_error(std::string("zip_stat("+path.stl_str()+") - " + zip_strerror(_zip)));
     return ZipItemInfo(sbuf);
 }
-std::string ZipArchive::Sanitized(const std::string& path) const
+string ZipArchive::Sanitized(const string& path) const
 {
     if ( path.find('/') == 0 )
         return path.substr(1);
@@ -213,16 +244,16 @@ std::string ZipArchive::Sanitized(const std::string& path) const
 
 void ZipWriter::DataBlob::Append(const void *data, size_t len)
 {
-    _fs.write(reinterpret_cast<const decltype(_fs)::char_type *>(data), len);
+    _fs.write(reinterpret_cast<const std::fstream::char_type *>(data), len);
 }
 size_t ZipWriter::DataBlob::Read(void *data, size_t len)
 {
-    if ( _fs.tellg() == 0 )
+    if ( _fs.tellg() == std::streamsize(0) )
         _fs.flush();
-    return _fs.readsome(reinterpret_cast<decltype(_fs)::char_type *>(data), len);
+    return static_cast<size_t>(_fs.readsome(reinterpret_cast<std::fstream::char_type *>(data), len));
 }
 
-ZipWriter::ZipWriter(struct zip *zip, const std::string& path, bool compressed)
+ZipWriter::ZipWriter(struct zip *zip, const string& path, bool compressed)
     : _compressed(compressed)
 {
     _zsrc = zip_source_function(zip, &ZipWriter::_source_callback, reinterpret_cast<void*>(this));

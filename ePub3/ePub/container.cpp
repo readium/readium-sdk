@@ -45,8 +45,14 @@ Container::Container(const string& path) : _archive(Archive::Open(path.stl_str()
     _ocf = reader.xmlReadDocument(gContainerFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
     if ( _ocf == nullptr )
         throw std::invalid_argument(_Str(__PRETTY_FUNCTION__, ": No container.xml in ", path));
-    
+
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(_ocf, {{"ocf", "urn:oasis:names:tc:opendocument:xmlns:container"}});
+#else
+    XPathWrangler::NamespaceList __ns;
+    __ns["ocf"] = OCFNamespaceURI;
+    XPathWrangler xpath(_ocf, __ns);
+#endif
     xmlNodeSetPtr nodes = xpath.Nodes(reinterpret_cast<const xmlChar*>(gRootfilesXPath));
     
     if ( nodes == nullptr || nodes->nodeNr == 0 )
@@ -83,7 +89,13 @@ Container::~Container()
 }
 Container::PathList Container::PackageLocations() const
 {
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(_ocf, {{"ocf", "urn:oasis:names:tc:opendocument:xmlns:container"}});
+#else
+    XPathWrangler::NamespaceList __ns;
+    __ns["ocf"] = OCFNamespaceURI;
+    XPathWrangler xpath(_ocf, __ns);
+#endif
     
     PathList output;
     for ( string& str : xpath.Strings(gRootfilePathsXPath) )
@@ -101,7 +113,13 @@ const Package* Container::DefaultPackage() const
 }
 string Container::Version() const
 {
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(_ocf, {{"ocf", "urn:oasis:names:tc:opendocument:xmlns:container"}});
+#else
+    XPathWrangler::NamespaceList __ns;
+    __ns["ocf"] = OCFNamespaceURI;
+    XPathWrangler xpath(_ocf, __ns);
+#endif
     
     std::vector<string> strings = xpath.Strings(gVersionXPath);
     if ( strings.empty() )
@@ -119,13 +137,26 @@ void Container::LoadEncryption()
     xmlDocPtr enc = reader.xmlReadDocument(gEncryptionFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
     if ( enc == nullptr )
         return;
-    
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(enc, {{"enc", XMLENCNamespaceURI}, {"ocf", OCFNamespaceURI}});
+#else
+    XPathWrangler::NamespaceList __ns;
+    __ns["ocf"] = OCFNamespaceURI;
+    __ns["enc"] = XMLENCNamespaceURI;
+    XPathWrangler xpath(enc, __ns);
+#endif
     xmlNodeSetPtr nodes = xpath.Nodes("/ocf:encryption/enc:EncryptedData");
     if ( nodes == nullptr || nodes->nodeNr == 0 )
+    {
+        xmlChar* mem = nullptr;
+        int size = 0;
+        xmlDocDumpMemory(enc, &mem, &size);
+        printf("%s\n", reinterpret_cast<char*>(mem));
+        xmlFree(mem);
         return;     // should be a hard error?
+    }
     
-    for ( size_t i = 0; i < nodes->nodeNr; i++ )
+    for ( int i = 0; i < nodes->nodeNr; i++ )
     {
         _encryption.emplace_back(new EncryptionInfo(nodes->nodeTab[i]));
     }
@@ -142,7 +173,7 @@ const EncryptionInfo* Container::EncryptionInfoForPath(const string &path) const
     
     return nullptr;
 }
-Auto<ByteStream> Container::ReadStreamAtPath(const string &path) const
+unique_ptr<ByteStream> Container::ReadStreamAtPath(const string &path) const
 {
     return _archive->ByteStreamAtPath(path.stl_str());
 }

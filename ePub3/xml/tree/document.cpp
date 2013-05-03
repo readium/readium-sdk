@@ -19,9 +19,9 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "document.h"
-#include "element.h"
-#include "dtd.h"
+#include <ePub3/xml/document.h>
+#include <ePub3/xml/element.h>
+#include <ePub3/xml/dtd.h>
 #include <libxml/xinclude.h>
 
 typedef std::map<ePub3::xml::Node*, xmlElementType> NodeMap;
@@ -104,7 +104,7 @@ void prune_unchanged_wrappers(xmlNodePtr node, NodeMap & nmap)
 
 EPUB3_XML_BEGIN_NAMESPACE
 
-Document::Document(const string & version) : Document(xmlNewDoc(version.utf8()))
+Document::Document(const string & version) : Node(reinterpret_cast<xmlNodePtr>(xmlNewDoc(version.utf8())))
 {
 }
 Document::Document(xmlDocPtr doc) : Node(reinterpret_cast<xmlNodePtr>(doc))
@@ -114,7 +114,7 @@ Document::Document(xmlDocPtr doc) : Node(reinterpret_cast<xmlNodePtr>(doc))
     // ensure the right polymorphic type ptr is installed
     _xml->_private = this;
 }
-Document::Document(Element * rootElement) : Document("1.0")
+Document::Document(Element * rootElement) : Node(reinterpret_cast<xmlNodePtr>(xmlNewDoc(BAD_CAST "1.0")))
 {
     if ( SetRoot(rootElement) == nullptr )
         throw InternalError("Failed to set document root element");

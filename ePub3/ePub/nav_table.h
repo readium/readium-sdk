@@ -34,12 +34,14 @@ EPUB3_BEGIN_NAMESPACE
  */
 class NavigationTable : public NavigationElement
 {
+private:
+                            NavigationTable()                               _DELETED_;
+                            NavigationTable(const NavigationTable&)         _DELETED_;
+
 public:
-                            NavigationTable()                               = delete;
-                            NavigationTable(xmlNodePtr node, const string& sourceHref);   // requires a HTML <nav> node
+   EPUB3_EXPORT             NavigationTable(xmlNodePtr node, const string& sourceHref);   // requires a HTML <nav> node
                             NavigationTable(const string& type) : NavigationElement(), _type(type), _title(), _sourceHref() {}
                             NavigationTable(std::string&& type) : NavigationElement(), _type(type), _title(), _sourceHref() {}
-                            NavigationTable(const NavigationTable&)         = delete;
                             NavigationTable(NavigationTable&& o) : NavigationElement(o), _type(std::move(o._type)), _title(std::move(o._title)), _sourceHref(std::move(o._sourceHref)) {}
                                                                                                                         
         

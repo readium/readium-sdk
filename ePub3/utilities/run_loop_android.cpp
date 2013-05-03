@@ -59,9 +59,7 @@ RunLoop::~RunLoop()
 }
 void RunLoop::PerformFunction(std::function<void ()> fn)
 {
-    EventSource* ev = new EventSource([fn](EventSource& __e) {
-        fn();
-    });
+    RefCounted<EventSource> ev(new EventSource([fn](EventSource& __e){fn();}), adopt_ref);
     AddEventSource(ev);
     ev->Signal();
 }
@@ -176,11 +174,11 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
         return ExitReason::RunStopped;
     
     _listLock.lock();
-    
+
+    RunObservers(Observer::ActivityFlags::RunLoopEntry);
+
     do
     {
-        RunObservers(Observer::ActivityFlags::RunLoopEntry);
-        
         RunObservers(Observer::ActivityFlags::RunLoopBeforeWaiting);
         _listLock.unlock();
         _waiting = true;
@@ -216,6 +214,8 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
         }
     
     } while (timeoutTime > system_clock::now());
+
+    RunObservers(Observer::ActivityFlags::RunLoopExit);
     
     _listLock.unlock();
     return reason;
@@ -392,8 +392,8 @@ RunLoop::EventSource::~EventSource()
 RunLoop::EventSource& RunLoop::EventSource::operator=(const EventSource& o)
 {
     _fn = o._fn;
-    if ( ::pipe(_evt) != 0 )
-        throw std::system_error(errno, std::system_category(), "pipe() failed for EventSource");
+    _evt[0] = ::dup(o._evt[0]);
+    _evt[1] = ::dup(o._evt[1]);
     return *this;
 }
 RunLoop::EventSource& RunLoop::EventSource::operator=(EventSource&& o)

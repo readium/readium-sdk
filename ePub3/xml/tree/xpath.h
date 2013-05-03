@@ -25,7 +25,10 @@
 #include <ePub3/xml/base.h>
 #include <ePub3/xml/node.h>
 #include <libxml/xpath.h>
-#include <pthread.h>
+#include <functional>
+#if EPUB_USE(PTHREADS)
+# include <pthread.h>
+#endif
 
 EPUB3_XML_BEGIN_NAMESPACE
 
@@ -71,10 +74,10 @@ public:
     bool EvaluateAsBoolean(const Node * node);
     
     // these throw if there is no current result
-    bool BooleanResult() const throw (InternalError);
-    double NumberResult() const throw (InternalError);
-    string StringResult() const throw (InternalError);
-    xml::NodeSet NodeSetResult() const throw (InternalError, std::domain_error);
+    bool BooleanResult() const;
+    double NumberResult() const;
+    string StringResult() const;
+    xml::NodeSet NodeSetResult() const;
     
     //////////////////////////////////////////////////////////////////
     // XPath Environment Setup

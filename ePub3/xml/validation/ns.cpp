@@ -20,7 +20,7 @@
 //
 
 #include "ns.h"
-#include "document.h"
+#include <ePub3/xml/document.h>
 
 EPUB3_XML_BEGIN_NAMESPACE
 
