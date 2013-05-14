@@ -28,9 +28,9 @@
 #include <map>
 #include <list>
 #include <libxml/tree.h>
+#include <ePub3/utilities/owned_by.h>
 #include <ePub3/spine.h>
 #include <ePub3/manifest.h>
-#include <ePub3/metadata.h>
 #include <ePub3/cfi.h>
 #include <ePub3/nav_element.h>
 #include <ePub3/archive_xml.h>
@@ -38,6 +38,8 @@
 #include <ePub3/utilities/iri.h>
 #include <ePub3/content_handler.h>
 #include <ePub3/media_support_info.h>
+#include <ePub3/property_holder.h>
+#include <ePub3/utilities/xml_identifiable.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -45,6 +47,11 @@ class Archive;
 class Metadata;
 class NavigationTable;
 class ByteStream;
+class Container;
+class PackageBase;
+class Package;
+
+typedef shared_ptr<Package>     PackagePtr;
 
 /**
  The PackageBase class implements the low-level components and all storage of an OPF
@@ -63,43 +70,20 @@ class PackageBase
 {
 public:
     ///
-    /// An array of Metadata items, in document order.
-    typedef std::vector<Metadata*>                  MetadataMap;
-    ///
     /// A lookup table for navigation tables, indexed by type.
-    typedef std::map<string, NavigationTable*>      NavigationMap;
-    ///
-    /// A lookup table for property vocabulary IRI stubs, indexed by prefix.
-    typedef std::map<string, string>                PropertyVocabularyMap;
-    ///
-    /// An array of concrete property IRIs.
-    typedef std::vector<IRI>                        PropertyList;
+    typedef std::map<string, shared_ptr<NavigationTable>>   NavigationMap;
     ///
     /// An array of content handler objects.
-    typedef std::vector<ContentHandler*>            ContentHandlerList;
+    typedef shared_vector<ContentHandler>                   ContentHandlerList;
     ///
     /// A map of media-type to content-handler lists.
-    typedef std::map<string, ContentHandlerList>    ContentHandlerMap;
-    
+    typedef std::map<string, ContentHandlerList>            ContentHandlerMap;
     ///
-    /// The list of Core Media Types from [OPF 3.0 §5.1](http://idpf.org/epub/30/spec/epub30-publications.html#sec-core-media-types).
-    static const std::map<const string, bool>       CoreMediaTypes;
-    
-    /**
-     This exception is thrown when a property vocabulary prefix is unknown to a
-     given Package.
-     
-     A prefix is considered *unknown* when it is neither in the ePub3 predefined set
-     nor was it explicitly declared in the package document's `<package>` tag
-     through a `prefix` attribute.
-     */
-    class UnknownPrefix : public std::domain_error
-    {
-    public:
-        EPUB3_EXPORT UnknownPrefix(const string &str)    _GCC_NOTHROW    : std::domain_error(str.stl_str())  {}
-        EPUB3_EXPORT UnknownPrefix(const char* str)      _GCC_NOTHROW    : std::domain_error(str)            {}
-        virtual     ~UnknownPrefix()                    _GCC_NOTHROW                                        {}
-    };
+    /// A list of property IRIs.
+    typedef std::vector<IRI>                                PropertyIRIList;
+    ///
+    /// An XML-ID lookup table for relevant types
+    typedef std::map<string, shared_ptr<XMLIdentifiable>>   XMLIDLookup;
     
 private:
     /** There is no default constructor for PackageBase. */
@@ -107,23 +91,30 @@ private:
     /** There is no copy constructor for PackageBase. */
                             PackageBase(const PackageBase&) _DELETED_;
 
-public:
+protected:
     /**
-     Constructs a new PackageBase class by reading an XML document from a given
-     Archive using the supplied path.
+     Constructs a new PackageBase object.
      
      The type, at present, is assumed to be `application/oebps-package+xml`; the
      parameter is here for future-proofing in case of alternative package types in
      later standards.
-     @param archive The Archive from which to read the package document.
-     @param path The path of the document within the archive.
+     @param owner The Container which owns this object.
      @param type The MIME type of the document, as read from the OCF `root-file`
      element.
      */
-    EPUB3_EXPORT            PackageBase(Archive * archive, const string& path, const string& type);
+    EPUB3_EXPORT            PackageBase(const shared_ptr<Container>& owner, const string& type);
     /** C++11 'move' constructor-- claims ownership of its argument's internals. */
     EPUB3_EXPORT            PackageBase(PackageBase&&);
+    
+public:
     virtual                 ~PackageBase();
+    
+    /**
+     Parses the contents of the package at the given location.
+     @param path The container-relative path to the XML OPF file.
+     @result Returns `true` if the package was parsed successfully, `false` otherwise.
+     */
+    virtual bool            Open(const string& path);
     
     /**
      Returns the path used to construct this object minus the filename, e.g.
@@ -136,41 +127,8 @@ public:
     virtual const string&   BasePath()              const       { return _pathBase; }
     
     /// @{
-    /// @name Locale Support
-    
-    /**
-     Returns the current locale.
-     
-     This value is initially set to the current user locale, but it can be
-     explicitly changed (i.e. for testing purposes) by calling
-     SetLocale(const string&) or SetLocale(const std::locale&).
-     @return A reference to the current C++11 locale object.
-     */
-    EPUB3_EXPORT
-    static std::locale&     Locale();
-    
-    /**
-     Sets the current locale using a standard locale name.
-     @param name A string containing a canonical locale name.
-     */
-    EPUB3_EXPORT
-    static void             SetLocale(const string& name);
-    
-    /**
-     Sets the current locale to a given `std::locale` instance.
-     @param locale The new locale.
-     */
-    EPUB3_EXPORT
-    static void             SetLocale(const std::locale& locale);
-    
-    /// @}
-    
-    /// @{
     /// @name Raw Table Accessors
     
-    ///
-    /// Returns an immutable reference to the metadata table.
-    const MetadataMap&      Metadata()              const       { return _metadata; }
     ///
     /// Returns an immutable reference to the manifest table.
     const ManifestTable&    Manifest()              const       { return _manifest; }
@@ -180,27 +138,13 @@ public:
     
     /// @}
     
-    /**
-     Obtains an IRI for a DCMES metadata item.
-     @note The IRIs we use for DCMES items are not canon for ePub3.  We use them
-     only for the benefit of using a single method to identify metadata items
-     whether defined using DCMES elements or regular `<meta>` elements with an
-     IRI-based property.
-     @param type A type-code for a DCMES metadata item.
-     @result A constant IRI referring to the type, or an empty (invalid) IRI if the
-     `type` constant does not refer to a valid DCMES element (i.e. the `Custom` or
-     `Invalid` pseudo-types).
-     @ingroup utilities
-     */
-    const IRI               IRIForDCType(Metadata::DCType type) const { return Metadata::IRIForDCType(type); }
-    
     /// @{
     /// @name Spine Accessors
     
     /**
      Returns the first item in the Spine.
      */
-    const SpineItem *       FirstSpineItem()        const { return _spine.get(); }
+    shared_ptr<SpineItem>   FirstSpineItem()        const       { return _spine; }
     
     /**
      Locates a spine item by position.
@@ -209,7 +153,7 @@ public:
      out of bounds.
      */
     EPUB3_EXPORT
-    const SpineItem *       SpineItemAt(size_t idx) const;
+    shared_ptr<SpineItem>   SpineItemAt(size_t idx) const;
 
     EPUB3_EXPORT
     size_t                  IndexOfSpineItemWithIDRef(const string& idref)  const;
@@ -225,7 +169,7 @@ public:
      @result A pointer to the requested item, or `nullptr` if no such item exists.
      */
     EPUB3_EXPORT
-    const ManifestItem *    ManifestItemWithID(const string& ident)         const;
+    shared_ptr<ManifestItem>    ManifestItemWithID(const string& ident)         const;
     
     /**
      Generates the subpath part of a CFI used to locate a given manifest item.
@@ -254,7 +198,7 @@ public:
      @result A vector containing pointers to any matching manifest items.
      */
     EPUB3_EXPORT
-    const std::vector<const ManifestItem*> ManifestItemsWithProperties(PropertyList properties) const;
+    const shared_vector<ManifestItem> ManifestItemsWithProperties(PropertyIRIList properties) const;
     
     /// @}
     
@@ -265,48 +209,7 @@ public:
      table was found.
      */
     EPUB3_EXPORT
-    const NavigationTable * NavigationTable(const string& type)            const;
-    
-    /// @{
-    /// @name Metadata Property IRI Support
-    
-    /**
-     Associates a property vocabulary IRI stem with a prefix.
-     @param prefix The prefix used to identify the vocabulary IRI stem.
-     @param iriStem The stem of the IRI for this vocabulary.
-     */
-    EPUB3_EXPORT
-    void                    RegisterPrefixIRIStem(const string& prefix, const string& iriStem);
-    
-    /**
-     Creates a canonical IRI used to identify a metadata property (an item's type).
-     @param reference The reference part of a `property` attribute's value, i.e. the
-     part of the value following a `:` character, or the entire string if no `:` is
-     present.
-     @param prefix The prefix for the property, if supplied. If no prefix was
-     supplied in the property, the default value for this parameter will identify
-     the default vocabulary.
-     @result The canonical IRI used to identify the property.
-     @throws UnknownPrefix if the prefix has not been registered.
-     */
-    EPUB3_EXPORT
-    IRI                     MakePropertyIRI(const string& reference, const string& prefix="")   const;
-    
-    /**
-     Creates a property IRI directly from a metadata element's `property` attribute
-     value.
-     @seealso MakePropertyIRI(const string&, const string&)
-     @param attrValue The verbatim content of a metadata item's `property` attribute.
-     @result The canonical IRI used to identify the property.
-     @throws UnknownPrefix if the value contains a prefix which has not been
-     registered.
-     @throws std::invalid_argument If the value doesn't look to be in the correct
-     format.
-     */
-    EPUB3_EXPORT
-    IRI                     PropertyIRIFromAttributeValue(const string& attrValue)              const;
-    
-    /// @}
+    shared_ptr<NavigationTable> NavigationTable(const string& type)            const;
     
     /**
      Returns a ByteStream for reading from the specified file in the package's Archive.
@@ -322,21 +225,15 @@ public:
     uint32_t                SpineCFIIndex()                 const   { return _spineCFIIndex; }
     
 protected:
-    Archive *               _archive;           ///< The archive from which the package was loaded.
+    shared_ptr<Archive>     _archive;           ///< The archive from which the package was loaded.
     xmlDocPtr               _opf;               ///< The XML document representing the package.
     string                  _pathBase;          ///< The base path of the document within the archive.
     string                  _type;              ///< The MIME type of the package document.
-    MetadataMap             _metadata;          ///< All metadata from the package, in document order.
     ManifestTable           _manifest;          ///< All manifest items, indexed by unique identifier.
     NavigationMap           _navigation;        ///< All navigation tables, indexed by type.
     ContentHandlerMap       _contentHandlers;   ///< All installed content handlers, indexed by media-type.
-    unique_ptr<SpineItem>         _spine;             ///< The first item in the spine (SpineItems are a linked list).
-    
-    PropertyVocabularyMap   _vocabularyLookup;  ///< A lookup table for property prefix->IRI-stem mappings.
-    
-    // used to initialize each package's vocabulary map
-    static const PropertyVocabularyMap gReservedVocabularies;           ///< The reserved/predefined metadata property vocabularies.
-    static const std::map<Metadata::DCType, const IRI> gDCTypeIRIs;     ///< Our custom IRI mappings for DCMES metadata elements.
+    shared_ptr<SpineItem>   _spine;             ///< The first item in the spine (SpineItems are a linked list).
+    XMLIDLookup             _xmlIDLookup;       ///< Lookup table for all items with XML ID values.
     
     // used to verify/correct CFIs
     uint32_t                _spineCFIIndex;     ///< The CFI index for the `<spine>` element in the package document.
@@ -344,24 +241,32 @@ protected:
     ///
     /// Unpacks the _opf document. Implemented by the subclass, to make PackageBase pure-virtual.
     virtual bool            Unpack() = 0;
-    ///
-    /// Used to handle the `prefix` attribute of the OPF `<package>` element.
-    void                    InstallPrefixesFromAttributeValue(const string& attrValue);
     
     /**
      Locates a spine item based on the corresponding CFI component.
      
      May update the supplied CFI component following target correction.
      */
-    const SpineItem *       ConfirmOrCorrectSpineItemQualifier(const SpineItem * pItem, CFI::Component* pComponent) const;
+    shared_ptr<SpineItem>   ConfirmOrCorrectSpineItemQualifier(shared_ptr<SpineItem> pItem, CFI::Component* pComponent) const;
     
     ///
     /// Loads navigation tables from a given manifest item (which has the `"nav"` property).
-    static NavigationList   NavTablesFromManifestItem(const ManifestItem * pItem);
+    static NavigationList   NavTablesFromManifestItem(shared_ptr<PackageBase> owner, shared_ptr<ManifestItem> pItem);
     
-    ///
-    /// The current locale instance.  Defaults to the current user locale.
-    static std::locale      gCurrentLocale;
+    template <class _Tp, class = typename std::enable_if
+                            <
+                                std::is_base_of<XMLIdentifiable, _Tp>::value
+                            >::type>
+    void                            StoreXMLIdentifiable(shared_ptr<_Tp> ptr) {
+        if ( !ptr->XMLIdentifier().empty() )
+        {
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+            _xmlIDLookup.emplace(ptr->XMLIdentifier(), ptr);
+#else
+            _xmlIDLookup[ptr->XMLIdentifier()] = ptr;
+#endif
+        }
+    }
 };
 
 /**
@@ -375,7 +280,7 @@ protected:
  
  @ingroup epub-model
  */
-class Package : public PackageBase
+class Package : public PackageBase, public std::enable_shared_from_this<Package>, public PropertyHolder, public OwnedBy<Container>
 {
 public:
     /**
@@ -385,7 +290,7 @@ public:
      function should handle all the actual loading/display mechanism itself.
      @param url The url of the item to load.
      */
-    typedef std::function<void(const IRI& url)>         LoadEventHandler;
+    typedef std::function<void(const IRI& url)>     LoadEventHandler;
     
     /**
      A list of media types (i.e. MIME types) used in the package's manifest.
@@ -393,16 +298,18 @@ public:
      Each type is paired with an instance of MediaSupportInfo which describes the
      support for that media type.
      */
-    typedef std::map<string, MediaSupportInfo>          MediaSupportList;
+    typedef std::map<string, MediaSupportInfo>      MediaSupportList;
     
 private:
                             Package()                                   _DELETED_;
                             Package(const Package&)                     _DELETED_;
 
 public:
-    EPUB3_EXPORT            Package(Archive * archive, const string& path, const string& type);
-                            Package(Package&& o) : PackageBase(std::move(o)) {}
+    EPUB3_EXPORT            Package(const shared_ptr<Container>& owner, const string& type);
+                            Package(Package&& o) : OwnedBy(std::move(o)), PackageBase(std::move(o)) {}
     virtual                 ~Package() {}
+    
+    virtual bool            Open(const string& path);
     
     ///
     /// The full Unique Identifier, built from the package unique-id and the modification date.
@@ -441,7 +348,7 @@ public:
      Assumes ownership of the input ContentHandler pointer.
      @param handler A ContentHandler instance.
      */
-    virtual void            AddMediaHandler(ContentHandler* handler) { _contentHandlers[handler->MediaType()].push_back(handler); }
+    virtual void            AddMediaHandler(shared_ptr<ContentHandler> handler) { _contentHandlers[handler->MediaType()].push_back(handler); }
     
     /// @}
     
@@ -454,7 +361,7 @@ public:
      @result A pointer to the located SpineItem, or `nullptr` if none was found.
      */
     EPUB3_EXPORT
-    const SpineItem *       SpineItemWithIDRef(const string& idref)         const;
+    shared_ptr<SpineItem>   SpineItemWithIDRef(const string& idref)         const;
     
     /**
      Creates a CFI which locates a given ManifestItem.
@@ -462,7 +369,7 @@ public:
      @result A new CFI, as specific as possible, for the input ManifestItem.
      */
     EPUB3_EXPORT
-    const CFI               CFIForManifestItem(const ManifestItem* item)    const;
+    const CFI               CFIForManifestItem(shared_ptr<ManifestItem> item)    const;
     
     /**
      Creates a CFI which locates a given SpineItem.
@@ -470,7 +377,7 @@ public:
      @result A new CFI, as specific as possible, for the input SpineItem.
      */
     EPUB3_EXPORT
-    const CFI               CFIForSpineItem(const SpineItem* item)          const;
+    const CFI               CFIForSpineItem(shared_ptr<SpineItem> item)          const;
     
     // note that the CFI is purposely non-const so the package can correct it (cf. epub-cfi §3.5)
     /**
@@ -488,7 +395,7 @@ public:
      @result The ManifestItem corresponding to the input CFI, or `nullptr` otherwise.
      */
     EPUB3_EXPORT
-    const ManifestItem *    ManifestItemForCFI(CFI& cfi, CFI* pRemainingCFI) const;
+    shared_ptr<ManifestItem>    ManifestItemForCFI(CFI& cfi, CFI* pRemainingCFI) const;
     
     /**
      A convenience method used to obtain a libxml2 `xmlDocPtr` from a CFI.
@@ -514,7 +421,7 @@ public:
      @result The SpineItem at the supplied index, or `nullptr` if the index was out
      of bounds.
      */
-    const SpineItem *       operator[](size_t idx)          const   { return SpineItemAt(idx); }
+    shared_ptr<SpineItem>   operator[](size_t idx)          const   { return SpineItemAt(idx); }
     
     /**
      Obtains the ManifestItem with a given identifier.
@@ -522,18 +429,18 @@ public:
      @result The ManifestItem with the given identifier, or `nullptr` if no item
      had that identifier.
      */
-    const ManifestItem *    operator[](const string& ident) const   { return ManifestItemWithID(ident); }
+    shared_ptr<ManifestItem>    operator[](const string& ident) const   { return ManifestItemWithID(ident); }
     
     /// @}
     
     /// @{
     /// @name Raw Data Access
     
-    ArchiveReader*          ReaderForRelativePath(const string& path)       const {
+    unique_ptr<ArchiveReader>   ReaderForRelativePath(const string& path)       const {
         return _archive->ReaderAtPath((_pathBase + path).stl_str());
     }
-    ArchiveXmlReader*       XmlReaderForRelativePath(const string& path)    const {
-        return new ArchiveXmlReader(ReaderForRelativePath(path));
+    unique_ptr<ArchiveXmlReader>    XmlReaderForRelativePath(const string& path)    const {
+        return unique_ptr<ArchiveXmlReader>(new ArchiveXmlReader(ReaderForRelativePath(path)));
     }
     EPUB3_EXPORT
     unique_ptr<ByteStream>        ReadStreamForRelativePath(const string& path)   const;
@@ -545,40 +452,24 @@ public:
     
     ///
     /// Returns the table of contents for this package.
-    const class NavigationTable*    TableOfContents()       const       { return NavigationTable("toc"); }
+    shared_ptr<class NavigationTable>   TableOfContents()       const       { return NavigationTable("toc"); }
     ///
     /// Return the list of figures, if any exists.
-    const class NavigationTable*    ListOfFigures()         const       { return NavigationTable("lof"); }
+    shared_ptr<class NavigationTable>   ListOfFigures()         const       { return NavigationTable("lof"); }
     ///
     /// Returns the list of illustrations, if any exists.
-    const class NavigationTable*    ListOfIllustrations()   const       { return NavigationTable("loi"); }
+    shared_ptr<class NavigationTable>   ListOfIllustrations()   const       { return NavigationTable("loi"); }
     ///
     /// Returns the list of tables, if any exists.
-    const class NavigationTable*    ListOfTables()          const       { return NavigationTable("lot"); }
+    shared_ptr<class NavigationTable>   ListOfTables()          const       { return NavigationTable("lot"); }
     ///
     /// Returns the page list, if any exists.
-    const class NavigationTable*    PageList()              const       { return NavigationTable("page-list"); }
+    shared_ptr<class NavigationTable>   PageList()              const       { return NavigationTable("page-list"); }
     
     /// @}
     
     /// @{
     /// @name High-Level Metadata API
-    
-    /**
-     Fetches a map of all metadata items with a given DCType.
-     @param type The type of the attribute to fetch.
-     @result A MetadataMap containing all the metadata items with this DC type.
-     */
-    EPUB3_EXPORT
-    const MetadataMap       MetadataItemsWithDCType(Metadata::DCType type) const;
-    
-    /**
-     Fetches a map of all metadata items with a given IRI.
-     @param iri The IRI identifying the type of metadata item to fetch.
-     @result A MetadataMap containing all the metadata items with this type.
-     */
-    EPUB3_EXPORT
-    const MetadataMap       MetadataItemsWithProperty(const IRI& iri) const;
     
     /**
      Retrieves the title of the publication.
@@ -588,7 +479,7 @@ public:
      @result The title of the publication.
      */
     EPUB3_EXPORT
-    const string            Title(bool localized=true)              const;
+    const string&           Title(bool localized=true)              const;
     
     /**
      Retrieves the subtitle of the publication.
@@ -598,7 +489,7 @@ public:
      @result The subtitle of the publication.
      */
     EPUB3_EXPORT
-    const string            Subtitle(bool localized=true)           const;
+    const string&           Subtitle(bool localized=true)           const;
     
     /**
      Retrieves the complete title (title and subtitle) of the publication.
@@ -673,7 +564,7 @@ public:
      @result The publication's original language.
      */
     EPUB3_EXPORT
-    const string            Language()                              const;
+    const string&           Language()                              const;
     
     /**
      Retrieves the source of the publication, if available.
@@ -683,7 +574,7 @@ public:
      @result The publication's original source.
      */
     EPUB3_EXPORT
-    const string            Source(bool localized=true)             const;
+    const string&           Source(bool localized=true)             const;
     
     /**
      Retrieves the publication's copyright information.
@@ -693,14 +584,14 @@ public:
      @result The publication's copyright ownership/assignment statement.
      */
     EPUB3_EXPORT
-    const string            CopyrightOwner(bool localized=true)     const;
+    const string&           CopyrightOwner(bool localized=true)     const;
     
     /**
      Retrieves a string indicating the last modification date of this package.
      @result The package's modification date, if specified.
      */
     EPUB3_EXPORT
-    const string            ModificationDate()                      const;
+    const string&           ModificationDate()                      const;
     
     /**
      Returns the publication's ISBN number, if available.
@@ -745,7 +636,7 @@ public:
      @result The handler for this media type.
      */
     EPUB3_EXPORT
-    const MediaHandler*         OPFHandlerForMediaType(const string& mediaType) const;
+    shared_ptr<MediaHandler>    OPFHandlerForMediaType(const string& mediaType) const;
     
     ///
     /// Returns a list of all media types seen in the manifest.
@@ -796,6 +687,9 @@ protected:
     ///
     /// Extracts information from the OPF XML document.
     virtual bool            Unpack();
+    ///
+    /// Used to handle the `prefix` attribute of the OPF `<package>` element.
+    void                    InstallPrefixesFromAttributeValue(const string& attrValue);
     
     // default is `true`
     EPUB3_EXPORT

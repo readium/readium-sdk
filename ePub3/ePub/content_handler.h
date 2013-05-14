@@ -25,6 +25,7 @@
 #include <ePub3/epub3.h>
 #include <ePub3/utilities/utfstring.h>
 #include <ePub3/utilities/iri.h>
+#include <ePub3/utilities/owned_by.h>
 #include <map>
 #include <functional>
 
@@ -55,7 +56,7 @@ class Package;
  @ingroup media-handlers
  @see operator()(const string&, const ParameterList&)
  */
-class ContentHandler
+class ContentHandler : public std::enable_shared_from_this<ContentHandler>, public OwnedBy<Package>
 {
 public:
     ///
@@ -73,13 +74,13 @@ public:
      @param mediaType The media type to which this handler should apply.
      @param pkg The Package to which this handler is assigned.
      */
-                            ContentHandler(const string& mediaType, const Package* pkg=nullptr) : _mediaType(mediaType), _owner(pkg) {}
+                            ContentHandler(shared_ptr<Package>& owner, const string& mediaType) : OwnedBy(owner), _mediaType(mediaType) {}
     ///
     /// Copy constructor.
-                            ContentHandler(const ContentHandler& o) : _mediaType(o._mediaType), _owner(o._owner) {}
+                            ContentHandler(const ContentHandler& o) : OwnedBy(o), _mediaType(o._mediaType), _owner(o._owner) {}
     ///
     /// Move constructor.
-                            ContentHandler(ContentHandler&& o) : _mediaType(std::move(o._mediaType)), _owner(o._owner) { o._owner = nullptr; }
+    ContentHandler(ContentHandler&& o) : OwnedBy(std::move(o)), _mediaType(std::move(o._mediaType)), _owner(o._owner) { o._owner = nullptr; }
     virtual                 ~ContentHandler() {}
     
     virtual ContentHandler& operator=(const ContentHandler& o) {
@@ -134,7 +135,7 @@ public:
      @param handlerPath A Package-relative path to the DHTML media handler for
      `mediaType` resources.
      */
-                        MediaHandler(const Package* pkg, const string& mediaType, const string& handlerPath);
+                        MediaHandler(shared_ptr<Package>& owner, const string& mediaType, const string& handlerPath);
     ///
     /// Copy constructor.
                         MediaHandler(const MediaHandler& o) : ContentHandler(o), _handlerIRI(o._handlerIRI) {}
@@ -197,7 +198,7 @@ public:
      @param pkg The Package to which this handler is assigned.
      @param impl A callback function to the native renderer.
      */
-                        CustomRenderer(const string& mediaType, const Package* pkg, RendererImpl impl) : ContentHandler(mediaType, pkg), _impl(impl) {}
+                        CustomRenderer(shared_ptr<Package>& owner, const string& mediaType, RendererImpl impl) : ContentHandler(owner, mediaType), _impl(impl) {}
     ///
     /// Copy constructor.
                         CustomRenderer(const CustomRenderer& o) : ContentHandler(o), _impl(o._impl) {}

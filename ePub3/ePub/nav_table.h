@@ -24,28 +24,31 @@
 
 #include <ePub3/epub3.h>
 #include <ePub3/nav_point.h>
+#include <ePub3/utilities/owned_by.h>
 #include <libxml/xpath.h> // for xmlNodeSetPtr
 
 EPUB3_BEGIN_NAMESPACE
 
+class Package;
 
 /**
  @ingroup navigation
  */
-class NavigationTable : public NavigationElement
+class NavigationTable : public NavigationElement, public std::enable_shared_from_this<NavigationTable>, public OwnedBy<Package>
 {
 private:
                             NavigationTable()                               _DELETED_;
                             NavigationTable(const NavigationTable&)         _DELETED_;
 
 public:
-   EPUB3_EXPORT             NavigationTable(xmlNodePtr node, const string& sourceHref);   // requires a HTML <nav> node
-                            NavigationTable(const string& type) : NavigationElement(), _type(type), _title(), _sourceHref() {}
-                            NavigationTable(std::string&& type) : NavigationElement(), _type(type), _title(), _sourceHref() {}
-                            NavigationTable(NavigationTable&& o) : NavigationElement(o), _type(std::move(o._type)), _title(std::move(o._title)), _sourceHref(std::move(o._sourceHref)) {}
-                                                                                                                        
+    EPUB3_EXPORT            NavigationTable(shared_ptr<Package>& owner, const string& sourceHref);   // requires a HTML <nav> node
+                            NavigationTable(NavigationTable&& o) : NavigationElement(std::move(o)), OwnedBy(std::move(o)), _type(std::move(o._type)), _title(std::move(o._title)), _sourceHref(std::move(o._sourceHref)) {}
+    
         
     virtual                 ~NavigationTable() {}
+    
+    EPUB3_EXPORT
+    bool                    ParseXML(xmlNodePtr node);
     
     const string&           Type()                      const   { return _type; }
     void                    SetType(const string& str)          { _type = str; }
@@ -58,17 +61,15 @@ public:
     const string&           SourceHref()                      const   { return _sourceHref; }
     void                    SetSourceHref(const string& str)    { _sourceHref = str; }
     void                    SetSourceHref(string&& str)         { _sourceHref = str; }
-                                                                                                                           
     
 protected:
-    string      _type;
-    string      _title;     // optional
-    string      _sourceHref;      // heref to the nav item representing the table in the package
+    string      _type;          ///< The type qualifier (toc, lot, loi, ...) for this table.
+    string      _title;         ///< The table's title. Optional.
+    string      _sourceHref;    ///< Href to the nav item representing the table in the package.
     
-    bool                    Parse(xmlNodePtr node);
-    NavigationElement*      BuildNavigationPoint(xmlNodePtr liNode);
+    shared_ptr<NavigationElement>   BuildNavigationPoint(xmlNodePtr liNode);
 
-    void                    LoadChildElements(NavigationElement *pElement, xmlNodePtr pXmlNode);
+    void                    LoadChildElements(shared_ptr<NavigationElement> pElement, xmlNodePtr pXmlNode);
 };
 
 EPUB3_END_NAMESPACE

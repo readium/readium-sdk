@@ -33,12 +33,12 @@ void Archive::RegisterArchive(CreatorFn creator, SnifferFn sniffer)
 }
 void Archive::Initialize()
 {
-    RegisterArchive([](const string& path) { return new ZipArchive(path); },
+    RegisterArchive([](const string& path) { return std::unique_ptr<ZipArchive>(new ZipArchive(path)); },
                     [](const string& path) { return path.rfind(".zip") == path.size()-4; });
-    RegisterArchive([](const string& path) { return new ZipArchive(path); },
+    RegisterArchive([](const string& path) { return std::unique_ptr<ZipArchive>(new ZipArchive(path)); },
                     [](const string& path) { return path.rfind(".epub") == path.size()-5; });
 }
-Archive * Archive::Open(const string& path)
+std::unique_ptr<Archive> Archive::Open(const string& path)
 {
     for ( auto& factory : RegistrationDomain )
     {

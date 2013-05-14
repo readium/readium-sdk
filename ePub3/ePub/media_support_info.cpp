@@ -25,38 +25,44 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-MediaSupportInfo::MediaSupportInfo() : _mediaType(""), _support(SupportType::Unsupported)
+MediaSupportInfo::MediaSupportInfo(shared_ptr<Package>& owner) : OwnedBy(owner), _mediaType(""), _support(SupportType::Unsupported)
 {
 }
-MediaSupportInfo::MediaSupportInfo(const string& mediaType, bool supported)
-  : _mediaType(mediaType),
+MediaSupportInfo::MediaSupportInfo(shared_ptr<Package>& owner, const string& mediaType, bool supported)
+  : OwnedBy(owner),
+    _mediaType(mediaType),
     _support(supported ? SupportType::IntrinsicSupport : SupportType::Unsupported)
 {
 }
-MediaSupportInfo::MediaSupportInfo(const string& mediaType, SupportType support)
-  : _mediaType(mediaType),
+MediaSupportInfo::MediaSupportInfo(shared_ptr<Package>& owner, const string& mediaType, SupportType support)
+  : OwnedBy(owner),
+    _mediaType(mediaType),
     _support(support)
 {
 }
 MediaSupportInfo::MediaSupportInfo(const MediaSupportInfo& o)
-  : _mediaType(o._mediaType),
+  : OwnedBy(o),
+    _mediaType(o._mediaType),
     _support(o._support)
 {
 }
 MediaSupportInfo::MediaSupportInfo(MediaSupportInfo&& o)
-  : _mediaType(std::move(o._mediaType)),
+  : OwnedBy(std::move(o)),
+    _mediaType(std::move(o._mediaType)),
     _support(o._support)
 {
     o._support = SupportType::Unsupported;
 }
 MediaSupportInfo& MediaSupportInfo::operator=(const MediaSupportInfo &o)
 {
+    OwnedBy::operator=(o);
     _mediaType = o._mediaType;
     _support = o._support;
     return *this;
 }
 MediaSupportInfo& MediaSupportInfo::operator=(MediaSupportInfo &&o)
 {
+    OwnedBy::operator=(std::move(o));
     _mediaType = std::move(o._mediaType);
     _support = o._support;
     o._support = SupportType::Unsupported;
@@ -75,7 +81,7 @@ void MediaSupportInfo::SetTypeAndSupport(const string& mediaType, SupportType su
     _mediaType = mediaType;
     _support = support;
 }
-const MediaSupportInfo::ManifestItemList MediaSupportInfo::MatchingManifestItems(const Package* pkg) const
+const MediaSupportInfo::ManifestItemList MediaSupportInfo::MatchingManifestItems(shared_ptr<Package> pkg) const
 {
     ManifestItemList items;
     for ( auto pair : pkg->Manifest() )

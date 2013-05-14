@@ -199,7 +199,7 @@ unique_ptr<ByteStream> ZipArchive::ByteStreamAtPath(const string &path) const
 {
     return unique_ptr<ByteStream>(new ZipFileByteStream(_zip, path));
 }
-ArchiveReader* ZipArchive::ReaderAtPath(const string & path) const
+unique_ptr<ArchiveReader> ZipArchive::ReaderAtPath(const string & path) const
 {
     if (_zip == nullptr)
         return nullptr;
@@ -208,9 +208,9 @@ ArchiveReader* ZipArchive::ReaderAtPath(const string & path) const
     if (file == nullptr)
         return nullptr;
     
-    return new ZipReader(file);
+    return unique_ptr<ZipReader>(new ZipReader(file));
 }
-ArchiveWriter* ZipArchive::WriterAtPath(const string & path, bool compressed, bool create)
+unique_ptr<ArchiveWriter> ZipArchive::WriterAtPath(const string & path, bool compressed, bool create)
 {
     if (_zip == nullptr)
         return nullptr;
@@ -226,7 +226,7 @@ ArchiveWriter* ZipArchive::WriterAtPath(const string & path, bool compressed, bo
         return nullptr;
     }
     
-    return writer;
+    return unique_ptr<ZipWriter>(writer);
 }
 ArchiveItemInfo ZipArchive::InfoAtPath(const string & path) const
 {

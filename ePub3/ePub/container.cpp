@@ -19,9 +19,9 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "package.h"
 #include "container.h"
 #include "archive.h"
-#include "package.h"
 #include "archive_xml.h"
 #include "xpath_wrangler.h"
 #include "byte_stream.h"
@@ -34,8 +34,22 @@ static const char * gRootfilesXPath = "/ocf:container/ocf:rootfiles/ocf:rootfile
 static const char * gRootfilePathsXPath = "/ocf:container/ocf:rootfiles/ocf:rootfile/@full-path";
 static const char * gVersionXPath = "/ocf:container/@version";
 
-Container::Container(const string& path) : _archive(Archive::Open(path.stl_str()))
+Container::Container() : _archive(nullptr), _ocf(nullptr), _packages(), _encryption()
 {
+}
+Container::Container(Container&& o) : _archive(std::move(o._archive)), _ocf(o._ocf), _packages(std::move(o._packages))
+{
+    o._ocf = nullptr;
+}
+Container::~Container()
+{
+    if ( _ocf != nullptr )
+        xmlFreeDoc(_ocf);
+}
+bool Container::Open(const string& path)
+{
+    ContainerPtr sharedThis(shared_from_this());
+    _archive = std::move(Archive::Open(path.stl_str()));
     if ( _archive == nullptr )
         throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
     
@@ -44,7 +58,7 @@ Container::Container(const string& path) : _archive(Archive::Open(path.stl_str()
     ArchiveXmlReader reader(_archive->ReaderAtPath(gContainerFilePath));
     _ocf = reader.xmlReadDocument(gContainerFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
     if ( _ocf == nullptr )
-        throw std::invalid_argument(_Str(__PRETTY_FUNCTION__, ": No container.xml in ", path));
+        return false;
 
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(_ocf, {{"ocf", "urn:oasis:names:tc:opendocument:xmlns:container"}});
@@ -56,7 +70,7 @@ Container::Container(const string& path) : _archive(Archive::Open(path.stl_str()
     xmlNodeSetPtr nodes = xpath.Nodes(reinterpret_cast<const xmlChar*>(gRootfilesXPath));
     
     if ( nodes == nullptr || nodes->nodeNr == 0 )
-        throw std::invalid_argument(_Str(__PRETTY_FUNCTION__, ": No rootfiles in ", path));
+        return false;
     
     for ( int i = 0; i < nodes->nodeNr; i++ )
     {
@@ -69,23 +83,20 @@ Container::Container(const string& path) : _archive(Archive::Open(path.stl_str()
         if ( _path == nullptr )
             continue;
         
-        _packages.push_back(new Package(_archive, _path, type));
+        auto pkg = std::make_shared<Package>(sharedThis, type);
+        if ( pkg->Open(_path) )
+            _packages.push_back(pkg);
     }
 
     LoadEncryption();
+    return true;
 }
-Container::Container(Container&& o) : _archive(o._archive), _ocf(o._ocf), _packages(std::move(o._packages))
+shared_ptr<Container> Container::OpenContainer(const string &path)
 {
-    o._archive = nullptr;
-    o._ocf = nullptr;
-    o._packages.clear();
-}
-Container::~Container()
-{
-    if ( _archive != nullptr )
-        delete _archive;
-    if ( _ocf != nullptr )
-        xmlFreeDoc(_ocf);
+    ContainerPtr container = std::make_shared<Container>();
+    if ( container->Open(path) == false )
+        return nullptr;
+    return container;
 }
 Container::PathList Container::PackageLocations() const
 {
@@ -105,7 +116,7 @@ Container::PathList Container::PackageLocations() const
     
     return output;
 }
-const Package* Container::DefaultPackage() const
+shared_ptr<Package> Container::DefaultPackage() const
 {
     if ( _packages.empty() )
         return nullptr;
@@ -129,11 +140,12 @@ string Container::Version() const
 }
 void Container::LoadEncryption()
 {
-    ArchiveReader *pZipReader = _archive->ReaderAtPath(gEncryptionFilePath);
-    if ( pZipReader == nullptr )
+    ContainerPtr sharedThis(shared_from_this());
+    unique_ptr<ArchiveReader> pZipReader = _archive->ReaderAtPath(gEncryptionFilePath);
+    if ( !pZipReader )
         return;
     
-    ArchiveXmlReader reader(pZipReader);
+    ArchiveXmlReader reader(std::move(pZipReader));
     xmlDocPtr enc = reader.xmlReadDocument(gEncryptionFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
     if ( enc == nullptr )
         return;
@@ -158,12 +170,14 @@ void Container::LoadEncryption()
     
     for ( int i = 0; i < nodes->nodeNr; i++ )
     {
-        _encryption.emplace_back(new EncryptionInfo(nodes->nodeTab[i]));
+        auto encPtr = std::make_shared<EncryptionInfo>(sharedThis);
+        if ( encPtr->ParseXML(nodes->nodeTab[i]) )
+            _encryption.push_back(encPtr);
     }
     
     xmlXPathFreeNodeSet(nodes);
 }
-const EncryptionInfo* Container::EncryptionInfoForPath(const string &path) const
+shared_ptr<EncryptionInfo> Container::EncryptionInfoForPath(const string &path) const
 {
     for ( auto item : _encryption )
     {

@@ -165,6 +165,10 @@ public:
     /// Returns `true` if the IRI is a URL referencing a relative location.
     bool            IsRelative() const { return !_url->has_host(); }
     
+    ///
+    /// Returns `true` if the IRI is empty.
+    bool            IsEmpty() const { return _url->is_empty(); }
+    
     /// @{
     /// @name Component Introspection
     

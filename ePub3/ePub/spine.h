@@ -24,6 +24,8 @@
 
 #include <ePub3/epub3.h>
 #include <ePub3/utilities/utfstring.h>
+#include <ePub3/utilities/xml_identifiable.h>
+#include <ePub3/property_holder.h>
 #include <vector>
 #include <libxml/tree.h>
 
@@ -33,6 +35,8 @@ class ManifestItem;
 class Package;
 class SpineItem;
 class IRI;
+
+typedef shared_ptr<SpineItem>   SpineItemPtr;
 
 /**
  The SpineItem class provides access to the spine of a publication.
@@ -75,7 +79,7 @@ class IRI;
  
  @ingroup epub-model
  */
-class SpineItem
+class SpineItem : public std::enable_shared_from_this<SpineItem>, public OwnedBy<Package>, public PropertyHolder, public XMLIdentifiable
 {
 public:
     typedef std::vector<IRI>        PropertyList;
@@ -97,7 +101,7 @@ public:
      @param node The `<itemref>` element node for this spine item.
      @param owner The package contaning this spine item.
      */
-    EPUB3_EXPORT        SpineItem(xmlNodePtr node, Package * owner);
+    EPUB3_EXPORT        SpineItem(const shared_ptr<Package>& owner);
     ///
     /// C++11 move constructor.
     EPUB3_EXPORT        SpineItem(SpineItem&&);
@@ -105,6 +109,9 @@ public:
     // NB: deleting a spine item will delete its next, etc.
     // It will also reach back into _prev and nullify its _next
     virtual             ~SpineItem();
+    
+    EPUB3_EXPORT
+    bool                ParseXML(shared_ptr<SpineItem>& sharedMe, xmlNodePtr node);
     
     /// @{
     /// @name Metadata
@@ -114,32 +121,20 @@ public:
     inline size_t       Count()             const       { return (_next == nullptr ? 1 : 1 + _next->Count()); }
     ///
     /// Returns the index of the current item in the overall spine. O(n).
-    inline size_t       Index()             const       { return (_prev == nullptr ? 0 : _prev->Index() + 1); }
+    inline size_t       Index()             const       { return (_prev.expired() ? 0 : _prev.lock()->Index() + 1); }
     
     ///
     /// Returns this item's identifier (if any).
-    const string&       Identifier()        const       { return _ident; }
+    const string&       Identifier()        const       { return XMLIdentifier(); }
     ///
     /// Returns the `idref` identifying the manifest item for this spine item.
     const string&       Idref()             const       { return _idref; }
     ///
     /// Obtains the manifest item corresponding to this spine item.
-    const ManifestItem* ManifestItem()      const;
+    shared_ptr<ManifestItem>    ManifestItem()      const;
     ///
     /// Returns `true` if this item is linear, `false` otherwise.
     bool                Linear()            const       { return _linear; }
-    ///
-    /// Returns the properties of this item.
-    const PropertyList& Properties()        const       { return _properties; }
-    
-    ///
-    /// Page-spread identifiers.
-    enum class EPUB3_EXPORT PageSpread : uint8_t
-    {
-        Either,             ///< No page spread property was defined, or both were.
-        Left,               ///< Item has the `page-spread-left` property.
-        Right               ///< Item has the `page-spread-right` property.
-    };
     
     ///
     /// Determine the spread location for this item (or for the first page thereof).
@@ -153,33 +148,19 @@ public:
     
     ///
     /// Retrieves a pointer to the spine item following this one, or `nullptr`.
-    SpineItem*          Next()                          { return _next; }
-    ///
-    /// Retrieves a pointer to the spine item following this one, or `nullptr`.
-    const SpineItem*    Next()              const       { return _next; }
+    shared_ptr<SpineItem>   Next()              const       { return _next; }
     ///
     /// Retrieves a pointer to the spine item preceding this one, or `nullptr`.
-    SpineItem*          Previous()                      { return _prev; }
-    ///
-    /// Retrieves a pointer to the spine item preceding this one, or `nullptr`.
-    const SpineItem*    Previous()          const       { return _prev; }
+    shared_ptr<SpineItem>   Previous()          const       { return _prev.lock(); }
     
     ///
     /// Retrieves a pointer to the next linear item in the spine, or `nullptr`.
     EPUB3_EXPORT
-    SpineItem*          NextStep();
-    ///
-    /// Retrieves a pointer to the next linear item in the spine, or `nullptr`.
-    EPUB3_EXPORT
-    const SpineItem*    NextStep()          const;
+    shared_ptr<SpineItem>   NextStep()          const;
     ///
     /// Retrieves a pointer to the previous linear item in the spine, or `nullptr`.
     EPUB3_EXPORT
-    SpineItem*          PriorStep();
-    ///
-    /// Retrieves a pointer to the previous linear item in the spine, or `nullptr`.
-    EPUB3_EXPORT
-    const SpineItem*    PriorStep()         const;
+    shared_ptr<SpineItem>   PriorStep()         const;
     
     /// @}
     
@@ -201,7 +182,7 @@ public:
      @throws std::out_of_range if `idx` is out of bounds.
      */
     EPUB3_EXPORT
-    SpineItem*          at(ssize_t idx);
+    shared_ptr<SpineItem>   at(ssize_t idx)     const;
     
     /**
      Retrieves the spine item at a relative index.
@@ -209,43 +190,21 @@ public:
      @result A SpineItem.
      @throws std::out_of_range if `idx` is out of bounds.
      */
-    EPUB3_EXPORT
-    const SpineItem*    at(ssize_t idx)         const;
-    
-    /**
-     Retrieves the spine item at a relative index.
-     @param idx The relative index of the item to retrieve.
-     @result A SpineItem.
-     @throws std::out_of_range if `idx` is out of bounds.
-     */
-    SpineItem*          operator[](ssize_t idx)                                   { return at(idx); }
-    
-    /**
-     Retrieves the spine item at a relative index.
-     @param idx The relative index of the item to retrieve.
-     @result A SpineItem.
-     @throws std::out_of_range if `idx` is out of bounds.
-     */
-    const SpineItem*    operator[](ssize_t idx) const                             { return at(idx); }
+    shared_ptr<SpineItem>   operator[](ssize_t idx) const                             { return at(idx); }
     
     /// @}
     
 protected:
-    string       _ident;            ///< The spine item's `id`, if it has one.
-    string       _idref;            ///< The `idref` value targetting a ManifestItem.
-    Package*     _owner;            ///< The Package containing this SpineItem.
-    bool         _linear;           ///< `true` if the item is linear (the default).
-    PropertyList _properties;       ///< A list of property IRIs.
+    string                  _idref;             ///< The `idref` value targetting a ManifestItem.
+    bool                    _linear;            ///< `true` if the item is linear (the default).
     
-    SpineItem* _prev;               ///< The SpineItem preceding this one in the spine.
-    SpineItem* _next;               ///< The SpineItem following this one in the spine.
+    weak_ptr<SpineItem>     _prev;              ///< The SpineItem preceding this one in the spine.
+    shared_ptr<SpineItem>   _next;              ///< The SpineItem following this one in the spine.
     
     friend class Package;
-    void SetNextItem(SpineItem* next) {
-        next->_next = _next;
-        next->_prev = this;
-        _next = next;
-    }
+    
+    EPUB3_EXPORT
+    void SetNextItem(const shared_ptr<SpineItem>& next);
 };
 
 EPUB3_END_NAMESPACE
