@@ -77,6 +77,14 @@
 #define LOCALE_INCLUDE <locale>
 #define LOCALE_NS std
 
+#if !EPUB_COMPILER(CLANG) && !defined(__private_extern__)
+# if EPUB_COMPILER(MSVC)
+#  define __private_extern__ extern
+# else
+#  define __private_extern__ extern __attribute__ ((__visibility__("hidden")))
+# endif
+#endif
+
 #if EPUB_OS(WINDOWS)
 # ifndef EPUB3_EXPORT
 #  ifdef BUILDING_EPUB3

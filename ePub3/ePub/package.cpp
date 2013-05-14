@@ -360,7 +360,7 @@ bool Package::Unpack()
             if ( node->ns != nullptr && xmlStrcmp(node->ns->href, BAD_CAST DCNamespace) == 0 )
             {
                 // definitely a main node
-                p = PropertyPtr::make_shared(holderPtr);
+                p = std::make_shared<Property>(holderPtr);
             }
             else if ( _getProp(node, "name").size() > 0 )
             {
@@ -370,7 +370,7 @@ bool Package::Unpack()
             else if ( _getProp(node, "refines").empty() )
             {
                 // not refining anything, so it's a main node
-                p = PropertyPtr::make_shared(holderPtr);
+                p = std::make_shared<Property>(holderPtr);
             }
             else
             {
@@ -403,7 +403,7 @@ bool Package::Unpack()
             if ( prop )
             {
                 // it's a property, so this is an extension
-                PropertyExtensionPtr extPtr = PropertyExtensionPtr::make_shared(prop);
+                PropertyExtensionPtr extPtr = std::make_shared<PropertyExtension>(prop);
                 if ( extPtr->ParseMetaElement(node) )
                     prop->AddExtension(extPtr);
             }
@@ -413,7 +413,7 @@ bool Package::Unpack()
                 shared_ptr<PropertyHolder> ptr = std::dynamic_pointer_cast<PropertyHolder>(found->second);
                 if ( ptr )
                 {
-                    prop = PropertyPtr::make_shared(ptr);
+                    prop = std::make_shared<Property>(ptr);
                     if ( prop->ParseMetaElement(node) )
                         ptr->AddProperty(prop);
                 }

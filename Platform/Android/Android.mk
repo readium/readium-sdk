@@ -233,7 +233,6 @@ LOCAL_SRC_FILES := \
 		ePub3/ePub/xpath_wrangler.cpp \
 		ePub3/ePub/spine.cpp \
 		ePub3/ePub/manifest.cpp \
-		ePub3/ePub/metadata.cpp \
 		ePub3/ePub/cfi.cpp \
 		ePub3/ePub/nav_point.cpp \
 		ePub3/ePub/nav_table.cpp \
@@ -271,6 +270,10 @@ LOCAL_SRC_FILES := \
 		ePub3/utilities/ring_buffer.cpp \
 		ePub3/utilities/ref_counted.cpp \
 		ePub3/utilities/run_loop_android.cpp \
+		ePub3/utilities/epub_locale.cpp \
+		ePub3/ePub/property_holder.cpp \
+		ePub3/ePub/property.cpp \
+		ePub3/ePub/property_extension.cpp \
 		Platform/Android/src/jni_cache_dir.c
 
 include $(BUILD_SHARED_LIBRARY)
