@@ -64,6 +64,9 @@
     <Filter Include="Source Files\ThirdParty\google-url">
       <UniqueIdentifier>{05096ea6-02e6-417d-b4be-0050b12127fd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ePub\Components\Properties">
+      <UniqueIdentifier>{c2e0a984-26e7-456e-972a-d6d7cb5676be}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -174,9 +177,6 @@
     <ClInclude Include="..\..\..\..\ePub3\ePub\media_support_info.h">
       <Filter>Source Files\ePub\Components</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\ePub3\ePub\metadata.h">
-      <Filter>Source Files\ePub\Components</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\ePub3\ePub\package.h">
       <Filter>Source Files\ePub\Components</Filter>
     </ClInclude>
@@ -279,6 +279,24 @@
     <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_util_internal.h">
       <Filter>Source Files\ThirdParty\google-url</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\epub_locale.h">
+      <Filter>Source Files\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\property.h">
+      <Filter>Source Files\ePub\Components\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\property_extension.h">
+      <Filter>Source Files\ePub\Components\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\property_holder.h">
+      <Filter>Source Files\ePub\Components\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\owned_by.h">
+      <Filter>Source Files\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\xml_identifiable.h">
+      <Filter>Source Files\utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -363,9 +381,6 @@
       <Filter>Source Files\ePub\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ePub\media_support_info.cpp">
-      <Filter>Source Files\ePub\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ePub\metadata.cpp">
       <Filter>Source Files\ePub\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ePub\package.cpp">
@@ -610,6 +625,18 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\utilities\ref_counted.cpp">
       <Filter>Source Files\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\epub_locale.cpp">
+      <Filter>Source Files\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\property.cpp">
+      <Filter>Source Files\ePub\Components\Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\property_extension.cpp">
+      <Filter>Source Files\ePub\Components\Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\property_holder.cpp">
+      <Filter>Source Files\ePub\Components\Properties</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

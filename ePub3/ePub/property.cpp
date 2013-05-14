@@ -109,7 +109,7 @@ static __to_code_pair __to_code_pairs[16] = {
     __to_code_pair("subject", DCType::Subject),
     __to_code_pair("type", DCType::Type)
 };
-std::map<string, DCType> Metadata::NameToIDMap(&__to_code_pairs[0], &__to_code_pairs[16]);
+static std::map<string, DCType> NameToIDMap(&__to_code_pairs[0], &__to_code_pairs[16]);
 
 static __to_str_pair __to_str_pairs[16] = {
     __to_str_pair(DCType::Identifier, "identifier"),

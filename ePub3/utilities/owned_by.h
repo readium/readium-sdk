@@ -54,7 +54,7 @@ public:
     bool Orphaned() const { return _owner.expired(); }
     
     void SetOwner(const shared_type __owner) _NOEXCEPT { _owner = __owner; }
-    
+#if EPUB_COMPILER_SUPPORTS(CXX_DEFAULT_TEMPLATE_ARGS)
     template <class _Yp,
               class = typename std::enable_if
                       <
@@ -62,6 +62,17 @@ public:
                       >::type
              >
     void SetOwner(const std::shared_ptr<_Yp> __owner) _NOEXCEPT { _owner = __owner; }
+#else
+public:
+    template <class _Yp>
+    void SetOwner(const std::shared_ptr<_Yp> __owner,
+                  typename std::enable_if
+                  <
+                    std::is_convertible<_Yp*, _Tp*>::value
+                  >::type ** = 0) _NOEXCEPT {
+        _owner = __owner;
+    }
+#endif
     
 };
 

@@ -23,7 +23,7 @@ public:
     typedef shared_vector<Property>             PropertyList;
     
     typedef std::shared_ptr<Property>           value_type;
-    typedef typename PropertyList::size_type    size_type;
+    typedef PropertyList::size_type             size_type;
 
     ///
     /// An array of concrete property IRIs.

@@ -252,12 +252,19 @@ protected:
     ///
     /// Loads navigation tables from a given manifest item (which has the `"nav"` property).
     static NavigationList   NavTablesFromManifestItem(shared_ptr<PackageBase> owner, shared_ptr<ManifestItem> pItem);
-    
+
+#if EPUB_COMPILER_SUPPORTS(CXX_DEFAULT_TEMPLATE_ARGS)
     template <class _Tp, class = typename std::enable_if
                             <
                                 std::is_base_of<XMLIdentifiable, _Tp>::value
                             >::type>
-    void                            StoreXMLIdentifiable(shared_ptr<_Tp> ptr) {
+    void                            StoreXMLIdentifiable(shared_ptr<_Tp> ptr)
+#else
+    template <class _Tp>
+    void                    StoreXMLIdentifiable(shared_ptr<_Tp> ptr,
+        typename std::enable_if<std::is_base_of<XMLIdentifiable, _Tp>::value, void>::type ** = 0)
+#endif
+    {
         if ( !ptr->XMLIdentifier().empty() )
         {
 #if EPUB_HAVE(CXX_MAP_EMPLACE)

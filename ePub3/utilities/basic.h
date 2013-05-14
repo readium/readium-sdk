@@ -71,7 +71,7 @@ public:
     shared_vector(std::initializer_list<typename _Base::value_type> __il) : _Base(__il) {}
     shared_vector(std::initializer_list<typename _Base::value_type> __il, const typename _Base::allocator_type& __a) : _Base(__il, __a) {}
 #endif
-    ~shared_vector() { ~_Base(); }
+    ~shared_vector() { _Base::~_Base(); }
     
     shared_vector& operator=(const shared_vector& __o) { _Base::operator=(__o); return *this; }
     shared_vector& operator=(shared_vector&& __o) { _Base::operator=(std::move(__o)); return *this; }
@@ -98,7 +98,7 @@ public:
     shared_list(std::initializer_list<typename _Base::value_type> __il) : _Base(__il) {}
     shared_list(std::initializer_list<typename _Base::value_type> __il, const typename _Base::allocator_type& __a) : _Base(__il, __a) {}
 #endif
-    ~shared_list() { ~_Base(); }
+    ~shared_list() { _Base::~_Base(); }
     
     shared_list& operator=(const shared_list& __o) { _Base::operator=(__o); return *this; }
     shared_list& operator=(shared_list&& __o) { _Base::operator=(std::move(__o)); return *this; }
