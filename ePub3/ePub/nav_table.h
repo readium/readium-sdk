@@ -30,6 +30,9 @@
 EPUB3_BEGIN_NAMESPACE
 
 class Package;
+class NavigationTable;
+
+typedef shared_ptr<NavigationTable> NavigationTablePtr;
 
 /**
  @ingroup navigation

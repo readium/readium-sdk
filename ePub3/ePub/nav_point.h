@@ -27,8 +27,13 @@
 #include <ePub3/utilities/utfstring.h>
 #include <ePub3/utilities/owned_by.h>
 #include <vector>
+#import <memory>
 
 EPUB3_BEGIN_NAMESPACE
+
+class NavigationPoint;
+
+typedef shared_ptr<NavigationPoint> NavigationPointPtr;
 
 /**
  @ingroup navigation
