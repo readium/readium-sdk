@@ -759,8 +759,100 @@ const string& Package::Subtitle(bool localized) const
     // no 'subtitle' found, so no subtitle
     return string::EmptyString;
 }
+const string& Package::ShortTitle(bool localized) const
+{
+    IRI titleTypeIRI(MakePropertyIRI("title-type"));      // http://idpf.org/epub/vocab/package/#title-type
+    
+    // find the main one
+    for ( auto item : PropertiesMatching(titleTypeIRI) )
+    {
+        PropertyExtensionPtr extension = item->ExtensionWithIdentifier(titleTypeIRI);
+        if ( extension == nullptr )
+            continue;
+        
+        if ( extension->Value() == "short" )
+        {
+            if ( localized )
+                return item->LocalizedValue();
+            return item->Value();
+        }
+    }
+    
+    // no 'subtitle' found, so no subtitle
+    return string::EmptyString;
+}
+const string& Package::CollectionTitle(bool localized) const
+{
+    IRI titleTypeIRI(MakePropertyIRI("title-type"));      // http://idpf.org/epub/vocab/package/#title-type
+    
+    // find the main one
+    for ( auto item : PropertiesMatching(titleTypeIRI) )
+    {
+        PropertyExtensionPtr extension = item->ExtensionWithIdentifier(titleTypeIRI);
+        if ( extension == nullptr )
+            continue;
+        
+        if ( extension->Value() == "collection" )
+        {
+            if ( localized )
+                return item->LocalizedValue();
+            return item->Value();
+        }
+    }
+    
+    // no 'subtitle' found, so no subtitle
+    return string::EmptyString;
+}
+const string& Package::EditionTitle(bool localized) const
+{
+    IRI titleTypeIRI(MakePropertyIRI("title-type"));      // http://idpf.org/epub/vocab/package/#title-type
+    
+    // find the main one
+    for ( auto item : PropertiesMatching(titleTypeIRI) )
+    {
+        PropertyExtensionPtr extension = item->ExtensionWithIdentifier(titleTypeIRI);
+        if ( extension == nullptr )
+            continue;
+        
+        if ( extension->Value() == "edition" )
+        {
+            if ( localized )
+                return item->LocalizedValue();
+            return item->Value();
+        }
+    }
+    
+    // no 'subtitle' found, so no subtitle
+    return string::EmptyString;
+}
+const string& Package::ExpandedTitle(bool localized) const
+{
+    IRI titleTypeIRI(MakePropertyIRI("title-type"));      // http://idpf.org/epub/vocab/package/#title-type
+    
+    // find the main one
+    for ( auto item : PropertiesMatching(titleTypeIRI) )
+    {
+        PropertyExtensionPtr extension = item->ExtensionWithIdentifier(titleTypeIRI);
+        if ( extension == nullptr )
+            continue;
+        
+        if ( extension->Value() == "expanded" )
+        {
+            if ( localized )
+                return item->LocalizedValue();
+            return item->Value();
+        }
+    }
+    
+    // no 'subtitle' found, so no subtitle
+    return string::EmptyString;
+}
 const string Package::FullTitle(bool localized) const
 {
+    string expanded = ExpandedTitle(localized);
+    if ( !expanded.empty() )
+        return expanded;
+    
     auto items = PropertiesMatching(DCType::Title);
     if ( items.size() == 1 )
         return items[0]->Value();

@@ -115,11 +115,6 @@ typedef signed long ssize_t;
 # endif
 #endif
 
-#if EPUB_PLATFORM(WIN)
-# define _THROW_WIN_ERROR_(err) throw std::system_error(static_cast<int>(err), std::system_category())
-# define _THROW_LAST_ERROR_() _THROW_WIN_ERROR_(::GetLastError())
-#endif
-
 #if EPUB_COMPILER(GCC) && !EPUB_COMPILER(CLANG)
 # if GCC_VERSION_AT_LEAST(4, 7, 0)
 #  define _GCC_NOTHROW noexcept (true)
