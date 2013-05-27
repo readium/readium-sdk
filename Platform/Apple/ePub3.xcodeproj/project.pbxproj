@@ -241,6 +241,7 @@
 		ABAB94CB1666AEA10018D451 /* package.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAB94C91666AEA10018D451 /* package.h */; };
 		ABAB94D21667B6FD0018D451 /* archive_xml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAB94D01667B6FD0018D451 /* archive_xml.cpp */; };
 		ABAB94D31667B6FD0018D451 /* archive_xml.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAB94D11667B6FD0018D451 /* archive_xml.h */; };
+		ABB0459E175407A9001274E3 /* page_spread_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB0459D175407A9001274E3 /* page_spread_tests.cpp */; };
 		ABB18FE51656863300CFC651 /* Config.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB18FAC1656863300CFC651 /* Config.h */; };
 		ABB18FE61656863300CFC651 /* mkstemp.c in Sources */ = {isa = PBXBuildFile; fileRef = ABB18FAD1656863300CFC651 /* mkstemp.c */; };
 		ABB18FE71656863300CFC651 /* zip.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB18FAE1656863300CFC651 /* zip.h */; };
@@ -687,6 +688,7 @@
 		ABAB94C91666AEA10018D451 /* package.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = package.h; sourceTree = "<group>"; };
 		ABAB94D01667B6FD0018D451 /* archive_xml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = archive_xml.cpp; sourceTree = "<group>"; };
 		ABAB94D11667B6FD0018D451 /* archive_xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = archive_xml.h; sourceTree = "<group>"; };
+		ABB0459D175407A9001274E3 /* page_spread_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = page_spread_tests.cpp; sourceTree = "<group>"; };
 		ABB18FAC1656863300CFC651 /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
 		ABB18FAD1656863300CFC651 /* mkstemp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mkstemp.c; sourceTree = "<group>"; };
 		ABB18FAE1656863300CFC651 /* zip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zip.h; sourceTree = "<group>"; };
@@ -851,6 +853,7 @@
 				AB95448B16BC28F300EFD2FD /* switch_preproc_tests.cpp */,
 				AB95448D16BC539200EFD2FD /* object_preproc_tests.cpp */,
 				AB17B29A170C872E00FD5917 /* font_obfuscation_tests.cpp */,
+				ABB0459D175407A9001274E3 /* page_spread_tests.cpp */,
 			);
 			name = UnitTests;
 			path = ../../UnitTests;
@@ -1759,6 +1762,7 @@
 				AB95448C16BC28F300EFD2FD /* switch_preproc_tests.cpp in Sources */,
 				AB95448E16BC539200EFD2FD /* object_preproc_tests.cpp in Sources */,
 				AB17B29B170C872E00FD5917 /* font_obfuscation_tests.cpp in Sources */,
+				ABB0459E175407A9001274E3 /* page_spread_tests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
