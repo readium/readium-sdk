@@ -58,23 +58,44 @@ public:
     
     virtual size_type   NumberOfProperties() const                      { return _properties.size(); }
     
+    
     virtual void        AddProperty(const shared_ptr<Property>& prop)   { _properties.push_back(prop); }
     virtual void        AddProperty(const shared_ptr<Property>&& prop)  { _properties.push_back(std::move(prop)); }
     virtual void        AddProperty(Property* prop)                     { _properties.emplace_back(prop); }
+    
+    EPUB3_EXPORT
     virtual void        AppendProperties(const PropertyHolder& properties, shared_ptr<PropertyHolder> sharedMe);
+    EPUB3_EXPORT
     virtual void        AppendProperties(PropertyHolder&& properties, shared_ptr<PropertyHolder> sharedMe);
+    EPUB3_EXPORT
     virtual void        RemoveProperty(const IRI& iri);
+    EPUB3_EXPORT
+    virtual void        RemoveProperty(const string& reference, const string& prefix="");
     
     virtual value_type  PropertyAt(size_type idx) const                 { return _properties.at(idx); }
+    EPUB3_EXPORT
     virtual void        ErasePropertyAt(size_type idx);
     
+    EPUB3_EXPORT
     virtual bool        ContainsProperty(DCType type) const;
+    EPUB3_EXPORT
     virtual bool        ContainsProperty(const IRI& iri) const;
+    EPUB3_EXPORT
+    virtual bool        ContainsProperty(const string& reference, const string& prefix="") const;
     
     EPUB3_EXPORT
     const PropertyList  PropertiesMatching(DCType type) const;
     EPUB3_EXPORT
     const PropertyList  PropertiesMatching(const IRI& iri) const;
+    EPUB3_EXPORT
+    const PropertyList  PropertiesMatching(const string& reference, const string& prefix="") const;
+    
+    EPUB3_EXPORT
+    PropertyPtr         PropertyMatching(DCType type) const;
+    EPUB3_EXPORT
+    PropertyPtr         PropertyMatching(const IRI& iri) const;
+    EPUB3_EXPORT
+    PropertyPtr         PropertyMatching(const string& reference, const string& prefix="") const;
     
     template <class _Function>
     inline FORCE_INLINE

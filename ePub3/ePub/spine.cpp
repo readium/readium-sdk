@@ -51,8 +51,9 @@ bool SpineItem::ParseXML(SpineItemPtr& sharedMe, xmlNodePtr node)
     {
         for ( auto& property : properties.split(REGEX_NS::regex(",\\s*")) )
         {
-            Property prop(holder);
-            prop.SetPropertyIdentifier(this->PropertyIRIFromString(property));
+            PropertyPtr prop = std::make_shared<Property>(holder);
+            prop->SetPropertyIdentifier(this->PropertyIRIFromString(property));
+            this->AddProperty(prop);
         }
     }
     return true;

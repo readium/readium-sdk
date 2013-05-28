@@ -123,6 +123,13 @@ void PropertyHolder::RemoveProperty(const IRI& iri)
         }
     }
 }
+void PropertyHolder::RemoveProperty(const string& reference, const string& prefix)
+{
+    IRI iri = MakePropertyIRI(reference, prefix);
+    if ( iri.IsEmpty() )
+        return;
+    RemoveProperty(iri);
+}
 void PropertyHolder::ErasePropertyAt(size_type idx)
 {
     if ( idx > _properties.size() )
@@ -151,6 +158,13 @@ bool PropertyHolder::ContainsProperty(const IRI& iri) const
     
     return false;
 }
+bool PropertyHolder::ContainsProperty(const string& reference, const string& prefix) const
+{
+    IRI iri = MakePropertyIRI(reference, prefix);
+    if ( iri.IsEmpty() )
+        return false;
+    return ContainsProperty(iri);
+}
 const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(DCType type) const
 {
     IRI iri = IRIForDCType(type);
@@ -166,6 +180,39 @@ const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(const IRI&
         parent->BuildPropertyList(output, iri);
     
     return output;
+}
+const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(const string& reference, const string& prefix) const
+{
+    IRI iri = MakePropertyIRI(reference, prefix);
+    if ( iri.IsEmpty() )
+        return PropertyList();
+    return PropertiesMatching(iri);
+}
+PropertyPtr PropertyHolder::PropertyMatching(DCType type) const
+{
+    IRI iri = IRIForDCType(type);
+    return PropertyMatching(iri);
+}
+PropertyPtr PropertyHolder::PropertyMatching(const IRI& iri) const
+{
+    for ( auto &i : _properties )
+    {
+        if ( i->PropertyIdentifier() == iri )
+            return i;
+    }
+    
+    auto parent = _parent.lock();
+    if ( parent )
+        return parent->PropertyMatching(iri);
+    
+    return nullptr;
+}
+PropertyPtr PropertyHolder::PropertyMatching(const string& reference, const string& prefix) const
+{
+    IRI iri = MakePropertyIRI(reference, prefix);
+    if ( iri.IsEmpty() )
+        return false;
+    return PropertyMatching(iri);
 }
 void PropertyHolder::RegisterPrefixIRIStem(const string &prefix, const string &iriStem)
 {
@@ -196,6 +243,9 @@ IRI PropertyHolder::PropertyIRIFromString(const string &attrValue) const
 }
 void PropertyHolder::BuildPropertyList(PropertyList& output, const IRI& iri) const
 {
+    if ( iri.IsEmpty() )
+        return;
+    
     for ( auto& i : _properties )
     {
         if ( i->PropertyIdentifier() == iri || i->HasExtensionWithIdentifier(iri) )

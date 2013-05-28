@@ -30,6 +30,7 @@
 
 #define EPUB_PATH "TestData/childrens-literature-20120722.epub"
 #define LOCALIZED_EPUB_PATH "TestData/kusamakura-japanese-vertical-writing-20121124.epub"
+#define FXL_EPUB_PATH "TestData/page-blanche.epub"
 
 using namespace ePub3;
 
@@ -60,6 +61,36 @@ TEST_CASE("Metadata should be identified by property IRIs", "")
         }
          */
     });
+}
+
+TEST_CASE("Fixed Layout content should be identified using rendition:layout", "")
+{
+    ContainerPtr c = Container::OpenContainer(FXL_EPUB_PATH);
+    PackagePtr pkg = c->DefaultPackage();
+    
+    IRI iri = pkg->MakePropertyIRI("layout", "rendition");
+    INFO("Expected a valid IRI, but got " << iri.IRIString().stl_str());
+    REQUIRE_FALSE(iri.IsEmpty());
+    
+    REQUIRE(pkg->ContainsProperty(iri));
+    
+    PropertyHolder::PropertyList list = pkg->PropertiesMatching(iri);
+    INFO("Got " << list.size() << " properties matching IRI " << iri.IRIString().stl_str());
+    REQUIRE(list.size() == 1);
+    
+    INFO("Got propertpy value " << list[0]->Value().stl_str());
+    REQUIRE(list[0]->Value() == "pre-paginated");
+}
+
+TEST_CASE("Missing metadata should not throw", "")
+{
+    PackagePtr pkg = GetContainer()->DefaultPackage();
+    
+    IRI iri;
+    REQUIRE_NOTHROW(iri = pkg->MakePropertyIRI("layout", "rendition"));
+    
+    PropertyHolder::PropertyList list;
+    REQUIRE_NOTHROW(list = pkg->PropertiesMatching(iri));
 }
 
 TEST_CASE("Title(), Subtitle(), and FullTitle() should work as expected", "")

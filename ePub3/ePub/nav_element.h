@@ -31,6 +31,7 @@ EPUB3_BEGIN_NAMESPACE
 
 class NavigationElement;
 
+typedef shared_ptr<NavigationElement> NavigationElementPtr;
 typedef shared_vector<NavigationElement>    NavigationList;
 
 // abstract base for polymorphic navigation table/point classes
