@@ -689,6 +689,7 @@
 		ABAB94D01667B6FD0018D451 /* archive_xml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = archive_xml.cpp; sourceTree = "<group>"; };
 		ABAB94D11667B6FD0018D451 /* archive_xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = archive_xml.h; sourceTree = "<group>"; };
 		ABB0459D175407A9001274E3 /* page_spread_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = page_spread_tests.cpp; sourceTree = "<group>"; };
+		ABB0459F1754FDD3001274E3 /* make_unique.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = make_unique.h; sourceTree = "<group>"; };
 		ABB18FAC1656863300CFC651 /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
 		ABB18FAD1656863300CFC651 /* mkstemp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mkstemp.c; sourceTree = "<group>"; };
 		ABB18FAE1656863300CFC651 /* zip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zip.h; sourceTree = "<group>"; };
@@ -880,6 +881,7 @@
 				AB5D104B1721A722001D3C95 /* ref_counted.h */,
 				AB976C5C17393AD500AC26CF /* epub_locale.cpp */,
 				AB976C5D17393AD600AC26CF /* epub_locale.h */,
+				ABB0459F1754FDD3001274E3 /* make_unique.h */,
 			);
 			path = utilities;
 			sourceTree = "<group>";
