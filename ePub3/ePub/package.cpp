@@ -29,6 +29,7 @@
 #include "iri.h"
 #include "basic.h"
 #include "byte_stream.h"
+#include <ePub3/utilities/error_handler.h>
 #include <sstream>
 #include <list>
 #include REGEX_INCLUDE
@@ -94,7 +95,10 @@ bool PackageBase::Open(const string& path)
     ArchiveXmlReader reader(_archive->ReaderAtPath(path.stl_str()));
     _opf = reader.xmlReadDocument(path.c_str(), nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
     if ( _opf == nullptr )
-        throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": No OPF file at " + path.stl_str());
+    {
+        HandleError(EPUBError::OCFInvalidRootfileURL, _Str(__PRETTY_FUNCTION__, ": No OPF file at ", path.stl_str()));
+        return false;
+    }
     
     size_t loc = path.rfind("/");
     if ( loc == std::string::npos )
@@ -251,28 +255,54 @@ bool Package::Unpack()
     rootName.tolower();
     
     if ( rootName != "package" )
+    {
+        HandleError(EPUBError::OPFInvalidPackageDocument);
         return false;       // not an OPF file, innit?
+    }
+    if ( _getProp(reinterpret_cast<xmlNodePtr>(_opf), "version").empty() )
+    {
+        HandleError(EPUBError::OPFPackageHasNoVersion);
+    }
     
     InstallPrefixesFromAttributeValue(_getProp(root, "prefix", ePub3NamespaceURI));
     
     // go through children to determine the CFI index of the <spine> tag
     static const xmlChar* kSpineName = BAD_CAST "spine";
+    static const xmlChar* kManifestName = BAD_CAST "manifest";
+    static const xmlChar* kMetadataName = BAD_CAST "metadata";
     _spineCFIIndex = 0;
+    uint32_t idx = 0;
     xmlNodePtr child = root->children;
     while ( child != nullptr )
     {
         if ( child->type == XML_ELEMENT_NODE )
         {
-            _spineCFIIndex += 2;
+            idx += 2;
             if ( xmlStrEqual(child->name, kSpineName) )
-                break;
+            {
+                _spineCFIIndex = idx;
+                if ( _spineCFIIndex != 6 )
+                    HandleError(EPUBError::OPFSpineOutOfOrder);
+            }
+            else if ( xmlStrEqual(child->name, kManifestName) && idx != 4 )
+            {
+                HandleError(EPUBError::OPFManifestOutOfOrder);
+            }
+            else if ( xmlStrEqual(child->name, kMetadataName) && idx != 2 )
+            {
+                HandleError(EPUBError::OPFMetadataOutOfOrder);
+            }
         }
         
         child = child->next;
     }
     
     if ( _spineCFIIndex == 0 )
+    {
+        HandleError(EPUBError::OPFNoSpine);
         return false;       // spineless!
+    }
+    
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(_opf, {{"opf", OPFNamespace}, {"dc", DCNamespace}});
 #else
@@ -291,8 +321,15 @@ bool Package::Unpack()
         manifestNodes = xpath.Nodes("/opf:package/opf:manifest/opf:item");
         spineNodes = xpath.Nodes("/opf:package/opf:spine/opf:itemref");
         
-        if ( manifestNodes == nullptr || spineNodes == nullptr )
-            throw false;   // looks invalid, or at least unusable, to me
+        if ( manifestNodes == nullptr )
+        {
+            HandleError(EPUBError::OPFNoManifestItems);
+        }
+        
+        if ( spineNodes == nullptr )
+        {
+            HandleError(EPUBError::OPFNoSpineItems);
+        }
         
         for ( int i = 0; i < manifestNodes->nodeNr; i++ )
         {
@@ -329,6 +366,16 @@ bool Package::Unpack()
             cur = next;
         }
     }
+    catch (const std::system_error& exc)
+    {
+        if ( manifestNodes != nullptr )
+            xmlXPathFreeNodeSet(manifestNodes);
+        if ( spineNodes != nullptr )
+            xmlXPathFreeNodeSet(spineNodes);
+        if ( exc.code().category() == epub_spec_category() )
+            throw;
+        return false;
+    }
     catch (...)
     {
         if ( manifestNodes != nullptr )
@@ -350,7 +397,12 @@ bool Package::Unpack()
         shared_ptr<PropertyHolder> holderPtr = std::dynamic_pointer_cast<PropertyHolder>(sharedMe);
         metadataNodes = xpath.Nodes("/opf:package/opf:metadata/*");
         if ( metadataNodes == nullptr )
-            throw false;
+            HandleError(EPUBError::OPFNoMetadata);
+        
+        bool foundIdentifier = false, foundTitle = false, foundLanguage = false, foundModDate = false;
+        string uniqueIDRef = _getProp(reinterpret_cast<xmlNodePtr>(_opf), "unique-identifier");
+        if ( uniqueIDRef.empty() )
+            HandleError(EPUBError::OPFPackageUniqueIDInvalid);
         
         for ( int i = 0; i < metadataNodes->nodeNr; i++ )
         {
@@ -380,10 +432,49 @@ bool Package::Unpack()
             
             if ( p && p->ParseMetaElement(node) )
             {
+                switch ( p->Type() )
+                {
+                    case DCType::Identifier:
+                    {
+                        foundIdentifier = true;
+                        if ( !uniqueIDRef.empty() && uniqueIDRef != p->XMLIdentifier() )
+                            HandleError(EPUBError::OPFPackageUniqueIDInvalid);
+                        break;
+                    }
+                    case DCType::Title:
+                    {
+                        foundTitle = true;
+                        break;
+                    }
+                    case DCType::Language:
+                    {
+                        foundLanguage = true;
+                        break;
+                    }
+                    case DCType::Custom:
+                    {
+                        if ( p->PropertyIdentifier() == MakePropertyIRI("modified", "dcterms") )
+                            foundModDate = true;
+                        break;
+                    }
+                        
+                    default:
+                        break;
+                }
+                
                 AddProperty(p);
                 StoreXMLIdentifiable(p);
             }
         }
+        
+        if ( !foundIdentifier )
+            HandleError(EPUBError::OPFMissingIdentifierMetadata);
+        if ( !foundTitle )
+            HandleError(EPUBError::OPFMissingTitleMetadata);
+        if ( !foundTitle )
+            HandleError(EPUBError::OPFMissingLanguageMetadata);
+        if ( !foundModDate )
+            HandleError(EPUBError::OPFMissingModificationDateMetadata);
         
         for ( int i = 0; i < refineNodes->nodeNr; i++ )
         {
@@ -420,6 +511,16 @@ bool Package::Unpack()
             }
         }
     }
+    catch (std::system_error& exc)
+    {
+        if ( metadataNodes != nullptr )
+            xmlXPathFreeNodeSet(metadataNodes);
+        if ( refineNodes != nullptr )
+            xmlXPathFreeNodeSet(refineNodes);
+        if ( exc.code().category() == epub_spec_category() )
+            throw;
+        return false;
+    }
     catch (...)
     {
         if ( metadataNodes != nullptr )
@@ -453,7 +554,8 @@ bool Package::Unpack()
                 string mediaType = _getProp(node, "media-type");
                 if ( mediaType.empty() )
                 {
-                    throw std::invalid_argument("mediaType element has missing or empty media-type attribute.");
+                    HandleError(EPUBError::OPFBindingHandlerNoMediaType);
+                    throw false;
                 }
                 
                 // Each child mediaType of a bindings element must define a unique
@@ -466,20 +568,20 @@ bool Package::Unpack()
                     {
                         if ( typeid(*ptr) == typeid(MediaHandler) )
                         {
-                            throw std::invalid_argument(_Str("Duplicate media handler found for type '", mediaType, "'."));
+                            HandleError(EPUBError::OPFMultipleBindingsForMediaType);
                         }
                     }
                 }
                 if ( CoreMediaTypes.find(mediaType) != CoreMediaTypes.end() )
                 {
-                    throw std::invalid_argument("mediaType element specifies an EPUB Core Media Type.");
+                    HandleError(EPUBError::OPFCoreMediaTypeBindingEncountered);
                 }
                 
                 // The handler attribute is required
                 string handlerID = _getProp(node, "handler");
                 if ( handlerID.empty() )
                 {
-                    throw std::invalid_argument("mediaType element has missing or empty handler attribute.");
+                    HandleError(EPUBError::OPFBindingHandlerNotFound);
                 }
                 
                 // The required handler attribute must reference the ID [XML] of an
@@ -488,11 +590,12 @@ bool Package::Unpack()
                 ManifestItemPtr handlerItem = ManifestItemWithID(handlerID);
                 if ( !handlerItem )
                 {
-                    throw std::invalid_argument(_Str("mediaType element references non-existent handler with ID '", handlerID, "'."));
+                    HandleError(EPUBError::OPFBindingHandlerNotFound);
                 }
                 if ( handlerItem->MediaType() != "application/xhtml+xml" )
                 {
-                    throw std::invalid_argument(_Str("Media handlers must be XHTML content documents, but referenced item has type '", handlerItem->MediaType(), "'."));
+                    
+                    HandleError(EPUBError::OPFBindingHandlerInvalidType, _Str("Media handlers must be XHTML content documents, but referenced item has type '", handlerItem->MediaType(), "'."));
                 }
                 
                 // All XHTML Content Documents designated as handlers must have the
@@ -500,7 +603,7 @@ bool Package::Unpack()
                 // attribute.
                 if ( handlerItem->HasProperty(ItemProperties::HasScriptedContent) == false )
                 {
-                    throw std::invalid_argument("Media handlers must have the `scripted` property.");
+                    HandleError(EPUBError::OPFBindingHandlerNotScripted);
                 }
                 
                 // all good-- install it now
@@ -513,7 +616,7 @@ bool Package::Unpack()
         std::cerr << "Exception processing OPF file: " << exc.what() << std::endl;
         if ( bindingNodes != nullptr )
             xmlXPathFreeNodeSet(bindingNodes);
-        return false;
+        throw;
     }
     catch (...)
     {
@@ -562,6 +665,19 @@ void Package::InstallPrefixesFromAttributeValue(const string& attrValue)
     {
         if ( pos->size() == 3 )     // entire match plus two captures
         {
+            if ( pos->str(1) == "_" )
+                HandleError(EPUBError::OPFIllegalPrefixDefinition);
+            if ( PropertyHolder::ReservedVocabularies.find(pos->str(1)) != PropertyHolder::ReservedVocabularies.end() )
+                HandleError(EPUBError::OPFIllegalPrefixRedeclaration);
+            for ( auto& pair : PropertyHolder::ReservedVocabularies )
+            {
+                if ( pair.second == pos->str(2) )
+                {
+                    HandleError(EPUBError::OPFIllegalVocabularyIRIRedefinition);
+                    break;
+                }
+            }
+            
             RegisterPrefixIRIStem(pos->str(1), pos->str(2));
         }
         

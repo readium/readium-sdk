@@ -109,6 +109,7 @@ enum class EPUBError
     OCFNoContainerFile,                     ///< Containers MUST have a META-INF/container.xml file. Critical.
     OCFNoRootfilesInContainer,              ///< 'container.xml' MUST contain <rootfiles> element with at least one <rootfile>. Critical.
     OCFNonRelativeRootfileURL,              ///< A <rootfile> element's 'full-path' attribute MUST be a relative IRI. Medium.
+    OCFInvalidRootfileURL,                  ///< The URL to a package file does not identify a valid resource. Critical.
     
     // § 2.5.2
     OCFInvalidEncryptionFile,               ///< 'META-INF/encryption.xml' MUST be valid according to XML-ENC 1.1 schema. Major.
@@ -188,6 +189,7 @@ enum class EPUBError
     OPFBindingHandlerNotFound,              ///< <mediaType> elements' handler attribute MUST reference an item in the <manifest>. Major.
     OPFBindingHandlerInvalidType,           ///< <mediaType> handler resources MUST be XHTML content documents. Critical.
     OPFBindingHandlerNotScripted,           ///< <mediaType> handler resources MUST have the scripted property. Major.
+    OPFBindingHandlerNoMediaType,           ///< <mediaType> elements MUST have a 'media-type' attribute. Critical.
     
     // § 4.1.1
     OPFPackageUniqueIDInvalid,              ///< The <package> tag's unique-identifier attribute MUST reference a <dc:identifier> element in the package's <metadata>. Major.
@@ -213,7 +215,7 @@ enum class EPUBError
     // § 5.2.2
     OPFNoFallbackForForeignMediaType,       ///< Content Documents referenced from the <spine> that are not Core Media types MUST have a Core Media fallback. Major.
     OPFInvalidManifestFallbackRef,          ///< A manifest item's fallback attribute MUST provide the identifier of a valid, different manifest item. Critical.
-    OPFFallbackChainHasNoContendDocument,   ///< A fallback chain MUST contain a valid EPUB Content Document. Medium.
+    OPFFallbackChainHasNoContentDocument,   ///< A fallback chain MUST contain a valid EPUB Content Document. Medium.
     OPFFallbackChainCircularReference,      ///< A fallback chain MUST NOT contain circular references. Critical.
     
     // § 5.4
@@ -237,6 +239,7 @@ enum class EPUBError
     
     // § 2.2.4.1
     NavElementHasNoType,                    ///< Top-level <nav> elements in a Navigation Document MUST contain an epub:type attribute. Major.
+    NavElementUnexpectedType,               ///< The epub:type designates an incorrect value. Medium.
     NavElementInvalidChildren,              ///< <nav> elements in a Navigation Document MUST only contain <hgroup>, <h1..6> and <ol> elements as direct descendants. Medium.
     NavElementInvalidChildOrder,            ///< <h...> elements within <nav> elements in a Navigation Document MUST occur only once, and as the first child. Medium.
     NavListElementInvalidChild,             ///< Navigation Document <li> elements MUST contain one <a> element and an optional <ol> element, OR contain one <span> element and one required <ol> element. Medium.
@@ -258,6 +261,9 @@ enum class EPUBError
     SVGContainsAnimations,                  ///< SVG Animation Elements and Animation Event Attributes MUST NOT occur. Medium.
     SVGInvalidForeignObjectContent,         ///< SVG <foreignObject> elements MUST contain only valid XHTML Content Document Flow content, and its requiredExtensions attribute, if given, MUST be set to 'http://www.idpf.org/2007/ops'. Medium.
     SVGInvalidTitle,                        ///< SVG <title> elements MUST contain only valid XHTML Content Document Phrasing content. Medium.
+    
+    // § 2.1.3.1.3
+    GlossaryInvalidRootNode,                ///< Glossaries must use the <dl> element as their root node. Medium.
     
     ////// OMG SO MANY CONDITIONS FOR CONTENT THAT THE CORE LIBRARY ISN'T (YET) EVEN PROCESSING !!!
     
@@ -322,7 +328,7 @@ enum class EPUBError
     CFIInvalidSpineLocation,                ///< An inter-publication CFI's first traversal step MUST be the location of the <spine> element within the publication's package document (usually '6'). Major.
     
     // § 3.1.2
-    CFINonAssertedXMLID,                    ///< A CFI step referencing an XML node with an 'id' attribute MUST assert that ID as part of the step. Medium.
+    CFINonAssertedXMLID,                    ///< A CFI step referencing an XML node with an 'id' attribute MUST assert that ID as part of the step. Minor.
     
     // § 3.1.3
     CFIInvalidIndirectionStartNode,         ///< A CFI indirection clause can only step into resources identified by: OPF <itemref> through <item> 'href' attribute, HTML5 <iframe> or <embed> 'src' attribute, HTML5 <object> 'data' attribute, or SVG <image> and <use> 'xlink:href' attributes. Major.
@@ -407,6 +413,24 @@ static inline FORCE_INLINE
 void HandleError(int __code, const std::error_category& __cat, const char* __msg)
 {
     std::system_error __err(__code, __cat, __msg);
+    __DispatchError(__err);
+}
+static inline FORCE_INLINE
+void HandleError(std::errc __code)
+{
+    std::system_error __err(std::make_error_code(__code));
+    __DispatchError(__err);
+}
+static inline FORCE_INLINE
+void HandleError(std::errc __code, const std::string& __msg)
+{
+    std::system_error __err(std::make_error_code(__code), __msg);
+    __DispatchError(__err);
+}
+static inline FORCE_INLINE
+void HandleError(std::errc __code, const char* __msg)
+{
+    std::system_error __err(std::make_error_code(__code), __msg);
     __DispatchError(__err);
 }
 static inline FORCE_INLINE

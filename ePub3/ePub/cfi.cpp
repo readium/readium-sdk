@@ -20,6 +20,7 @@
 //
 
 #include "cfi.h"
+#include <ePub3/utilities/error_handler.h>
 #include <sstream>
 
 EPUB3_BEGIN_NAMESPACE
@@ -30,7 +31,7 @@ CFI::CFI(const CFI& base, const CFI& start, const CFI& end) : _components(base._
 CFI::CFI(const string& str) : _components(), _rangeStart(), _rangeEnd(), _options(0)
 {
     if ( CompileCFI(str) == false )
-        throw InvalidCFI(std::string("Invalid CFI string: ") + str.stl_str());
+        HandleError(EPUBError::CFIParseFailed, _Str("Invalid CFI string: ", str.stl_str()));
 }
 bool CFI::operator==(const ePub3::CFI &o) const
 {
@@ -242,7 +243,9 @@ CFI::StringList CFI::CFIComponentStrings(const string &cfi, const string& delimi
         {
             loc = cfi.find_first_of(']', loc);
             if ( loc == string::npos )
-                throw std::range_error(_Str("CFI '", cfi, "' has an unterminated qualifier"));
+            {
+                HandleError(EPUBError::CFIParseFailed, _Str("CFI '", cfi, "' has an unterminated qualifier"));
+            }
             
             ++loc;
             tmp.append(cfi, pos, loc-pos);
@@ -363,7 +366,10 @@ CFI::Component::Component(const string& str) : flags(0), nodeIndex(0), qualifier
 void CFI::Component::Parse(const string &str)
 {
     if ( str.empty() )
-        throw std::invalid_argument("Empty string supplied to CFI::Component");
+    {
+        HandleError(EPUBError::CFIParseFailed, "Empty string supplied to CFI::Component");
+        return;
+    }
     
     std::string utf8 = str.stl_str();
     std::istringstream iss(utf8);
@@ -371,7 +377,10 @@ void CFI::Component::Parse(const string &str)
     // read an integer
     iss >> nodeIndex;
     if ( nodeIndex == 0 && iss.fail() )
-        throw std::invalid_argument(_Str("No node value at start of CFI::Component string '", str, "'"));
+    {
+        HandleError(EPUBError::CFIParseFailed, _Str("No node value at start of CFI::Component string '", str, "'"));
+        return;
+    }
     
     while ( !iss.eof() )
     {
@@ -387,7 +396,10 @@ void CFI::Component::Parse(const string &str)
                 size_t end = ((size_t)iss.tellg()) - 1;
                 
                 if ( iss.eof() )
-                    throw std::invalid_argument(_Str("Invalid string supplied to CFI::Component: ", str));
+                {
+                    HandleError(EPUBError::CFIParseFailed);
+                    return;
+                }
                 
                 if ( characterOffset != 0 )
                 {

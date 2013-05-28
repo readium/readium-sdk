@@ -166,7 +166,7 @@ bool DefaultErrorHandler(const std::runtime_error& err)
         {
             case ViolationSeverity::Critical:
             case ViolationSeverity::Major:
-                throw err;
+                return false;
                 
             default:
                 return true;
