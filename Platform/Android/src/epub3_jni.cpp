@@ -1,8 +1,8 @@
 //
-//  epub_jni.h
+//  epub3_jni.cpp
 //  ePub3
 //
-//  Created by AnFengDe on 2013-05-24.
+//  Created by Pedro Reis Colaco (txtr) on 2013-05-29.
 //  Copyright (c) 2012-2013 The Readium Foundation and contributors.
 //
 //  The Readium SDK is free software: you can redistribute it and/or modify
@@ -20,20 +20,13 @@
 //
 
 
-#include <jni.h>
+#import <ePub3/archive.h>
+#import <ePub3/container.h>
+#include "epub3_jni.h"
 
-#ifndef _EPUB_JNI_H_
-#define _EPUB_JNI_H_
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int Java_com_readium_EPubJNI_openBook(JNIEnv* env, jobject thiz, jstring jPath);
-
-
-void Java_com_readium_EPubJNI_closeBook(JNIEnv* env, jobject thiz, int handle);
-
-#ifdef __cplusplus
+int Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring path) {
+	return 0;
 }
-#endif
-#endif
+
+void Java_org_readium_sdk_android_EPub3_closeBook(JNIEnv* env, jobject thiz, int handle) {
+}

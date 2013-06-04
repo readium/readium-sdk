@@ -271,7 +271,7 @@ LOCAL_SRC_FILES := \
 		ePub3/utilities/ring_buffer.cpp \
 		ePub3/utilities/run_loop_android.cpp \
 		Platform/Android/src/jni_cache_dir.c \
-		Platform/Android/src/epub_jni.cpp \
-		Platform/Android/src/backup_atomics.cpp
+		Platform/Android/src/backup_atomics.cpp \
+		Platform/Android/src/epub3_jni.cpp
 
 include $(BUILD_SHARED_LIBRARY)

@@ -7,15 +7,42 @@ Please refer to the file HACKING at the root of the project for low-level detail
 ### Prerequisites
 
 * Android NDK release 8e
+* Correct some bugs in NDK 8e by following this tutorial:
+    http://developer.appcelerator.com/blog/2013/03/correcting-a-bug-in-the-latest-google-ndk-r8e.html
 * A lot of patience
+
+### To build and debug in Eclipse
+
+* Android Eclipse ADT SDK
+* Android Eclipse NDK Plugin by following this tutorial:
+    http://tools.android.com/recent/usingthendkplugin
+* At least run once the following command-line compilation to generate the includes
+* Configure the build command to the following:
+    ndk-build -C . V=1 NDK_APPLICATION_MK=Application.mk NDK_PROJECT_PATH="${workspace_loc:/ePub3-Library/jni}" APP_BUILD_SCRIPT=Android.mk NDK_DEBUG=1
+* Build the ePub3-Library project
 
 ### Compilation
 
+ndk-compile.sh:
+```bash
+usage: ndk-compile.sh <command> [<path-to-ndk>]
+       Available commands are:
+           help           Shows this help message.
+           build          Builds this native project.
+           build-debug    Builds this native project with debug enabled.
+           clean          Cleans this project build objects.
+
+       <path-to-ndk>  The path to the Android NDK to use.
+
+       The path to NDK can be set by a global environment variable ANDROID_NDK,
+       to avoid being passed by argument to this script.
+```
+
 1. From a Terminal, go into the Platform/Android subdirectory of the readium-sdk repository (this directory).
-2. Run `ndk-build.sh build <path-to-ndk>` to build. My invocation looks like this, for example:
+2. Run `ndk-compile.sh build [<path-to-ndk>]` to build. My invocation looks like this, for example:
 
 ```bash
-sh ndk-build.sh build /Applications/Android-Dev-Tools/ndk
+ndk-compile.sh build
 ```
 
 Everything else should be set up appropriately by that script.
