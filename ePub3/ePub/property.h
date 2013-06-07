@@ -94,6 +94,15 @@ enum class PageSpread
     Center,                 ///< This is a double-width page, spread across both left & right.
 };
 
+///
+/// Enumeration for page progression directions.
+enum class PageProgression
+{
+    Default,                ///< Assume based on language, etc.
+    LeftToRight,            ///< Pages flow from left to right, as in English.
+    RightToLeft,            ///< Pages flow from right to left, as in Japanese comics & vertical text.
+};
+
 /**
  Obtains an IRI for a DCMES metadata item.
  @note The IRIs we use for DCMES items are not canon for ePub3.  We use them

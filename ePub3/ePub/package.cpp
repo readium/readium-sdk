@@ -258,17 +258,14 @@ bool Package::Unpack()
     // go through children to determine the CFI index of the <spine> tag
     static const xmlChar* kSpineName = BAD_CAST "spine";
     _spineCFIIndex = 0;
-    xmlNodePtr child = root->children;
+    xmlNodePtr child = xmlFirstElementChild(root);
     while ( child != nullptr )
     {
-        if ( child->type == XML_ELEMENT_NODE )
-        {
-            _spineCFIIndex += 2;
-            if ( xmlStrEqual(child->name, kSpineName) )
-                break;
-        }
+        _spineCFIIndex += 2;
+        if ( xmlStrEqual(child->name, kSpineName) )
+            break;
         
-        child = child->next;
+        child = xmlNextElementSibling(child);
     }
     
     if ( _spineCFIIndex == 0 )
@@ -418,6 +415,20 @@ bool Package::Unpack()
                         ptr->AddProperty(prop);
                 }
             }
+        }
+        
+        // now look at the <spine> element for properties
+        xmlNodePtr spineNode = xmlFirstElementChild(root);
+        for ( uint32_t i = 2; i < _spineCFIIndex; i += 2 )
+            spineNode = xmlNextElementSibling(spineNode);
+        
+        string value = _getProp(spineNode, "page-progression-direction");
+        if ( !value.empty() )
+        {
+            PropertyPtr prop = std::make_shared<Property>(holderPtr);
+            prop->SetPropertyIdentifier(MakePropertyIRI("page-progression-direction"));
+            prop->SetValue(value);
+            AddProperty(prop);
         }
     }
     catch (...)
@@ -938,6 +949,18 @@ const Package::StringList Package::Subjects(bool localized) const
         result.emplace_back((localized? item->LocalizedValue() : item->Value()));
     }
     return result;
+}
+PageProgression Package::PageProgressionDirection() const
+{
+    PropertyPtr prop = PropertyMatching("page-progression-direction");
+    if ( prop )
+    {
+        if ( prop->Value() == "ltr" )
+            return PageProgression::LeftToRight;
+        else if ( prop->Value() == "rtl" )
+            return PageProgression::RightToLeft;
+    }
+    return PageProgression::Default;
 }
 const Package::StringList Package::MediaTypesWithDHTMLHandlers() const
 {

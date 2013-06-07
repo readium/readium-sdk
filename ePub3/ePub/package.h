@@ -619,6 +619,13 @@ public:
     EPUB3_EXPORT
     const StringList        Subjects(bool localized=true)           const;
     
+    /**
+     Retrieves the page progression direction for the publication.
+     @result A PageProgressionDirection value.
+     */
+    EPUB3_EXPORT
+    PageProgression         PageProgressionDirection()              const;
+    
     /// @}
     
     /// @{
