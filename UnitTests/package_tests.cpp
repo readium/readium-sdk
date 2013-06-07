@@ -22,12 +22,414 @@
 #include "../ePub3/ePub/container.h"
 #include "../ePub3/ePub/package.h"
 #include "../ePub3/ePub/content_handler.h"
+#include "../ePub3/utilities/error_handler.h"
 #include "catch.hpp"
 #include <cstdlib>
 
 #define EPUB_PATH "TestData/childrens-literature-20120722.epub"
 #define BINDINGS_EPUB_PATH "TestData/widget-figure-gallery-20121022.epub"
 static const char* kMediaType = "application/x-epub-figure-gallery";
+
+static const char* kInvalidVersion = R"X(<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="id">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="id">http://www.gutenberg.org/ebooks/25545</dc:identifier>
+    <meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
+    <dc:title id="t1">Children's Literature</dc:title>
+    <meta refines="#t1" property="title-type">main</meta>
+    <meta refines="#t1" property="display-seq">1</meta>
+    <dc:title id="t2">A Textbook of Sources for Teachers and Teacher-Training Classes</dc:title>
+    <meta refines="#t2" property="title-type">subtitle</meta>
+    <meta refines="#t2" property="display-seq">2</meta>
+    <dc:creator id="curry">Charles Madison Curry</dc:creator>
+    <meta property="file-as" refines="#curry">Curry, Charles Madison</meta>
+    <dc:creator id="clippinger">Erle Elsworth Clippinger</dc:creator>
+    <meta property="file-as" refines="#clippinger">Clippinger, Erle Elsworth</meta>
+    <dc:language>en</dc:language>
+    <dc:date>2008-05-20</dc:date>
+    <dc:subject>Children -- Books and reading</dc:subject>
+    <dc:subject>Children's literature -- Study and teaching</dc:subject>
+    <dc:source>http://www.gutenberg.org/files/25545/25545-h/25545-h.htm</dc:source>
+    <dc:rights>Public domain in the USA.</dc:rights>
+  </metadata>
+  <manifest>
+    <item href="images/cover.png" id="cover-img" media-type="image/png" properties="cover-image"/>
+    <item href="css/epub.css" id="css" media-type="text/css"/>
+    <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+    <item href="s04.xhtml" id="s04" media-type="application/xhtml+xml"/>
+    <item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <spine>
+    <itemref idref="cover"/>
+    <itemref idref="nav"/>
+    <itemref idref="s04"/>
+  </spine>
+</package>
+)X";
+
+static const char* kMissingTitle = R"X(<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="id">http://www.gutenberg.org/ebooks/25545</dc:identifier>
+    <meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
+    <dc:creator id="curry">Charles Madison Curry</dc:creator>
+    <meta property="file-as" refines="#curry">Curry, Charles Madison</meta>
+    <dc:creator id="clippinger">Erle Elsworth Clippinger</dc:creator>
+    <meta property="file-as" refines="#clippinger">Clippinger, Erle Elsworth</meta>
+    <dc:language>en</dc:language>
+    <dc:date>2008-05-20</dc:date>
+    <dc:subject>Children -- Books and reading</dc:subject>
+    <dc:subject>Children's literature -- Study and teaching</dc:subject>
+    <dc:source>http://www.gutenberg.org/files/25545/25545-h/25545-h.htm</dc:source>
+    <dc:rights>Public domain in the USA.</dc:rights>
+  </metadata>
+  <manifest>
+    <item href="images/cover.png" id="cover-img" media-type="image/png" properties="cover-image"/>
+    <item href="css/epub.css" id="css" media-type="text/css"/>
+    <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+    <item href="s04.xhtml" id="s04" media-type="application/xhtml+xml"/>
+    <item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <spine>
+    <itemref idref="cover"/>
+    <itemref idref="nav"/>
+    <itemref idref="s04"/>
+  </spine>
+</package>
+)X";
+
+static const char* kMissingLanguage = R"X(<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="id">http://www.gutenberg.org/ebooks/25545</dc:identifier>
+    <meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
+    <dc:title id="t1">Children's Literature</dc:title>
+    <meta refines="#t1" property="title-type">main</meta>
+    <meta refines="#t1" property="display-seq">1</meta>
+    <dc:title id="t2">A Textbook of Sources for Teachers and Teacher-Training Classes</dc:title>
+    <meta refines="#t2" property="title-type">subtitle</meta>
+    <meta refines="#t2" property="display-seq">2</meta>
+    <dc:creator id="curry">Charles Madison Curry</dc:creator>
+    <meta property="file-as" refines="#curry">Curry, Charles Madison</meta>
+    <dc:creator id="clippinger">Erle Elsworth Clippinger</dc:creator>
+    <meta property="file-as" refines="#clippinger">Clippinger, Erle Elsworth</meta>
+    <dc:date>2008-05-20</dc:date>
+    <dc:subject>Children -- Books and reading</dc:subject>
+    <dc:subject>Children's literature -- Study and teaching</dc:subject>
+    <dc:source>http://www.gutenberg.org/files/25545/25545-h/25545-h.htm</dc:source>
+    <dc:rights>Public domain in the USA.</dc:rights>
+  </metadata>
+  <manifest>
+    <item href="images/cover.png" id="cover-img" media-type="image/png" properties="cover-image"/>
+    <item href="css/epub.css" id="css" media-type="text/css"/>
+    <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+    <item href="s04.xhtml" id="s04" media-type="application/xhtml+xml"/>
+    <item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <spine>
+    <itemref idref="cover"/>
+    <itemref idref="nav"/>
+    <itemref idref="s04"/>
+  </spine>
+</package>
+)X";
+
+static const char* kMissingIdentifier = R"X(<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
+    <dc:title id="t1">Children's Literature</dc:title>
+    <meta refines="#t1" property="title-type">main</meta>
+    <meta refines="#t1" property="display-seq">1</meta>
+    <dc:title id="t2">A Textbook of Sources for Teachers and Teacher-Training Classes</dc:title>
+    <meta refines="#t2" property="title-type">subtitle</meta>
+    <meta refines="#t2" property="display-seq">2</meta>
+    <dc:creator id="curry">Charles Madison Curry</dc:creator>
+    <meta property="file-as" refines="#curry">Curry, Charles Madison</meta>
+    <dc:creator id="clippinger">Erle Elsworth Clippinger</dc:creator>
+    <meta property="file-as" refines="#clippinger">Clippinger, Erle Elsworth</meta>
+    <dc:language>en</dc:language>
+    <dc:date>2008-05-20</dc:date>
+    <dc:subject>Children -- Books and reading</dc:subject>
+    <dc:subject>Children's literature -- Study and teaching</dc:subject>
+    <dc:source>http://www.gutenberg.org/files/25545/25545-h/25545-h.htm</dc:source>
+    <dc:rights>Public domain in the USA.</dc:rights>
+  </metadata>
+  <manifest>
+    <item href="images/cover.png" id="cover-img" media-type="image/png" properties="cover-image"/>
+    <item href="css/epub.css" id="css" media-type="text/css"/>
+    <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+    <item href="s04.xhtml" id="s04" media-type="application/xhtml+xml"/>
+    <item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <spine>
+    <itemref idref="cover"/>
+    <itemref idref="nav"/>
+    <itemref idref="s04"/>
+  </spine>
+</package>
+)X";
+
+static const char* kInvalidUniqueIDRef = R"X(<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="henry">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="id">http://www.gutenberg.org/ebooks/25545</dc:identifier>
+    <meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
+    <dc:title id="t1">Children's Literature</dc:title>
+    <meta refines="#t1" property="title-type">main</meta>
+    <meta refines="#t1" property="display-seq">1</meta>
+    <dc:title id="t2">A Textbook of Sources for Teachers and Teacher-Training Classes</dc:title>
+    <meta refines="#t2" property="title-type">subtitle</meta>
+    <meta refines="#t2" property="display-seq">2</meta>
+    <dc:creator id="curry">Charles Madison Curry</dc:creator>
+    <meta property="file-as" refines="#curry">Curry, Charles Madison</meta>
+    <dc:creator id="clippinger">Erle Elsworth Clippinger</dc:creator>
+    <meta property="file-as" refines="#clippinger">Clippinger, Erle Elsworth</meta>
+    <dc:language>en</dc:language>
+    <dc:date>2008-05-20</dc:date>
+    <dc:subject>Children -- Books and reading</dc:subject>
+    <dc:subject>Children's literature -- Study and teaching</dc:subject>
+    <dc:source>http://www.gutenberg.org/files/25545/25545-h/25545-h.htm</dc:source>
+    <dc:rights>Public domain in the USA.</dc:rights>
+  </metadata>
+  <manifest>
+    <item href="images/cover.png" id="cover-img" media-type="image/png" properties="cover-image"/>
+    <item href="css/epub.css" id="css" media-type="text/css"/>
+    <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+    <item href="s04.xhtml" id="s04" media-type="application/xhtml+xml"/>
+    <item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <spine>
+    <itemref idref="cover"/>
+    <itemref idref="nav"/>
+    <itemref idref="s04"/>
+  </spine>
+</package>
+)X";
+
+static const char* kMissingModDate = R"X(<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="id">http://www.gutenberg.org/ebooks/25545</dc:identifier>
+    <dc:title id="t1">Children's Literature</dc:title>
+    <meta refines="#t1" property="title-type">main</meta>
+    <meta refines="#t1" property="display-seq">1</meta>
+    <dc:title id="t2">A Textbook of Sources for Teachers and Teacher-Training Classes</dc:title>
+    <meta refines="#t2" property="title-type">subtitle</meta>
+    <meta refines="#t2" property="display-seq">2</meta>
+    <dc:creator id="curry">Charles Madison Curry</dc:creator>
+    <meta property="file-as" refines="#curry">Curry, Charles Madison</meta>
+    <dc:creator id="clippinger">Erle Elsworth Clippinger</dc:creator>
+    <meta property="file-as" refines="#clippinger">Clippinger, Erle Elsworth</meta>
+    <dc:language>en</dc:language>
+    <dc:date>2008-05-20</dc:date>
+    <dc:subject>Children -- Books and reading</dc:subject>
+    <dc:subject>Children's literature -- Study and teaching</dc:subject>
+    <dc:source>http://www.gutenberg.org/files/25545/25545-h/25545-h.htm</dc:source>
+    <dc:rights>Public domain in the USA.</dc:rights>
+  </metadata>
+  <manifest>
+    <item href="images/cover.png" id="cover-img" media-type="image/png" properties="cover-image"/>
+    <item href="css/epub.css" id="css" media-type="text/css"/>
+    <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+    <item href="s04.xhtml" id="s04" media-type="application/xhtml+xml"/>
+    <item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <spine>
+    <itemref idref="cover"/>
+    <itemref idref="nav"/>
+    <itemref idref="s04"/>
+  </spine>
+</package>
+)X";
+
+static const char* kInvalidRefinement = R"X(<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="id">http://www.gutenberg.org/ebooks/25545</dc:identifier>
+    <meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
+    <dc:title id="t1">Children's Literature</dc:title>
+    <meta refines="#henry" property="title-type">main</meta>
+    <meta refines="#t1" property="display-seq">1</meta>
+    <dc:title id="t2">A Textbook of Sources for Teachers and Teacher-Training Classes</dc:title>
+    <meta refines="#t2" property="title-type">subtitle</meta>
+    <meta refines="#t2" property="display-seq">2</meta>
+    <dc:creator id="curry">Charles Madison Curry</dc:creator>
+    <meta property="file-as" refines="#curry">Curry, Charles Madison</meta>
+    <dc:creator id="clippinger">Erle Elsworth Clippinger</dc:creator>
+    <meta property="file-as" refines="#clippinger">Clippinger, Erle Elsworth</meta>
+    <dc:language>en</dc:language>
+    <dc:date>2008-05-20</dc:date>
+    <dc:subject>Children -- Books and reading</dc:subject>
+    <dc:subject>Children's literature -- Study and teaching</dc:subject>
+    <dc:source>http://www.gutenberg.org/files/25545/25545-h/25545-h.htm</dc:source>
+    <dc:rights>Public domain in the USA.</dc:rights>
+  </metadata>
+  <manifest>
+    <item href="images/cover.png" id="cover-img" media-type="image/png" properties="cover-image"/>
+    <item href="css/epub.css" id="css" media-type="text/css"/>
+    <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+    <item href="s04.xhtml" id="s04" media-type="application/xhtml+xml"/>
+    <item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <spine>
+    <itemref idref="cover"/>
+    <itemref idref="nav"/>
+    <itemref idref="s04"/>
+  </spine>
+</package>
+)X";
+
+static const char* kInvalidSpineIDRef = R"X(<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="id">http://www.gutenberg.org/ebooks/25545</dc:identifier>
+    <meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
+    <dc:title id="t1">Children's Literature</dc:title>
+    <meta refines="#t1" property="title-type">main</meta>
+    <meta refines="#t1" property="display-seq">1</meta>
+    <dc:title id="t2">A Textbook of Sources for Teachers and Teacher-Training Classes</dc:title>
+    <meta refines="#t2" property="title-type">subtitle</meta>
+    <meta refines="#t2" property="display-seq">2</meta>
+    <dc:creator id="curry">Charles Madison Curry</dc:creator>
+    <meta property="file-as" refines="#curry">Curry, Charles Madison</meta>
+    <dc:creator id="clippinger">Erle Elsworth Clippinger</dc:creator>
+    <meta property="file-as" refines="#clippinger">Clippinger, Erle Elsworth</meta>
+    <dc:language>en</dc:language>
+    <dc:date>2008-05-20</dc:date>
+    <dc:subject>Children -- Books and reading</dc:subject>
+    <dc:subject>Children's literature -- Study and teaching</dc:subject>
+    <dc:source>http://www.gutenberg.org/files/25545/25545-h/25545-h.htm</dc:source>
+    <dc:rights>Public domain in the USA.</dc:rights>
+  </metadata>
+  <manifest>
+    <item href="images/cover.png" id="cover-img" media-type="image/png" properties="cover-image"/>
+    <item href="css/epub.css" id="css" media-type="text/css"/>
+    <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+    <item href="s04.xhtml" id="s04" media-type="application/xhtml+xml"/>
+    <item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <spine>
+    <itemref idref="cover"/>
+    <itemref idref="nav"/>
+    <itemref idref="henry"/>
+  </spine>
+</package>
+)X";
+
+static const char* kMetadataOutOfPlace = R"X(<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+  <placeholder></placeholder>
+  <manifest>
+    <item href="images/cover.png" id="cover-img" media-type="image/png" properties="cover-image"/>
+    <item href="css/epub.css" id="css" media-type="text/css"/>
+    <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+    <item href="s04.xhtml" id="s04" media-type="application/xhtml+xml"/>
+    <item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <spine>
+    <itemref idref="cover"/>
+    <itemref idref="nav"/>
+    <itemref idref="s04"/>
+  </spine>
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="id">http://www.gutenberg.org/ebooks/25545</dc:identifier>
+    <meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
+    <dc:title id="t1">Children's Literature</dc:title>
+    <meta refines="#t1" property="title-type">main</meta>
+    <meta refines="#t1" property="display-seq">1</meta>
+    <dc:title id="t2">A Textbook of Sources for Teachers and Teacher-Training Classes</dc:title>
+    <meta refines="#t2" property="title-type">subtitle</meta>
+    <meta refines="#t2" property="display-seq">2</meta>
+    <dc:creator id="curry">Charles Madison Curry</dc:creator>
+    <meta property="file-as" refines="#curry">Curry, Charles Madison</meta>
+    <dc:creator id="clippinger">Erle Elsworth Clippinger</dc:creator>
+    <meta property="file-as" refines="#clippinger">Clippinger, Erle Elsworth</meta>
+    <dc:language>en</dc:language>
+    <dc:date>2008-05-20</dc:date>
+    <dc:subject>Children -- Books and reading</dc:subject>
+    <dc:subject>Children's literature -- Study and teaching</dc:subject>
+    <dc:source>http://www.gutenberg.org/files/25545/25545-h/25545-h.htm</dc:source>
+    <dc:rights>Public domain in the USA.</dc:rights>
+  </metadata>
+</package>
+)X";
+
+static const char* kManifestOutOfPlace = R"X(<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="id">http://www.gutenberg.org/ebooks/25545</dc:identifier>
+    <meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
+    <dc:title id="t1">Children's Literature</dc:title>
+    <meta refines="#t1" property="title-type">main</meta>
+    <meta refines="#t1" property="display-seq">1</meta>
+    <dc:title id="t2">A Textbook of Sources for Teachers and Teacher-Training Classes</dc:title>
+    <meta refines="#t2" property="title-type">subtitle</meta>
+    <meta refines="#t2" property="display-seq">2</meta>
+    <dc:creator id="curry">Charles Madison Curry</dc:creator>
+    <meta property="file-as" refines="#curry">Curry, Charles Madison</meta>
+    <dc:creator id="clippinger">Erle Elsworth Clippinger</dc:creator>
+    <meta property="file-as" refines="#clippinger">Clippinger, Erle Elsworth</meta>
+    <dc:language>en</dc:language>
+    <dc:date>2008-05-20</dc:date>
+    <dc:subject>Children -- Books and reading</dc:subject>
+    <dc:subject>Children's literature -- Study and teaching</dc:subject>
+    <dc:source>http://www.gutenberg.org/files/25545/25545-h/25545-h.htm</dc:source>
+    <dc:rights>Public domain in the USA.</dc:rights>
+  </metadata>
+  <placeholder></placeholder>
+  <spine>
+    <itemref idref="cover"/>
+    <itemref idref="nav"/>
+    <itemref idref="s04"/>
+  </spine>
+  <manifest>
+    <item href="images/cover.png" id="cover-img" media-type="image/png" properties="cover-image"/>
+    <item href="css/epub.css" id="css" media-type="text/css"/>
+    <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+    <item href="s04.xhtml" id="s04" media-type="application/xhtml+xml"/>
+    <item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+</package>
+)X";
+
+static const char* kSpineOutOfPlace = R"X(<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="id">http://www.gutenberg.org/ebooks/25545</dc:identifier>
+    <meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
+    <dc:title id="t1">Children's Literature</dc:title>
+    <meta refines="#t1" property="title-type">main</meta>
+    <meta refines="#t1" property="display-seq">1</meta>
+    <dc:title id="t2">A Textbook of Sources for Teachers and Teacher-Training Classes</dc:title>
+    <meta refines="#t2" property="title-type">subtitle</meta>
+    <meta refines="#t2" property="display-seq">2</meta>
+    <dc:creator id="curry">Charles Madison Curry</dc:creator>
+    <meta property="file-as" refines="#curry">Curry, Charles Madison</meta>
+    <dc:creator id="clippinger">Erle Elsworth Clippinger</dc:creator>
+    <meta property="file-as" refines="#clippinger">Clippinger, Erle Elsworth</meta>
+    <dc:language>en</dc:language>
+    <dc:date>2008-05-20</dc:date>
+    <dc:subject>Children -- Books and reading</dc:subject>
+    <dc:subject>Children's literature -- Study and teaching</dc:subject>
+    <dc:source>http://www.gutenberg.org/files/25545/25545-h/25545-h.htm</dc:source>
+    <dc:rights>Public domain in the USA.</dc:rights>
+  </metadata>
+  <manifest>
+    <item href="images/cover.png" id="cover-img" media-type="image/png" properties="cover-image"/>
+    <item href="css/epub.css" id="css" media-type="text/css"/>
+    <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+    <item href="s04.xhtml" id="s04" media-type="application/xhtml+xml"/>
+    <item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <placeholder></placeholder>
+  <spine>
+    <itemref idref="cover"/>
+    <itemref idref="nav"/>
+    <itemref idref="s04"/>
+  </spine>
+</package>
+)X";
 
 using namespace ePub3;
 
@@ -41,6 +443,126 @@ TEST_CASE("Package should have a Unique ID, Package ID, Type, Version, and a Bas
     REQUIRE(pkg->Type() == "application/oebps-package+xml");
     REQUIRE(pkg->Version() == "3.0");
     REQUIRE(pkg->BasePath() == "EPUB/");
+}
+
+TEST_CASE("Packages with no version should raise a spec error", "")
+{
+    EPUBError triggeredError = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr != nullptr )
+            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+        return true;
+    });
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    
+    xmlDocPtr doc = xmlParseMemory(kInvalidVersion, (int)strlen(kInvalidVersion));
+    pkg->_OpenForTest(doc, "EPUB/");
+    
+    SetErrorHandler(DefaultErrorHandler);
+    REQUIRE(int(triggeredError) == int(EPUBError::OPFPackageHasNoVersion));
+}
+
+TEST_CASE("Packages with no title metadata should raise a spec error", "")
+{
+    EPUBError triggeredError = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr != nullptr )
+            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+        return true;
+    });
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    
+    xmlDocPtr doc = xmlParseMemory(kMissingTitle, (int)strlen(kMissingTitle));
+    pkg->_OpenForTest(doc, "EPUB/");
+    
+    SetErrorHandler(DefaultErrorHandler);
+    REQUIRE(int(triggeredError) == int(EPUBError::OPFMissingTitleMetadata));
+}
+
+TEST_CASE("Packages with no identifier should raise a spec error", "")
+{
+    EPUBError triggeredError = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr != nullptr )
+            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+        return true;
+    });
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    
+    xmlDocPtr doc = xmlParseMemory(kMissingIdentifier, (int)strlen(kMissingIdentifier));
+    pkg->_OpenForTest(doc, "EPUB/");
+    
+    SetErrorHandler(DefaultErrorHandler);
+    REQUIRE(int(triggeredError) == int(EPUBError::OPFMissingIdentifierMetadata));
+}
+
+TEST_CASE("Packages with no language metadata should raise a spec error", "")
+{
+    EPUBError triggeredError = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr != nullptr )
+            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+        return true;
+    });
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    
+    xmlDocPtr doc = xmlParseMemory(kMissingLanguage, (int)strlen(kMissingLanguage));
+    pkg->_OpenForTest(doc, "EPUB/");
+    
+    SetErrorHandler(DefaultErrorHandler);
+    REQUIRE(int(triggeredError) == int(EPUBError::OPFMissingLanguageMetadata));
+}
+
+TEST_CASE("Packages with no midification date should raise a spec error", "")
+{
+    EPUBError triggeredError = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr != nullptr )
+            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+        return true;
+    });
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    
+    xmlDocPtr doc = xmlParseMemory(kMissingModDate, (int)strlen(kMissingModDate));
+    pkg->_OpenForTest(doc, "EPUB/");
+    
+    SetErrorHandler(DefaultErrorHandler);
+    REQUIRE(int(triggeredError) == int(EPUBError::OPFMissingModificationDateMetadata));
+}
+
+TEST_CASE("Packages with an invalid unique-id reference should raise a spec error", "")
+{
+    EPUBError triggeredError = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr != nullptr )
+            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+        return true;
+    });
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    
+    xmlDocPtr doc = xmlParseMemory(kInvalidUniqueIDRef, (int)strlen(kInvalidUniqueIDRef));
+    pkg->_OpenForTest(doc, "EPUB/");
+    
+    SetErrorHandler(DefaultErrorHandler);
+    REQUIRE(int(triggeredError) == int(EPUBError::OPFPackageUniqueIDInvalid));
 }
 
 TEST_CASE("Our test package should only have TOC and PageList navigation tables", "")

@@ -230,6 +230,7 @@ CFI::StringList CFI::CFIComponentStrings(const string &cfi, const string& delimi
                 tmp.append(cfi, pos, cfi.size()-pos);
                 if ( !tmp.empty() )
                     components.push_back(tmp);
+                tmp.clear();
                 break;
             }
             else
@@ -265,6 +266,9 @@ CFI::StringList CFI::CFIComponentStrings(const string &cfi, const string& delimi
         pos = loc;
     }
     
+    if ( !tmp.empty() )
+        components.push_back(tmp);
+    
     return components;
 }
 bool CFI::CompileCFI(const string &str)
@@ -275,20 +279,28 @@ bool CFI::CompileCFI(const string &str)
     {
         cfi = cfi.substr(8, (str.size()-1)-8);
     }
-    else if ( str.size() == 0 || str[0] != '/' )
+    else if ( str.size() == 0 )
     {
-        // invalid CFI
+        HandleError(EPUBError::CFIParseFailed, "Empty CFI string");
         return false;
+    }
+    else if ( str[0] != '/' )
+    {
+        HandleError(EPUBError::CFINonSlashStartCharacter);
     }
     
     StringList rangePieces = RangedCFIComponents(cfi);
     if ( rangePieces.size() != 1 && rangePieces.size() != 3 )
-        return false;
+    {
+        HandleError(EPUBError::CFIRangeComponentCountInvalid, _Str("Expected 1 or 3 range components, got ", rangePieces.size()));
+        if ( rangePieces.size() == 0 )
+            return false;
+    }
     
     if ( CompileComponentsToList(CFIComponentStrings(rangePieces[0]), &_components) == false )
         return false;
     
-    if ( rangePieces.size() == 3 )
+    if ( rangePieces.size() >= 3 )
     {
         if ( CompileComponentsToList(CFIComponentStrings(rangePieces[1]), &_rangeStart) == false )
             return false;
@@ -299,11 +311,25 @@ bool CFI::CompileCFI(const string &str)
         
         // neither should be empty
         if ( _rangeStart.empty() || _rangeEnd.empty() )
+        {
+            HandleError(EPUBError::CFIRangeInvalid, "One of the supplied range components was empty.");
             return false;
+        }
         
         // check the offsets at the end of each— they should be the same type
         if ( (_rangeStart.back().flags & Component::OffsetsMask) != (_rangeEnd.back().flags & Component::OffsetsMask) )
+        {
+            HandleError(EPUBError::CFIRangeInvalid, "Offsets at the end of range components are of different types.");
             return false;
+        }
+        
+        // ensure that there are no side-bias values
+        if ( (_rangeStart.back().sideBias != SideBias::Unspecified) ||
+             (_rangeEnd.back().sideBias != SideBias::Unspecified) )
+        {
+            HandleError(EPUBError::CFIRangeContainsSideBias);
+            // can safely ignore this one
+        }
         
         // where the delimiters' component ranges overlap, start must be <= end
         auto maxsz = std::max(_rangeStart.size(), _rangeEnd.size());
@@ -311,9 +337,13 @@ bool CFI::CompileCFI(const string &str)
         for ( decltype(maxsz) i = 0; i < maxsz; i++ )
         {
             if ( _rangeStart[i].nodeIndex > _rangeEnd[i].nodeIndex )
-                return false;
+            {
+                HandleError(EPUBError::CFIRangeInvalid, "Range components appear to be out of order.");
+            }
             else if ( !inequalNodeIndexFound && _rangeStart[i].nodeIndex < _rangeEnd[i].nodeIndex )
+            {
                 inequalNodeIndexFound = true;
+            }
         }
         
         // if the two ranges are equal aside from their offsets, the end offset must be > the start offset
@@ -322,14 +352,14 @@ bool CFI::CompileCFI(const string &str)
             Component &s = _rangeStart.back(), &e = _rangeEnd.back();
             if ( s.HasCharacterOffset() && s.characterOffset > e.characterOffset )
             {
-                return false;
+                HandleError(EPUBError::CFIRangeInvalid, "Range components appear to be out of order.");
             }
             else
             {
                 if ( s.HasTemporalOffset() && s.temporalOffset > e.temporalOffset )
-                    return false;
+                    HandleError(EPUBError::CFIRangeInvalid, "Range components appear to be out of order.");
                 if ( s.HasSpatialOffset() && s.spatialOffset > e.spatialOffset )
-                    return false;
+                    HandleError(EPUBError::CFIRangeInvalid, "Range components appear to be out of order.");
             }
         }
         
@@ -347,6 +377,11 @@ bool CFI::CompileComponentsToList(const StringList &strings, ComponentList *list
             list->emplace_back(str);
         }
     }
+    catch (const epub_spec_error& exc)
+    {
+        // re-throw any ePub spec errors
+        throw;
+    }
     catch (...)
     {
         return false;
@@ -359,7 +394,7 @@ bool CFI::CompileComponentsToList(const StringList &strings, ComponentList *list
 #pragma mark - CFI Component
 #endif
 
-CFI::Component::Component(const string& str) : flags(0), nodeIndex(0), qualifier(), characterOffset(0), temporalOffset(), spatialOffset(), textQualifier()
+CFI::Component::Component(const string& str) : flags(0), nodeIndex(0), qualifier(), characterOffset(0), temporalOffset(), spatialOffset(), textQualifier(), sideBias(SideBias::Unspecified)
 {
     Parse(str);
 }
@@ -404,8 +439,34 @@ void CFI::Component::Parse(const string &str)
                 if ( characterOffset != 0 )
                 {
                     // this is a text qualifier
-                    textQualifier = utf8.substr(pos, end-pos);
                     flags |= TextQualifier;
+                    std::string sub = utf8.substr(pos, end-pos);
+                    
+                    // is there a side-bias?
+                    auto biasPos = sub.find(";s=");
+                    if ( biasPos == std::string::npos )
+                    {
+                        textQualifier = std::move(sub);
+                    }
+                    else
+                    {
+                        textQualifier = sub.substr(0, biasPos);
+                        if ( sub.size() > biasPos + 3 )
+                        {
+                            switch ( sub[biasPos+3] )
+                            {
+                                case 'b':
+                                    sideBias = SideBias::Before;
+                                    break;
+                                case 'a':
+                                    sideBias = SideBias::After;
+                                    break;
+                                default:
+                                    sideBias = SideBias::Unspecified;
+                                    break;
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -510,6 +571,7 @@ CFI::Component& CFI::Component::operator=(const ePub3::CFI::Component &o)
     temporalOffset = o.temporalOffset;
     spatialOffset = o.spatialOffset;
     textQualifier = o.textQualifier;
+    sideBias = o.sideBias;
     
     return *this;
 }
@@ -522,6 +584,7 @@ CFI::Component& CFI::Component::operator=(ePub3::CFI::Component &&o)
     temporalOffset = o.temporalOffset;
     spatialOffset = o.spatialOffset;
     textQualifier = std::move(o.textQualifier);
+    sideBias = o.sideBias;
     
     return *this;
 }
@@ -534,6 +597,7 @@ CFI::Component& CFI::Component::operator=(const string &str)
     spatialOffset.x = 0.0; spatialOffset.y = 0.0;
     qualifier.clear();
     textQualifier.clear();
+    sideBias = SideBias::Unspecified;
     
     Parse(str);
     return *this;

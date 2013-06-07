@@ -178,6 +178,9 @@ static const ErrorLookup gErrorLookupTable = {
     {EPUBError::CFIParseFailed, {ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "2.3", "A CFI could not be parsed-- all special characters MUST be prefixed with a circumflex (^) character."}},
     {EPUBError::CFINonSlashStartCharacter, {ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.1", "A CFI reference MUST begin with a slash (/) character."}},
     {EPUBError::CFIInvalidSpineLocation, {ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.1", "An inter-publication CFI's first traversal step MUST be the location of the <spine> element within the publication's package document (usually '6')."}},
+    {EPUBError::CFITooShort, {ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.1", "A CFI with only one component can't reasonably be expected to point to anything useful."}},
+    {EPUBError::CFIUnexpectedComponent, {ViolationSeverity::Medium, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.1", "A CFI's second component is expected to be an indirector via the spine."}},
+    {EPUBError::CFIStepOutOfBounds, {ViolationSeverity::Critical, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.1", "A CFI's step value was beyond the bounds of available elements."}},
     {EPUBError::CFINonAssertedXMLID, {ViolationSeverity::Minor, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.2", "A CFI step referencing an XML node with an 'id' attribute MUST assert that ID as part of the step."}},
     {EPUBError::CFIInvalidIndirectionStartNode, {ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.3", "A CFI indirection clause can only step into resources identified by: OPF <itemref> through <item> 'href' attribute, HTML5 <iframe> or <embed> 'src' attribute, HTML5 <object> 'data' attribute, or SVG <image> and <use> 'xlink:href' attributes."}},
     {EPUBError::CFIIndirectionTargetMissing, {ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.3", "The 'href', 'src', 'data' &c. value used for indirection MUST be present."}},
@@ -193,7 +196,8 @@ static const ErrorLookup gErrorLookupTable = {
     {EPUBError::CFISideBiasInvalidPlacement, {ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.9", "A CFI side-bias assertion MUST ONLY occur at the end of a CFI."}},
     {EPUBError::CFISideBiasInvalidSide, {ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.9", "A CFI side-bias assertion MUST ONLY assert the values 'b' or 'a'."}},
     {EPUBError::CFIRangeInvalid, {ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "3.4", "A CFI range statement appears to be invalid. Did you forget to escape (^) something?"}},
-    {EPUBError::CFIRangeContainsSideBias, {ViolationSeverity::Medium, EPUBSpec::CanonicalFragmentIdentifiers, "3.4", "A ranged CFI MUST NOT contain any side-bias assertions."}}
+    {EPUBError::CFIRangeContainsSideBias, {ViolationSeverity::Medium, EPUBSpec::CanonicalFragmentIdentifiers, "3.4", "A ranged CFI MUST NOT contain any side-bias assertions."}},
+    {EPUBError::CFIRangeComponentCountInvalid, {ViolationSeverity::Medium, EPUBSpec::CanonicalFragmentIdentifiers, "3.4", "A CFI appears to have a number of range components other than 1 (no range) or 3 (a valid range)."}}
 };
 
 #else   // !EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
@@ -308,6 +312,9 @@ INITIALIZER(__initErrorTables)
     gErrorLookupTable[CFIParseFailed] = ErrorInfo(EPUBError::ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "2.3", "A CFI could not be parsed-- all special characters MUST be prefixed with a circumflex (^) character.");
     gErrorLookupTable[CFINonSlashStartCharacter] = ErrorInfo(EPUBError::ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.1", "A CFI reference MUST begin with a slash (/) character.");
     gErrorLookupTable[CFIInvalidSpineLocation] = ErrorInfo(EPUBError::ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.1", "An inter-publication CFI's first traversal step MUST be the location of the <spine> element within the publication's package document (usually '6').");
+    gErrorLookupTable[CFITooShort] = ErrorInfo(EPUBError::ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.1", "A CFI with only one component can't reasonably be expected to point to anything useful.");
+    gErrorLookupTable[CFIUnexpectedComponent] = ErrorInfo(EPUBError::ViolationSeverity::Medium, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.1", "A CFI's second component is expected to be an indirector via the spine.");
+    gErrorLookupTable[CFIStepOutOfBounds] = ErrorInfo(EPUBError::ViolationSeverity::Critical, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.1", "A CFI's step value was beyond the bounds of available elements.");
     gErrorLookupTable[CFINonAssertedXMLID] = ErrorInfo(EPUBError::ViolationSeverity::Minor, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.2", "A CFI step referencing an XML node with an 'id' attribute MUST assert that ID as part of the step.");
     gErrorLookupTable[CFIInvalidIndirectionStartNode] = ErrorInfo(EPUBError::ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.3", "A CFI indirection clause can only step into resources identified by: OPF <itemref> through <item> 'href' attribute, HTML5 <iframe> or <embed> 'src' attribute, HTML5 <object> 'data' attribute, or SVG <image> and <use> 'xlink:href' attributes.");
     gErrorLookupTable[CFIIndirectionTargetMissing] = ErrorInfo(EPUBError::ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.3", "The 'href', 'src', 'data' &c. value used for indirection MUST be present.");
@@ -324,6 +331,7 @@ INITIALIZER(__initErrorTables)
     gErrorLookupTable[CFISideBiasInvalidSide] = ErrorInfo(EPUBError::ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "3.1.9", "A CFI side-bias assertion MUST ONLY assert the values 'b' or 'a'.");
     gErrorLookupTable[CFIRangeInvalid] = ErrorInfo(EPUBError::ViolationSeverity::Major, EPUBSpec::CanonicalFragmentIdentifiers, "3.4", "A CFI range statement appears to be invalid. Did you forget to escape (^) something?");
     gErrorLookupTable[CFIRangeContainsSideBias] = ErrorInfo(EPUBError::ViolationSeverity::Medium, EPUBSpec::CanonicalFragmentIdentifiers, "3.4", "A ranged CFI MUST NOT contain any side-bias assertions.");
+    gErrorLookupTable[CFIRangeComponentCountInvalid] = ErrorInfo(EPUBError::ViolationSeverity::Medium, EPUBSpec::CanonicalFragmentIdentifiers, "3.4", "A CFI appears to have a number of range components other than 1 (no range) or 3 (a valid range).");
 }
 
 #endif  // !EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)

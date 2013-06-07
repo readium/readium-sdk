@@ -189,6 +189,10 @@ shared_ptr<SpineItem> PackageBase::ConfirmOrCorrectSpineItemQualifier(shared_ptr
             pItem = pItem->Next();
         }
     }
+    else if ( pComponent->HasQualifier() == false )
+    {
+        HandleError(EPUBError::CFINonAssertedXMLID);
+    }
     
     return pItem;
 }
@@ -245,6 +249,12 @@ bool Package::Open(const string& path)
 {
     return PackageBase::Open(path) && Unpack();
 }
+bool Package::_OpenForTest(xmlDocPtr doc, const string& basePath)
+{
+    _opf = doc;
+    _pathBase = basePath;
+    return Unpack();
+}
 bool Package::Unpack()
 {
     PackagePtr sharedMe = shared_from_this();
@@ -259,7 +269,7 @@ bool Package::Unpack()
         HandleError(EPUBError::OPFInvalidPackageDocument);
         return false;       // not an OPF file, innit?
     }
-    if ( _getProp(reinterpret_cast<xmlNodePtr>(_opf), "version").empty() )
+    if ( _getProp(root, "version").empty() )
     {
         HandleError(EPUBError::OPFPackageHasNoVersion);
     }
@@ -400,7 +410,7 @@ bool Package::Unpack()
             HandleError(EPUBError::OPFNoMetadata);
         
         bool foundIdentifier = false, foundTitle = false, foundLanguage = false, foundModDate = false;
-        string uniqueIDRef = _getProp(reinterpret_cast<xmlNodePtr>(_opf), "unique-identifier");
+        string uniqueIDRef = _getProp(root, "unique-identifier");
         if ( uniqueIDRef.empty() )
             HandleError(EPUBError::OPFPackageUniqueIDInvalid);
         
@@ -471,7 +481,7 @@ bool Package::Unpack()
             HandleError(EPUBError::OPFMissingIdentifierMetadata);
         if ( !foundTitle )
             HandleError(EPUBError::OPFMissingTitleMetadata);
-        if ( !foundTitle )
+        if ( !foundLanguage )
             HandleError(EPUBError::OPFMissingLanguageMetadata);
         if ( !foundModDate )
             HandleError(EPUBError::OPFMissingModificationDateMetadata);
@@ -786,19 +796,28 @@ shared_ptr<ManifestItem> Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRema
     
     // NB: Package is a friend of CFI, so it can access the components directly
     if ( cfi._components.size() < 2 )
-        throw CFI::InvalidCFI("CFI contains less than 2 nodes, so is invalid for package-based lookups.");
+    {
+        HandleError(EPUBError::CFITooShort, "CFI contains less than 2 nodes, so is invalid for package-based lookups.");
+    }
     
     // first item directs us to the Spine: check the index against the one we know
     auto component = cfi._components[0];
     if ( component.nodeIndex != _spineCFIIndex )
     {
-        throw CFI::InvalidCFI(_Str("CFI first node index (spine) is ", component.nodeIndex, " but should be ", _spineCFIIndex));
+        HandleError(EPUBError::CFIInvalidSpineLocation, _Str("CFI first node index (spine) is ", component.nodeIndex, " but should be ", _spineCFIIndex));
+        
+        // fix it ?
+        //component.nodeIndex = _spineCFIIndex;
+        return nullptr;
     }
     
     // second component is the particular spine item
     component = cfi._components[1];
     if ( !component.IsIndirector() )
-        throw CFI::InvalidCFI("Package-based CFI's second item must be an indirector");
+    {
+        HandleError(EPUBError::CFIUnexpectedComponent, "Package-based CFI's second item must be an indirector");
+        return nullptr;
+    }
     
     try
     {
@@ -809,7 +828,10 @@ shared_ptr<ManifestItem> Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRema
         // check and correct any qualifiers
         item = ConfirmOrCorrectSpineItemQualifier(item, &component);
         if ( item == nullptr )
-            throw CFI::InvalidCFI("CFI spine node qualifier doesn't match any spine item idref");
+        {
+            HandleError(EPUBError::CFIIndirectionTargetMissing, "CFI spine node qualifier doesn't match any spine item idref");
+            return nullptr;
+        }
         
         // we know it's not null, because SpineItem::at() throws an exception if out of range
         result = ManifestItemWithID(item->Idref());
@@ -819,7 +841,7 @@ shared_ptr<ManifestItem> Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRema
     }
     catch (std::out_of_range& e)
     {
-        throw CFI::InvalidCFI(_Str("CFI references out-of-range spine item: ", e.what()));
+        HandleError(EPUBError::CFIStepOutOfBounds, _Str("CFI references out-of-range spine item: ", e.what()));
     }
     
     return result;

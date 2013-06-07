@@ -317,6 +317,7 @@ public:
     virtual                 ~Package() {}
     
     virtual bool            Open(const string& path);
+    bool                    _OpenForTest(xmlDocPtr doc, const string& basePath);
     
     ///
     /// The full Unique Identifier, built from the package unique-id and the modification date.

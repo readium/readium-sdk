@@ -326,6 +326,9 @@ enum class EPUBError
     // § 3.1.1
     CFINonSlashStartCharacter,              ///< A CFI reference MUST begin with a slash (/) character. Major.
     CFIInvalidSpineLocation,                ///< An inter-publication CFI's first traversal step MUST be the location of the <spine> element within the publication's package document (usually '6'). Major.
+    CFITooShort,                            ///< A CFI with only one component can't reasonably be expected to point to anything useful. Major.
+    CFIUnexpectedComponent,                 ///< A CFI's second component is expected to be an indirector via the spine. Medium.
+    CFIStepOutOfBounds,                     ///< A CFI's step value was beyond the bounds of available elements. Critical.
     
     // § 3.1.2
     CFINonAssertedXMLID,                    ///< A CFI step referencing an XML node with an 'id' attribute MUST assert that ID as part of the step. Minor.
@@ -358,6 +361,7 @@ enum class EPUBError
     // § 3.4
     CFIRangeInvalid,                        ///< A CFI range statement appears to be invalid. Did you forget to escape (^) something? Major.
     CFIRangeContainsSideBias,               ///< A ranged CFI MUST NOT contain any side-bias assertions. Medium.
+    CFIRangeComponentCountInvalid,          ///< A CFI appears to have a number of range components other than 1 (no range) or 3 (a valid range). Medium.
     
     CFIErrorMax
     
@@ -392,6 +396,12 @@ EPUB3_EXPORT const std::error_category& epub_spec_category() _NOEXCEPT;
 
 static inline FORCE_INLINE
 void __DispatchError(const std::runtime_error& __err)
+{
+    if ( ErrorHandler()(__err) == false )
+        throw __err;
+}
+static inline FORCE_INLINE
+void __DispatchError(const epub_spec_error& __err)
 {
     if ( ErrorHandler()(__err) == false )
         throw __err;
