@@ -505,6 +505,117 @@ static const char* kSpineOutOfPlace = R"X(<?xml version="1.0" encoding="UTF-8"?>
 </package>
 )X";
 
+static const char* kNoContentDocInSpine = R"X(<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="id">http://www.gutenberg.org/ebooks/25545</dc:identifier>
+    <meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
+    <dc:title id="t1">Children's Literature</dc:title>
+    <meta refines="#t1" property="title-type">main</meta>
+    <meta refines="#t1" property="display-seq">1</meta>
+    <dc:title id="t2">A Textbook of Sources for Teachers and Teacher-Training Classes</dc:title>
+    <meta refines="#t2" property="title-type">subtitle</meta>
+    <meta refines="#t2" property="display-seq">2</meta>
+    <dc:creator id="curry">Charles Madison Curry</dc:creator>
+    <meta property="file-as" refines="#curry">Curry, Charles Madison</meta>
+    <dc:creator id="clippinger">Erle Elsworth Clippinger</dc:creator>
+    <meta property="file-as" refines="#clippinger">Clippinger, Erle Elsworth</meta>
+    <dc:language>en</dc:language>
+    <dc:date>2008-05-20</dc:date>
+    <dc:subject>Children -- Books and reading</dc:subject>
+    <dc:subject>Children's literature -- Study and teaching</dc:subject>
+    <dc:source>http://www.gutenberg.org/files/25545/25545-h/25545-h.htm</dc:source>
+    <dc:rights>Public domain in the USA.</dc:rights>
+  </metadata>
+  <manifest>
+    <item href="images/cover.png" id="cover-img" media-type="image/png" properties="cover-image"/>
+    <item href="css/epub.css" id="css" media-type="text/css"/>
+    <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+    <item href="s04.xhtml" id="s04" media-type="application/xml"/>
+    <item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <spine>
+    <itemref idref="cover"/>
+    <itemref idref="nav"/>
+    <itemref idref="s04"/>
+  </spine>
+</package>
+)X";
+
+static const char* kContentDocInFallback = R"X(<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="id">http://www.gutenberg.org/ebooks/25545</dc:identifier>
+    <meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
+    <dc:title id="t1">Children's Literature</dc:title>
+    <meta refines="#t1" property="title-type">main</meta>
+    <meta refines="#t1" property="display-seq">1</meta>
+    <dc:title id="t2">A Textbook of Sources for Teachers and Teacher-Training Classes</dc:title>
+    <meta refines="#t2" property="title-type">subtitle</meta>
+    <meta refines="#t2" property="display-seq">2</meta>
+    <dc:creator id="curry">Charles Madison Curry</dc:creator>
+    <meta property="file-as" refines="#curry">Curry, Charles Madison</meta>
+    <dc:creator id="clippinger">Erle Elsworth Clippinger</dc:creator>
+    <meta property="file-as" refines="#clippinger">Clippinger, Erle Elsworth</meta>
+    <dc:language>en</dc:language>
+    <dc:date>2008-05-20</dc:date>
+    <dc:subject>Children -- Books and reading</dc:subject>
+    <dc:subject>Children's literature -- Study and teaching</dc:subject>
+    <dc:source>http://www.gutenberg.org/files/25545/25545-h/25545-h.htm</dc:source>
+    <dc:rights>Public domain in the USA.</dc:rights>
+  </metadata>
+  <manifest>
+    <item href="images/cover.png" id="cover-img" media-type="image/png" properties="cover-image" fallback="cover"/>
+    <item href="css/epub.css" id="css" media-type="text/css"/>
+    <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+    <item href="s04.xhtml" id="s04" media-type="application/xhtml+xml"/>
+    <item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <spine>
+    <itemref idref="cover-img"/>
+    <itemref idref="nav"/>
+    <itemref idref="s04"/>
+  </spine>
+</package>
+)X";
+
+static const char* kCircularFallbackChain = R"X(<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="id">http://www.gutenberg.org/ebooks/25545</dc:identifier>
+    <meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
+    <dc:title id="t1">Children's Literature</dc:title>
+    <meta refines="#t1" property="title-type">main</meta>
+    <meta refines="#t1" property="display-seq">1</meta>
+    <dc:title id="t2">A Textbook of Sources for Teachers and Teacher-Training Classes</dc:title>
+    <meta refines="#t2" property="title-type">subtitle</meta>
+    <meta refines="#t2" property="display-seq">2</meta>
+    <dc:creator id="curry">Charles Madison Curry</dc:creator>
+    <meta property="file-as" refines="#curry">Curry, Charles Madison</meta>
+    <dc:creator id="clippinger">Erle Elsworth Clippinger</dc:creator>
+    <meta property="file-as" refines="#clippinger">Clippinger, Erle Elsworth</meta>
+    <dc:language>en</dc:language>
+    <dc:date>2008-05-20</dc:date>
+    <dc:subject>Children -- Books and reading</dc:subject>
+    <dc:subject>Children's literature -- Study and teaching</dc:subject>
+    <dc:source>http://www.gutenberg.org/files/25545/25545-h/25545-h.htm</dc:source>
+    <dc:rights>Public domain in the USA.</dc:rights>
+  </metadata>
+  <manifest>
+    <item href="images/cover.png" id="cover-img" media-type="image/png" properties="cover-image" fallback="css"/>
+    <item href="css/epub.css" id="css" media-type="text/css" fallback="cover-img"/>
+    <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+    <item href="s04.xhtml" id="s04" media-type="application/xhtml+xml"/>
+    <item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <spine>
+    <itemref idref="cover"/>
+    <itemref idref="nav"/>
+    <itemref idref="s04"/>
+  </spine>
+</package>
+)X";
+
 using namespace ePub3;
 
 TEST_CASE("Package should have a Unique ID, Package ID, Type, Version, and a Base Path", "")
@@ -777,6 +888,66 @@ TEST_CASE("Should raise an error if the spine is out of place", "")
     
     SetErrorHandler(DefaultErrorHandler);
     REQUIRE(int(triggeredError) == int(EPUBError::OPFSpineOutOfOrder));
+}
+
+TEST_CASE("Should raise an error if a spine item doesn't reference a content item", "")
+{
+    EPUBError triggeredError = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr != nullptr )
+            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+        return true;
+    });
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    
+    xmlDocPtr doc = xmlParseMemory(kNoContentDocInSpine, (int)strlen(kNoContentDocInSpine));
+    pkg->_OpenForTest(doc, "EPUB/");
+    
+    SetErrorHandler(DefaultErrorHandler);
+    REQUIRE(int(triggeredError) == int(EPUBError::OPFFallbackChainHasNoContentDocument));
+}
+
+TEST_CASE("Should be happy of a spine item only references a content item via the fallback chain", "")
+{
+    EPUBError triggeredError = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr != nullptr )
+            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+        return true;
+    });
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    
+    xmlDocPtr doc = xmlParseMemory(kContentDocInFallback, (int)strlen(kContentDocInFallback));
+    pkg->_OpenForTest(doc, "EPUB/");
+    
+    SetErrorHandler(DefaultErrorHandler);
+    REQUIRE(int(triggeredError) == int(EPUBError::NoError));
+}
+
+TEST_CASE("Should raise an error if a fallback chain contains circular references", "")
+{
+    EPUBError triggeredError = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr != nullptr )
+            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+        return true;
+    });
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    
+    xmlDocPtr doc = xmlParseMemory(kCircularFallbackChain, (int)strlen(kCircularFallbackChain));
+    pkg->_OpenForTest(doc, "EPUB/");
+    
+    SetErrorHandler(DefaultErrorHandler);
+    REQUIRE(int(triggeredError) == int(EPUBError::OPFFallbackChainCircularReference));
 }
 
 TEST_CASE("Our test package should only have TOC and PageList navigation tables", "")

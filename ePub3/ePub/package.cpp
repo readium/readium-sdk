@@ -353,6 +353,34 @@ bool Package::Unpack()
 #endif
                 StoreXMLIdentifiable(p);
             }
+            else
+            {
+                // TODO: Need an error here
+            }
+        }
+        
+        // check fallback chains
+        typedef std::map<string, bool> IdentSet;
+        IdentSet idents;
+        for ( auto &pair : _manifest )
+        {
+            ManifestItemPtr item = pair.second;
+            if ( item->FallbackID().empty() )
+                continue;
+            
+            idents[item->XMLIdentifier()] = true;
+            while ( !item->FallbackID().empty() )
+            {
+                if ( idents[item->FallbackID()] )
+                {
+                    HandleError(EPUBError::OPFFallbackChainCircularReference);
+                    break;
+                }
+                
+                item = item->Fallback();
+            }
+            
+            idents.clear();
         }
         
         SpineItemPtr cur;
