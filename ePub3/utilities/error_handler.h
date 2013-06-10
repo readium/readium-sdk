@@ -163,6 +163,8 @@ enum class EPUBError
     OPFMissingIdentifierMetadata,           ///< Package metadata MUST include 'dc:identifier'. Critical.
     OPFMissingTitleMetadata,                ///< Package metadata MUST include 'dc:title'. Major.
     OPFMissingLanguageMetadata,             ///< Package metadata MUST include 'dc:language'. Major.
+    OPFInvalidRefinementAttribute,          ///< A metadata 'refine' attribute MUST be a valid relative IRI.
+    OPFInvalidRefinementTarget,             ///< A metadata 'refine' attribute MUST reference an existing item.
     
     // § 3.4.9
     OPFLinkReferencesManifestItem,          ///< <link> 'href' attribute MUST NOT identify an object in the manifest. Medium.

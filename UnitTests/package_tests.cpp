@@ -243,6 +243,80 @@ static const char* kMissingModDate = R"X(<?xml version="1.0" encoding="UTF-8"?>
 </package>
 )X";
 
+static const char* kInvalidRefinementIRI = R"X(<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="id">http://www.gutenberg.org/ebooks/25545</dc:identifier>
+    <meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
+    <dc:title id="t1">Children's Literature</dc:title>
+    <meta refines="irkle%pond" property="title-type">main</meta>    <!-- hopefully an invalid IRI -->
+    <meta refines="#t1" property="display-seq">1</meta>
+    <dc:title id="t2">A Textbook of Sources for Teachers and Teacher-Training Classes</dc:title>
+    <meta refines="#t2" property="title-type">subtitle</meta>
+    <meta refines="#t2" property="display-seq">2</meta>
+    <dc:creator id="curry">Charles Madison Curry</dc:creator>
+    <meta property="file-as" refines="#curry">Curry, Charles Madison</meta>
+    <dc:creator id="clippinger">Erle Elsworth Clippinger</dc:creator>
+    <meta property="file-as" refines="#clippinger">Clippinger, Erle Elsworth</meta>
+    <dc:language>en</dc:language>
+    <dc:date>2008-05-20</dc:date>
+    <dc:subject>Children -- Books and reading</dc:subject>
+    <dc:subject>Children's literature -- Study and teaching</dc:subject>
+    <dc:source>http://www.gutenberg.org/files/25545/25545-h/25545-h.htm</dc:source>
+    <dc:rights>Public domain in the USA.</dc:rights>
+  </metadata>
+  <manifest>
+    <item href="images/cover.png" id="cover-img" media-type="image/png" properties="cover-image"/>
+    <item href="css/epub.css" id="css" media-type="text/css"/>
+    <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+    <item href="s04.xhtml" id="s04" media-type="application/xhtml+xml"/>
+    <item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <spine>
+    <itemref idref="cover"/>
+    <itemref idref="nav"/>
+    <itemref idref="s04"/>
+  </spine>
+</package>
+)X";
+
+static const char* kAbsoluteRefinementIRI = R"X(<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="id">http://www.gutenberg.org/ebooks/25545</dc:identifier>
+    <meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
+    <dc:title id="t1">Children's Literature</dc:title>
+    <meta refines="http://server.com/index.html#henry" property="title-type">main</meta>
+    <meta refines="#t1" property="display-seq">1</meta>
+    <dc:title id="t2">A Textbook of Sources for Teachers and Teacher-Training Classes</dc:title>
+    <meta refines="#t2" property="title-type">subtitle</meta>
+    <meta refines="#t2" property="display-seq">2</meta>
+    <dc:creator id="curry">Charles Madison Curry</dc:creator>
+    <meta property="file-as" refines="#curry">Curry, Charles Madison</meta>
+    <dc:creator id="clippinger">Erle Elsworth Clippinger</dc:creator>
+    <meta property="file-as" refines="#clippinger">Clippinger, Erle Elsworth</meta>
+    <dc:language>en</dc:language>
+    <dc:date>2008-05-20</dc:date>
+    <dc:subject>Children -- Books and reading</dc:subject>
+    <dc:subject>Children's literature -- Study and teaching</dc:subject>
+    <dc:source>http://www.gutenberg.org/files/25545/25545-h/25545-h.htm</dc:source>
+    <dc:rights>Public domain in the USA.</dc:rights>
+  </metadata>
+  <manifest>
+    <item href="images/cover.png" id="cover-img" media-type="image/png" properties="cover-image"/>
+    <item href="css/epub.css" id="css" media-type="text/css"/>
+    <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+    <item href="s04.xhtml" id="s04" media-type="application/xhtml+xml"/>
+    <item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <spine>
+    <itemref idref="cover"/>
+    <itemref idref="nav"/>
+    <itemref idref="s04"/>
+  </spine>
+</package>
+)X";
+
 static const char* kInvalidRefinement = R"X(<?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
@@ -563,6 +637,146 @@ TEST_CASE("Packages with an invalid unique-id reference should raise a spec erro
     
     SetErrorHandler(DefaultErrorHandler);
     REQUIRE(int(triggeredError) == int(EPUBError::OPFPackageUniqueIDInvalid));
+}
+
+TEST_CASE("'refines' should contain a valid IRI", "")
+{
+    EPUBError triggeredError = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr != nullptr )
+            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+        return true;
+    });
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    
+    xmlDocPtr doc = xmlParseMemory(kInvalidRefinementIRI, (int)strlen(kInvalidRefinementIRI));
+    pkg->_OpenForTest(doc, "EPUB/");
+    
+    SetErrorHandler(DefaultErrorHandler);
+    REQUIRE(int(triggeredError) == int(EPUBError::OPFInvalidRefinementAttribute));
+}
+
+TEST_CASE("'refine' should contain a relative IRI", "")
+{
+    EPUBError triggeredError = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr != nullptr )
+            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+        return true;
+    });
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    
+    xmlDocPtr doc = xmlParseMemory(kAbsoluteRefinementIRI, (int)strlen(kAbsoluteRefinementIRI));
+    pkg->_OpenForTest(doc, "EPUB/");
+    
+    SetErrorHandler(DefaultErrorHandler);
+    REQUIRE(int(triggeredError) == int(EPUBError::OPFInvalidRefinementAttribute));
+}
+
+TEST_CASE("'refine' IRI should reference an existing item", "")
+{
+    EPUBError triggeredError = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr != nullptr )
+            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+        return true;
+    });
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    
+    xmlDocPtr doc = xmlParseMemory(kInvalidRefinement, (int)strlen(kInvalidRefinement));
+    pkg->_OpenForTest(doc, "EPUB/");
+    
+    SetErrorHandler(DefaultErrorHandler);
+    REQUIRE(int(triggeredError) == int(EPUBError::OPFInvalidRefinementTarget));
+}
+
+TEST_CASE("Spine 'idref' should reference an existing manifest item", "")
+{
+    EPUBError triggeredError = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr != nullptr )
+            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+        return true;
+    });
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    
+    xmlDocPtr doc = xmlParseMemory(kInvalidSpineIDRef, (int)strlen(kInvalidSpineIDRef));
+    pkg->_OpenForTest(doc, "EPUB/");
+    
+    SetErrorHandler(DefaultErrorHandler);
+    REQUIRE(int(triggeredError) == int(EPUBError::OPFInvalidSpineIdref));
+}
+
+TEST_CASE("Should raise an error if the Metadata is out of place", "")
+{
+    EPUBError triggeredError = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr != nullptr )
+            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+        return true;
+    });
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    
+    xmlDocPtr doc = xmlParseMemory(kMetadataOutOfPlace, (int)strlen(kMetadataOutOfPlace));
+    pkg->_OpenForTest(doc, "EPUB/");
+    
+    SetErrorHandler(DefaultErrorHandler);
+    REQUIRE(int(triggeredError) == int(EPUBError::OPFMetadataOutOfOrder));
+}
+
+TEST_CASE("Should raise an error if the Manifest is out of place", "")
+{
+    EPUBError triggeredError = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr != nullptr )
+            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+        return true;
+    });
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    
+    xmlDocPtr doc = xmlParseMemory(kManifestOutOfPlace, (int)strlen(kManifestOutOfPlace));
+    pkg->_OpenForTest(doc, "EPUB/");
+    
+    SetErrorHandler(DefaultErrorHandler);
+    REQUIRE(int(triggeredError) == int(EPUBError::OPFManifestOutOfOrder));
+}
+
+TEST_CASE("Should raise an error if the spine is out of place", "")
+{
+    EPUBError triggeredError = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr != nullptr )
+            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+        return true;
+    });
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    
+    xmlDocPtr doc = xmlParseMemory(kSpineOutOfPlace, (int)strlen(kSpineOutOfPlace));
+    pkg->_OpenForTest(doc, "EPUB/");
+    
+    SetErrorHandler(DefaultErrorHandler);
+    REQUIRE(int(triggeredError) == int(EPUBError::OPFSpineOutOfOrder));
 }
 
 TEST_CASE("Our test package should only have TOC and PageList navigation tables", "")

@@ -360,7 +360,35 @@ bool Package::Unpack()
         {
             auto next = std::make_shared<SpineItem>(sharedMe);
             if ( next->ParseXML(next, spineNodes->nodeTab[i]) == false )
+            {
+                // TODO: need an error code here
                 continue;
+            }
+            
+            // validation of idref
+            auto manifestFound = _manifest.find(next->Idref());
+            if ( manifestFound == _manifest.end() )
+            {
+                HandleError(EPUBError::OPFInvalidSpineIdref, _Str(next->Idref(), " does not correspond to a manifest item"));
+                continue;
+            }
+            
+            // validation of spine resource type w/fallbacks
+            ManifestItemPtr manifestItem = next->ManifestItem();
+            bool isContentDoc = false;
+            do
+            {
+                if ( manifestItem->MediaType() == "application/xhtml+xml" ||
+                     manifestItem->MediaType() == "image/svg" )
+                {
+                    isContentDoc = true;
+                    break;
+                }
+                
+            } while ( (manifestItem = manifestItem->Fallback()) );
+            
+            if ( !isContentDoc )
+                HandleError(EPUBError::OPFFallbackChainHasNoContentDocument);
             
             StoreXMLIdentifiable(next);
             
@@ -491,14 +519,36 @@ bool Package::Unpack()
             xmlNodePtr node = refineNodes->nodeTab[i];
             string ident = _getProp(node, "refines");
             if ( ident.empty() )
+            {
+                HandleError(EPUBError::OPFInvalidRefinementAttribute, "Empty IRI for 'refines' attribute");
                 continue;
+            }
             
             if ( ident[0] == '#' )
+            {
                 ident = ident.substr(1);
+            }
+            else
+            {
+                // validation only right now
+                IRI iri(ident);
+                if ( iri.IsEmpty() )
+                {
+                    HandleError(EPUBError::OPFInvalidRefinementAttribute, _Str("#", ident, " is not a valid IRI"));
+                }
+                else if ( iri.IsRelative() == false )
+                {
+                    HandleError(EPUBError::OPFInvalidRefinementAttribute, _Str(iri.IRIString(), " is not a relative IRI"));
+                }
+                continue;
+            }
             
             auto found = _xmlIDLookup.find(ident);
             if ( found == _xmlIDLookup.end() )
+            {
+                HandleError(EPUBError::OPFInvalidRefinementTarget, _Str("#", ident, " does not reference an item in this document"));
                 continue;
+            }
             
             PropertyPtr prop = std::dynamic_pointer_cast<Property>(found->second);
             if ( prop )
