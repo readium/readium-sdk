@@ -78,12 +78,12 @@ struct __is_nothrow_swappable_imp : public std::integral_constant<bool, noexcept
 };
 
 template <class _Tp>
-struct __is_nothrow_swappable<false, _Tp> : public false_type
+struct __is_nothrow_swappable_imp<false, _Tp> : public false_type
 {
 };
 
 template <class _Tp>
-struct __is_nothrow_swappable : public __is_nothrow_swappable<__is_swappable<_Tp>::value, _Tp>
+struct __is_nothrow_swappable : public __is_nothrow_swappable_imp<__is_swappable<_Tp>::value, _Tp>
 {
 };
 
