@@ -26,6 +26,7 @@
 #include <ePub3/encryption.h>
 #include <ePub3/package.h>
 #include <ePub3/utilities/utfstring.h>
+#include <ePub3/utilities/owned_by.h>
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 #include <vector>
@@ -34,6 +35,9 @@ EPUB3_BEGIN_NAMESPACE
 
 class Archive;
 class ByteStream;
+
+class Container;
+typedef shared_ptr<Container>   ContainerPtr;
 
 /**
  The Container class provides an interface for interacting with an EPUB container,
@@ -50,33 +54,43 @@ class ByteStream;
  
  @ingroup epub-model
  */
-class Container
+class Container : public std::enable_shared_from_this<Container>
 {
 public:
     ///
     /// A list of container sub-item paths.
-    typedef std::vector<string>             PathList;
+    typedef std::vector<string>                 PathList;
     ///
     /// A list of Packages.
-    typedef std::vector<Package*>           PackageList;
+    typedef shared_vector<Package>              PackageList;
     ///
     /// A list of encryption information.
-    typedef std::vector<EncryptionInfo*>    EncryptionList;
+    typedef shared_vector<EncryptionInfo>       EncryptionList;
 
 private:
     ///
     /// There is no copy constructor.
-                Container(const Container&)                 _DELETED_;
+                    Container(const Container&)                 _DELETED_;
+    
+protected:
+    ///
+    /// C++11 move constructor.
+    EPUB3_EXPORT    Container(Container&& o);
     
 public:
     /**
      Create a new Container.
-     @param path The filesystem path to the container file (i.e. the .epub file).
      */
-    EPUB3_EXPORT    Container(const string& path);
+    EPUB3_EXPORT    Container();
+    
     ///
-    /// C++11 move constructor.
-    EPUB3_EXPORT    Container(Container&& o);
+    /// Opens the archive at a given path.
+    bool            Open(const string& path);
+    
+    ///
+    /// Creates and returns a new Container instance.
+    static shared_ptr<Container>    OpenContainer(const string& path);
+    
     virtual         ~Container();
     
     ///
@@ -87,12 +101,12 @@ public:
     /// Retrieves the list of all instantiated packages within the container.
     virtual const PackageList&      Packages()              const   { return _packages; }
     
-    /**
+    /**pack
      Retrieves the default Package instance.
      
      Equivalent to `this->Packages().at(0)`.
      */
-    virtual const Package*          DefaultPackage()        const;
+    virtual shared_ptr<Package>     DefaultPackage()        const;
     
     ///
     /// The OCF version of the container document.
@@ -108,7 +122,7 @@ public:
      to retrieve.
      @result Returns the encryption information, or `nullptr` if none was found.
      */
-    virtual const EncryptionInfo*   EncryptionInfoForPath(const string& path)   const;
+    virtual shared_ptr<EncryptionInfo>    EncryptionInfoForPath(const string& path)   const;
     
     /**
      Obtains a pointer to a ReadStream for a specific file within the container.
@@ -116,13 +130,18 @@ public:
      @result A std::unique_ptr for a new stream to the specified file, or `nullptr`
      if the file was not found.
      */
-    virtual unique_ptr<ByteStream>        ReadStreamAtPath(const string& path)        const;
+    virtual unique_ptr<ByteStream>  ReadStreamAtPath(const string& path)        const;
+    
+    ///
+    /// The underlying archive.
+    shared_ptr<Archive>             GetArchive()            const   { return _archive; }
+    
     
 protected:
-    Archive *       _archive;
-    xmlDocPtr       _ocf;
-    PackageList     _packages;
-    EncryptionList  _encryption;
+    shared_ptr<Archive> _archive;
+    xmlDocPtr           _ocf;
+    PackageList         _packages;
+    EncryptionList      _encryption;
     
     ///
     /// Parses the file META-INF/encryption.xml into an EncryptionList.

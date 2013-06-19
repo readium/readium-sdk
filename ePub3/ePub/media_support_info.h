@@ -23,6 +23,7 @@
 #define __ePub3__media_support_info__
 
 #include <ePub3/epub3.h>
+#include <ePub3/utilities/owned_by.h>
 #include <map>
 #include <list>
 
@@ -43,12 +44,12 @@ class ManifestItem;
  
  @ingroup utilities
  */
-class MediaSupportInfo
+class MediaSupportInfo : public std::enable_shared_from_this<MediaSupportInfo>, public OwnedBy<Package>
 {
 public:
     ///
     /// A list of manifest items.
-    typedef std::list<const ManifestItem*>      ManifestItemList;
+    typedef shared_list<ManifestItem>   ManifestItemList;
     
     ///
     /// Possible types of support provided.
@@ -62,13 +63,13 @@ public:
 public:
     ///
     /// The default constructor creates an object with no information.
-    EPUB3_EXPORT    MediaSupportInfo();
+    EPUB3_EXPORT    MediaSupportInfo(shared_ptr<Package>& owner);
     ///
     /// A simple constructor, normally used to define intrinsic support.
-    EPUB3_EXPORT    MediaSupportInfo(const string& mediaType, bool supported=true);
+    EPUB3_EXPORT    MediaSupportInfo(shared_ptr<Package>& owner, const string& mediaType, bool supported=true);
     ///
     /// The real constructor takes a specific SupportType value.
-    EPUB3_EXPORT    MediaSupportInfo(const string& mediaType, SupportType support);
+    EPUB3_EXPORT    MediaSupportInfo(shared_ptr<Package>& owner, const string& mediaType, SupportType support);
     ///
     /// Copy constructor.
     EPUB3_EXPORT    MediaSupportInfo(const MediaSupportInfo& o);
@@ -133,7 +134,7 @@ public:
      @result A vector containing manifest items matching the receiver's media type.
      */
     EPUB3_EXPORT
-    const ManifestItemList  MatchingManifestItems(const Package* pkg) const;
+    const ManifestItemList  MatchingManifestItems(shared_ptr<Package> pkg) const;
     
 protected:
     string              _mediaType;     ///< The media type to which this object refers.

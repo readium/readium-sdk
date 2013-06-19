@@ -74,8 +74,8 @@ public:
     
     virtual unique_ptr<ByteStream> ByteStreamAtPath(const string& path) const;
     
-    virtual ArchiveReader* ReaderAtPath(const string & path) const;
-    virtual ArchiveWriter* WriterAtPath(const string & path, bool compress=true, bool create=true);
+    virtual unique_ptr<ArchiveReader> ReaderAtPath(const string & path) const;
+    virtual unique_ptr<ArchiveWriter> WriterAtPath(const string & path, bool compress=true, bool create=true);
         
     virtual ArchiveItemInfo InfoAtPath(const string & path) const;
     

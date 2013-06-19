@@ -23,8 +23,11 @@
 #define __ePub3__encryption__
 
 #include <ePub3/epub3.h>
+#include <ePub3/utilities/owned_by.h>
 
 EPUB3_BEGIN_NAMESPACE
+
+class Container;
 
 /**
  Contains details on the encryption of a single resource.
@@ -40,7 +43,7 @@ EPUB3_BEGIN_NAMESPACE
  @see http://www.idpf.org/epub/30/spec/epub30-ocf.html#font-obfuscation
  @see http://www.w3.org/TR/xmlenc-core1/
  */
-class EncryptionInfo
+class EncryptionInfo : public std::enable_shared_from_this<EncryptionInfo>, public OwnedBy<Container>
 {
 public:
     ///
@@ -50,21 +53,24 @@ public:
 public:
     ///
     /// Creates a new EncryptionInfo with no details filled in.
-                    EncryptionInfo() : _algorithm(), _path() {}
+                    EncryptionInfo(shared_ptr<Container>& owner) : OwnedBy(owner), _algorithm(), _path() {}
+    ///
+    /// Copy constructor.
+                    EncryptionInfo(const EncryptionInfo& o) : OwnedBy(o), _algorithm(o._algorithm), _path(o._path) {}
+    ///
+    /// Move constructor.
+                    EncryptionInfo(EncryptionInfo&& o) : OwnedBy(std::move(o)), _algorithm(std::move(o._algorithm)), _path(std::move(o._path)) {}
+    virtual         ~EncryptionInfo() {}
+    
+    
     /**
      Creates a new EncryptionInfo from an EncryptionData XML element node.
      @param node An XML node, which *must* be an `EncryptionData` node as defined in
      XML-ENC.
      @see http://www.w3.org/TR/xmlenc-core1/#sec-EncryptedData
      */
-    EPUB3_EXPORT    EncryptionInfo(xmlNodePtr node);
-    ///
-    /// Copy constructor.
-                    EncryptionInfo(const EncryptionInfo& o) : _algorithm(o._algorithm), _path(o._path) {}
-    ///
-    /// Move constructor.
-                    EncryptionInfo(EncryptionInfo&& o) : _algorithm(std::move(o._algorithm)), _path(std::move(o._path)) {}
-    virtual         ~EncryptionInfo() {}
+    EPUB3_EXPORT
+    bool            ParseXML(xmlNodePtr node);
     
     ///
     /// Returns an algorithm URI as defined in XML-ENC or OCF.

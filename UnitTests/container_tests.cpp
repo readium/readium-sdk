@@ -28,15 +28,14 @@ using namespace ePub3;
 
 TEST_CASE("opening a container", "The container should open without problem")
 {
-    Container *pContainer = new Container(EPUB_PATH);
+    ContainerPtr pContainer = Container::OpenContainer(EPUB_PATH);
     REQUIRE(pContainer != nullptr);
-    delete pContainer;
 }
 
 TEST_CASE("", "container should contain at least one package")
 {
-    Container container(EPUB_PATH);
-    auto packages = container.PackageLocations();
+    ContainerPtr container = Container::OpenContainer(EPUB_PATH);
+    auto packages = container->PackageLocations();
     for ( auto pkgLoc : packages )
     {
         CAPTURE(pkgLoc);
@@ -47,6 +46,6 @@ TEST_CASE("", "container should contain at least one package")
 
 TEST_CASE("", "Version should be 1.0")
 {
-    Container container(EPUB_PATH);
-    REQUIRE(container.Version() == "1.0");
+    ContainerPtr container = Container::OpenContainer(EPUB_PATH);
+    REQUIRE(container->Version() == "1.0");
 }

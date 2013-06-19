@@ -72,7 +72,7 @@ public:
 protected:
     ///
     /// Type of a function which creates an Archive from a file.
-    typedef std::function<Archive*(const string&)>     CreatorFn;
+    typedef std::function<std::unique_ptr<Archive>(const string&)>     CreatorFn;
     ///
     /// Type of a function which determines whether a file is a certain type of archive.
     typedef std::function<bool(const string&)>         SnifferFn;
@@ -92,8 +92,8 @@ private:
         ArchiveFactory(ArchiveFactory&& o) : _creator(std::move(o._creator)), _typeSniffer(std::move(o._typeSniffer)) {}
         ~ArchiveFactory() {}
         
-        bool                CanInit(const string& path)    const   { return _typeSniffer(path); }
-        Archive *           operator()(const string& path) const   { return _creator(path); }
+        bool                        CanInit(const string& path)    const   { return _typeSniffer(path); }
+        std::unique_ptr<Archive>    operator()(const string& path) const   { return _creator(path); }
         
     private:
         CreatorFn       _creator;
@@ -129,7 +129,7 @@ public:
      @result An opened instance of an Archive subclass or `nullptr`.
      */
     EPUB3_EXPORT
-    static Archive * Open(const string& path);
+    static std::unique_ptr<Archive> Open(const string& path);
     
 public:
     virtual ~Archive() {}
@@ -175,7 +175,7 @@ public:
      @result A pointer (unmanaged) to a reader object, or `nullptr`.
      @deprecated Please use ByteStreamAtPath(const string&)const instead.
      */
-    virtual ArchiveReader* ReaderAtPath(const string & path) const = 0;
+    virtual unique_ptr<ArchiveReader> ReaderAtPath(const string & path) const = 0;
     
     /**
      Obtain an object used to write data to a file within the archive.
@@ -185,7 +185,7 @@ public:
      @result A pointer (unmanaged) to a reader object, or `nullptr`.
      @deprecated Please use ByteStreamAtPath(const string&)const instead.
      */
-    virtual ArchiveWriter* WriterAtPath(const string & path, bool compress=true, bool create=true) = 0;
+    virtual unique_ptr<ArchiveWriter> WriterAtPath(const string & path, bool compress=true, bool create=true) = 0;
     
     /**
      Determines whether a given file ought to be compressed when stored in the archive.

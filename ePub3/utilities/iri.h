@@ -23,6 +23,7 @@
 #define __ePub3__iri__
 
 #include <ePub3/utilities/utfstring.h>
+#include <ePub3/utilities/make_unique.h>
 #include <google-url/gurl.h>
 #include <vector>
 
@@ -63,7 +64,7 @@ public:
 public:
     ///
     /// Initializes an empty (and thus invalid) IRI.
-    IRI() : _urnComponents(), _url(nullptr), _pureIRI() {}
+    IRI() : _urnComponents(), _url(make_unique<GURL>()), _pureIRI() {}
     
     /**
      Create a new IRI.
@@ -107,7 +108,7 @@ public:
     
     ///
     /// C++11 move-constructor.
-    IRI(IRI&& o) : _urnComponents(std::move(o._urnComponents)), _url(o._url), _pureIRI(std::move(o._pureIRI)) { o._url = nullptr; }
+    IRI(IRI&& o) : _urnComponents(std::move(o._urnComponents)), _url(std::move(o._url)), _pureIRI(std::move(o._pureIRI)) { o._url = nullptr; }
     
     virtual ~IRI();
     
@@ -164,6 +165,10 @@ public:
     ///
     /// Returns `true` if the IRI is a URL referencing a relative location.
     bool            IsRelative() const { return !_url->has_host(); }
+    
+    ///
+    /// Returns `true` if the IRI is empty.
+    bool            IsEmpty() const { return _url->is_empty(); }
     
     /// @{
     /// @name Component Introspection
@@ -323,9 +328,9 @@ public:
     string          URIString() const;
     
 protected:
-    ComponentList   _urnComponents;     ///< The components of a URN.
-    GURL*           _url;               ///< The underlying URL object.
-    string          _pureIRI;           ///< A cache of the Unicode IRI string. May be empty.
+    ComponentList           _urnComponents;     ///< The components of a URN.
+    std::unique_ptr<GURL>   _url;               ///< The underlying URL object.
+    string                  _pureIRI;           ///< A cache of the Unicode IRI string. May be empty.
     
 };
 

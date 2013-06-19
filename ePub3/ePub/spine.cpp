@@ -28,53 +28,59 @@ EPUB3_BEGIN_NAMESPACE
 const IRI SpineItem::PageSpreadRightPropertyIRI("http://idpf.org/epub/vocab/package/#page-spread-right");
 const IRI SpineItem::PageSpreadLeftPropertyIRI("http://idpf.org/epub/vocab/package/#page-spread-left");
 
-SpineItem::SpineItem(xmlNodePtr node, Package * owner) : _ident(), _idref(), _owner(owner), _linear(true), _next(nullptr), _prev(nullptr)
+SpineItem::SpineItem(const shared_ptr<Package>& owner) : OwnedBy(owner), PropertyHolder(owner), _idref(), _linear(true), _next(), _prev()
 {
-    _prev = nullptr;
-    _next = nullptr;
-    _ident = _getProp(node, "id");
+}
+SpineItem::SpineItem(SpineItem&& o) : OwnedBy(std::move(o)), PropertyHolder(std::move(o)), XMLIdentifiable(std::move(o)), _idref(std::move(o._idref)), _linear(o._linear), _prev(std::move(o._prev)), _next(std::move(o._next))
+{
+}
+SpineItem::~SpineItem()
+{
+}
+bool SpineItem::ParseXML(SpineItemPtr& sharedMe, xmlNodePtr node)
+{
+    SetXMLIdentifier(_getProp(node, "id"));
     _idref = _getProp(node, "idref");
     if ( _getProp(node, "linear").tolower() == "false" )
         _linear = false;
+    
+    auto holder = std::dynamic_pointer_cast<PropertyHolder>(sharedMe);
     
     string properties = _getProp(node, "properties");
     if ( !properties.empty() )
     {
         for ( auto& property : properties.split(REGEX_NS::regex(",\\s*")) )
         {
-            _properties.push_back(owner->PropertyIRIFromAttributeValue(property));
+            PropertyPtr prop = std::make_shared<Property>(holder);
+            prop->SetPropertyIdentifier(this->PropertyIRIFromString(property));
+            this->AddProperty(prop);
         }
     }
+    return true;
 }
-SpineItem::SpineItem(SpineItem&& o) : _ident(std::move(o._ident)), _idref(std::move(o._idref)), _owner(o._owner), _linear(o._linear), _properties(std::move(o._properties)), _prev(o._prev), _next(std::move(o._next))
+shared_ptr<ManifestItem> SpineItem::ManifestItem() const
 {
-    o._owner = nullptr;
-    o._prev = nullptr;
+    auto package = this->Owner();
+    if ( !package )
+        return nullptr;
+    return package->ManifestItemWithID(Idref());
 }
-SpineItem::~SpineItem()
+PageSpread SpineItem::Spread() const
 {
-}
-const ManifestItem* SpineItem::ManifestItem() const
-{
-    return _owner->ManifestItemWithID(Idref());
-}
-SpineItem::PageSpread SpineItem::Spread() const
-{
-    if ( _properties.empty() )
-        return PageSpread::Either;
+    if ( NumberOfProperties() == 0 )
+        return PageSpread::Automatic;
     
     bool left = false, right = false;
-    for ( auto& item : _properties )
-    {
-        if ( !left && item == PageSpreadLeftPropertyIRI )
-            left = true;
-        else if ( !right && item == PageSpreadRightPropertyIRI )
-            right = true;
-        
+    ForEachProperty([&](shared_ptr<Property> item) {
         // return early if both set
         if ( left && right )
-            return PageSpread::Either;
-    }
+            return;
+        
+        if ( !left && item->PropertyIdentifier() == PageSpreadLeftPropertyIRI )
+            left = true;
+        else if ( !right && item->PropertyIdentifier() == PageSpreadRightPropertyIRI )
+            right = true;
+    });
     
     // only one (or neither) set here
     if ( left )
@@ -82,33 +88,26 @@ SpineItem::PageSpread SpineItem::Spread() const
     if ( right )
         return PageSpread::Right;
     
-    return PageSpread::Either;
+    return PageSpread::Automatic;
 }
-SpineItem* SpineItem::NextStep()
+shared_ptr<SpineItem> SpineItem::NextStep() const
 {
-    SpineItem* n = Next();
+    auto n = Next();
     while ( n != nullptr && n->Linear() == false )
         n = n->Next();
     return n;
 }
-const SpineItem* SpineItem::NextStep() const
+shared_ptr<SpineItem> SpineItem::PriorStep() const
 {
-    return const_cast<SpineItem*>(this)->NextStep();
-}
-SpineItem* SpineItem::PriorStep()
-{
-    SpineItem* p = Previous();
+    auto p = Previous();
     while ( p != nullptr && p->Linear() == false )
         p = p->Previous();
     return p;
 }
-const SpineItem* SpineItem::PriorStep() const
+shared_ptr<SpineItem> SpineItem::at(ssize_t idx) const
 {
-    return const_cast<SpineItem*>(this)->PriorStep();
-}
-SpineItem* SpineItem::at(ssize_t idx)
-{
-    SpineItem* result(this);
+    shared_ptr<SpineItem> result = std::const_pointer_cast<SpineItem>(enable_shared_from_this<SpineItem>::shared_from_this());
+    
     ssize_t i = idx;
     
     if ( i > 0 )
@@ -134,9 +133,11 @@ SpineItem* SpineItem::at(ssize_t idx)
     
     return result;
 }
-const SpineItem* SpineItem::at(ssize_t idx) const
+void SpineItem::SetNextItem(const shared_ptr<SpineItem>& next)
 {
-    return const_cast<SpineItem*>(this)->at(idx);
+    next->_next = _next;
+    next->_prev = enable_shared_from_this<SpineItem>::shared_from_this();
+    _next = next;
 }
 
 EPUB3_END_NAMESPACE

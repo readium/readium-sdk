@@ -24,13 +24,15 @@
 
 #include <ePub3/epub3.h>
 #include <ePub3/utilities/utfstring.h>
+#include <ePub3/utilities/owned_by.h>
 #include <vector>
 
 EPUB3_BEGIN_NAMESPACE
 
 class NavigationElement;
 
-typedef std::vector<NavigationElement*> NavigationList;
+typedef shared_ptr<NavigationElement> NavigationElementPtr;
+typedef shared_vector<NavigationElement>    NavigationList;
 
 // abstract base for polymorphic navigation table/point classes
 /**
@@ -39,10 +41,10 @@ typedef std::vector<NavigationElement*> NavigationList;
 class NavigationElement
 {
 public:
-    explicit            NavigationElement() : _children() {}
-    explicit            NavigationElement(const NavigationElement& o) : _children(o._children) {}
-    explicit            NavigationElement(NavigationElement&& o) : _children(std::move(o._children)) {}
-    virtual             ~NavigationElement() {}
+    explicit                NavigationElement() : _children() {}
+    explicit                NavigationElement(const NavigationElement& o) : _children(o._children) {}
+    explicit                NavigationElement(NavigationElement&& o) : _children(std::move(o._children)) {}
+    virtual                 ~NavigationElement() {}
     
     virtual const string&   Title()                     const   = 0;
     virtual void            SetTitle(const string& str)         = 0;
@@ -50,10 +52,10 @@ public:
     
     const NavigationList&   Children()                  const   { return _children; }
     
-    void                    AppendChild(NavigationElement* e)   { _children.push_back(e); }
+    void                    AppendChild(shared_ptr<NavigationElement> e)   { _children.push_back(e); }
     
 protected:
-    NavigationList  _children;
+    NavigationList          _children;
 };
 
 EPUB3_END_NAMESPACE

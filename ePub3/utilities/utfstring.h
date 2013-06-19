@@ -86,7 +86,7 @@ public:
     public:
         EPUB3_EXPORT InvalidUTF8Sequence(const string & str) : invalid_argument(str.stl_str()) {}
         EPUB3_EXPORT InvalidUTF8Sequence(const char * str) : invalid_argument(str) {}
-        virtual ~InvalidUTF8Sequence() {}
+        virtual ~InvalidUTF8Sequence() _NOEXCEPT {}
     };
     
     typedef utf8::iterator<__base::iterator>        iterator;

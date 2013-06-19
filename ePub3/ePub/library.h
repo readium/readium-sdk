@@ -76,29 +76,29 @@ public:
     string              PathForEPubWithPackageID(const string& packageID)   const;
 
     EPUB3_EXPORT
-    void                AddPublicationsInContainer(Container* container, const string& path);
+    void                AddPublicationsInContainer(shared_ptr<Container> container, const string& path);
     EPUB3_EXPORT
     void                AddPublicationsInContainerAtPath(const string& path);
     
     // returns an epub3:// url for the package with a given identifier
     EPUB3_EXPORT
-    IRI                 EPubURLForPublication(const Package* package)       const;
+    IRI                 EPubURLForPublication(shared_ptr<Package> package)       const;
     EPUB3_EXPORT
     IRI                 EPubURLForPublicationID(const string& identifier)   const;
     
     // may load a container/package, so non-const
     EPUB3_EXPORT
-    Package*            PackageForEPubURL(const IRI& url, bool allowLoad=true);
+    shared_ptr<Package> PackageForEPubURL(const IRI& url, bool allowLoad=true);
 
     EPUB3_EXPORT
-    IRI                 EPubCFIURLForManifestItem(const ManifestItem* item) const;
+    IRI                 EPubCFIURLForManifestItem(shared_ptr<ManifestItem> item) const;
     
     // may instantiate a Container & store it, so non-const
     EPUB3_EXPORT
-    const ManifestItem* ManifestItemForCFI(const IRI& urlWithCFI, CFI* pRemainingCFI);
+    shared_ptr<ManifestItem>    ManifestItemForCFI(const IRI& urlWithCFI, CFI* pRemainingCFI);
 
     EPUB3_EXPORT
-    unique_ptr<ByteStream>    ReadStreamForEPubURL(const IRI& url, CFI* pRemainingCFI);
+    unique_ptr<ByteStream>  ReadStreamForEPubURL(const IRI& url, CFI* pRemainingCFI);
     
     // file format is sort-of CSV
     // each line starts with a container locator's string representation followed by a
@@ -108,17 +108,17 @@ public:
     
 protected:
     // list of known (but not necessarily loaded) containers
-    typedef std::map<string, Container*>            ContainerLookup;
+    typedef std::map<string, shared_ptr<Container>>     ContainerLookup;
     
     // if container is loaded, LookupEntry will contain a Package
     // otherwise, the locator is used to load the Container
-    typedef std::pair<string, Package*>             LookupEntry;
-    typedef std::map<EPubIdentifier, LookupEntry>   PackageLookup;
+    typedef std::pair<string, shared_ptr<Package>>      LookupEntry;
+    typedef std::map<EPubIdentifier, LookupEntry>       PackageLookup;
     
-    ContainerLookup         _containers;
-    PackageLookup           _packages;
+    ContainerLookup                 _containers;
+    PackageLookup                   _packages;
     
-    static unique_ptr<Library>    _singleton;
+    static unique_ptr<Library>      _singleton;
 };
 
 EPUB3_END_NAMESPACE

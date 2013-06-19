@@ -148,7 +148,7 @@ class InvalidDuplexStreamOperationError : public std::logic_error
 public:
     EPUB3_EXPORT InvalidDuplexStreamOperationError(const string& str) : std::logic_error(str.stl_str()) {}
     EPUB3_EXPORT InvalidDuplexStreamOperationError(const char* str) : std::logic_error(str) {}
-    EPUB3_EXPORT ~InvalidDuplexStreamOperationError() {}
+    EPUB3_EXPORT ~InvalidDuplexStreamOperationError() _NOEXCEPT {}
 };
 
 /**
