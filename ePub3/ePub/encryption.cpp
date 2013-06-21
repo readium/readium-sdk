@@ -24,21 +24,29 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-EncryptionInfo::EncryptionInfo(xmlNodePtr node)
+bool EncryptionInfo::ParseXML(xmlNodePtr node)
 {
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(node->doc, {{"enc", XMLENCNamespaceURI}, {"dsig", XMLDSigNamespaceURI}});
+#else
+    XPathWrangler::NamespaceList nsList;
+    nsList["enc"] = XMLENCNamespaceURI;
+    nsList["dsig"] = XMLDSigNamespaceURI;
+    XPathWrangler xpath(node->doc, nsList);
+#endif
     
     auto strings = xpath.Strings("./enc:EncryptionMethod/@Algorithm", node);
     if ( strings.empty() )
-        throw std::invalid_argument("Node does not contain enc:EncryptionMethod with an Algorithm attribute");
+        return false;
     
     _algorithm = strings[0];
     
     strings = xpath.Strings("./enc:CipherData/enc:CipherReference/@URI", node);
     if ( strings.empty() )
-        throw std::invalid_argument("Node does not specify a cipher reference URI");
+        return false;
     
     _path = strings[0];
+    return true;
 }
 
 EPUB3_END_NAMESPACE

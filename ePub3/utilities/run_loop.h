@@ -3,19 +3,24 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2013-04-08.
-//  Copyright (c) 2013 The Readium Foundation and contributors. All rights reserved.
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
+//  
+//  The Readium SDK is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//  
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//  
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 #ifndef __ePub3__run_loop__
 #define __ePub3__run_loop__
-
-#include <ePub3/utilities/basic.h>
-#include <ePub3/utilities/utfstring.h>
-#include <chrono>
-#include <list>
-#include <mutex>
-#include <atomic>
-#include <ePub3/utilities/ref_counted.h>
 
 //#undef EPUB_USE_CF
 //#define EPUB_OS_ANDROID 1
@@ -26,12 +31,20 @@
 # include <time.h>
 struct ALooper;
 #elif EPUB_OS(WINDOWS)
-# error Add Windows code to RunLoop.h
+# include <windows.h>
 #else
 # include <condition_variable>      // GNU libstdc++ 4.7 has this guy in a separate header
 # include <pthread.h>
 # include <time.h>
 #endif
+
+#include <ePub3/utilities/basic.h>
+#include <ePub3/utilities/utfstring.h>
+#include <chrono>
+#include <list>
+#include <mutex>
+#include <atomic>
+#include <ePub3/utilities/ref_counted.h>
 
 #if EPUB_USE(CF)
 #include "cf_helpers.h"
@@ -42,7 +55,7 @@ EPUB3_BEGIN_NAMESPACE
 class RunLoop
 {
 public:
-    enum class ExitReason : uint8_t
+    enum class EPUB3_EXPORT ExitReason : uint8_t
     {
         RunFinished         = 1,    ///< The RunLoop has no timers or event sources to process.
         RunStopped          = 2,    ///< The RunLoop was stopped by a call to RunLoop::Stop().
@@ -76,8 +89,6 @@ public:
     private:
 #if EPUB_USE(CF)
         CFRefCounted<CFRunLoopObserverRef>  _cf;        ///< The underlying CF type of the observer.
-#elif EPUB_OS(WINDOWS)
-#error No Windows RunLoop implementation defined
 #else
         ObserverFn              _fn;        ///< The observer callback function.
         Activity                _acts;      ///< The activities to apply.
@@ -86,8 +97,8 @@ public:
 #endif
         
         friend class RunLoop;
-        
-                    Observer()                  = delete;
+
+                                Observer()                  _DELETED_;
         
     public:
         /**
@@ -96,38 +107,49 @@ public:
          @param repeats Whether the observer should fire more than once.
          @param fn The function to call when an observed activity occurs.
          */
+        EPUB3_EXPORT
         Observer(Activity activities, bool repeats, ObserverFn fn);
         ///
         /// Copy constructor
+        EPUB3_EXPORT
         Observer(const Observer&);
         ///
         /// Move constructor
+        EPUB3_EXPORT
         Observer(Observer&& o);
-        
+
+        EPUB3_EXPORT
         ~Observer();
-        
+
+        EPUB3_EXPORT
         Observer&       operator=(const Observer&);
         ///
         /// Move assignment
+        EPUB3_EXPORT
         Observer&       operator=(Observer&&o);
         
         ///
         /// Test for equality with another observer
+        EPUB3_EXPORT
         bool            operator==(const Observer&)     const;
         bool            operator!=(const Observer&o)    const   { return this->operator==(o) == false; }
         
         ///
         /// Retrieves the activities monitored by this observer.
+        EPUB3_EXPORT
         Activity        GetActivities()                 const;
         ///
         /// Whether this observer will post multiple events.
+        EPUB3_EXPORT
         bool            Repeats()                       const;
         ///
         /// Whether the observer has been cancelled.
+        EPUB3_EXPORT
         bool            IsCancelled()                   const;
         
         ///
         /// Cancels the observer, causing it never to fire again.
+        EPUB3_EXPORT
         void            Cancel();
     };
     
@@ -143,7 +165,7 @@ public:
 #elif EPUB_OS(ANDROID)
         int                                 _evt[2];    ///< The event's pipe file descriptors.
 #elif EPUB_OS(WINDOWS)
-#error No Windows RunLoop implementation defined
+        HANDLE                              _event;
 #else
         std::atomic<bool>                   _signalled; ///< Whether the source has been signalled.
         bool                                _cancelled; ///< Whether the source is cancelled.
@@ -153,36 +175,42 @@ public:
         
         friend class RunLoop;
         
-                        EventSource()                   = delete;
+                        EventSource()                   _DELETED_;
         
     public:
-                        EventSource(EventHandlerFn fn);
-                        EventSource(const EventSource& o);
-                        EventSource(EventSource&& o);
-                        ~EventSource();
+        EPUB3_EXPORT    EventSource(EventHandlerFn fn);
+        EPUB3_EXPORT    EventSource(const EventSource& o);
+        EPUB3_EXPORT    EventSource(EventSource&& o);
+        EPUB3_EXPORT    ~EventSource();
         
         ///
         /// Copy assignment
+        EPUB3_EXPORT
         EventSource&    operator=(const EventSource&);
         ///
         /// Move assignment
+        EPUB3_EXPORT
         EventSource&    operator=(EventSource&&);
         
         ///
         /// Test for equality.
+        EPUB3_EXPORT
         bool            operator==(const EventSource&)  const;
         bool            operator!=(const EventSource&o) const   { return this->operator==(o) == false; }
         
         ///
         /// Whether the event source has been cancelled.
+        EPUB3_EXPORT
         bool            IsCancelled()                   const;
         
         ///
         /// Cancel the event source, so it will never fire again.
+        EPUB3_EXPORT
         void            Cancel();
         
         ///
         /// Signal the event source, causing it to fire on one of its associated RunLoops.
+        EPUB3_EXPORT
         void            Signal();
         
     protected:
@@ -201,10 +229,18 @@ public:
         
         ///
         /// Timers always use the system clock.
-#if EPUB_USE(CF)
+#if EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES)
+# if EPUB_USE(CF)
         using Clock = cf_clock;
-#else
+# else
         using Clock = std::chrono::system_clock;
+# endif
+#else
+# if EPUB_USE(CF)
+        typedef cf_clock Clock;
+# else
+        typedef std::chrono::system_clock Clock;
+# endif
 #endif
         
     private:
@@ -215,7 +251,11 @@ public:
         int                             _pipeFDs[2];///< The pipe endpoints used with ALooper.
         TimerFn                         _fn;        ///< The function to call when the timer fires.
 #elif EPUB_OS(WINDOWS)
-#error No Windows RunLoop implementation defined
+        HANDLE                          _handle;
+        Clock::time_point               _fireDate;
+        Clock::duration                 _interval;
+        TimerFn                         _fn;
+        bool                            _cancelled;
 #else
         Clock::time_point               _fireDate;  ///< The date at which the timer will fire.
         TimerFn                         _fn;        ///< The function to call when the timer fires.
@@ -227,10 +267,12 @@ public:
         
         ///
         /// No default constructor.
-                        Timer()                 = delete;
+                        Timer()                 _DELETED_;
         
     protected:
+        EPUB3_EXPORT
         Timer(Clock::time_point& fireDate, Clock::duration& interval, TimerFn fn);
+        EPUB3_EXPORT
         Timer(Clock::duration& interval, bool repeat, TimerFn fn);
         
     public:
@@ -257,40 +299,46 @@ public:
         
         ///
         /// Copy constructor
-                        Timer(const Timer& o);
+        EPUB3_EXPORT    Timer(const Timer& o);
         
         ///
         /// Move constructor
-                        Timer(Timer&& o);
-        
-                        ~Timer();
+        EPUB3_EXPORT    Timer(Timer&& o);
+
+        EPUB3_EXPORT    ~Timer();
         
         ///
         /// Copy assignment
+        EPUB3_EXPORT
         Timer&          operator=(const Timer&);
         ///
         /// Move assignment
+        EPUB3_EXPORT
         Timer&          operator=(Timer&&);
         
         ///
         /// Test for equality
+        EPUB3_EXPORT
         bool            operator==(const Timer&) const;
         bool            operator!=(const Timer&o) const { return this->operator==(o) == false; }
         
         ///
         /// Cancels the timer, causing it to never fire again.
+        EPUB3_EXPORT
         void            Cancel();
         ///
         /// Tests whether a timer has been cancelled.
+        EPUB3_EXPORT
         bool            IsCancelled()   const;
         
         ///
         /// Tests whether a timer is set to repeat.
+        EPUB3_EXPORT
         bool            Repeats()       const;
         
         ///
         /// Retrieves the repeat interval of a timer.
-        template <class _Rep, class _Period = std::ratio<1>>
+        template <class _Rep, class _Period _DEFAULT_(std::ratio<1>)>
         std::chrono::duration<_Rep, _Period>    RepeatInterval()    const {
             using namespace std::chrono;
             return duration_cast<decltype(RepeatInterval<_Rep,_Period>())>(RepeatIntervalInternal());
@@ -298,7 +346,7 @@ public:
         
         ///
         /// Retrieves the date at which the timer will next fire.
-        template <class _Duration = typename Clock::duration>
+        template <class _Duration _DEFAULT_(typename Clock::duration)>
         std::chrono::time_point<Clock, _Duration>  GetNextFireDate()   const {
             using namespace std::chrono;
             return time_point_cast<_Duration>(GetNextFireDateTime());
@@ -306,7 +354,7 @@ public:
         
         ///
         /// Sets the date at whech the timer will next fire.
-        template <class _Duration = typename Clock::duration>
+        template <class _Duration _DEFAULT_(typename Clock::duration)>
         void            SetNextFireDate(std::chrono::time_point<Clock, _Duration>& when) {
             using namespace std::chrono;
             Clock::time_point __t = time_point_cast<Clock::duration>(when);
@@ -315,7 +363,7 @@ public:
         
         ///
         /// Retrieves the timer's next fire date as an interval from the current time.
-        template <class _Rep, class _Period = std::ratio<1>>
+        template <class _Rep, class _Period _DEFAULT_(std::ratio<1>)>
         std::chrono::duration<_Rep, _Period>    GetNextFireDate()   const {
             using namespace std::chrono;
             return duration_cast<_Rep>(GetNextFireDateDuration());
@@ -323,7 +371,7 @@ public:
         
         ///
         /// Sets the timer's next fire date using a relative time interval (from now).
-        template <class _Rep, class _Period = std::ratio<1>>
+        template <class _Rep, class _Period _DEFAULT_(std::ratio<1>)>
         void            SetNextFireDate(std::chrono::duration<_Rep, _Period>& when) {
             using namespace std::chrono;
             Clock::duration __d = duration_cast<Clock::duration>(when);
@@ -331,54 +379,70 @@ public:
         }
         
     protected:
+        EPUB3_EXPORT
         Clock::duration RepeatIntervalInternal() const;
-        
+
+        EPUB3_EXPORT
         Clock::time_point GetNextFireDateTime() const;
+        EPUB3_EXPORT
         void SetNextFireDateTime(Clock::time_point& when);
-        
+
+        EPUB3_EXPORT
         Clock::duration GetNextFireDateDuration() const;
+        EPUB3_EXPORT
         void SetNextFireDateDuration(Clock::duration& when);
     };
     
 public:
     ///
     /// This is the only way to obtain a RunLoop. Use it wisely.
+    EPUB3_EXPORT
     static RunLoop* CurrentRunLoop();
-    
-                    ~RunLoop();
+
+    EPUB3_EXPORT    ~RunLoop();
     
     ///
     /// Call a function on the run loop's assigned thread.
+    EPUB3_EXPORT
     void            PerformFunction(std::function<void()> fn);
     
     ///
     /// Adds a timer to the run loop.
+    EPUB3_EXPORT
     void            AddTimer(Timer* timer);
     ///
     /// Whether a timer is registered on this runloop.
+    EPUB3_EXPORT
     bool            ContainsTimer(Timer* timer)               const;
     ///
     /// Removes the timer from this RunLoop (without cancelling it).
+    EPUB3_EXPORT
     void            RemoveTimer(Timer* timer);
     
     ///
     /// Adds an event source to the run loop.
+    EPUB3_EXPORT
     void            AddEventSource(EventSource* source);
     ///
     /// Whether an event source is registered on this runloop.
+    EPUB3_EXPORT
     bool            ContainsEventSource(EventSource* source)  const;
     ///
     /// Removes an event source from this RunLoop (without cancelling it).
+    EPUB3_EXPORT
     void            RemoveEventSource(EventSource* source);
     
     ///
     /// Adds an observer to the run loop.
+    EPUB3_EXPORT
     void            AddObserver(Observer* observer);
     ///
     /// Whether an observer is registered on this runloop.
+    EPUB3_EXPORT
     bool            ContainsObserver(Observer* observer)      const;
     ///
     /// Removes an observer from this RunLoop (without cancelling it).
+    EPUB3_EXPORT
     void            RemoveObserver(Observer* observer);
     
     /**
@@ -391,7 +455,7 @@ public:
      pending timers and a miximum of one event source.
      @result Returns a value defining the reason that the method returned.
      */
-    template <class _Rep = long long, class _Period = std::ratio<1>>
+    template <class _Rep _DEFAULT_(long long), class _Period _DEFAULT_(std::ratio<1>)>
     ExitReason      Run(bool returnAfterSourceHandled,
                         std::chrono::duration<_Rep,_Period> timeout) {
         using namespace std::chrono;
@@ -401,37 +465,42 @@ public:
     
     ///
     /// Runs the RunLoop forever, or until Stop() is called.
+    EPUB3_EXPORT
     void            Run();
     
     ///
     /// Stops the RunLoop, exiting any invocations of Run() or Run(bool, std::chrono::duration).
+    EPUB3_EXPORT
     void            Stop();
     
     ///
     /// Whether the RunLoop is currently waiting for an event or timer to fire.
+    EPUB3_EXPORT
     bool            IsWaiting()                                     const;
     
     ///
     /// Explicitly wake the RunLoop, causing it to check timers and event sources.
+    EPUB3_EXPORT
     void            WakeUp();
     
 protected:
     ///
     /// Internal Run function which takes an explicit timeout duration type.
+    EPUB3_EXPORT
     ExitReason      RunInternal(bool returnAfterSourceHandled, std::chrono::nanoseconds& timeout);
     
     
     ///
     /// Obtains the run loop for the current thread.
-                    RunLoop();
+    EPUB3_EXPORT    RunLoop();
     
 private:
     ///
     /// No copy constructor
-                    RunLoop(const RunLoop& o) = delete;
+                    RunLoop(const RunLoop& o) _DELETED_;
     ///
     /// No move constructor
-                    RunLoop(RunLoop&& o) = delete;
+                    RunLoop(RunLoop&& o) _DELETED_;
     
 #if EPUB_OS(ANDROID)
     static int      _ReceiveLoopEvent(int fd, int events, void* data);
@@ -452,6 +521,13 @@ private:
     ///
     /// If a timer will fire before the given timeout, returns a new timeout
     std::chrono::system_clock::time_point   TimeoutOrTimer(std::chrono::system_clock::time_point& timeout);
+#elif EPUB_OS(WINDOWS)
+    ///
+    /// Process a firing timer
+    void            ProcessTimer(RefCounted<Timer> timer);
+    ///
+    /// Process a firing event source
+    void            ProcessEventSource(RefCounted<EventSource> source);
 #endif
     
 private:
@@ -470,7 +546,15 @@ private:
     Observer::Activity              _observerMask;
     std::atomic<bool>               _waiting;
 #elif EPUB_OS(WINDOWS)
-#error No Windows RunLoop implementation defined
+    HANDLE                                      _wakeHandle;
+    std::map<HANDLE, RefCounted<Timer>>         _timers;
+    std::map<HANDLE, RefCounted<EventSource>>   _sources;
+    std::list<RefCounted<Observer>>             _observers;
+    std::recursive_mutex                        _listLock;
+    std::atomic<bool>                           _waiting;
+    std::atomic<bool>                           _stop;
+    std::atomic<bool>                           _resetHandles;
+    Observer::Activity                          _observerMask;
 #else
     std::list<RefCounted<Timer>>        _timers;
     std::list<RefCounted<Observer>>     _observers;

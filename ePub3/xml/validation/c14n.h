@@ -57,11 +57,11 @@ public:
     C14NParams() : withComments(_WithComments) {}
     ~C14NParams() {}
     
-    constexpr C14NVersion Version() const { return _Version; }
-    constexpr bool Exclusive() const { return _Version == C14NVersion::v1_0_Exclusive; }
-    constexpr bool TrimWhitespace() const { return trimWhitespace; }
-    constexpr bool PreserveComments() const { return withComments; }
-    constexpr bool RewritePrefixes() const { return rewritePrefixes; }
+    CONSTEXPR C14NVersion Version() const { return _Version; }
+    CONSTEXPR bool Exclusive() const { return _Version == C14NVersion::v1_0_Exclusive; }
+    CONSTEXPR bool TrimWhitespace() const { return trimWhitespace; }
+    CONSTEXPR bool PreserveComments() const { return withComments; }
+    CONSTEXPR bool RewritePrefixes() const { return rewritePrefixes; }
     
     const QNameAwarenessMap QNameAwareElements() const { return elements; }
     const QNameAwarenessMap QNameAwareXPathElements() const { return xPathElements; }

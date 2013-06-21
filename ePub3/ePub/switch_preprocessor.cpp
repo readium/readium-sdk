@@ -26,12 +26,12 @@ EPUB3_BEGIN_NAMESPACE
 
 static const REGEX_NS::regex_constants::syntax_option_type SwitchRegexFlags = REGEX_NS::regex::icase|REGEX_NS::regex::optimize|REGEX_NS::regex::ECMAScript;
 
-REGEX_NS::regex SwitchPreprocessor::CommentedSwitchIdentifier(R"X((?:<!--)(\s*<(?:epub:)switch(?:.|\n|\r)*?<(?:epub:)default(?:.|\n|\r)*?>\s*)(?:-->)((?:.|\n|\r)*?)(?:<!--)(\s*</(?:epub:)default>(?:.|\n|\r)*?)(?:-->))X", SwitchRegexFlags);
-REGEX_NS::regex SwitchPreprocessor::SwitchContentExtractor(R"X(<(?:epub:)?switch(?:.|\n|\r)*?>((?:.|\n|\r)*?)</(?:epub:)?switch(?:.|\n|\r)*?>)X", SwitchRegexFlags);
-REGEX_NS::regex SwitchPreprocessor::CaseContentExtractor(R"X(<(?:epub:)?case\s+required-namespace="(.*?)">((?:.|\n|\r)*?)</(?:epub:)?case(?:.|\n|\r)*?>)X", SwitchRegexFlags);
-REGEX_NS::regex SwitchPreprocessor::DefaultContentExtractor(R"X(<(?:epub:)?default(?:.|\n|\r)*?>((?:.|\n|\r)*?)</(?:epub:)?default(?:.|\n|\r)*?>)X", SwitchRegexFlags);
+REGEX_NS::regex SwitchPreprocessor::CommentedSwitchIdentifier("(?:<!--)(\\s*<(?:epub:)switch(?:.|\\n|\\r)*?<(?:epub:)default(?:.|\\n|\\r)*?>\\s*)(?:-->)((?:.|\\n|\\r)*?)(?:<!--)(\\s*</(?:epub:)default>(?:.|\\n|\\r)*?)(?:-->)", SwitchRegexFlags);
+REGEX_NS::regex SwitchPreprocessor::SwitchContentExtractor("<(?:epub:)?switch(?:.|\\n|\\r)*?>((?:.|\\n|\\r)*?)</(?:epub:)?switch(?:.|\\n|\\r)*?>", SwitchRegexFlags);
+REGEX_NS::regex SwitchPreprocessor::CaseContentExtractor("<(?:epub:)?case\\s+required-namespace=\"(.*?)\">((?:.|\\n|\\r)*?)</(?:epub:)?case(?:.|\\n|\\r)*?>", SwitchRegexFlags);
+REGEX_NS::regex SwitchPreprocessor::DefaultContentExtractor("<(?:epub:)?default(?:.|\\n|\\r)*?>((?:.|\\n|\\r)*?)</(?:epub:)?default(?:.|\\n|\\r)*?>", SwitchRegexFlags);
 
-bool SwitchPreprocessor::SniffSwitchableContent(const ManifestItem *item, const EncryptionInfo *encInfo __unused)
+bool SwitchPreprocessor::SniffSwitchableContent(const ManifestItem *item, const EncryptionInfo *encInfo)
 {
     return (item->MediaType() == "application/xhtml+xml" && item->HasProperty(ItemProperties::ContainsSwitch));
 }

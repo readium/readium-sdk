@@ -27,7 +27,7 @@ EPUB3_BEGIN_NAMESPACE
 CFI::CFI(const CFI& base, const CFI& start, const CFI& end) : _components(base._components), _rangeStart(start._components), _rangeEnd(end._components), _options(RangeTriplet)
 {
 }
-CFI::CFI(const string& str) : CFI()
+CFI::CFI(const string& str) : _components(), _rangeStart(), _rangeEnd(), _options(0)
 {
     if ( CompileCFI(str) == false )
         throw InvalidCFI(std::string("Invalid CFI string: ") + str.stl_str());
@@ -356,7 +356,7 @@ bool CFI::CompileComponentsToList(const StringList &strings, ComponentList *list
 #pragma mark - CFI Component
 #endif
 
-CFI::Component::Component(const string& str) : Component()
+CFI::Component::Component(const string& str) : flags(0), nodeIndex(0), qualifier(), characterOffset(0), temporalOffset(), spatialOffset(), textQualifier()
 {
     Parse(str);
 }
@@ -519,7 +519,7 @@ CFI::Component& CFI::Component::operator=(const string &str)
     nodeIndex = 0;
     characterOffset = 0;
     temporalOffset = 0.0;
-    spatialOffset = {0.0, 0.0};
+    spatialOffset.x = 0.0; spatialOffset.y = 0.0;
     qualifier.clear();
     textQualifier.clear();
     

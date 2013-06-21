@@ -354,7 +354,7 @@ LogMessage::LogMessage(const char* file, int line, LogSeverity severity)
   Init(file, line);
 }
     
-#if !defined(_WIN32) || !defined(_WIN64)
+#if !defined(_WIN32) && !defined(_WIN64)
 # define GetCurrentProcessId() getpid()
 # if EPUB_OS(LINUX)
 #  define GetCurrentThreadId() static_cast<uintptr_t>(pthread_self())
@@ -404,8 +404,12 @@ void LogMessage::Init(const char* file, int line) {
   if (log_tickcount)
     stream_ << GetTickCount() << ':';
   stream_ << log_severity_names[severity_] << ":" << file << "(" << line << ")] ";
-
+  
+#if _WIN32 || _WIN64
+  message_start_ = stream_.pcount();
+#else
   message_start_ = static_cast<int>(stream_.str().length());
+#endif
 }
 
 LogMessage::~LogMessage() {
@@ -418,7 +422,11 @@ LogMessage::~LogMessage() {
   if (log_filter_prefix && severity_ <= kMaxFilteredLogLevel &&
       str_newline.compare(message_start_, strlen(log_filter_prefix),
                           log_filter_prefix) != 0) {
-    return;
+#if _WIN32 || _WIN64
+      goto cleanup;
+#else
+      return;
+#endif
   }
 
   if (logging_destination != LOG_ONLY_TO_FILE)
@@ -507,6 +515,11 @@ LogMessage::~LogMessage() {
 # endif // NDEBUG
 #endif
   }
+
+#if _WIN32 || _WIN64
+cleanup:
+  stream_.freeze(false);
+#endif
 }
 
 void CloseLogFile() {

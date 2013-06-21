@@ -19,8 +19,8 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "container.h"
 #include "package.h"
-#include "metadata.h"
 #include "archive.h"
 #include "archive_xml.h"
 #include "xpath_wrangler.h"
@@ -34,55 +34,63 @@
 #include REGEX_INCLUDE
 #include <libxml/xpathInternals.h>
 
+void PrintNodeSet(xmlNodeSetPtr nodeSet)
+{
+    xmlBufferPtr buf = xmlBufferCreate();
+    for ( int i = 0; i < nodeSet->nodeNr; i++ )
+    {
+        xmlNodePtr node = nodeSet->nodeTab[i];
+        fprintf(stderr, "Node %02d: ", i);
+        
+        if ( node == nullptr )
+        {
+            fprintf(stderr, "[nullptr]");
+        }
+        else
+        {
+            xmlNodeDump(buf, node->doc, node, 0, 0);
+            fprintf(stderr, "%s", reinterpret_cast<const char*>(xmlBufferContent(buf)));
+            xmlBufferEmpty(buf);
+        }
+        
+        fprintf(stderr, "\n");
+    }
+    
+    xmlBufferFree(buf);
+}
+
 EPUB3_BEGIN_NAMESPACE
 
+#if EPUB_COMPILER_SUPPORTS(CXX_USER_LITERALS)
 static const xmlChar * OPFNamespace = "http://www.idpf.org/2007/opf"_xml;
 static const xmlChar * DCNamespace = "http://purl.org/dc/elements/1.1/"_xml;
 static const xmlChar * MediaTypeElementName = "mediaType"_xml;
-
-const PackageBase::PropertyVocabularyMap PackageBase::gReservedVocabularies({
-    { "", "http://idpf.org/epub/vocab/package/#" },
-    { "dcterms", "http://purl.org/dc/terms/" },
-    { "marc", "http://id.loc.gov/vocabulary/" },
-    { "media", "http://www.idpf.org/epub/vocab/overlays/#" },
-    { "onix", "http://www.editeur.org/ONIX/book/codelists/current.html#" },
-    { "xsd", "http://www.w3.org/2001/XMLSchema#" }
-});
-const std::map<const string, bool> PackageBase::CoreMediaTypes({
-    // Image Types
-    {"image/gif", true},                            // GIF Images
-    {"image/jpeg", true},                           // JPEG Images
-    {"image/png", true},                            // PNG Images
-    {"image/svg+xml", true},                        // SVG Documents
-    
-    // Application Types
-    {"application/xhtml+xml", true},                // XHTML Content Documents and the EPUB Navigation Document
-    {"application/x-dtbncx+xml", true},             // The superceded NCX
-    {"application/vnd.ms-opentype", true},          // OpenType fonts
-    {"application/font-woff", true},                // WOFF fonts
-    {"application/smil+xml", true},                 // EPUB Media Overlay documents
-    {"application/pls+xml", true},                  // Text-to-Speech (TTS) Pronunciation lexicons
-    
-    // Audio Types
-    {"audio/mpeg", true},                           // MP3 audio
-    {"audio/mp4", true},                            // AAC LC audio using MP4 container
-    
-    // Text Types
-    {"text/css", true},                             // EPUB Style Sheets
-    {"text/javascript", true}                       // Scripts
-});
-
-std::locale PackageBase::gCurrentLocale("");        // NB: std::locale() returns the C locale.
+#else
+static const xmlChar * OPFNamespace = (const xmlChar*)"http://www.idpf.org/2007/opf";
+static const xmlChar * DCNamespace = (const xmlChar*)"http://purl.org/dc/elements/1.1/";
+static const xmlChar * MediaTypeElementName = (const xmlChar*)"mediaType";
+#endif
 
 bool Package::gValidateSchema = true;
 
-PackageBase::PackageBase(Archive* archive, const string& path, const string& type) : _archive(archive), _opf(nullptr), _type(type), _vocabularyLookup(gReservedVocabularies)
+PackageBase::PackageBase(const shared_ptr<Container>& owner, const string& type) : _archive(owner->GetArchive()), _opf(nullptr), _type(type)
 {
-    if ( _archive == nullptr )
-        throw std::invalid_argument("Path does not point to a recognised archive file: " + path.stl_str());
-    
-    // TODO: Initialize lazily? Doing so would make initialization faster, but require
-    // PackageLocations() to become non-const, like Packages().
+    if ( !_archive )
+        throw std::invalid_argument("Owner doesn't have an archive!");
+}
+PackageBase::PackageBase(PackageBase&& o) : _archive(o._archive), _opf(o._opf), _pathBase(std::move(o._pathBase)), _type(std::move(o._type)), _manifest(std::move(o._manifest)), _spine(std::move(o._spine))
+{
+    o._archive = nullptr;
+    o._opf = nullptr;
+}
+PackageBase::~PackageBase()
+{
+    // our Container owns the archive
+    if ( _opf != nullptr )
+        xmlFreeDoc(_opf);
+}
+bool PackageBase::Open(const string& path)
+{
     ArchiveXmlReader reader(_archive->ReaderAtPath(path.stl_str()));
     _opf = reader.xmlReadDocument(path.c_str(), nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
     if ( _opf == nullptr )
@@ -97,50 +105,12 @@ PackageBase::PackageBase(Archive* archive, const string& path, const string& typ
     {
         _pathBase = path.substr(0, loc+1);
     }
-}
-PackageBase::PackageBase(PackageBase&& o) : _archive(o._archive), _opf(o._opf), _pathBase(std::move(o._pathBase)), _type(std::move(o._type)), _metadata(std::move(o._metadata)), _manifest(std::move(o._manifest)), _spine(std::move(o._spine)), _vocabularyLookup(std::move(o._vocabularyLookup))
-{
-    o._archive = nullptr;
-    o._opf = nullptr;
-}
-PackageBase::~PackageBase()
-{
-    for ( auto item : _metadata )
-    {
-        delete item;
-    }
-    for ( auto item : _manifest )
-    {
-        delete item.second;
-    }
-    for ( auto item : _navigation )
-    {
-        delete item.second;
-    }
     
-    // our Container owns the archive
-    if ( _opf != nullptr )
-        xmlFreeDoc(_opf);
+    return true;
 }
-std::locale& PackageBase::Locale()
+shared_ptr<SpineItem> PackageBase::SpineItemAt(size_t idx) const
 {
-    return gCurrentLocale;
-}
-void PackageBase::SetLocale(const string &name)
-{
-#if EPUB_OS(ANDROID)
-    gCurrentLocale = std::locale(name.c_str());
-#else
-    gCurrentLocale = std::locale(name.stl_str());
-#endif
-}
-void PackageBase::SetLocale(const std::locale &locale)
-{
-    gCurrentLocale = locale;
-}
-const SpineItem* PackageBase::SpineItemAt(size_t idx) const
-{
-    const SpineItem* item = _spine.get();
+    shared_ptr<SpineItem> item = _spine;
     for ( size_t i = 0; i < idx && item != nullptr; i++ )
     {
         item = item->Next();
@@ -149,7 +119,7 @@ const SpineItem* PackageBase::SpineItemAt(size_t idx) const
 }
 size_t PackageBase::IndexOfSpineItemWithIDRef(const string &idref) const
 {
-    const SpineItem* item = FirstSpineItem();
+    shared_ptr<SpineItem> item = FirstSpineItem();
     for ( size_t i = 0; item != nullptr; i++, item = item->Next() )
     {
         if ( item->Idref() == idref )
@@ -158,7 +128,7 @@ size_t PackageBase::IndexOfSpineItemWithIDRef(const string &idref) const
     
     return size_t(-1);
 }
-const ManifestItem* PackageBase::ManifestItemWithID(const string &ident) const
+shared_ptr<ManifestItem> PackageBase::ManifestItemWithID(const string &ident) const
 {
     auto found = _manifest.find(ident);
     if ( found == _manifest.end() )
@@ -174,74 +144,33 @@ string PackageBase::CFISubpathForManifestItemWithID(const string &ident) const
     
     return _Str(_spineCFIIndex, "/", sz*2, "[", ident, "]!");
 }
-const std::vector<const ManifestItem*> PackageBase::ManifestItemsWithProperties(PropertyList properties) const
+const shared_vector<ManifestItem> PackageBase::ManifestItemsWithProperties(PropertyIRIList properties) const
 {
-    std::vector<const ManifestItem*> result;
-    for ( auto item : _manifest )
+    shared_vector<ManifestItem> result;
+    for ( auto& item : _manifest )
     {
         if ( item.second->HasProperty(properties) )
             result.push_back(item.second);
     }
     return result;
 }
-const NavigationTable* PackageBase::NavigationTable(const string &title) const
+shared_ptr<NavigationTable> PackageBase::NavigationTable(const string &title) const
 {
     auto found = _navigation.find(title);
     if ( found == _navigation.end() )
         return nullptr;
     return found->second;
 }
-void PackageBase::RegisterPrefixIRIStem(const string &prefix, const string &iriStem)
-{
-    _vocabularyLookup[prefix] = iriStem;
-}
-IRI PackageBase::MakePropertyIRI(const string &reference, const string& prefix) const
-{
-    auto found = _vocabularyLookup.find(prefix);
-    if ( found == _vocabularyLookup.end() )
-        throw UnknownPrefix(_Str("Unknown prefix '", prefix, "'"));
-    return IRI(found->second + reference);
-}
-IRI PackageBase::PropertyIRIFromAttributeValue(const string &attrValue) const
-{
-    static REGEX_NS::regex re("^(?:(.+?):)?(.+)$");
-    REGEX_NS::smatch pieces;
-    if ( REGEX_NS::regex_match(attrValue.stl_str(), pieces, re) == false )
-        throw std::invalid_argument(_Str("Attribute '", attrValue, "' doesn't look like a property name to me"));
-    
-    // there are two captures, at indices 1 and 2
-    return MakePropertyIRI(pieces.str(2), pieces.str(1));
-}
-Auto<ByteStream> PackageBase::ReadStreamForItemAtPath(const string &path) const
+unique_ptr<ByteStream> PackageBase::ReadStreamForItemAtPath(const string &path) const
 {
     return _archive->ByteStreamAtPath(path.stl_str());
 }
-void PackageBase::InstallPrefixesFromAttributeValue(const ePub3::string &attrValue)
-{
-    if ( attrValue.empty() )
-        return;
-    
-    static REGEX_NS::regex::flag_type reflags(REGEX_NS::regex::ECMAScript|REGEX_NS::regex::optimize);
-    static REGEX_NS::regex re(R"X((\w+):\s*(.+?)(?:\s+|$))X", reflags);
-    auto pos = REGEX_NS::sregex_iterator(attrValue.stl_str().begin(), attrValue.stl_str().end(), re);
-    auto end = REGEX_NS::sregex_iterator();
-    
-    while ( pos != end )
-    {
-        if ( pos->size() == 3 )     // entire match plus two captures
-        {
-            RegisterPrefixIRIStem(pos->str(1), pos->str(2));
-        }
-        
-        ++pos;
-    }
-}
-const SpineItem* PackageBase::ConfirmOrCorrectSpineItemQualifier(const SpineItem* pItem, CFI::Component *pComponent) const
+shared_ptr<SpineItem> PackageBase::ConfirmOrCorrectSpineItemQualifier(shared_ptr<SpineItem> pItem, CFI::Component *pComponent) const
 {
     if ( pComponent->HasQualifier() && pItem->Idref() != pComponent->qualifier )
     {
         // find the item with the qualifier
-        pItem = _spine.get();
+        pItem = _spine;
         uint32_t idx = 2;
         
         while ( pItem != nullptr )
@@ -259,8 +188,12 @@ const SpineItem* PackageBase::ConfirmOrCorrectSpineItemQualifier(const SpineItem
     
     return pItem;
 }
-NavigationList PackageBase::NavTablesFromManifestItem(const ManifestItem* pItem)
+NavigationList PackageBase::NavTablesFromManifestItem(shared_ptr<PackageBase> owner, shared_ptr<ManifestItem> pItem)
 {
+    PackagePtr sharedPkg = std::dynamic_pointer_cast<Package>(owner);
+    if ( !sharedPkg )
+        return NavigationList();
+    
     if ( pItem == nullptr )
         return NavigationList();
     
@@ -269,16 +202,24 @@ NavigationList PackageBase::NavTablesFromManifestItem(const ManifestItem* pItem)
         return NavigationList();
     
     // find each <nav> node
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}}); // goddamn I love C++11 initializer list constructors
+#else
+    XPathWrangler::NamespaceList __m;
+    __m["epub"] = ePub3NamespaceURI;
+    XPathWrangler xpath(doc, __m);
+#endif
     xpath.NameDefaultNamespace("html");
     
     xmlNodeSetPtr nodes = xpath.Nodes("//html:nav");
     
     NavigationList tables;
-    for ( size_t i = 0; i < nodes->nodeNr; i++ )
+    for ( int i = 0; i < nodes->nodeNr; i++ )
     {
         xmlNodePtr navNode = nodes->nodeTab[i];
-        tables.push_back(new class NavigationTable(navNode, pItem->Href()));
+        auto navTablePtr = std::make_shared<class NavigationTable>(sharedPkg, pItem->Href());
+        if ( navTablePtr->ParseXML(navNode) )
+            tables.push_back(navTablePtr);
     }
     
     xmlXPathFreeNodeSet(nodes);
@@ -293,13 +234,17 @@ NavigationList PackageBase::NavTablesFromManifestItem(const ManifestItem* pItem)
 #pragma mark - Package High-Level API
 #endif
 
-Package::Package(Archive* archive, const string& path, const string& type) : PackageBase(archive, path, type)
+Package::Package(const shared_ptr<Container>& owner, const string& type) : PropertyHolder(), OwnedBy(owner), PackageBase(owner, type)
 {
-    if ( !Unpack() )
-        throw std::invalid_argument(_Str(__PRETTY_FUNCTION__, ": Not a valid OPF file at ", path));
+}
+bool Package::Open(const string& path)
+{
+    return PackageBase::Open(path) && Unpack();
 }
 bool Package::Unpack()
 {
+    PackagePtr sharedMe = shared_from_this();
+    
     // very basic sanity check
     xmlNodePtr root = xmlDocGetRootElement(_opf);
     string rootName(reinterpret_cast<const char*>(root->name));
@@ -313,23 +258,26 @@ bool Package::Unpack()
     // go through children to determine the CFI index of the <spine> tag
     static const xmlChar* kSpineName = BAD_CAST "spine";
     _spineCFIIndex = 0;
-    xmlNodePtr child = root->children;
+    xmlNodePtr child = xmlFirstElementChild(root);
     while ( child != nullptr )
     {
-        if ( child->type == XML_ELEMENT_NODE )
-        {
-            _spineCFIIndex += 2;
-            if ( xmlStrEqual(child->name, kSpineName) )
-                break;
-        }
+        _spineCFIIndex += 2;
+        if ( xmlStrEqual(child->name, kSpineName) )
+            break;
         
-        child = child->next;
+        child = xmlNextElementSibling(child);
     }
     
     if ( _spineCFIIndex == 0 )
         return false;       // spineless!
-    
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(_opf, {{"opf", OPFNamespace}, {"dc", DCNamespace}});
+#else
+    XPathWrangler::NamespaceList __m;
+    __m["opf"] = OPFNamespace;
+    __m["dc"] = DCNamespace;
+    XPathWrangler xpath(_opf, __m);
+#endif
     
     // simple things: manifest and spine items
     xmlNodeSetPtr manifestNodes = nullptr;
@@ -345,25 +293,34 @@ bool Package::Unpack()
         
         for ( int i = 0; i < manifestNodes->nodeNr; i++ )
         {
-            ManifestItem *p = new ManifestItem(manifestNodes->nodeTab[i], this);
+            auto p = std::make_shared<ManifestItem>(sharedMe);
+            if ( p->ParseXML(p, manifestNodes->nodeTab[i]) )
+            {
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
-            _manifest.emplace(p->Identifier(), p);
+                _manifest.emplace(p->Identifier(), p);
 #else
-            _manifest[p->Identifier()] = p;
+                _manifest[p->Identifier()] = p;
 #endif
+                StoreXMLIdentifiable(p);
+            }
         }
         
-        SpineItem* cur = nullptr;
+        SpineItemPtr cur;
         for ( int i = 0; i < spineNodes->nodeNr; i++ )
         {
-            SpineItem* next = new SpineItem(spineNodes->nodeTab[i], this);
+            auto next = std::make_shared<SpineItem>(sharedMe);
+            if ( next->ParseXML(next, spineNodes->nodeTab[i]) == false )
+                continue;
+            
+            StoreXMLIdentifiable(next);
+            
             if ( cur != nullptr )
             {
                 cur->SetNextItem(next);
             }
             else
             {
-                _spine.reset(next);
+                _spine = next;
             }
             
             cur = next;
@@ -387,21 +344,20 @@ bool Package::Unpack()
     
     try
     {
+        shared_ptr<PropertyHolder> holderPtr = std::dynamic_pointer_cast<PropertyHolder>(sharedMe);
         metadataNodes = xpath.Nodes("/opf:package/opf:metadata/*");
         if ( metadataNodes == nullptr )
             throw false;
         
-        std::map<string, class Metadata*> metadataByID;
-        
         for ( int i = 0; i < metadataNodes->nodeNr; i++ )
         {
             xmlNodePtr node = metadataNodes->nodeTab[i];
-            class Metadata* p = nullptr;
+            PropertyPtr p;
             
             if ( node->ns != nullptr && xmlStrcmp(node->ns->href, BAD_CAST DCNamespace) == 0 )
             {
                 // definitely a main node
-                p = new class Metadata(node, this);
+                p = std::make_shared<Property>(holderPtr);
             }
             else if ( _getProp(node, "name").size() > 0 )
             {
@@ -411,7 +367,7 @@ bool Package::Unpack()
             else if ( _getProp(node, "refines").empty() )
             {
                 // not refining anything, so it's a main node
-                p = new class Metadata(node, this);
+                p = std::make_shared<Property>(holderPtr);
             }
             else
             {
@@ -419,11 +375,10 @@ bool Package::Unpack()
                 xmlXPathNodeSetAdd(refineNodes, node);
             }
             
-            if ( p != nullptr )
+            if ( p && p->ParseMetaElement(node) )
             {
-                _metadata.push_back(p);
-                if ( !p->Identifier().empty() )
-                    metadataByID[p->Identifier()] = p;
+                AddProperty(p);
+                StoreXMLIdentifiable(p);
             }
         }
         
@@ -437,11 +392,43 @@ bool Package::Unpack()
             if ( ident[0] == '#' )
                 ident = ident.substr(1);
             
-            auto found = metadataByID.find(ident);
-            if ( found == metadataByID.end() )
+            auto found = _xmlIDLookup.find(ident);
+            if ( found == _xmlIDLookup.end() )
                 continue;
             
-            found->second->AddExtension(node, this);
+            PropertyPtr prop = std::dynamic_pointer_cast<Property>(found->second);
+            if ( prop )
+            {
+                // it's a property, so this is an extension
+                PropertyExtensionPtr extPtr = std::make_shared<PropertyExtension>(prop);
+                if ( extPtr->ParseMetaElement(node) )
+                    prop->AddExtension(extPtr);
+            }
+            else
+            {
+                // not a property, so treat this as a plain property
+                shared_ptr<PropertyHolder> ptr = std::dynamic_pointer_cast<PropertyHolder>(found->second);
+                if ( ptr )
+                {
+                    prop = std::make_shared<Property>(ptr);
+                    if ( prop->ParseMetaElement(node) )
+                        ptr->AddProperty(prop);
+                }
+            }
+        }
+        
+        // now look at the <spine> element for properties
+        xmlNodePtr spineNode = xmlFirstElementChild(root);
+        for ( uint32_t i = 2; i < _spineCFIIndex; i += 2 )
+            spineNode = xmlNextElementSibling(spineNode);
+        
+        string value = _getProp(spineNode, "page-progression-direction");
+        if ( !value.empty() )
+        {
+            PropertyPtr prop = std::make_shared<Property>(holderPtr);
+            prop->SetPropertyIdentifier(MakePropertyIRI("page-progression-direction"));
+            prop->SetValue(value);
+            AddProperty(prop);
         }
     }
     catch (...)
@@ -509,8 +496,8 @@ bool Package::Unpack()
                 // The required handler attribute must reference the ID [XML] of an
                 // item in the manifest of the default implementation for this media
                 // type. The referenced item must be an XHTML Content Document.
-                const ManifestItem* handlerItem = ManifestItemWithID(handlerID);
-                if ( handlerItem == nullptr )
+                ManifestItemPtr handlerItem = ManifestItemWithID(handlerID);
+                if ( !handlerItem )
                 {
                     throw std::invalid_argument(_Str("mediaType element references non-existent handler with ID '", handlerID, "'."));
                 }
@@ -528,7 +515,7 @@ bool Package::Unpack()
                 }
                 
                 // all good-- install it now
-                _contentHandlers[mediaType].push_back(new MediaHandler(this, mediaType, handlerItem->AbsolutePath()));
+                _contentHandlers[mediaType].push_back(std::make_shared<MediaHandler>(sharedMe, mediaType, handlerItem->AbsolutePath()));
             }
         }
     }
@@ -554,11 +541,11 @@ bool Package::Unpack()
         if ( !item.second->HasProperty(ItemProperties::Navigation) )
             continue;
         
-        NavigationList tables = NavTablesFromManifestItem(item.second);
+        NavigationList tables = NavTablesFromManifestItem(sharedMe, item.second);
         for ( auto table : tables )
         {
             // have to dynamic_cast these guys to get the right pointer type
-            class NavigationTable* navTable = dynamic_cast<class NavigationTable*>(table);
+            shared_ptr<class NavigationTable> navTable = std::dynamic_pointer_cast<class NavigationTable>(table);
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
             _navigation.emplace(navTable->Type(), navTable);
 #else
@@ -572,7 +559,26 @@ bool Package::Unpack()
     
     return true;
 }
-
+void Package::InstallPrefixesFromAttributeValue(const string& attrValue)
+{
+    if ( attrValue.empty() )
+        return;
+    
+    static REGEX_NS::regex::flag_type reflags(REGEX_NS::regex::ECMAScript|REGEX_NS::regex::optimize);
+    static REGEX_NS::regex re("(\\w+):\\s*(.+?)(?:\\s+|$)", reflags);
+    auto pos = REGEX_NS::sregex_iterator(attrValue.stl_str().begin(), attrValue.stl_str().end(), re);
+    auto end = REGEX_NS::sregex_iterator();
+    
+    while ( pos != end )
+    {
+        if ( pos->size() == 3 )     // entire match plus two captures
+        {
+            RegisterPrefixIRIStem(pos->str(1), pos->str(2));
+        }
+        
+        ++pos;
+    }
+}
 string Package::UniqueID() const
 {
     string packageID = PackageID();
@@ -610,7 +616,14 @@ string Package::URLSafeUniqueID() const
 }
 string Package::PackageID() const
 {
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(_opf, {{"opf", OPFNamespace}, {"dc", DCNamespace}});
+#else
+    XPathWrangler::NamespaceList __m;
+    __m["opf"] = OPFNamespace;
+    __m["dc"] = DCNamespace;
+    XPathWrangler xpath(_opf, __m);
+#endif
     XPathWrangler::StringList strings = xpath.Strings("//*[@id=/opf:package/@unique-identifier]/text()");
     if ( strings.empty() )
         return string::EmptyString;
@@ -638,40 +651,9 @@ void Package::FireLoadEvent(const IRI &url) const
     
     _loadEventHandler(fixed);
 }
-const PackageBase::MetadataMap Package::MetadataItemsWithDCType(Metadata::DCType type) const
+shared_ptr<SpineItem> Package::SpineItemWithIDRef(const string &idref) const
 {
-    return MetadataItemsWithProperty(IRIForDCType(type));
-}
-const PackageBase::MetadataMap Package::MetadataItemsWithProperty(const IRI &iri) const
-{
-    MetadataMap result;
-    for ( auto item : _metadata )
-    {
-        if ( item->Type() == Metadata::DCType::Invalid )
-            continue;
-        
-        if ( item->Property() == iri )
-        {
-            result.push_back(item);
-        }
-        else
-        {
-            for ( auto extension : item->Extensions() )
-            {
-                if ( extension->Property() == iri )
-                {
-                    result.push_back(item);
-                    break;
-                }
-            }
-        }
-    }
-    
-    return result;
-}
-const SpineItem* Package::SpineItemWithIDRef(const string &idref) const
-{
-    for ( const SpineItem* item = FirstSpineItem(); item != nullptr; item = item->Next() )
+    for ( auto item = FirstSpineItem(); item != nullptr; item = item->Next() )
     {
         if ( item->Idref() == idref )
             return item;
@@ -679,23 +661,23 @@ const SpineItem* Package::SpineItemWithIDRef(const string &idref) const
     
     return nullptr;
 }
-const CFI Package::CFIForManifestItem(const ManifestItem *item) const
+const CFI Package::CFIForManifestItem(shared_ptr<ManifestItem> item) const
 {
     CFI result;
     result._components.emplace_back(_spineCFIIndex);
     result._components.emplace_back(_Str(IndexOfSpineItemWithIDRef(item->Identifier())*2, "[", item->Identifier(), "]!"));
     return result;
 }
-const CFI Package::CFIForSpineItem(const SpineItem *item) const
+const CFI Package::CFIForSpineItem(shared_ptr<SpineItem> item) const
 {
     CFI result;
     result._components.emplace_back(_spineCFIIndex);
     result._components.emplace_back(_Str(item->Index()*2, "[", item->Idref(), "]!"));
     return result;
 }
-const ManifestItem* Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRemainingCFI) const
+shared_ptr<ManifestItem> Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRemainingCFI) const
 {
-    const ManifestItem* result = nullptr;
+    ManifestItemPtr result;
     
     // NB: Package is a friend of CFI, so it can access the components directly
     if ( cfi._components.size() < 2 )
@@ -717,7 +699,7 @@ const ManifestItem* Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRemaining
     {
         if ( (component.nodeIndex % 2) == 1 )
             throw CFI::InvalidCFI("CFI spine item index is odd, which makes no sense for always-empty spine nodes.");
-        const SpineItem* item = _spine->at(component.nodeIndex/2);
+        SpineItemPtr item = _spine->at(component.nodeIndex/2);
         
         // check and correct any qualifiers
         item = ConfirmOrCorrectSpineItemQualifier(item, &component);
@@ -732,23 +714,23 @@ const ManifestItem* Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRemaining
     }
     catch (std::out_of_range& e)
     {
-        throw CFI::InvalidCFI("CFI references out-of-range spine item");
+        throw CFI::InvalidCFI(_Str("CFI references out-of-range spine item: ", e.what()));
     }
     
     return result;
 }
-Auto<ByteStream> Package::ReadStreamForRelativePath(const string &path) const
+unique_ptr<ByteStream> Package::ReadStreamForRelativePath(const string &path) const
 {
     return _archive->ByteStreamAtPath(path.stl_str());
 }
-const string Package::Title(bool localized) const
+const string& Package::Title(bool localized) const
 {
     IRI titleTypeIRI(MakePropertyIRI("title-type"));      // http://idpf.org/epub/vocab/package/#title-type
     
     // find the main one
-    for ( auto item : MetadataItemsWithProperty(titleTypeIRI) )
+    for ( auto& item : PropertiesMatching(titleTypeIRI) )
     {
-        const Metadata::Extension* extension = item->ExtensionWithProperty(titleTypeIRI);
+        PropertyExtensionPtr extension = item->ExtensionWithIdentifier(titleTypeIRI);
         if ( extension == nullptr )
             continue;
         
@@ -757,7 +739,7 @@ const string Package::Title(bool localized) const
     }
     
     // no 'main title' found: just get the dc:title value
-    const MetadataMap items = MetadataItemsWithDCType(Metadata::DCType::Title);
+    auto items = PropertiesMatching(DCType::Title);
     if ( items.empty() )
         return string::EmptyString;
     
@@ -766,14 +748,14 @@ const string Package::Title(bool localized) const
     
     return items[0]->Value();
 }
-const string Package::Subtitle(bool localized) const
+const string& Package::Subtitle(bool localized) const
 {
     IRI titleTypeIRI(MakePropertyIRI("title-type"));      // http://idpf.org/epub/vocab/package/#title-type
     
     // find the main one
-    for ( auto item : MetadataItemsWithProperty(titleTypeIRI) )
+    for ( auto item : PropertiesMatching(titleTypeIRI) )
     {
-        const Metadata::Extension* extension = item->ExtensionWithProperty(titleTypeIRI);
+        PropertyExtensionPtr extension = item->ExtensionWithIdentifier(titleTypeIRI);
         if ( extension == nullptr )
             continue;
         
@@ -790,20 +772,20 @@ const string Package::Subtitle(bool localized) const
 }
 const string Package::FullTitle(bool localized) const
 {
-    MetadataMap items = MetadataItemsWithDCType(Metadata::DCType::Title);
+    auto items = PropertiesMatching(DCType::Title);
     if ( items.size() == 1 )
         return items[0]->Value();
     
     IRI displaySeqIRI(MakePropertyIRI("display-seq"));  // http://idpf.org/epub/vocab/package/#display-seq
     std::vector<string> titles(items.size());
     
-    MetadataMap sequencedItems = MetadataItemsWithProperty(displaySeqIRI);
+    auto sequencedItems = PropertiesMatching(displaySeqIRI);
     if ( !sequencedItems.empty() )
     {
         // all these have a 1-based sequence number
         for ( auto item : sequencedItems )
         {
-            const Metadata::Extension* extension = item->ExtensionWithProperty(displaySeqIRI);
+            PropertyExtensionPtr extension = item->ExtensionWithIdentifier(displaySeqIRI);
             size_t sz = strtoul(extension->Value().c_str(), nullptr, 10) - 1;
             titles[sz] = (localized ? item->LocalizedValue() : item->Value());
         }
@@ -835,7 +817,7 @@ const string Package::FullTitle(bool localized) const
 const Package::AttributionList Package::AuthorNames(bool localized) const
 {
     AttributionList result;
-    for ( auto item : MetadataItemsWithDCType(Metadata::DCType::Creator) )
+    for ( auto item : PropertiesMatching(DCType::Creator) )
     {
         result.emplace_back((localized? item->LocalizedValue() : item->Value()));
     }
@@ -843,7 +825,7 @@ const Package::AttributionList Package::AuthorNames(bool localized) const
     if ( result.empty() )
     {
         // maybe they're using dcterms:creator instead?
-        for ( auto item : MetadataItemsWithProperty(MakePropertyIRI("creator", "dcterms")) )
+        for ( auto item : PropertiesMatching(MakePropertyIRI("creator", "dcterms")) )
         {
             result.emplace_back((localized? item->LocalizedValue() : item->Value()));
         }
@@ -855,10 +837,10 @@ const Package::AttributionList Package::AttributionNames(bool localized) const
 {
     AttributionList result;
     IRI fileAsIRI(MakePropertyIRI("file-as"));
-    for ( auto item : MetadataItemsWithDCType(Metadata::DCType::Creator) )
+    for ( auto item : PropertiesMatching(DCType::Creator) )
     {
-        const Metadata::Extension* extension = item->ExtensionWithProperty(fileAsIRI);
-        if ( extension != nullptr )
+        auto extension = item->ExtensionWithIdentifier(fileAsIRI);
+        if ( extension )
             result.emplace_back(extension->Value());
         else
             result.emplace_back((localized? item->LocalizedValue() : item->Value()));
@@ -890,7 +872,7 @@ const string Package::Authors(bool localized) const
 const Package::AttributionList Package::ContributorNames(bool localized) const
 {
     AttributionList result;
-    for ( auto item : MetadataItemsWithProperty(MakePropertyIRI("contributor", "dcterms")) )
+    for ( auto item : PropertiesMatching(MakePropertyIRI("contributor", "dcterms")) )
     {
         result.emplace_back((localized? item->LocalizedValue() : item->Value()));
     }
@@ -918,39 +900,39 @@ const string Package::Contributors(bool localized) const
     ss << "and " << *last;
     return string(ss.str());
 }
-const string Package::Language() const
+const string& Package::Language() const
 {
-    MetadataMap items = MetadataItemsWithDCType(Metadata::DCType::Language);
+    auto items = PropertiesMatching(DCType::Language);
     if ( items.empty() )
         return string::EmptyString;
     return items[0]->Value();
 }
-const string Package::Source(bool localized) const
+const string& Package::Source(bool localized) const
 {
-    MetadataMap items = MetadataItemsWithDCType(Metadata::DCType::Source);
+    auto items = PropertiesMatching(DCType::Source);
     if ( items.empty() )
         return string::EmptyString;
     return (localized? items[0]->LocalizedValue() : items[0]->Value());
 }
-const string Package::CopyrightOwner(bool localized) const
+const string& Package::CopyrightOwner(bool localized) const
 {
-    MetadataMap items = MetadataItemsWithDCType(Metadata::DCType::Rights);
+    auto items = PropertiesMatching(DCType::Rights);
     if ( items.empty() )
         return string::EmptyString;
     return (localized? items[0]->LocalizedValue() : items[0]->Value());
 }
-const string Package::ModificationDate() const
+const string& Package::ModificationDate() const
 {
-    MetadataMap items = MetadataItemsWithProperty(MakePropertyIRI("modified", "dcterms"));
+    auto items = PropertiesMatching(MakePropertyIRI("modified", "dcterms"));
     if ( items.empty() )
         return string::EmptyString;
     return items[0]->Value();
 }
 const string Package::ISBN() const
 {
-    for ( auto item : MetadataItemsWithDCType(Metadata::DCType::Identifier) )
+    for ( auto item : PropertiesMatching(DCType::Identifier) )
     {
-        if ( item->ExtensionWithProperty(MakePropertyIRI("identifier-type")) == nullptr )
+        if ( item->ExtensionWithIdentifier(MakePropertyIRI("identifier-type")) == nullptr )
             continue;
         
         // this will be complicated...
@@ -962,11 +944,23 @@ const string Package::ISBN() const
 const Package::StringList Package::Subjects(bool localized) const
 {
     StringList result;
-    for ( auto item : MetadataItemsWithDCType(Metadata::DCType::Subject) )
+    for ( auto item : PropertiesMatching(DCType::Subject) )
     {
         result.emplace_back((localized? item->LocalizedValue() : item->Value()));
     }
     return result;
+}
+PageProgression Package::PageProgressionDirection() const
+{
+    PropertyPtr prop = PropertyMatching("page-progression-direction");
+    if ( prop )
+    {
+        if ( prop->Value() == "ltr" )
+            return PageProgression::LeftToRight;
+        else if ( prop->Value() == "rtl" )
+            return PageProgression::RightToLeft;
+    }
+    return PageProgression::Default;
 }
 const Package::StringList Package::MediaTypesWithDHTMLHandlers() const
 {
@@ -991,7 +985,7 @@ const PackageBase::ContentHandlerList Package::HandlersForMediaType(const string
         return ContentHandlerList();
     return found->second;
 }
-const MediaHandler* Package::OPFHandlerForMediaType(const string &mediaType) const
+shared_ptr<MediaHandler> Package::OPFHandlerForMediaType(const string &mediaType) const
 {
     auto found = _contentHandlers.find(mediaType);
     if ( found == _contentHandlers.end() )
@@ -999,8 +993,9 @@ const MediaHandler* Package::OPFHandlerForMediaType(const string &mediaType) con
     
     for ( auto ptr : found->second )
     {
-        if ( typeid(*ptr) == typeid(MediaHandler) )
-            return dynamic_cast<MediaHandler*>(ptr);
+        shared_ptr<MediaHandler> handler = std::dynamic_pointer_cast<MediaHandler>(ptr);
+        if ( handler )
+            return handler;
     }
     
     return nullptr;
@@ -1043,25 +1038,26 @@ void Package::SetMediaSupport(MediaSupportList &&list)
 }
 void Package::InitMediaSupport()
 {
+    PackagePtr sharedMe = std::enable_shared_from_this<Package>::shared_from_this();
     for ( auto& mediaType : AllMediaTypes() )
     {
         if ( CoreMediaTypes.find(mediaType) != CoreMediaTypes.end() )
         {
             // support for core types is required
-            _mediaSupport[mediaType] = MediaSupportInfo(mediaType);
+            _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo(sharedMe, mediaType)));
         }
         else
         {
-            const MediaHandler* pHandler = OPFHandlerForMediaType(mediaType);
-            if ( pHandler != nullptr )
+            shared_ptr<MediaHandler> pHandler = OPFHandlerForMediaType(mediaType);
+            if ( pHandler )
             {
                 // supported through a handler
-                _mediaSupport[mediaType] = MediaSupportInfo(mediaType, MediaSupportInfo::SupportType::SupportedWithHandler);
+                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo(sharedMe, mediaType, MediaSupportInfo::SupportType::SupportedWithHandler)));
             }
             else
             {
                 // unsupported
-                _mediaSupport[mediaType] = MediaSupportInfo(mediaType, false);
+                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo(sharedMe, mediaType, false)));
             }
         }
     }

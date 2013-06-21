@@ -29,14 +29,14 @@ ArchiveXmlReader::ArchiveXmlReader(ArchiveReader * r) : _reader(r)
     if ( _reader == nullptr )
         throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": Nil ArchiveReader supplied");
 }
-ArchiveXmlReader::ArchiveXmlReader(ArchiveXmlReader&& o) : _reader(o._reader)
+ArchiveXmlReader::ArchiveXmlReader(unique_ptr<ArchiveReader>&& r) : _reader(std::move(r))
 {
-    o._reader = nullptr;
+}
+ArchiveXmlReader::ArchiveXmlReader(ArchiveXmlReader&& o) : _reader(std::move(o._reader))
+{
 }
 ArchiveXmlReader::~ArchiveXmlReader()
 {
-    if ( _reader != nullptr )
-        delete _reader;
 }
 size_t ArchiveXmlReader::read(uint8_t *buf, size_t len)
 {
@@ -60,14 +60,11 @@ ArchiveXmlWriter::ArchiveXmlWriter(ArchiveWriter* w) : _writer(w)
     if ( _writer == nullptr )
         throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": Nil ArchiveWriter supplied");
 }
-ArchiveXmlWriter::ArchiveXmlWriter(ArchiveXmlWriter&& o) : _writer(o._writer)
+ArchiveXmlWriter::ArchiveXmlWriter(ArchiveXmlWriter&& o) : _writer(std::move(o._writer))
 {
-    o._writer = nullptr;
 }
 ArchiveXmlWriter::~ArchiveXmlWriter()
 {
-    if ( _writer != nullptr )
-        delete _writer;
 }
 bool ArchiveXmlWriter::write(const uint8_t *p, size_t len)
 {

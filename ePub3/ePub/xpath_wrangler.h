@@ -55,12 +55,15 @@ public:
      that the XPath interpreter should expect to find.
      @see RegisterNamespaces(const NamespaceList&)
      */
+    EPUB3_EXPORT
     XPathWrangler(xmlDocPtr doc, const NamespaceList & namespaces = NamespaceList());
     ///
     /// Copy constructor.
+    EPUB3_EXPORT
     XPathWrangler(const XPathWrangler& o);
     ///
     /// C++11 move constructor.
+    EPUB3_EXPORT
     XPathWrangler(XPathWrangler&& o);
     ~XPathWrangler();
     
@@ -75,6 +78,7 @@ public:
      @result The results of evaluating the XPath expression, coerced to string
      values.
      */
+    EPUB3_EXPORT
     StringList      Strings(const string& xpath, xmlNodePtr node=nullptr);
     
     /**
@@ -94,6 +98,7 @@ public:
      be returned from either Strings(const string&, xmlNodePtr) or
      Nodes(const string&, xmlNodePtr).
      */
+    EPUB3_EXPORT
     bool            Matches(const string& xpath, xmlNodePtr node=nullptr);
     
     /**
@@ -104,6 +109,7 @@ public:
      @result The nodes which result from evaluating the XPath expression on the
      specified subtree.
      */
+    EPUB3_EXPORT
     xmlNodeSetPtr   Nodes(const string& xpath, xmlNodePtr node=nullptr);
     
     /// @}
@@ -129,6 +135,7 @@ public:
      @param namespaces A list of namespace prefix to URI pairs to register with the
      XPath evaluation context.
      */
+    EPUB3_EXPORT
     void            RegisterNamespaces(const NamespaceList& namespaces);
     
     /**
@@ -154,6 +161,7 @@ public:
      @param name The prefix to assign to the default namespace within the XPath
      evaluation context.
      */
+    EPUB3_EXPORT
     void            NameDefaultNamespace(const string& name);
     
     /// @}

@@ -45,15 +45,17 @@ protected:
     typedef std::map<Term, Entry>       LookupTable;
     
 public:
-                Glossary(xmlNodePtr node);  // must be a <dl> node with epub:type="glossary"
-                Glossary(const string& identifier) : _ident(identifier) {}
-                Glossary(string&& identifier) : _ident(identifier) {}
-                Glossary(Glossary&& o) : _ident(std::move(o._ident)), _lookup(std::move(o._lookup)) {}
-    virtual     ~Glossary() {}
-    
-                Glossary() = delete;
-                Glossary(const Glossary&) = delete;
-    
+    EPUB3_EXPORT    Glossary(xmlNodePtr node);  // must be a <dl> node with epub:type="glossary"
+                    Glossary(const string& identifier) : _ident(identifier) {}
+                    Glossary(string&& identifier) : _ident(identifier) {}
+                    Glossary(Glossary&& o) : _ident(std::move(o._ident)), _lookup(std::move(o._lookup)) {}
+    virtual         ~Glossary() {}
+
+private:
+                    Glossary() _DELETED_;
+                    Glossary(const Glossary&) _DELETED_;
+
+public:
     virtual const string&   Title()                     const   { return _ident; }
     virtual void            SetTitle(const string& str)         { _ident = str; }
     virtual void            SetTitle(string&& str)              { _ident = str; }

@@ -34,8 +34,6 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
-
 #ifndef ZIP_EXTERN
 #ifdef _MSC_VER
 #define ZIP_EXTERN __declspec(dllexport)
@@ -146,8 +144,6 @@ extern "C" {
 #endif
 #define ZIP_EM_UNKNOWN    0xffff  /* unknown algorithm */
 
-
-
 enum zip_source_cmd {
     ZIP_SOURCE_OPEN,	/* prepare for reading */
     ZIP_SOURCE_READ, 	/* read data */
@@ -174,8 +170,6 @@ struct zip_stat {
 struct zip;
 struct zip_file;
 struct zip_source;
-
-
 
 ZIP_EXTERN int zip_add(struct zip *, const char *, struct zip_source *);
 ZIP_EXTERN int zip_add_dir(struct zip *, const char *);

@@ -25,20 +25,27 @@
 #include <ePub3/epub3.h>
 #include <ePub3/nav_element.h>
 #include <ePub3/utilities/utfstring.h>
+#include <ePub3/utilities/owned_by.h>
 #include <vector>
+#include <memory>
 
 EPUB3_BEGIN_NAMESPACE
+
+class NavigationPoint;
+
+typedef shared_ptr<NavigationPoint> NavigationPointPtr;
 
 /**
  @ingroup navigation
  */
-class NavigationPoint : public NavigationElement
+class NavigationPoint : public NavigationElement, public std::enable_shared_from_this<NavigationPoint>, public OwnedBy<NavigationElement>
 {
+private:
+                            NavigationPoint(const NavigationPoint&)     _DELETED_;
 public:
-                            NavigationPoint() {};
-                            NavigationPoint(const std::string& ident, const std::string& label, const std::string& content) : NavigationElement(), _label(label), _content(content) {}
-                            NavigationPoint(const NavigationPoint&)     = delete;
-                            NavigationPoint(NavigationPoint&& o) : NavigationElement(o), _label(std::move(o._label)), _content(std::move(o._content)) {}
+                            NavigationPoint(shared_ptr<NavigationElement>& owner) : OwnedBy(owner) {};
+                            NavigationPoint(shared_ptr<NavigationElement>& owner, const std::string& ident, const std::string& label, const std::string& content) : NavigationElement(), OwnedBy(owner), _label(label), _content(content) {}
+                            NavigationPoint(NavigationPoint&& o) : NavigationElement(std::move(o)), OwnedBy(std::move(o)), _label(std::move(o._label)), _content(std::move(o._content)) {}
     virtual                 ~NavigationPoint() {}
     
     virtual const string&   Title()                     const   { return _label; }

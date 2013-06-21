@@ -42,6 +42,13 @@
 
 #include "zipint.h"
 
+#if defined(_MSC_VER)
+# define strdup _strdup
+# define fseeko fseek
+# define ftello ftell
+# define fileno _fileno
+#endif
+
 static void set_error(int *, struct zip_error *, int);
 static struct zip *_zip_allocate_new(const char *, int *);
 static int _zip_checkcons(FILE *, struct zip_cdir *, struct zip_error *);

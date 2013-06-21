@@ -23,6 +23,7 @@
 #define __ePub3__iri__
 
 #include <ePub3/utilities/utfstring.h>
+#include <ePub3/utilities/make_unique.h>
 #include <google-url/gurl.h>
 #include <vector>
 
@@ -57,17 +58,19 @@ public:
     
     ///
     /// The IRI scheme used to refer to EPUB 3 documents.
+    EPUB3_EXPORT
     static string gEPUBScheme;
     
 public:
     ///
     /// Initializes an empty (and thus invalid) IRI.
-    IRI() : _urnComponents(), _url(nullptr), _pureIRI() {}
+    IRI() : _urnComponents(), _url(make_unique<GURL>()), _pureIRI() {}
     
     /**
      Create a new IRI.
      @param iriStr A valid URL or IRI string.
      */
+    EPUB3_EXPORT
     IRI(const string& iriStr);
     
     /**
@@ -77,6 +80,7 @@ public:
      @param nameID The identifier/namespace for the resource name.
      @param namespacedString The resource name.
      */
+    EPUB3_EXPORT
     IRI(const string& nameID, const string& namespacedString);
     
     /**
@@ -95,6 +99,7 @@ public:
      @param fragment A fragmuent used to identify a particular location within a
      resource.
      */
+    EPUB3_EXPORT
     IRI(const string& scheme, const string& host, const string& path, const string& query="", const string& fragment="");
     
     ///
@@ -103,7 +108,7 @@ public:
     
     ///
     /// C++11 move-constructor.
-    IRI(IRI&& o) : _urnComponents(std::move(o._urnComponents)), _url(o._url), _pureIRI(std::move(o._pureIRI)) { o._url = nullptr; }
+    IRI(IRI&& o) : _urnComponents(std::move(o._urnComponents)), _url(std::move(o._url)), _pureIRI(std::move(o._pureIRI)) { o._url = nullptr; }
     
     virtual ~IRI();
     
@@ -112,10 +117,12 @@ public:
     
     ///
     /// Assigns the value of another IRI (copy assignment).
+    EPUB3_EXPORT
     IRI&            operator=(const IRI& o);
     
     ///
     /// Assigns ownership of the value of another IRI (move assignment).
+    EPUB3_EXPORT
     IRI&            operator=(IRI&& o);
     
     /// @}
@@ -128,6 +135,7 @@ public:
      @param o An IRI to compare.
      @result Returns `true` if the IRIs are equal, `false` otherwise.
      */
+    EPUB3_EXPORT
     bool            operator==(const IRI& o)                const;
     
     /**
@@ -135,6 +143,7 @@ public:
      @param o An IRI to compare.
      @result Returns `true` if the IRIs are *not* equal, `false` otherwise.
      */
+    EPUB3_EXPORT
     bool            operator!=(const IRI& o)                const;
     
     /**
@@ -144,6 +153,7 @@ public:
      @param o An IRI against which to compare.
      @result Returns `true` if `*this` is less than `o`, `false` otherwise.
      */
+    EPUB3_EXPORT
     bool            operator<(const IRI& o)                 const;
     
     /// @}
@@ -155,6 +165,10 @@ public:
     ///
     /// Returns `true` if the IRI is a URL referencing a relative location.
     bool            IsRelative() const { return !_url->has_host(); }
+    
+    ///
+    /// Returns `true` if the IRI is empty.
+    bool            IsEmpty() const { return _url->is_empty(); }
     
     /// @{
     /// @name Component Introspection
@@ -173,6 +187,7 @@ public:
     
     ///
     /// Retrieves any credentials attached to an IRI.
+    EPUB3_EXPORT
     IRICredentials  Credentials() const;
     
     ///
@@ -188,6 +203,7 @@ public:
      @param URLEncoded If `true`, returns the path in URL-encoded format. Otherwise,
      the path will be decoded first, yielding a standard POSIX file-system path.
      */
+    EPUB3_EXPORT
     const string    Path(bool URLEncoded=true) const;
     
     ///
@@ -211,18 +227,21 @@ public:
      @result A valid CFI if one is present in the URL's fragment, or an empty CFI if
      no content fragment identifier is present.
      */
+    EPUB3_EXPORT
     const CFI       ContentFragmentIdentifier() const;
     
     /**
      Assigns a scheme to this IRI.
      @param scheme The new scheme.
      */
+    EPUB3_EXPORT
     void            SetScheme(const string& scheme);
     
     /**
      Assigns a host to this IRI.
      @param host The new host component.
      */
+    EPUB3_EXPORT
     void            SetHost(const string& host);
     
     /**
@@ -230,29 +249,34 @@ public:
      @param user The username for the credential.
      @param pass The shared-secret part of the credential.
      */
+    EPUB3_EXPORT
     void            SetCredentials(const string& user, const string& pass);
     
     /**
      Appends a new component to a URL IRI's path.
      @param component The new path component.
      */
+    EPUB3_EXPORT
     void            AddPathComponent(const string& component);
     
     /**
      Adds or replaces the query component of a URL IRI.
      @param query The new query string.
      */
+    EPUB3_EXPORT
     void            SetQuery(const string& query);
     
     /**
      Adds or replaces the fragment component of a URL IRI.
      @param fragment The new fragment string.
      */
+    EPUB3_EXPORT
     void            SetFragment(const string& query);
     
     /**
      Sets a URL IRI's fragment using a Content Fragment Identifier.
      */
+    EPUB3_EXPORT
     void            SetContentFragmentIdentifier(const CFI& cfi);
     
     /// @}
@@ -262,14 +286,17 @@ public:
     
     ///
     /// URL-encodes a path, query, or fragment component.
+    EPUB3_EXPORT
     static string   URLEncodeComponent(const string& str);
     
     ///
     /// Percent-encodes the UTF-8 representation of any non-ASCII characters in a string.
+    EPUB3_EXPORT
     static string   PercentEncodeUCS(const string& str);
     
     ///
     /// Converts an IDN (hostname in non-ASCII Unicode format) into its ASCII representation.
+    EPUB3_EXPORT
     static string   IDNEncodeHostname(const string& host);
     
     /// @}
@@ -284,6 +311,7 @@ public:
      decoded by this function.
      @result A Unicode IRI string.
      */
+    EPUB3_EXPORT
     string          IRIString() const;
     
     /**
@@ -296,12 +324,13 @@ public:
      characters are guaranteed to be valid ASCII suitable for use with non-Unicode
      libraries.
      */
+    EPUB3_EXPORT
     string          URIString() const;
     
 protected:
-    ComponentList   _urnComponents;     ///< The components of a URN.
-    GURL*           _url;               ///< The underlying URL object.
-    string          _pureIRI;           ///< A cache of the Unicode IRI string. May be empty.
+    ComponentList           _urnComponents;     ///< The components of a URN.
+    std::unique_ptr<GURL>   _url;               ///< The underlying URL object.
+    string                  _pureIRI;           ///< A cache of the Unicode IRI string. May be empty.
     
 };
 

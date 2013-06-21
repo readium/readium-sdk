@@ -33,8 +33,8 @@ using namespace ePub3;
 
 TEST_CASE("Package should have a Unique ID, Package ID, Type, Version, and a Base Path", "")
 {
-    Container c(EPUB_PATH);
-    const Package* pkg = c.Packages()[0];
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = c->DefaultPackage();
     
     REQUIRE(pkg->UniqueID() == "http://www.gutenberg.org/ebooks/25545@2010-02-17T04:39:13Z");
     REQUIRE(pkg->PackageID() == "http://www.gutenberg.org/ebooks/25545");
@@ -45,8 +45,8 @@ TEST_CASE("Package should have a Unique ID, Package ID, Type, Version, and a Bas
 
 TEST_CASE("Our test package should only have TOC and PageList navigation tables", "")
 {
-    Container c(EPUB_PATH);
-    const Package* pkg = c.Packages()[0];
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = c->DefaultPackage();
     
     REQUIRE(pkg->TableOfContents() != nullptr);
     REQUIRE(pkg->ListOfFigures() == nullptr);
@@ -57,13 +57,13 @@ TEST_CASE("Our test package should only have TOC and PageList navigation tables"
 
 TEST_CASE("Package should have multiple manifest items, and they should be indexable by identifier string", "")
 {
-    Container c(EPUB_PATH);
-    auto pkg = c.Packages()[0];
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = c->DefaultPackage();
     auto manifest = pkg->Manifest();
     REQUIRE_FALSE(manifest.empty());
     
     int idx = arc4random() % manifest.size();
-    const ManifestItem* randomItem = nullptr;
+    ManifestItemPtr randomItem;
     for ( auto pos = manifest.begin(); idx >= 0; ++pos, --idx )
     {
         randomItem = pos->second;
@@ -81,8 +81,8 @@ TEST_CASE("Package should have multiple manifest items, and they should be index
 
 TEST_CASE("Package should have multiple spine items", "")
 {
-    Container c(EPUB_PATH);
-    auto pkg = c.Packages()[0];
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = c->DefaultPackage();
     auto spine = pkg->FirstSpineItem();
     REQUIRE(spine != nullptr);
     
@@ -95,8 +95,8 @@ TEST_CASE("Package should have multiple spine items", "")
 
 TEST_CASE("Package should be able to create and resolve basic CFIs", "")
 {
-    Container c(EPUB_PATH);
-    auto pkg = c.Packages()[0];
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = c->DefaultPackage();
     size_t spineIdx = arc4random() % pkg->FirstSpineItem()->Count();
     auto spineItem = pkg->SpineItemAt(spineIdx);
     
@@ -108,7 +108,7 @@ TEST_CASE("Package should be able to create and resolve basic CFIs", "")
     REQUIRE(cfi.String() == _Str("epubcfi(", str, ")"));
     REQUIRE(cfi == _Str("epubcfi(", str, ")"));
     
-    const ManifestItem* manifestItem = pkg->ManifestItemForCFI(cfi, nullptr);
+    ManifestItemPtr manifestItem = pkg->ManifestItemForCFI(cfi, nullptr);
     REQUIRE(manifestItem != nullptr);
     REQUIRE(manifestItem == spineItem->ManifestItem());
     
@@ -125,14 +125,14 @@ TEST_CASE("Package should be able to create and resolve basic CFIs", "")
 
 TEST_CASE("Package should parse bindings correctly.", "")
 {
-    Container c(BINDINGS_EPUB_PATH);
-    const Package* pkg = c.Packages()[0];
+    ContainerPtr c = Container::OpenContainer(BINDINGS_EPUB_PATH);
+    PackagePtr pkg = c->DefaultPackage();
     const Package::StringList handledTypes = pkg->MediaTypesWithDHTMLHandlers();
     
     REQUIRE(handledTypes.size() == 1);
     REQUIRE(handledTypes[0] == kMediaType);
     
-    const MediaHandler* handler = pkg->OPFHandlerForMediaType(kMediaType);
+    auto handler = pkg->OPFHandlerForMediaType(kMediaType);
     REQUIRE(handler != nullptr);
     REQUIRE(handler->MediaType() == kMediaType);
     

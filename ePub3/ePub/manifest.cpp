@@ -27,6 +27,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
 const ItemProperties::PropertyMap ItemProperties::PropertyLookupTable = {
     { "cover-image", ItemProperties::CoverImage },
     { "mathml", ItemProperties::ContainsMathML },
@@ -36,6 +37,18 @@ const ItemProperties::PropertyMap ItemProperties::PropertyLookupTable = {
     { "svg", ItemProperties::ContainsSVG },
     { "switch", ItemProperties::ContainsSwitch }
 };
+#else
+const std::pair<string,ItemProperties::value_type> __pm_pairs[7] = {
+    std::pair<string,ItemProperties::value_type>("cover-image", ItemProperties::CoverImage),
+    std::pair<string,ItemProperties::value_type>("mathml", ItemProperties::ContainsMathML),
+    std::pair<string,ItemProperties::value_type>("nav", ItemProperties::Navigation),
+    std::pair<string,ItemProperties::value_type>("remote-resources", ItemProperties::HasRemoteResources),
+    std::pair<string,ItemProperties::value_type>("scripted", ItemProperties::HasScriptedContent),
+    std::pair<string,ItemProperties::value_type>("svg", ItemProperties::ContainsSVG),
+    std::pair<string,ItemProperties::value_type>("switch", ItemProperties::ContainsSwitch)
+};
+const ItemProperties::PropertyMap ItemProperties::PropertyLookupTable(&__pm_pairs[0], &__pm_pairs[7]);
+#endif
 
 ItemProperties::ItemProperties(const string& attrStr) : _p(None)
 {
@@ -63,7 +76,7 @@ ItemProperties& ItemProperties::operator=(const string& attrStr)
     string lowAttrs = attrStr.tolower();
     
     // NB: this is a C++11 raw-string literal. R"" means 'raw string', and the X(...)X bit are delimiters.
-    REGEX_NS::regex re(R"X(\w+)X", REGEX_NS::regex::icase);
+    REGEX_NS::regex re("\\w+", REGEX_NS::regex::icase);
     auto pos = REGEX_NS::sregex_iterator(lowAttrs.stl_str().begin(), lowAttrs.stl_str().end(), re);
     auto end = REGEX_NS::sregex_iterator();
     
@@ -125,7 +138,7 @@ string ItemProperties::str() const
     
     std::stringstream builder;
     builder << vec[0];
-    for ( int i = 0; i < vec.size(); i++ )
+    for ( decltype(vec.size()) i = 0; i < vec.size(); i++ )
     {
         builder << ", " << vec[i];
     }
@@ -133,48 +146,53 @@ string ItemProperties::str() const
     return builder.str();
 }
 
-ManifestItem::ManifestItem(xmlNodePtr node, const class Package* package) : _owner(package)
+ManifestItem::ManifestItem(const shared_ptr<Package>& owner) : OwnedBy(owner), PropertyHolder(owner), _href(), _mediaType(), _mediaOverlayID(), _fallbackID(), _parsedProperties(0)
 {
-    _identifier = _getProp(node, "id");
-    if ( _identifier.empty() )
-        throw std::invalid_argument("Manifest items must have an 'id' attribute");
-    
-    _href = _getProp(node, "href");
-    if ( _href.empty() )
-        throw std::invalid_argument("Manifest items must have a 'href' attribute");
-    
-    _mediaType = _getProp(node, "media-type");
-    if ( _href.empty() )
-        throw std::invalid_argument("Manifest items must have a 'media-type' attribute");
-    
-    _mediaOverlayID = _getProp(node, "media-overlay");
-    _fallbackID = _getProp(node, "fallback");
-    _properties = ItemProperties(_getProp(node, "properties"));
 }
-ManifestItem::ManifestItem(ManifestItem&& o) : _owner(o._owner), _identifier(std::move(o._identifier)), _href(std::move(o._href)), _mediaType(std::move(o._mediaType)), _mediaOverlayID(std::move(o._mediaOverlayID)), _fallbackID(std::move(o._fallbackID)), _properties(o._properties)
+ManifestItem::ManifestItem(ManifestItem&& o) : OwnedBy(std::move(o)), PropertyHolder(std::move(o)), XMLIdentifiable(std::move(o)), _href(std::move(o._href)), _mediaType(std::move(o._mediaType)), _mediaOverlayID(std::move(o._mediaOverlayID)), _fallbackID(std::move(o._fallbackID)), _parsedProperties(std::move(o._parsedProperties))
 {
-    o._owner = nullptr;
 }
 ManifestItem::~ManifestItem()
 {
 }
+bool ManifestItem::ParseXML(ManifestItemPtr& sharedMe, xmlNodePtr node)
+{
+    SetXMLIdentifier(_getProp(node, "id"));
+    if ( XMLIdentifier().empty() )
+        return false;
+    
+    _href = _getProp(node, "href");
+    if ( _href.empty() )
+        return false;
+    
+    _mediaType = _getProp(node, "media-type");
+    if ( _href.empty() )
+        return false;
+    
+    _mediaOverlayID = _getProp(node, "media-overlay");
+    _fallbackID = _getProp(node, "fallback");
+    _parsedProperties = ItemProperties(_getProp(node, "properties"));
+    return true;
+}
 string ManifestItem::AbsolutePath() const
 {
-    return _Str(_owner->BasePath(), BaseHref());
+    return _Str(this->Owner()->BasePath(), BaseHref());
 }
-const ManifestItem* ManifestItem::MediaOverlay() const
+shared_ptr<ManifestItem> ManifestItem::MediaOverlay() const
 {
-    if ( _owner == nullptr || _mediaOverlayID.empty() )
+    auto package = this->Owner();
+    if ( !package || _mediaOverlayID.empty() )
         return nullptr;
     
-    return _owner->ManifestItemWithID(_mediaOverlayID);
+    return package->ManifestItemWithID(_mediaOverlayID);
 }
-const ManifestItem* ManifestItem::Fallback() const
+shared_ptr<ManifestItem> ManifestItem::Fallback() const
 {
-    if ( _owner == nullptr || _fallbackID.empty() )
+    auto package = this->Owner();
+    if ( !package || _fallbackID.empty() )
         return nullptr;
     
-    return _owner->ManifestItemWithID(_fallbackID);
+    return package->ManifestItemWithID(_fallbackID);
 }
 string ManifestItem::BaseHref() const
 {
@@ -191,14 +209,9 @@ bool ManifestItem::HasProperty(const std::vector<IRI>& properties) const
 {
     for ( const IRI& iri : properties )
     {
-        string attr(iri.Fragment());
-        if ( attr.empty() )
-            attr = iri.LastPathComponent();
-        
-        if ( HasProperty(attr) )
+        if ( this->ContainsProperty(iri) )
             return true;
     }
-    
     return false;
 }
 xmlDocPtr ManifestItem::ReferencedDocument() const
@@ -206,8 +219,12 @@ xmlDocPtr ManifestItem::ReferencedDocument() const
     // TODO: handle remote URLs
     string path(BaseHref());
     
-    ArchiveXmlReader * reader = _owner->XmlReaderForRelativePath(path);
-    if ( reader == nullptr )
+    auto package = this->Owner();
+    if ( !package )
+        return nullptr;
+    
+    unique_ptr<ArchiveXmlReader> reader = package->XmlReaderForRelativePath(path);
+    if ( !reader )
         return nullptr;
     
     xmlDocPtr result = nullptr;
@@ -219,9 +236,12 @@ xmlDocPtr ManifestItem::ReferencedDocument() const
     
     return result;
 }
-Auto<ByteStream> ManifestItem::Reader() const
+unique_ptr<ByteStream> ManifestItem::Reader() const
 {
-    return _owner->ReadStreamForRelativePath(BaseHref());
+    auto package = this->Owner();
+    if ( !package )
+        return nullptr;
+    return package->ReadStreamForRelativePath(BaseHref());
 }
 
 EPUB3_END_NAMESPACE

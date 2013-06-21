@@ -61,52 +61,64 @@ protected:
                         Library(Library&& o) : _containers(std::move(o._containers)), _packages(std::move(o._packages)) {}
     
     // load a library from a file generated using WriteToFile()
-                        Library(const string& path);
-    bool                Load(const string& path);
+    EPUB3_EXPORT        Library(const string& path);
+    EPUB3_EXPORT bool   Load(const string& path);
     
 public:
     // access a singleton instance managed by the class
+    EPUB3_EXPORT
     static Library*     MainLibrary(const string& path = "");
     virtual             ~Library();
-    
+
+    EPUB3_EXPORT
     string              PathForEPubWithUniqueID(const string& uniqueID)     const;
+    EPUB3_EXPORT
     string              PathForEPubWithPackageID(const string& packageID)   const;
-    
-    void                AddPublicationsInContainer(Container* container, const string& path);
+
+    EPUB3_EXPORT
+    void                AddPublicationsInContainer(shared_ptr<Container> container, const string& path);
+    EPUB3_EXPORT
     void                AddPublicationsInContainerAtPath(const string& path);
     
     // returns an epub3:// url for the package with a given identifier
-    IRI                 EPubURLForPublication(const Package* package)       const;
+    EPUB3_EXPORT
+    IRI                 EPubURLForPublication(shared_ptr<Package> package)       const;
+    EPUB3_EXPORT
     IRI                 EPubURLForPublicationID(const string& identifier)   const;
     
     // may load a container/package, so non-const
-    Package*            PackageForEPubURL(const IRI& url, bool allowLoad=true);
-    
-    IRI                 EPubCFIURLForManifestItem(const ManifestItem* item) const;
+    EPUB3_EXPORT
+    shared_ptr<Package> PackageForEPubURL(const IRI& url, bool allowLoad=true);
+
+    EPUB3_EXPORT
+    IRI                 EPubCFIURLForManifestItem(shared_ptr<ManifestItem> item) const;
     
     // may instantiate a Container & store it, so non-const
-    const ManifestItem* ManifestItemForCFI(const IRI& urlWithCFI, CFI* pRemainingCFI);
-    
-    Auto<ByteStream>    ReadStreamForEPubURL(const IRI& url, CFI* pRemainingCFI);
+    EPUB3_EXPORT
+    shared_ptr<ManifestItem>    ManifestItemForCFI(const IRI& urlWithCFI, CFI* pRemainingCFI);
+
+    EPUB3_EXPORT
+    unique_ptr<ByteStream>  ReadStreamForEPubURL(const IRI& url, CFI* pRemainingCFI);
     
     // file format is sort-of CSV
     // each line starts with a container locator's string representation followed by a
     //  comma-separated list of package identifiers
+    EPUB3_EXPORT
     bool                WriteToFile(const string& path)                     const;
     
 protected:
     // list of known (but not necessarily loaded) containers
-    typedef std::map<string, Container*>            ContainerLookup;
+    typedef std::map<string, shared_ptr<Container>>     ContainerLookup;
     
     // if container is loaded, LookupEntry will contain a Package
     // otherwise, the locator is used to load the Container
-    typedef std::pair<string, Package*>             LookupEntry;
-    typedef std::map<EPubIdentifier, LookupEntry>   PackageLookup;
+    typedef std::pair<string, shared_ptr<Package>>      LookupEntry;
+    typedef std::map<EPubIdentifier, LookupEntry>       PackageLookup;
     
-    ContainerLookup         _containers;
-    PackageLookup           _packages;
+    ContainerLookup                 _containers;
+    PackageLookup                   _packages;
     
-    static Auto<Library>    _singleton;
+    static unique_ptr<Library>      _singleton;
 };
 
 EPUB3_END_NAMESPACE

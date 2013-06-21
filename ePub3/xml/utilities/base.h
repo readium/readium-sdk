@@ -61,7 +61,20 @@ public:
             message = context + ":\n" + err->message;
         }
     }
+#if EPUB_COMPILER_SUPPORTS(CXX_DELEGATING_CONSTRUCTORS)
     exception(const char * s, xmlErrorPtr err = NULL) throw () : exception(std::string(s), err) {}
+#else
+	exception(const char * s, xmlErrorPtr err = NULL) _NOEXCEPT
+	{
+		if ( err == NULL ) {
+			message = s;
+		} else {
+			message = s;
+			message += ":\n";
+			message += err->message;
+		}
+	}
+#endif
     virtual ~exception() throw () {}
     
     virtual const char * what() const throw () { return message.c_str(); }

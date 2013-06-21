@@ -3,7 +3,20 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2013-04-08.
-//  Copyright (c) 2013 The Readium Foundation and contributors. All rights reserved.
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
+//  
+//  The Readium SDK is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//  
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//  
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 #ifndef ePub3__compiler_h
@@ -40,6 +53,7 @@
  check for both cxx_rvalue_references as well as the unrelated cxx_nonstatic_member_init feature which we know was added in 4.3 */
 #define EPUB_COMPILER_SUPPORTS_CXX_RVALUE_REFERENCES __has_extension(cxx_rvalue_references) && __has_extension(cxx_nonstatic_member_init)
 
+#define EPUB_COMPILER_SUPPORTS_CXX_NONSTATIC_MEMBER_INIT __has_extension(cxx_nonstatic_member_init)
 #define EPUB_COMPILER_SUPPORTS_CXX_DELETED_FUNCTIONS __has_extension(cxx_deleted_functions)
 #define EPUB_COMPILER_SUPPORTS_CXX_NULLPTR __has_feature(cxx_nullptr)
 #define EPUB_COMPILER_SUPPORTS_CXX_EXPLICIT_CONVERSIONS __has_feature(cxx_explicit_conversions)
@@ -48,6 +62,15 @@
 #define EPUB_COMPILER_SUPPORTS_CXX_OVERRIDE_CONTROL __has_extension(cxx_override_control)
 #define EPUB_COMPILER_SUPPORTS_HAS_TRIVIAL_DESTRUCTOR __has_extension(has_trivial_destructor)
 #define EPUB_COMPILER_SUPPORTS_CXX_STRONG_ENUMS __has_extension(cxx_strong_enums)
+#define EPUB_COMPILER_SUPPORTS_CXX_ALIAS_TEMPLATES __has_extension(cxx_alias_templates)
+#define EPUB_COMPILER_SUPPORTS_CXX_CONSTEXPR __has_extension(cxx_constexpr)
+#define EPUB_COMPILER_SUPPORTS_CXX_INITIALIZER_LISTS __has_extension(cxx_generalized_initializers)
+#define EPUB_COMPILER_SUPPORTS_CXX_RAW_STRING_LITERALS __has_extension(cxx_raw_string_literals)
+#define EPUB_COMPILER_SUPPORTS_CXX_UNICODE_LITERALS __has_extension(cxx_unicode_literals)
+#define EPUB_COMPILER_SUPPORTS_CXX_USER_LITERALS __has_extension(cxx_user_literals)
+#define EPUB_COMPILER_SUPPORTS_CXX_DEFAULT_TEMPLATE_ARGS __has_extension(cxx_default_function_template_args)
+#define EPUB_COMPILER_SUPPORTS_CXX_DELEGATING_CONSTRUCTORS __has_extension(cxx_delegating_constructors)
+#define EPUB_COMPILER_SUPPORTS_CXX_NOEXCEPT __has_extension(cxx_noexcept)
 
 #endif
 
@@ -71,9 +94,17 @@
 #define EPUB_COMPILER_SUPPORTS_CXX_NULLPTR 1
 #endif
 
+#if !EPUB_COMPILER(CLANG) && _MSC_VER >= 1700
+#define EPUB_COMPILER_SUPPORTS_CXX_RVALUE_REFERENCES 1
+#define EPUB_COMPILER_SUPPORTS_C_STATIC_ASSERT 1
+#define EPUB_COMPILER_SUPPORTS_CXX_STRONG_ENUMS 1
+#endif
+
 #if !EPUB_COMPILER(CLANG)
 #define EPUB_COMPILER_SUPPORTS_CXX_OVERRIDE_CONTROL 1
+#if _MSC_VER < 1700
 #define EPUB_COMPILER_QUIRK_FINAL_IS_CALLED_SEALED 1
+#endif
 #endif
 
 #endif
@@ -109,9 +140,20 @@
 #if EPUB_COMPILER(GCC) && !EPUB_COMPILER(CLANG)
 #if GCC_VERSION_AT_LEAST(4, 7, 0) && defined(__cplusplus) && __cplusplus >= 201103L
 #define EPUB_COMPILER_SUPPORTS_CXX_RVALUE_REFERENCES 1
+#define EPUB_COMPILER_SUPPORTS_CXX_NONSTATIC_MEMBER_INIT 1
 #define EPUB_COMPILER_SUPPORTS_CXX_DELETED_FUNCTIONS 1
 #define EPUB_COMPILER_SUPPORTS_CXX_NULLPTR 1
 #define EPUB_COMPILER_SUPPORTS_CXX_OVERRIDE_CONTROL 1
+#define EPUB_COMPILER_SUPPORTS_CXX_STRONG_ENUMS 1
+#define EPUB_COMPILER_SUPPORTS_CXX_ALIAS_TEMPLATES 1
+#define EPUB_COMPILER_SUPPORTS_CXX_CONSTEXPR 1
+#define EPUB_COMPILER_SUPPORTS_CXX_INITIALIZER_LISTS 1
+#define EPUB_COMPILER_SUPPORTS_CXX_RAW_STRING_LITERALS 1
+#define EPUB_COMPILER_SUPPORTS_CXX_UNICODE_LITERALS 1
+#define EPUB_COMPILER_SUPPORTS_CXX_USER_LITERALS 1
+#define EPUB_COMPILER_SUPPORTS_CXX_DEFAULT_TEMPLATE_ARGS 1
+#define EPUB_COMPILER_SUPPORTS_CXX_DELEGATING_CONSTRUCTORS 1
+#define EPUB_COMPILER_SUPPORTS_CXX_NOEXCEPT 1
 
 #elif GCC_VERSION_AT_LEAST(4, 6, 0) && defined(__GXX_EXPERIMENTAL_CXX0X__)
 #define EPUB_COMPILER_SUPPORTS_CXX_NULLPTR 1
@@ -262,6 +304,24 @@
 /* ABI */
 #if defined(__ARM_EABI__) || defined(__EABI__)
 #define EPUB_COMPILER_SUPPORTS_EABI 1
+#endif
+
+/* C++11 constexpr */
+#if EPUB_COMPILER_SUPPORTS(CXX_CONSTEXPR)
+#define CONSTEXPR constexpr
+#else
+#define CONSTEXPR
+#endif
+
+/* C++11 noexcept */
+#if EPUB_COMPILER_SUPPORTS(CXX_NOEXCEPT)
+#define _NOEXCEPT noexcept
+#define _NOEXCEPT_(x) noexcept(x)
+#else
+#ifndef _MSC_VER
+#define _NOEXCEPT throw()
+#endif
+#define _NOEXCEPT_(x)
 #endif
 
 #endif /* ePub3__compiler_h */

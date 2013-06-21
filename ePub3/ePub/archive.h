@@ -25,9 +25,16 @@
 #include <ePub3/epub3.h>
 #include <iostream>
 #include <list>
+#include <functional>
 #include <zlib.h>
 #if EPUB_HAVE(ACL)
 #include <sys/acl.h>
+#endif
+
+#include <ePub3/utilities/utfstring.h>
+
+#if EPUB_PLATFORM(WIN)
+typedef unsigned short mode_t;
 #endif
 
 EPUB3_BEGIN_NAMESPACE
@@ -51,24 +58,24 @@ public:
     
     ///
     /// Use the default compression level for the archive type.
-    static const CompressionLevel DefaultCompression = -1;
+    static EPUB3_EXPORT const CompressionLevel DefaultCompression = -1;
     ///
     /// Don't compress.
-    static const CompressionLevel Uncompressed = 0;
+    static EPUB3_EXPORT const CompressionLevel Uncompressed = 0;
     ///
     /// Fastest operation, usually the least compression.
-    static const CompressionLevel FastestCompression = 1;
+    static EPUB3_EXPORT const CompressionLevel FastestCompression = 1;
     ///
     /// Smallest compressed file size, usually the slowest to compress/decompress.
-    static const CompressionLevel SmallestCompression = 9;
+    static EPUB3_EXPORT const CompressionLevel SmallestCompression = 9;
     
 protected:
     ///
     /// Type of a function which creates an Archive from a file.
-    typedef std::function<Archive*(const std::string&)>     CreatorFn;
+    typedef std::function<std::unique_ptr<Archive>(const string&)>     CreatorFn;
     ///
     /// Type of a function which determines whether a file is a certain type of archive.
-    typedef std::function<bool(const std::string&)>         SnifferFn;
+    typedef std::function<bool(const string&)>         SnifferFn;
     
 private:
     /**
@@ -85,8 +92,8 @@ private:
         ArchiveFactory(ArchiveFactory&& o) : _creator(std::move(o._creator)), _typeSniffer(std::move(o._typeSniffer)) {}
         ~ArchiveFactory() {}
         
-        bool                CanInit(const std::string& path)    const   { return _typeSniffer(path); }
-        Archive *           operator()(const std::string& path) const   { return _creator(path); }
+        bool                        CanInit(const string& path)    const   { return _typeSniffer(path); }
+        std::unique_ptr<Archive>    operator()(const string& path) const   { return _creator(path); }
         
     private:
         CreatorFn       _creator;
@@ -107,11 +114,13 @@ protected:
      `true` if it represents an archive which can be opened using the function object
      in the `creator` argument.
      */
+    EPUB3_EXPORT
     static void RegisterArchive(CreatorFn creator, SnifferFn sniffer);
     
 public:
     ///
     /// Initialize the library, registering the default archive types.
+    EPUB3_EXPORT
     static void Initialize();
     
     /**
@@ -119,21 +128,22 @@ public:
      @param path A filesystem path to an archive file.
      @result An opened instance of an Archive subclass or `nullptr`.
      */
-    static Archive * Open(const std::string& path);
+    EPUB3_EXPORT
+    static std::unique_ptr<Archive> Open(const string& path);
     
 public:
     virtual ~Archive() {}
     
     ///
     /// Retrieves the filesystem path of this archive.
-    virtual std::string Path() const { return _path; }
+    virtual string Path() const { return _path; }
     
     /**
      Check whether an item exists within an archive.
      @param path A path within the archive to a specific item.
      @result Returns `true` if an item exists with that path, `false` otherwise.
      */
-    virtual bool ContainsItem(const std::string & path) const = 0;
+    virtual bool ContainsItem(const string & path) const = 0;
     /**
      Delete an item from an archive.
      @note The return value indicates whether the item is no longer present in the
@@ -143,29 +153,29 @@ public:
      @result Returns `true` if the item is no longer in the archive, `false`
      otherwise.
      */
-    virtual bool DeleteItem(const std::string & path) = 0;
+    virtual bool DeleteItem(const string & path) = 0;
     
     /**
      Creates a folder in an archive.
      @param path The path within the archive for the new folder.
      @result Returns `true` if the polder was created, `false` otherwise.
      */
-    virtual bool CreateFolder(const std::string & path) = 0;
+    virtual bool CreateFolder(const string & path) = 0;
     
     /**
      Obtains a stream to read or write to a file within the archive.
      @param path The path of the item to access.
      @result Returns a (managed) pointer to the resulting byte stream, or `nullptr`.
      */
-    virtual Auto<ByteStream> ByteStreamAtPath(const std::string& path) const = 0;
+    virtual unique_ptr<ByteStream> ByteStreamAtPath(const string& path) const = 0;
     
     /**
      Obtain an object used to read data from a file within the archive.
      @param path The path of the item to read.
      @result A pointer (unmanaged) to a reader object, or `nullptr`.
-     @deprecated Please use ByteStreamAtPath(const std::string&)const instead.
+     @deprecated Please use ByteStreamAtPath(const string&)const instead.
      */
-    virtual ArchiveReader* ReaderAtPath(const std::string & path) const = 0;
+    virtual unique_ptr<ArchiveReader> ReaderAtPath(const string & path) const = 0;
     
     /**
      Obtain an object used to write data to a file within the archive.
@@ -173,9 +183,9 @@ public:
      @param compress Whether to compress any data to the file.
      @param create Whether to create a new file if one does not yet exist.
      @result A pointer (unmanaged) to a reader object, or `nullptr`.
-     @deprecated Please use ByteStreamAtPath(const std::string&)const instead.
+     @deprecated Please use ByteStreamAtPath(const string&)const instead.
      */
-    virtual ArchiveWriter* WriterAtPath(const std::string & path, bool compress=true, bool create=true) = 0;
+    virtual unique_ptr<ArchiveWriter> WriterAtPath(const string & path, bool compress=true, bool create=true) = 0;
     
     /**
      Determines whether a given file ought to be compressed when stored in the archive.
@@ -190,59 +200,59 @@ public:
      @result Returns `true` if the data is considered appropriate to compress, `false`
      if the archive implementor believes compression is unnecessary.
      */
-    virtual bool ShouldCompress(const std::string& path, const std::string& mimeType, size_t size) const;
+    virtual bool ShouldCompress(const string& path, const string& mimeType, size_t size) const;
     
     /**
      Apply POSIX-style permissions to a file within the archive, if supported.
      
      The default implementation does nothing.
      */
-    virtual void SetPOSIXPermissions(const std::string & path, mode_t privs) {}
+    virtual void SetPOSIXPermissions(const string & path, mode_t privs) {}
     /**
      Obtain POSIX-style permissions for a file, if supported.
      
      The default implementation returns zero.
      */
-    virtual mode_t POSIXPermissions(const std::string & path) const { return 0; }
+    virtual mode_t POSIXPermissions(const string & path) const { return 0; }
 #if EPUB_HAVE(ACL)
     /**
      Apply an Access Control List to a file within the archive, if supported.
      
      The default implementation does nothing.
      */
-    virtual void SetACL(const std::string & path, acl_t acl) {}
+    virtual void SetACL(const string & path, acl_t acl) {}
 
     /**
      Retrieve the Access Control List for a file, if supported.
      
      The befault implementation returns `nullptr`.
      */
-    virtual acl_t GetACL(const std::string & path) const { return nullptr; }
+    virtual acl_t GetACL(const string & path) const { return nullptr; }
 #endif    
     /**
      Returns detailed information on a file within the archive.
      @param path The path to an existing file within the archive.
      @result An object containing detailed information on the requested item.
      */
-    virtual ArchiveItemInfo InfoAtPath(const std::string & path) const;
+    virtual ArchiveItemInfo InfoAtPath(const string & path) const;
     
     // scary Ghostbusters Zuul voice: "there is no copy, only move"
     ///
     /// Archive objects cannot be copied.
-    Archive & operator = (const Archive &) = delete;
+    Archive & operator = (const Archive &) _DELETED_;
     ///
     /// Move constructor.
     Archive & operator = (Archive &&) { return *this; }
     
 protected:
     ///
-    /// Archives must always be created through Archive::Open(const std::string&).
+    /// Archives must always be created through Archive::Open(const string&).
     Archive() {}
-    Archive(const std::string & path) : _path(path) {}
-    Archive(const Archive &) = delete;  // copying is not allowed
+    Archive(const string & path) : _path(path) {}
+    Archive(const Archive &) _DELETED_;  // copying is not allowed
     Archive(Archive && o) : _path(std::move(o._path)) {} // moving is allowed
     
-    std::string         _path;      ///< The path to the archive file.
+    string         _path;      ///< The path to the archive file.
     
 };
 
@@ -255,7 +265,7 @@ class ArchiveItemInfo
 public:
     ///
     /// Default constructor
-    ArchiveItemInfo() = default;
+    ArchiveItemInfo() : _path(""), _isCompressed(false), _compressedSize(0), _uncompressedSize(0), _posix(0) {}
     ///
     /// Copy constructor
     ArchiveItemInfo(const ArchiveItemInfo & o) : _path(o._path), _isCompressed(o._isCompressed), _compressedSize(o._compressedSize), _uncompressedSize(o._uncompressedSize), _posix(o._posix) {
@@ -283,7 +293,7 @@ public:
     
     ///
     /// Retrieves the item's p4ath within an archive.
-    virtual std::string Path() const { return _path; }
+    virtual string Path() const { return _path; }
     ///
     /// Whether the item is compressed.
     virtual bool IsCompressed() const { return _isCompressed; }
@@ -302,8 +312,8 @@ public:
     virtual acl_t AccessControlList() const { return _acl; }
 #endif
     
-    virtual void SetPath(const std::string & path) { _path = path; }
-    virtual void SetPath(std::string &&path) { _path = path; }
+    virtual void SetPath(const string & path) { _path = path; }
+    virtual void SetPath(string &&path) { _path = path; }
     virtual void SetIsCompressed(bool flag) { _isCompressed = flag;}
     virtual void SetCompressedSize(size_t size) { _compressedSize = size; }
     virtual void SetUncompressedSize(size_t size) { _uncompressedSize = size; }
@@ -313,7 +323,7 @@ public:
 #endif
     
 protected:
-    std::string                 _path;              ///< The path to the item.
+    string                 _path;              ///< The path to the item.
     bool                        _isCompressed;      ///< Whether the item is compressed.
     size_t                      _compressedSize;    ///< The item's compressed size.
     size_t                      _uncompressedSize;  ///< The item's uncompressed size.
@@ -348,9 +358,9 @@ public:
     virtual ssize_t read(void *p, size_t len) const { return 0; }
     
 protected:
-    ArchiveReader() = default;
-    ArchiveReader(const ArchiveReader &) = delete;
-    ArchiveReader(ArchiveReader &&) = default;
+    ArchiveReader() {}
+    ArchiveReader(const ArchiveReader &) _DELETED_;
+    ArchiveReader(ArchiveReader &&) {}
 };
 
 /**
@@ -376,9 +386,9 @@ public:
     virtual ssize_t write(const void *p, size_t len) { return 0; }
     
 protected:
-    ArchiveWriter() = default;
-    ArchiveWriter(const ArchiveWriter&) = delete;
-    ArchiveWriter(ArchiveWriter&&) = default;
+    ArchiveWriter() {}
+    ArchiveWriter(const ArchiveWriter&) _DELETED_;
+    ArchiveWriter(ArchiveWriter&&) {}
 };
 
 EPUB3_END_NAMESPACE

@@ -3,7 +3,20 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2013-04-08.
-//  Copyright (c) 2013 The Readium Foundation and contributors. All rights reserved.
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
+//  
+//  The Readium SDK is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//  
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//  
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 // Common pieces used by all platforms
@@ -59,9 +72,7 @@ RunLoop::~RunLoop()
 }
 void RunLoop::PerformFunction(std::function<void ()> fn)
 {
-    EventSource* ev = new EventSource([fn](EventSource& __e) {
-        fn();
-    });
+    RefCounted<EventSource> ev(new EventSource([fn](EventSource& __e){fn();}), adopt_ref);
     AddEventSource(ev);
     ev->Signal();
 }
@@ -176,11 +187,11 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
         return ExitReason::RunStopped;
     
     _listLock.lock();
-    
+
+    RunObservers(Observer::ActivityFlags::RunLoopEntry);
+
     do
     {
-        RunObservers(Observer::ActivityFlags::RunLoopEntry);
-        
         RunObservers(Observer::ActivityFlags::RunLoopBeforeWaiting);
         _listLock.unlock();
         _waiting = true;
@@ -216,6 +227,8 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
         }
     
     } while (timeoutTime > system_clock::now());
+
+    RunObservers(Observer::ActivityFlags::RunLoopExit);
     
     _listLock.unlock();
     return reason;
@@ -392,8 +405,8 @@ RunLoop::EventSource::~EventSource()
 RunLoop::EventSource& RunLoop::EventSource::operator=(const EventSource& o)
 {
     _fn = o._fn;
-    if ( ::pipe(_evt) != 0 )
-        throw std::system_error(errno, std::system_category(), "pipe() failed for EventSource");
+    _evt[0] = ::dup(o._evt[0]);
+    _evt[1] = ::dup(o._evt[1]);
     return *this;
 }
 RunLoop::EventSource& RunLoop::EventSource::operator=(EventSource&& o)
