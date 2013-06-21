@@ -24,13 +24,14 @@
 #include <ePub3/spine.h>
 #include "catch.hpp"
 
-#define EPUB_PATH "TestData/page-blanche.epub"
+#define LR_SPREAD_EPUB_PATH "TestData/page-blanche.epub"
+#define NO_SPREAD_EPUB_PATH "TestData/cole-voyage-of-life-20120320.epub"
 
 using namespace ePub3;
 
 TEST_CASE("Page spread comes back correctly", "")
 {
-    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    ContainerPtr c = Container::OpenContainer(LR_SPREAD_EPUB_PATH);
     PackagePtr pkg = c->DefaultPackage();
     
     SpineItemPtr item = pkg->FirstSpineItem();
@@ -38,4 +39,17 @@ TEST_CASE("Page spread comes back correctly", "")
     
     item = item->Next();
     REQUIRE(item->Spread() == PageSpread::Left);
+}
+
+TEST_CASE("Multiple spine item properties should work", "")
+{
+    ContainerPtr c = Container::OpenContainer(NO_SPREAD_EPUB_PATH);
+    PackagePtr pkg = c->DefaultPackage();
+    
+    SpineItemPtr item = pkg->SpineItemWithIDRef("s1b");
+    REQUIRE(bool(item));
+    
+    REQUIRE(item->PropertyMatching("layout", "rendition")->Value() == "pre-paginated");
+    REQUIRE(item->PropertyMatching("orientation", "rendition")->Value() == "landscape");
+    REQUIRE(item->PropertyMatching("spread", "rendition")->Value() == "none");
 }
