@@ -50,6 +50,8 @@ string __lang_from_locale(const std::locale& loc)
     return string(lname);
 }
 
+typedef std::pair<string, string> RenditionPropertyBits;
+
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
 // C++11 FTW
 static std::map<string, DCType> NameToIDMap = {
@@ -88,9 +90,24 @@ static std::map<DCType, string> IDToNameMap = {
     {DCType::Subject, "subject"},
     {DCType::Type, "type"}
 };
+
+static const std::map<string, RenditionPropertyBits> RenditionSplitPropertyLookup = {
+    {"http://www.idpf.org/vocab/rendition/#orientation-landscape", {"orientation", "landscape"}},
+    {"http://www.idpf.org/vocab/rendition/#orientation-portrait", {"orientation", "portrait"}},
+    {"http://www.idpf.org/vocab/rendition/#orientation-auto", {"orientation", "auto"}},
+    {"http://www.idpf.org/vocab/rendition/#layout-reflowable", {"layout", "reflowable"}},
+    {"http://www.idpf.org/vocab/rendition/#layout-pre-paginated", {"layout", "pre-paginated"}},
+    {"http://www.idpf.org/vocab/rendition/#spread-none", {"spread", "none"}},
+    {"http://www.idpf.org/vocab/rendition/#spread-landscape", {"spread", "landscape"}},
+    {"http://www.idpf.org/vocab/rendition/#spread-portrait", {"spread", "portrait"}},
+    {"http://www.idpf.org/vocab/rendition/#spread-both", {"spread", "both"}},
+    {"http://www.idpf.org/vocab/rendition/#spread-auto", {"spread", "auto"}}
+};
 #else
 typedef std::pair<string, DCType> __to_code_pair;
 typedef std::pair<DCType, string> __to_str_pair;
+typedef std::pair<string, RenditionPropertyBits> __to_rendition_pair;
+
 static __to_code_pair __to_code_pairs[16] = {
     __to_code_pair("meta", DCType::Custom),
     __to_code_pair("identifier", DCType::Identifier),
@@ -129,6 +146,20 @@ static __to_str_pair __to_str_pairs[16] = {
     __to_str_pair(DCType::Type, "type")
 };
 static std::map<DCType, string> IDToNameMap(&__to_str_pairs[0], &__to_str_pairs[16]);
+
+static __to_rendition_pair __to_rendition_pairs[10] = {
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#orientation-landscape", RenditionPropertyBits("orientation", "landscape")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#orientation-portrait", RenditionPropertyBits("orientation", "portrait")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#orientation-auto", RenditionPropertyBits("orientation", "auto")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#layout-reflowable", RenditionPropertyBits("layout", "reflowable")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#layout-pre-paginated", RenditionPropertyBits("layout", "pre-paginated")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#spread-none", RenditionPropertyBits("spread", "none")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#spread-landscape", RenditionPropertyBits("spread", "landscape")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#spread-portrait", RenditionPropertyBits("spread", "portrait")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#spread-both", RenditionPropertyBits("spread", "both")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#spread-auto", RenditionPropertyBits("spread", "auto"))
+};
+static std::map<string, RenditionPropertyBits> RenditionSplitPropertyLookup(&__to_rendition_pairs[0], &__to_rendition_pairs[9]);
 #endif
 
 EPUB3_EXPORT
@@ -207,8 +238,19 @@ void Property::SetDCType(DCType type)
 }
 void Property::SetPropertyIdentifier(const IRI& iri)
 {
+    // HACKINESS ALERT !!
+    // *Some* of the properties in the rendition namespace are boolean values whose names contain hyphens.
+    // *Some* others in that namespace are simply-named with a value; the name and the value are separated by a hyphen.
+    // Le sigh...
     _identifier = iri;
     _type = DCTypeFromIRI(iri);
+    
+    auto found = RenditionSplitPropertyLookup.find(iri.URIString());
+    if ( found != RenditionSplitPropertyLookup.end() )
+    {
+        _identifier.SetFragment(found->second.first);
+        SetValue(found->second.second);
+    }
 }
 const string& Property::LocalizedValue(const std::locale& locale) const
 {
