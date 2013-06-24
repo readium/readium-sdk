@@ -317,6 +317,7 @@ public:
     virtual                 ~Package() {}
     
     virtual bool            Open(const string& path);
+    bool                    _OpenForTest(xmlDocPtr doc, const string& basePath);
     
     ///
     /// The full Unique Identifier, built from the package unique-id and the modification date.
@@ -499,7 +500,53 @@ public:
     const string&           Subtitle(bool localized=true)           const;
     
     /**
-     Retrieves the complete title (title and subtitle) of the publication.
+     Retrieves the short-form title of the publication.
+     @param localized Set to `true` (the default) to obtain a localized value if
+     one is available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result The short-form title of the publication.
+     */
+    EPUB3_EXPORT
+    const string&           ShortTitle(bool localized=true)         const;
+    
+    /**
+     Retrieves the collection title of the publication.
+     @param localized Set to `true` (the default) to obtain a localized value if
+     one is available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result The collection title of the publication.
+     */
+    EPUB3_EXPORT
+    const string&           CollectionTitle(bool localized=true)    const;
+    
+    /**
+     Retrieves the edition title of the publication.
+     @param localized Set to `true` (the default) to obtain a localized value if
+     one is available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result The edition title of the publication.
+     */
+    EPUB3_EXPORT
+    const string&           EditionTitle(bool localized=true)       const;
+    
+    /**
+     Retrieves the expanded title of the publication.
+     @param localized Set to `true` (the default) to obtain a localized value if
+     one is available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result The expanded title of the publication.
+     */
+    EPUB3_EXPORT
+    const string&           ExpandedTitle(bool localized=true)      const;
+    
+    /**
+     Retrieves the complete title of the publication.
+     
+     This will return the author-defined expanded title if available, otherwise it
+     will construct a title from either:
+     
+     * All available titles ordered according to their 'display-seq' value.
+     * All available titles in document order.
      @param localized Set to `true` (the default) to obtain a localized value if
      one is available. The localization to use is determined by calling
      PackageBase::Locale().

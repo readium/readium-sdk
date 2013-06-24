@@ -76,7 +76,7 @@ void AsyncByteStream::Open(std::ios::openmode mode)
 ByteStream::size_type AsyncByteStream::ReadBytes(void *buf, size_type len)
 {
     if ( !_readbuf )
-        throw new InvalidDuplexStreamOperationError("Stream not opened for reading");
+        throw InvalidDuplexStreamOperationError("Stream not opened for reading");
     
     size_type result =_readbuf->ReadBytes(reinterpret_cast<uint8_t*>(buf), len);
     if ( result > 0 )
@@ -90,7 +90,7 @@ ByteStream::size_type AsyncByteStream::ReadBytes(void *buf, size_type len)
 ByteStream::size_type AsyncByteStream::WriteBytes(const void *buf, size_type len)
 {
     if ( !_writebuf )
-        throw new InvalidDuplexStreamOperationError("Stream not opened for writing");
+        throw InvalidDuplexStreamOperationError("Stream not opened for writing");
     
     size_type result = _writebuf->WriteBytes(reinterpret_cast<const uint8_t*>(buf), len);
     _event |= DataToWrite;

@@ -40,6 +40,16 @@ class CFI
 {
 public:
     ///
+    /// Value for side-bias for a character location.
+    enum SideBias : uint8_t
+    {
+        Unspecified     = 0,
+        Before,
+        After,
+    };
+    
+public:
+    ///
     /// Create an empty CFI.
                     CFI() : _components(), _rangeStart(), _rangeEnd(), _options(0) {}
     /**
@@ -166,6 +176,10 @@ public:
     CFI             operator+(const string& str)    const   { return CFI(*this).Append(str); }
     
     ///
+    /// Returns the side-bias of a character-offset CFI.
+    SideBias        CharacterSideBias() const _NOEXCEPT     { return _components.back().sideBias; }
+    
+    ///
     /// The exception thrown when an invalid CFI string is encountered.
     class InvalidCFI : public std::logic_error
     {
@@ -228,6 +242,7 @@ protected:
         float           temporalOffset;     ///< The value, in seconds, of any temporal offset.
         Point           spatialOffset;      ///< The value of any spatial offset.
         string          textQualifier;      ///< The content of any character location qualifier.
+        SideBias        sideBias;
         
         ////////////////////////////////////////////////////////////////////////////
         
@@ -236,13 +251,13 @@ protected:
                         Component(const string& str);
         ///
         /// Creates a numeric component with no flags.
-                        Component(uint32_t __nodeIdx=0) : flags(0), nodeIndex(__nodeIdx), qualifier(), characterOffset(0), temporalOffset(), spatialOffset(), textQualifier() {}
+        Component(uint32_t __nodeIdx=0) : flags(0), nodeIndex(__nodeIdx), qualifier(), characterOffset(0), temporalOffset(), spatialOffset(), textQualifier(), sideBias(SideBias::Unspecified) {}
         ///
         /// Copy constructor.
-                        Component(const Component& o) : flags(o.flags), nodeIndex(o.nodeIndex), qualifier(o.qualifier), characterOffset(o.characterOffset), temporalOffset(o.temporalOffset), spatialOffset(o.spatialOffset), textQualifier(o.textQualifier) {}
+                        Component(const Component& o) : flags(o.flags), nodeIndex(o.nodeIndex), qualifier(o.qualifier), characterOffset(o.characterOffset), temporalOffset(o.temporalOffset), spatialOffset(o.spatialOffset), textQualifier(o.textQualifier), sideBias(o.sideBias) {}
         ///
         /// Move constructor.
-                        Component(Component&& o) : flags(o.flags), nodeIndex(o.nodeIndex), qualifier(std::move(o.qualifier)), characterOffset(o.characterOffset), temporalOffset(o.temporalOffset), spatialOffset(o.spatialOffset), textQualifier(std::move(o.textQualifier)) {}
+                        Component(Component&& o) : flags(o.flags), nodeIndex(o.nodeIndex), qualifier(std::move(o.qualifier)), characterOffset(o.characterOffset), temporalOffset(o.temporalOffset), spatialOffset(o.spatialOffset), textQualifier(std::move(o.textQualifier)), sideBias(o.sideBias) {}
                         ~Component() {};
         
         ///
@@ -256,14 +271,14 @@ protected:
         Component&      operator=(Component&& o);
         Component&      operator=(const string& str);
         
-        bool            HasFlag(Flags flag)                 const   { return (flags & flag) == flag; }
-        bool            HasQualifier()                      const   { return HasFlag(Qualifier); }
-        bool            HasCharacterOffset()                const   { return HasFlag(CharacterOffset); }
-        bool            HasTemporalOffset()                 const   { return HasFlag(TemporalOffset); }
-        bool            HasSpatialOffset()                  const   { return HasFlag(SpatialOffset); }
-        bool            IsIndirector()                      const   { return HasFlag(Indirector); }
-        bool            HasTextQualifier()                  const   { return HasFlag(TextQualifier); }
-        bool            HasSpatialTemporalOffset()          const   { return HasFlag(SpatialTemporalOffset); }
+        bool            HasFlag(Flags flag)                 const _NOEXCEPT { return (flags & flag) == flag; }
+        bool            HasQualifier()                      const _NOEXCEPT { return HasFlag(Qualifier); }
+        bool            HasCharacterOffset()                const _NOEXCEPT { return HasFlag(CharacterOffset); }
+        bool            HasTemporalOffset()                 const _NOEXCEPT { return HasFlag(TemporalOffset); }
+        bool            HasSpatialOffset()                  const _NOEXCEPT { return HasFlag(SpatialOffset); }
+        bool            IsIndirector()                      const _NOEXCEPT { return HasFlag(Indirector); }
+        bool            HasTextQualifier()                  const _NOEXCEPT { return HasFlag(TextQualifier); }
+        bool            HasSpatialTemporalOffset()          const _NOEXCEPT { return HasFlag(SpatialTemporalOffset); }
         
     private:
         void            Parse(const string& str);
