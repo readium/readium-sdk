@@ -16,9 +16,9 @@ Please refer to the file HACKING at the root of the project for low-level detail
 * Android Eclipse ADT SDK
 * Android Eclipse NDK Plugin by following this tutorial:
     http://tools.android.com/recent/usingthendkplugin
-* At least run once the following command-line compilation to generate the includes
+* At least run once the `ndk-compile.sh` command-line compilation (see Compilation below) to generate the includes
 * Configure the build command to the following:
-    ndk-build -C . V=1 NDK_APPLICATION_MK=Application.mk NDK_PROJECT_PATH="${workspace_loc:/ePub3-Library/jni}" APP_BUILD_SCRIPT=Android.mk NDK_DEBUG=1
+    `ndk-build -C . V=1 NDK_APPLICATION_MK=Application.mk NDK_PROJECT_PATH="${workspace_loc:/ePub3-Library}" APP_BUILD_SCRIPT=Android.mk NDK_DEBUG=1`
 * Build the ePub3-Library project
 
 ### Compilation

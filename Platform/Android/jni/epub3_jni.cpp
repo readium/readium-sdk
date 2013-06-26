@@ -24,9 +24,29 @@
 #import <ePub3/container.h>
 #include "epub3_jni.h"
 
-int Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring path) {
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+/*
+ * Class:     org_readium_sdk_android_EPub3
+ * Method:    openBook
+ * Signature: (Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring path) {
 	return 0;
 }
 
-void Java_org_readium_sdk_android_EPub3_closeBook(JNIEnv* env, jobject thiz, int handle) {
+/*
+ * Class:     org_readium_sdk_android_EPub3
+ * Method:    closeBook
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_org_readium_sdk_android_EPub3_closeBook(JNIEnv* env, jobject thiz, int handle) {
 }
+
+
+#ifdef __cplusplus
+}
+#endif
