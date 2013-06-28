@@ -20,6 +20,7 @@
 //
 
 #include "../ePub3/ePub/cfi.h"
+#include "../ePub3/utilities/error_handler.h"
 #include "catch.hpp"
 
 using namespace ePub3;
@@ -36,19 +37,39 @@ TEST_CASE("CFIs should be constructable from valid strings", "")
     REQUIRE_NOTHROW(CFI(u"epubcfi(/6/16[夏目漱石]!)"));         // utf-16
     REQUIRE_NOTHROW(CFI(U"epubcfi(/6/16[夏目漱石]!)"));         // utf-32
     
+    REQUIRE_NOTHROW(CFI("epubcfi(/6/4[chap01]!/4/52/3:22[;s=b])"));
+    REQUIRE(CFI("epubcfi(/6/4[chap01]!/4/52/3:22[;s=b])").CharacterSideBias() == CFI::SideBias::Before);
+    
     // invalid strings
-    REQUIRE_THROWS_AS(CFI("6/4"), CFI::InvalidCFI);
-    REQUIRE_THROWS_AS(CFI("/:22"), CFI::InvalidCFI);
-    REQUIRE_THROWS_AS(CFI("epubcfi/6"), CFI::InvalidCFI);
-    REQUIRE_THROWS_AS(CFI("epubcfi()"), CFI::InvalidCFI);
-    REQUIRE_THROWS_AS(CFI(""), CFI::InvalidCFI);
-    REQUIRE_THROWS_AS(CFI("Henry Fitzwilliam"), CFI::InvalidCFI);
-    REQUIRE_THROWS_AS(CFI("/6/4!,1:22"), CFI::InvalidCFI);
-    REQUIRE_THROWS_AS(CFI("/6/4!,/1:22,"), CFI::InvalidCFI);
+    REQUIRE_THROWS_AS(CFI("6/4"), epub_spec_error);
+    REQUIRE_THROWS_AS(CFI("/:22"), epub_spec_error);
+    REQUIRE_THROWS_AS(CFI("epubcfi/6"), epub_spec_error);
+    REQUIRE_THROWS_AS(CFI("epubcfi()"), epub_spec_error);
+    REQUIRE_THROWS_AS(CFI(""), epub_spec_error);
+    REQUIRE_THROWS_AS(CFI("Henry Fitzwilliam"), epub_spec_error);
+    
+    EPUBError expectedErr = EPUBError::NoError;
+    SetErrorHandler([&](const std::runtime_error& err){
+        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
+        if ( epubErr->code().value() == int(expectedErr) )
+            return false;
+        return true;
+    });
+    
+    expectedErr = EPUBError::CFIRangeComponentCountInvalid;
+    REQUIRE_THROWS_AS(CFI("/6/4!,1:22"), epub_spec_error);
+    REQUIRE_THROWS_AS(CFI("/6/4!,/1:22,"), epub_spec_error);
     
     // these should fail, but CFI does not enforce ordering of range delimiters right now
-    REQUIRE_THROWS_AS(CFI("epubcfi(/6/4[chap01]!/4/52,/5:12,/3:22)"), CFI::InvalidCFI);
-    REQUIRE_THROWS_AS(CFI("epubcfi(/6/4[chap01]!/4/52,/5:12,/5:10)"), CFI::InvalidCFI);
+    expectedErr = EPUBError::CFIRangeInvalid;
+    REQUIRE_THROWS_AS(CFI("epubcfi(/6/4[chap01]!/4/52,/5:12,/3:22)"), epub_spec_error);
+    REQUIRE_THROWS_AS(CFI("epubcfi(/6/4[chap01]!/4/52,/5:12,/5:10)"), epub_spec_error);
+    
+    // no side-bias on ranges
+    expectedErr = EPUBError::CFIRangeContainsSideBias;
+    REQUIRE_THROWS_AS(CFI("/6/4[chap01]!/4/52,/3:22,/5/12:3[;s=a]"), epub_spec_error);
+    
+    SetErrorHandler(DefaultErrorHandler);
     
     // are these forms valid or invalid?
     // "epubcfi(/6/4!/4/2/2:20)" -- char index on even-numbered node: is this equivalent to someTag/text():20 ?
@@ -60,8 +81,8 @@ TEST_CASE("Location CFIs should be appendable using valid CFIs and strings; Rang
     
     REQUIRE_NOTHROW(base + CFI("/2/3:5"));
     REQUIRE_NOTHROW(base + string("/2/3:5"));
-    REQUIRE_THROWS_AS(base + CFI(":25"), CFI::InvalidCFI);
-    REQUIRE_THROWS_AS(base + string(":25"), CFI::InvalidCFI);
+    REQUIRE_THROWS_AS(base + CFI(":25"), epub_spec_error);
+    REQUIRE_THROWS_AS(base + string(":25"), epub_spec_error);
     
     REQUIRE_NOTHROW(base += CFI("/2,/3:5,/3:8"));
     REQUIRE(base.IsRangeTriplet());
@@ -75,7 +96,7 @@ TEST_CASE("Location and Range CFIs should be reassignable by CFI or string, even
     CFI base("/6/4");
     
     REQUIRE_NOTHROW(base = "/6/6!");
-    REQUIRE_THROWS_AS(base = "2", CFI::InvalidCFI);
+    REQUIRE_THROWS_AS(base = "2", epub_spec_error);
     REQUIRE(base == CFI("/6/6!"));
     REQUIRE(base == "epubcfi(/6/6!)");
     REQUIRE_FALSE(base == "bob");

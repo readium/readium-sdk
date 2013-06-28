@@ -20,6 +20,7 @@
 //
 
 #include "archive_xml.h"
+#include <ePub3/utilities/error_handler.h>
 #include <sstream>
 
 EPUB3_BEGIN_NAMESPACE
@@ -43,9 +44,9 @@ size_t ArchiveXmlReader::read(uint8_t *buf, size_t len)
     ssize_t r = _reader->read(buf, len);
     if ( r < 0 )
     {
-        std::stringstream s(std::string(__PRETTY_FUNCTION__) + ": ArchiveReader::Read() returned ");
-        s << r;
-        throw std::runtime_error(s.str());
+        std::stringstream s;
+        s << __PRETTY_FUNCTION__ << ": ArchiveReader::Read() returned " << r;
+        HandleError(std::errc::io_error, s.str());
     }
     
     return static_cast<size_t>(r);
