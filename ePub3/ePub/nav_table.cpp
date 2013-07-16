@@ -21,23 +21,29 @@
 
 #include "nav_table.h"
 #include "xpath_wrangler.h"
+#include "package.h"
 
 EPUB3_BEGIN_NAMESPACE
 
 // upside: nice syntax for checking
 // downside: operator[] always creates a new item
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
 static std::map<string, bool> AllowedRootNodeNames = {
     { "nav", true }
 };
+#else
+typedef std::pair<string, bool> __name_pair_t;
+static __name_pair_t __name_pairs[1] = {
+    __name_pair_t("nav", true)
+};
+static std::map<string, bool> AllowedRootNodeNames(&__name_pairs[0], &__name_pairs[1]);
+#endif
 
-NavigationTable::NavigationTable(xmlNodePtr node, const string& sourceHref)
-    : _sourceHref(sourceHref)
+NavigationTable::NavigationTable(shared_ptr<Package>& owner, const string& sourceHref)
+    : OwnedBy(owner), _type(), _title(), _sourceHref(sourceHref)
 {
-    if ( Parse(node) == false )
-        throw std::invalid_argument("NavigationTable: supplied node does not appear to be a valid navigation document <nav> node");
 }
-
-bool NavigationTable::Parse(xmlNodePtr node)
+bool NavigationTable::ParseXML(xmlNodePtr node)
 {
     if ( node == nullptr )
         return false;
@@ -49,8 +55,14 @@ bool NavigationTable::Parse(xmlNodePtr node)
     _type = _getProp(node, "type", ePub3NamespaceURI);
     if ( _type.empty() )
         return false;
-    
+
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(node->doc, {{"epub", ePub3NamespaceURI}}); // goddamn I love C++11 initializer list constructors
+#else
+    XPathWrangler::NamespaceList __ns;
+    __ns["epub"] = ePub3NamespaceURI;
+    XPathWrangler xpath(node->doc, __ns);
+#endif
     xpath.NameDefaultNamespace("html");
     
     // look for optional <h2> title
@@ -71,24 +83,30 @@ bool NavigationTable::Parse(xmlNodePtr node)
         return false;
     }
 
-    LoadChildElements(this, nodes->nodeTab[0]);
+    LoadChildElements(std::enable_shared_from_this<NavigationTable>::shared_from_this(), nodes->nodeTab[0]);
 
     xmlXPathFreeNodeSet(nodes);
     
     return true;
 }
 
-void NavigationTable::LoadChildElements(NavigationElement *pElement, xmlNodePtr olNode)
+void NavigationTable::LoadChildElements(shared_ptr<NavigationElement> pElement, xmlNodePtr olNode)
 {
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(olNode->doc, {{"epub", ePub3NamespaceURI}});
+#else
+    XPathWrangler::NamespaceList __ns;
+    __ns["ePub3"] = ePub3NamespaceURI;
+    XPathWrangler xpath(olNode->doc, __ns);
+#endif
     xpath.NameDefaultNamespace("html");
 
     xmlNodeSetPtr liNodes = xpath.Nodes("./html:li", olNode);
 
-    for ( size_t i = 0; i < liNodes->nodeNr; i++ )
+    for ( int i = 0; i < liNodes->nodeNr; i++ )
     {
-        NavigationElement* childElement = BuildNavigationPoint(liNodes->nodeTab[i]);
-        if(childElement != nullptr)
+        auto childElement = BuildNavigationPoint(liNodes->nodeTab[i]);
+        if ( childElement )
         {
             pElement->AppendChild(childElement);
         }
@@ -97,8 +115,9 @@ void NavigationTable::LoadChildElements(NavigationElement *pElement, xmlNodePtr 
     xmlXPathFreeNodeSet(liNodes);
 }
 
-NavigationElement*  NavigationTable::BuildNavigationPoint(xmlNodePtr liNode)
+shared_ptr<NavigationElement> NavigationTable::BuildNavigationPoint(xmlNodePtr liNode)
 {
+    auto elementPtr = std::dynamic_pointer_cast<NavigationElement>(shared_from_this());
     xmlNodePtr liChild = liNode->children;
 
     if(liChild == nullptr)
@@ -106,7 +125,7 @@ NavigationElement*  NavigationTable::BuildNavigationPoint(xmlNodePtr liNode)
         return nullptr;
     }
 
-    NavigationPoint* point = new NavigationPoint();
+    auto point = std::make_shared<NavigationPoint>(elementPtr);
 
     for ( ; liChild != nullptr; liChild = liChild->next )
     {
@@ -133,7 +152,5 @@ NavigationElement*  NavigationTable::BuildNavigationPoint(xmlNodePtr liNode)
 
     return point;
 }
-
-
 
 EPUB3_END_NAMESPACE

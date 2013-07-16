@@ -22,6 +22,7 @@
 #include "iri.h"
 #include <google-url/url_util.h>
 #include "cfi.h"
+#include "make_unique.h"
 #include REGEX_INCLUDE
 
 EPUB3_BEGIN_NAMESPACE
@@ -39,13 +40,23 @@ inline const url_parse::Component ComponentForString(const string& str)
     return url_parse::Component(0, str.empty() ? -1 : static_cast<int>(str.utf8_size()));
 }
 
-IRI::IRI(const string& iriStr) : _url(new GURL(iriStr.stl_str())), _pureIRI(iriStr)
+IRI::IRI(const string& iriStr) : _url(make_unique<GURL>(iriStr.stl_str())), _pureIRI(iriStr)
 {
 }
-IRI::IRI(const string& nameID, const string& namespacedString) : _urnComponents{gURNScheme, nameID, namespacedString}, _pureIRI(_Str("urn:", nameID, ":", namespacedString)), _url(new GURL(_pureIRI.stl_str()))
+IRI::IRI(const string& nameID, const string& namespacedString) :
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+    _urnComponents{gURNScheme, nameID, namespacedString},
+#endif
+    _pureIRI(_Str("urn:", nameID, ":", namespacedString)),
+    _url(make_unique<GURL>(_pureIRI.stl_str()))
 {
+#if !EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+    _urnComponents.push_back(gURNScheme);
+    _urnComponents.push_back(nameID);
+    _urnComponents.push_back(namespacedString);
+#endif
 }
-IRI::IRI(const string& scheme, const string& host, const string& path, const string& query, const string& fragment) : _urnComponents(), _url(nullptr)
+IRI::IRI(const string& scheme, const string& host, const string& path, const string& query, const string& fragment) : _urnComponents(), _url(make_unique<GURL>())
 {
     _pureIRI = _Str(scheme, "://", host);
     if ( path.empty() )
@@ -60,12 +71,10 @@ IRI::IRI(const string& scheme, const string& host, const string& path, const str
     if ( !fragment.empty() )
         _pureIRI += _Str("#", fragment);
     
-    _url = new GURL(_pureIRI.stl_str());
+    _url = make_unique<GURL>(_pureIRI.stl_str());
 }
 IRI::~IRI()
 {
-    if ( _url != nullptr )
-        delete _url;
 }
 IRI& IRI::operator=(const IRI& o)
 {
@@ -74,14 +83,14 @@ IRI& IRI::operator=(const IRI& o)
     if ( _url != nullptr )
         *_url = *o._url;
     else
-        _url = new GURL(*o._url);
+        _url = make_unique<GURL>(*o._url);
     return *this;
 }
 IRI& IRI::operator=(IRI &&o)
 {
     _urnComponents = std::move(o._urnComponents);
     _pureIRI = std::move(o._pureIRI);
-    _url = o._url;
+    _url = std::move(o._url);
     o._url = nullptr;
     return *this;
 }
@@ -89,6 +98,8 @@ bool IRI::operator==(const IRI &o) const
 {
     if ( IsURN() )
         return _urnComponents == o._urnComponents;
+    else if ( _url == nullptr || o._url == nullptr )
+        return false;
     return *_url == *o._url;
 }
 bool IRI::operator!=(const IRI& o) const
@@ -180,7 +191,7 @@ void IRI::AddPathComponent(const string& component)
     
     if ( !_pureIRI.empty() && !_url->has_query() && !_url->has_ref() )
     {
-        if ( _pureIRI[_pureIRI.size()-1] != U'/' )
+        if ( _pureIRI[_pureIRI.size()-1] != char32_t('/') )
             _pureIRI += '/';
         _pureIRI += component;
     }
@@ -287,6 +298,9 @@ string IRI::IRIString() const
     if ( !_pureIRI.empty() )
         return _pureIRI;
     
+    if ( !_url )
+        return string::EmptyString;
+    
     // we'll have to reverse-engineer it, grr
     string uri(URIString());
     std::string plainHost(_url->host());
@@ -308,6 +322,8 @@ string IRI::IRIString() const
 }
 string IRI::URIString() const
 {
+    if ( !_url )
+        return string::EmptyString;
     return _url->spec();
 }
 

@@ -39,6 +39,13 @@
 
 #include "zipint.h"
 
+#if defined(_MSC_VER)
+# define strdup _strdup
+# define fseeko fseek
+# define ftello ftell
+# define fileno _fileno
+#endif
+
 static struct zip_file *_zip_file_new(struct zip *za);
 
 

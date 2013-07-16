@@ -43,6 +43,11 @@
 # include <codecvt>
 #endif
 
+#if EPUB_PLATFORM(WIN)
+# define strlcat(dst,src,sz) strcat_s(dst,sz,src)
+# define strlcpy(dst,src,sz) strcpy_s(dst,sz,src)
+#endif
+
 #if USING_ICU
 // the only pieces of ICU that we still need
 extern "C" int32_t
@@ -185,7 +190,7 @@ void CXX11CharsetConverter::ConvertFromUTF16(const char16 *input, int input_len,
     
     __conv16::byte_string utf8 = __conv16().to_bytes(input, input+input_len);
     
-    if ( utf8.size() > dest_capacity )
+    if ( static_cast<int>(utf8.size()) > dest_capacity )
         output->Resize(static_cast<int>(begin_offset+utf8.size()));
     
     utf8.copy(&(output->data()[begin_offset]), utf8.size());
@@ -256,7 +261,11 @@ bool IDNToUnicode(const char16* src, int src_len, CanonOutputW* output)
         output->Resize(output->capacity() * 2);
     }
 #else
+#if EPUB_COMPILER_SUPPORTS(CXX_UNICODE_LITERALS)
     if ( src_len > 4 && src[0] == u'x' && src[1] == u'n' && src[2] == u'-' && src[3] == u'-' )
+#else
+    if ( src_len > 4 && src[0] == (char16_t)'x' && src[1] == (char16_t)'n' && src[2] == (char16_t)'-' && src[3] == (char16_t)'-' )
+#endif
         return false;       // it's an ASCII IDN, and we can't convert it
     
     // just copy it over

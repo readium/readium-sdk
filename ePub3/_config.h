@@ -77,6 +77,14 @@
 #define LOCALE_INCLUDE <locale>
 #define LOCALE_NS std
 
+#if !EPUB_COMPILER(CLANG) && !defined(__private_extern__)
+# if EPUB_COMPILER(MSVC)
+#  define __private_extern__ extern
+# else
+#  define __private_extern__ extern __attribute__ ((__visibility__("hidden")))
+# endif
+#endif
+
 #if EPUB_OS(WINDOWS)
 # ifndef EPUB3_EXPORT
 #  ifdef BUILDING_EPUB3
@@ -85,6 +93,8 @@
 #   define EPUB3_EXPORT __declspec(dllimport)
 #  endif
 # endif
+// Windows doesn't define ssize_t it seems
+typedef signed long ssize_t;
 #else
 # define EPUB3_EXPORT
 #endif
@@ -116,11 +126,61 @@
 #endif
 
 #ifndef _LIBCPP_HIDDEN
-# define _LIBCPP_HIDDEN __attribute__ ((__visibility__("hidden")))
+# if EPUB_COMPILER(MSVC)
+#  define _LIBCPP_HIDDEN
+# else
+#  define _LIBCPP_HIDDEN __attribute__ ((__visibility__("hidden")))
+# endif
+#endif
+
+#ifndef FORCE_INLINE
+# if EPUB_COMPILER(MSVC)
+#  define FORCE_INLINE __forceinline
+# else
+#  define FORCE_INLINE __attribute__ ((__visibility__("hidden"), __always_inline__))
+# endif
 #endif
 
 #ifndef _LIBCPP_INLINE_VISIBILITY
-# define _LIBCPP_INLINE_VISIBILITY __attribute__ ((__visibility__("hidden"), __always_inline__))
+# if EPUB_COMPILER(MSVC)
+#  define _LIBCPP_INLINE_VISIBILITY FORCE_INLINE
+# else
+#  define _LIBCPP_INLINE_VISIBILITY FORCE_INLINE
+# endif
+#endif
+
+#if EPUB_COMPILER(MSVC)
+# pragma section(".CRT$XCU",read)
+# define INITIALIZER(f) \
+    static void __cdecl f(void); \
+    __declspec(allocate(".CRT$XCU")) void (__cdecl*f##_)(void) = f; \
+    static void __cdecl f(void)
+#else
+# define INITIALIZER(f) \
+    static void f(void) __attribute__((constructor)); \
+    static void f(void)
+#endif
+
+// MSVC doesn't have this macro
+#ifndef __PRETTY_FUNCTION__
+# define __PRETTY_FUNCTION__ __FUNCTION__
+#endif
+
+#if EPUB_PLATFORM(WIN)
+# define strncasecmp _strnicmp
+# define snprintf(buf,count,fmt,...) _snprintf_s(buf, count, count, fmt, __VA_ARGS__)
+#endif
+
+#if EPUB_COMPILER_SUPPORTS(CXX_DELETED_FUNCTIONS)
+# define _DELETED_ = delete
+#else
+# define _DELETED_
+#endif
+
+#if EPUB_COMPILER_SUPPORTS(CXX_DEFAULT_TEMPLATE_ARGS)
+# define _DEFAULT_(x) = x
+#else
+# define _DEFAULT_(x)
 #endif
 
 #endif

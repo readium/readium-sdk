@@ -144,9 +144,9 @@ include $(CLEAR_VARS)
 subdirs := $(addprefix $(LOCAL_PATH)/, )
 
 LOCAL_MODULE := epub3
-LOCAL_CPPFLAGS := -std=gnu++11 -include prefix.h -fpermissive
-LOCAL_CFLAGS := -std=gnu11 -include prefix.h
-LOCAL_CXXFLAGS := -std=gnu++11 -include prefix.h -fpermissive
+LOCAL_CPPFLAGS := -std=gnu++11 -include prefix.h -fpermissive -DBUILDING_EPUB3
+LOCAL_CFLAGS := -std=gnu11 -include prefix.h -DBUILDING_EPUB3
+LOCAL_CXXFLAGS := -std=gnu++11 -include prefix.h -fpermissive -DBUILDING_EPUB3
 LOCAL_CPP_FEATURES += exceptions rtti
 LOCAL_C_INCLUDES += include
 #		$(LOCAL_PATH)/ePub3 \
@@ -235,7 +235,6 @@ LOCAL_SRC_FILES := \
 		ePub3/ePub/xpath_wrangler.cpp \
 		ePub3/ePub/spine.cpp \
 		ePub3/ePub/manifest.cpp \
-		ePub3/ePub/metadata.cpp \
 		ePub3/ePub/cfi.cpp \
 		ePub3/ePub/nav_point.cpp \
 		ePub3/ePub/nav_table.cpp \
@@ -271,7 +270,13 @@ LOCAL_SRC_FILES := \
 		ePub3/ePub/media_support_info.cpp \
 		ePub3/utilities/byte_stream.cpp \
 		ePub3/utilities/ring_buffer.cpp \
+		ePub3/utilities/ref_counted.cpp \
 		ePub3/utilities/run_loop_android.cpp \
+		ePub3/utilities/epub_locale.cpp \
+		ePub3/utilities/error_handler.cpp \
+		ePub3/ePub/property_holder.cpp \
+		ePub3/ePub/property.cpp \
+		ePub3/ePub/property_extension.cpp \
 		Platform/Android/jni/android/backup_atomics.cpp \
 		Platform/Android/jni/jni_cache_dir.c \
 		Platform/Android/jni/epub3_jni.cpp

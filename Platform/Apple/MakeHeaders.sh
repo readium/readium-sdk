@@ -28,7 +28,7 @@ groups[utf8]=`ls -d1 ePub3/ThirdParty/utf8-cpp/include/*`
 groups[google-url]=`ls -1 ePub3/ThirdParty/google-url/{base,src}/*.h`
 groups[libzip]=`ls -1 ePub3/ThirdParty/libzip/*.h`
 groups[ePub3/xml]=`ls -1 ePub3/xml/**/*.h`
-groups[ePub3/utilities]=`ls -1 ePub3/utilities/*.h`
+groups[ePub3/utilities]=`ls -1 ePub3/utilities/*.{h,inl}`
 groups[ePub3]=`ls -1 ePub3/*.h && ls -1 ePub3/ePub/*.h`
 
 for key in ${(k)groups}

@@ -25,6 +25,8 @@
 #include <ePub3/epub3.h>
 #include <ePub3/utilities/utfstring.h>
 #include <ePub3/utilities/iri.h>
+#include <ePub3/property_holder.h>
+#include <ePub3/utilities/xml_identifiable.h>
 #include <map>
 #include <libxml/tree.h>
 
@@ -35,9 +37,11 @@ class ManifestItem;
 class ArchiveReader;
 class ByteStream;
 
+typedef shared_ptr<ManifestItem>    ManifestItemPtr;
+
 ///
 /// A map of item-ids to manifest items.
-typedef std::map<string, ManifestItem*>    ManifestTable;
+typedef std::map<string, shared_ptr<ManifestItem>>  ManifestTable;
 
 // this should just be an enum, but I'm having an inordinately hard time getting the
 // compiler to let me use it as such
@@ -82,12 +86,12 @@ public:
      Creates a new instance from an XML `properties` attribute string.
      @param attrStr The value of a manifest `item` element's `properties` attribute.
      */
-                    ItemProperties(const string& attrStr);
+    EPUB3_EXPORT    ItemProperties(const string& attrStr);
     /**
      Creates a new instance from a canonical property IRI.
      @param iri The IRI for a single property. This *must* be a manifest item property.
      */
-                    ItemProperties(const IRI& iri);
+    EPUB3_EXPORT    ItemProperties(const IRI& iri);
     /**
      Creates a new instance with a given value (or None).
      @param v The bitfield value representing the property or properties set.
@@ -201,7 +205,9 @@ public:
     /// Cast to a raw bitfield.
     operator        value_type ()                           const   { return _p; }
     ///
-    /// Cast to a string value suitable for use as the `properties` attribute of an XML manifest `item` element.
+    /// Cast to a string value suitable for use as the `properties`
+    /// attribute of an XML manifest `item` element.
+    EPUB3_EXPORT
     string          str()                                   const;
     
     /// @}
@@ -242,52 +248,58 @@ private:
  
  @ingroup epub-model
  */
-class ManifestItem
+class ManifestItem : public std::enable_shared_from_this<ManifestItem>, public OwnedBy<Package>, public PropertyHolder, public XMLIdentifiable
 {
 public:
-    typedef string                  MimeType;
+    typedef string              MimeType;
     
+private:
+                                ManifestItem()                                      _DELETED_;
+                                ManifestItem(const ManifestItem&)                   _DELETED_;
+                        
 public:
-                        ManifestItem()                                      = delete;
-                        ManifestItem(xmlNodePtr node, const Package* owner);
-                        ManifestItem(const ManifestItem&)                   = delete;
-                        ManifestItem(ManifestItem&&);
-    virtual             ~ManifestItem();
+    EPUB3_EXPORT                ManifestItem(const shared_ptr<Package>& owner);
+    EPUB3_EXPORT                ManifestItem(ManifestItem&&);
+    virtual                     ~ManifestItem();
     
-    const Package*      Package()                           const   { return _owner; }
+    virtual bool                ParseXML(shared_ptr<ManifestItem>& sharedMe, xmlNodePtr node);
+
+    EPUB3_EXPORT
+    string                      AbsolutePath()                      const;
     
-    string              AbsolutePath()                      const;
-    
-    const string&       Identifier()                        const   { return _identifier; }
-    const string&       Href()                              const   { return _href; }
-    const MimeType&     MediaType()                         const   { return _mediaType; }
-    const string&       MediaOverlayID()                    const   { return _mediaOverlayID; }
-    const ManifestItem* MediaOverlay()                      const;
-    const string&       FallbackID()                        const   { return _fallbackID; }
-    const ManifestItem* Fallback()                          const;
+    const string&               Identifier()                        const   { return XMLIdentifier(); }
+    const string&               Href()                              const   { return _href; }
+    const MimeType&             MediaType()                         const   { return _mediaType; }
+    const string&               MediaOverlayID()                    const   { return _mediaOverlayID; }
+    EPUB3_EXPORT
+    shared_ptr<ManifestItem>    MediaOverlay()                      const;
+    const string&               FallbackID()                        const   { return _fallbackID; }
+    EPUB3_EXPORT
+    shared_ptr<ManifestItem>    Fallback()                          const;
     
     // strips any query/fragment from the href before returning
-    string              BaseHref()                          const;
+    EPUB3_EXPORT
+    string                      BaseHref()                          const;
     
-    bool                HasProperty(const string& property) const   { return _properties.HasProperty(ItemProperties(property)); }
-    bool                HasProperty(ItemProperties::value_type prop)    const   { return _properties.HasProperty(prop); }
-    bool                HasProperty(const std::vector<IRI>& properties)  const;
+    bool                        HasProperty(const string& property) const   { return _parsedProperties.HasProperty(ItemProperties(property)); }
+    bool                        HasProperty(ItemProperties::value_type prop)    const   { return _parsedProperties.HasProperty(prop); }
+    EPUB3_EXPORT
+    bool                        HasProperty(const std::vector<IRI>& properties)  const;
     
     // one-shot XML document loader
-    xmlDocPtr           ReferencedDocument()                const;
+    EPUB3_EXPORT
+    xmlDocPtr                   ReferencedDocument()                const;
     
     // stream the data
-    Auto<ByteStream>    Reader()                            const;
+    EPUB3_EXPORT
+    unique_ptr<ByteStream>      Reader()                            const;
     
 protected:
-    const class Package*    _owner;
-    
-    string                  _identifier;
     string                  _href;
     MimeType                _mediaType;
     string                  _mediaOverlayID;
     string                  _fallbackID;
-    ItemProperties          _properties;
+    ItemProperties          _parsedProperties;
 };
 
 EPUB3_END_NAMESPACE

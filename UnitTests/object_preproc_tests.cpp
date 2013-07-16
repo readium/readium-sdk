@@ -177,10 +177,10 @@ using namespace ePub3;
 
 TEST_CASE("Normal object tags are left unchanged", "")
 {
-    Container c(EPUB_PATH);
-    const Package* pkg = c.Packages()[0];
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = c->DefaultPackage();
     
-    ObjectPreprocessor proc(pkg);
+    ObjectPreprocessor proc(pkg.get());
     
     size_t outLen = 0;
     char* input = strdup(gNormalObject);
@@ -197,10 +197,10 @@ TEST_CASE("Normal object tags are left unchanged", "")
 
 TEST_CASE("Object tags for bound media should be replaced by iframes and buttons", "")
 {
-    Container c(EPUB_PATH);
-    const Package* pkg = c.Packages()[0];
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = c->DefaultPackage();
     
-    ObjectPreprocessor proc(pkg);
+    ObjectPreprocessor proc(pkg.get());
     
     size_t outLen = 0;
     char* input = strdup(gGalleryObject);
@@ -213,10 +213,10 @@ TEST_CASE("Object tags for bound media should be replaced by iframes and buttons
 
 TEST_CASE("The title of the 'Open Fullscreen' button may be replaced", "")
 {
-    Container c(EPUB_PATH);
-    const Package* pkg = c.Packages()[0];
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = c->DefaultPackage();
     
-    ObjectPreprocessor proc(pkg, "Ouvrir");
+    ObjectPreprocessor proc(pkg.get(), "Ouvrir");
     
     size_t outLen = 0;
     char* input = strdup(gGalleryObject);

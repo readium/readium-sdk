@@ -32,7 +32,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-Auto<Library> Library::_singleton(nullptr);
+unique_ptr<Library> Library::_singleton(nullptr);
 
 Library::Library(const string& path)
 {
@@ -41,16 +41,6 @@ Library::Library(const string& path)
 }
 Library::~Library()
 {
-    for ( auto& item : _packages )
-    {
-        if ( item.second.second != nullptr )
-            delete item.second.second;
-    }
-    for ( auto& item : _containers )
-    {
-        if ( item.second != nullptr )
-            delete item.second;
-    }
 }
 bool Library::Load(const string& path)
 {
@@ -84,7 +74,7 @@ bool Library::Load(const string& path)
             _containers[thisPath] = nullptr;
             for ( auto uid : uidList )
             {
-                _packages[uid] = {thisPath, nullptr};
+                _packages[uid] = std::make_pair(thisPath, nullptr);
             }
         }
         catch (...)
@@ -120,7 +110,7 @@ string Library::PathForEPubWithPackageID(const string &packageID) const
     
     return string::EmptyString;
 }
-void Library::AddPublicationsInContainer(Container* container, const string& path)
+void Library::AddPublicationsInContainer(shared_ptr<Container> container, const string& path)
 {
     // store the container
     auto existing = _containers.find(path);
@@ -130,7 +120,7 @@ void Library::AddPublicationsInContainer(Container* container, const string& pat
     for ( auto pkg : container->Packages() )
     {
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
-        _packages.emplace(pkg->UniqueID(), LookupEntry({path, pkg}));
+        _packages.emplace(pkg->UniqueID(), LookupEntry(std::make_pair(path, pkg)));
 #else
         _packages[pkg->UniqueID()] = LookupEntry({path, pkg});
 #endif
@@ -138,11 +128,11 @@ void Library::AddPublicationsInContainer(Container* container, const string& pat
 }
 void Library::AddPublicationsInContainerAtPath(const ePub3::string &path)
 {
-    Container *p = new Container(path);
-    if ( p != nullptr )
+    ContainerPtr p = Container::OpenContainer(path);
+    if ( p )
         AddPublicationsInContainer(p, path);
 }
-IRI Library::EPubURLForPublication(const Package* package) const
+IRI Library::EPubURLForPublication(shared_ptr<Package> package) const
 {
     return EPubURLForPublicationID(package->UniqueID());
 }
@@ -150,7 +140,7 @@ IRI Library::EPubURLForPublicationID(const string &identifier) const
 {
     return IRI(IRI::gEPUBScheme, identifier, "/");
 }
-Package* Library::PackageForEPubURL(const IRI &url, bool allowLoad)
+shared_ptr<Package> Library::PackageForEPubURL(const IRI &url, bool allowLoad)
 {
     // is it an epub URL?
     if ( url.Scheme() != IRI::gEPUBScheme )
@@ -169,37 +159,37 @@ Package* Library::PackageForEPubURL(const IRI &url, bool allowLoad)
     // returns a package ptr or nullptr
     return entry->second.second;
 }
-IRI Library::EPubCFIURLForManifestItem(const ManifestItem* item) const
+IRI Library::EPubCFIURLForManifestItem(ManifestItemPtr item) const
 {
-    IRI packageURL = EPubURLForPublication(item->Package());
-    packageURL.SetContentFragmentIdentifier(item->Package()->CFIForManifestItem(item));
+    IRI packageURL = EPubURLForPublication(item->Owner());
+    packageURL.SetContentFragmentIdentifier(item->Owner()->CFIForManifestItem(item));
     return packageURL;
 }
-const ManifestItem* Library::ManifestItemForCFI(const IRI &urlWithCFI, CFI* pRemainingCFI)
+shared_ptr<ManifestItem> Library::ManifestItemForCFI(const IRI &urlWithCFI, CFI* pRemainingCFI)
 {
     CFI cfi = urlWithCFI.ContentFragmentIdentifier();
     if ( cfi.Empty() )
         return nullptr;
     
-    const Package* pkg = PackageForEPubURL(urlWithCFI);
+    PackagePtr pkg = PackageForEPubURL(urlWithCFI);
     if ( pkg == nullptr )
         return nullptr;
     
     return pkg->ManifestItemForCFI(cfi, pRemainingCFI);
 }
-Auto<ByteStream> Library::ReadStreamForEPubURL(const IRI &url, CFI *pRemainingCFI)
+unique_ptr<ByteStream> Library::ReadStreamForEPubURL(const IRI &url, CFI *pRemainingCFI)
 {
     CFI cfi = url.ContentFragmentIdentifier();
     if ( cfi.Empty() )
     {
         // it references a content document directly
-        const Package* pkg = PackageForEPubURL(url);
-        if ( pkg != nullptr )
+        PackagePtr pkg = PackageForEPubURL(url);
+        if ( pkg )
             return pkg->ReadStreamForItemAtPath(url.Path());
     }
     else
     {
-        const ManifestItem* item = ManifestItemForCFI(url, pRemainingCFI);
+        ManifestItemPtr item = ManifestItemForCFI(url, pRemainingCFI);
         if ( item != nullptr )
             return item->Reader();
     }
@@ -212,11 +202,11 @@ bool Library::WriteToFile(const string& path) const
     for ( auto item : _containers )
     {
         // works like an auto_ptr, scoping the allocation
-        Container* pContainer = item.second;
+        ContainerPtr pContainer = item.second;
         
-        if ( pContainer == nullptr )
-            pContainer = new Container(item.first);
-        if ( pContainer == nullptr )
+        if ( !pContainer )
+            pContainer = Container::OpenContainer(item.first);
+        if ( !pContainer )
             continue;
         
         stream << item.first;
@@ -226,8 +216,6 @@ bool Library::WriteToFile(const string& path) const
         }
         
         stream << std::endl;
-        if ( pContainer != item.second )
-            delete pContainer;
     }
     
     return true;

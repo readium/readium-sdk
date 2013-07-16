@@ -94,8 +94,8 @@ int OutputBuffer::writeDocument(xmlDocPtr doc)
 size_t StreamInputBuffer::read(uint8_t *buf, size_t len)
 {
     size_t num = 0;
-    if ( (bool)_input )
-        num = _input.readsome(reinterpret_cast<std::istream::char_type*>(buf), len);
+    if ( _input.good() )
+        num = static_cast<size_t>(_input.readsome(reinterpret_cast<std::istream::char_type*>(buf), len));
     return num;
 }
 bool StreamInputBuffer::close()
@@ -106,9 +106,9 @@ bool StreamInputBuffer::close()
 bool StreamOutputBuffer::write(const uint8_t *buffer, size_t len)
 {
     // std::basic_ios::operator bool () is EXPLICIT in C++11/libstdc++
-    if ( (bool)_output )
+    if ( _output.good() )
         _output.write(reinterpret_cast<const std::ostream::char_type*>(buffer), len);
-    return (bool)_output;
+    return _output.good();
 }
 bool StreamOutputBuffer::close()
 {

@@ -20,14 +20,14 @@
 //
 
 #include "glossary.h"
+#include <ePub3/utilities/error_handler.h>
 #include <list>
 
 EPUB3_BEGIN_NAMESPACE
 
 Glossary::Glossary(xmlNodePtr node) : _ident("Glossary")
 {
-    if ( !Parse(node) )
-        throw std::invalid_argument("Node is not a valid glossary");
+    Parse(node);
 }
 const Glossary::Entry Glossary::Lookup(const Term &term) const
 {
@@ -38,12 +38,12 @@ const Glossary::Entry Glossary::Lookup(const Term &term) const
 }
 bool Glossary::AddDefinition(const Term &term, const Definition &definition)
 {
-    _lookup[term.tolower()] = {term, definition};
+    _lookup[term.tolower()] = std::make_pair(term, definition);
     return true;
 }
 bool Glossary::AddDefinition(const Term &term, Definition &&definition)
 {
-    _lookup[term.tolower()] = {term, definition};
+    _lookup[term.tolower()] = std::make_pair(term, definition);
     return true;
 }
 bool Glossary::Parse(xmlNodePtr node)
@@ -56,9 +56,9 @@ bool Glossary::Parse(xmlNodePtr node)
     if ( node == nullptr )
         return false;
     if ( xmlStrcasecmp(node->name, dlName) != 0 )
-        return false;
+        HandleError(EPUBError::GlossaryInvalidRootNode);
     if ( _getProp(node, "type", ePub3NamespaceURI) != "glossary" )
-        return false;
+        HandleError(EPUBError::NavElementUnexpectedType);
     
     // very basic for now: no links, just text content
     // NB: there can be multiple terms for a single definition
@@ -79,7 +79,7 @@ bool Glossary::Parse(xmlNodePtr node)
             Definition def(reinterpret_cast<const char*>(xmlNodeGetContent(child)));
             for ( auto term : terms )
             {
-                _lookup[term.tolower()] = { term, def };
+                _lookup[term.tolower()] = std::make_pair(term, def);
             }
             
             // now clear the terms list

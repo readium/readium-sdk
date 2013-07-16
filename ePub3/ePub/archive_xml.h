@@ -34,19 +34,21 @@ EPUB3_BEGIN_NAMESPACE
 class ArchiveXmlReader : public xml::InputBuffer
 {
 public:
-    ArchiveXmlReader(ArchiveReader * r);
-    ArchiveXmlReader(const ArchiveXmlReader&) = delete;
-    ArchiveXmlReader(ArchiveXmlReader&& o);
+    EPUB3_EXPORT ArchiveXmlReader(ArchiveReader * r);
+    EPUB3_EXPORT ArchiveXmlReader(unique_ptr<ArchiveReader>&& r);
+    EPUB3_EXPORT ArchiveXmlReader(ArchiveXmlReader&& o);
     virtual ~ArchiveXmlReader();
     
-    operator ArchiveReader* () { return _reader; }
-    operator const ArchiveReader* () const { return _reader; }
+    operator ArchiveReader* () { return _reader.get(); }
+    operator const ArchiveReader* () const { return _reader.get(); }
     
 protected:
-    ArchiveReader *     _reader;
+    std::unique_ptr<ArchiveReader>  _reader;
     
     virtual size_t read(uint8_t * buf, size_t len);
     virtual bool close();
+    
+    ArchiveXmlReader(const ArchiveXmlReader&) _DELETED_;
 };
 
 /**
@@ -55,19 +57,21 @@ protected:
 class ArchiveXmlWriter : public xml::OutputBuffer
 {
 public:
-    ArchiveXmlWriter(ArchiveWriter * r);
-    ArchiveXmlWriter(const ArchiveXmlWriter&&) = delete;
-    ArchiveXmlWriter(ArchiveXmlWriter&& o);
+    EPUB3_EXPORT ArchiveXmlWriter(ArchiveWriter * r);
+    EPUB3_EXPORT ArchiveXmlWriter(unique_ptr<ArchiveWriter>&& r);
+    EPUB3_EXPORT ArchiveXmlWriter(ArchiveXmlWriter&& o);
     virtual ~ArchiveXmlWriter();
     
-    operator ArchiveWriter* () { return _writer; }
-    operator const ArchiveWriter* () { return _writer; }
+    operator ArchiveWriter* () { return _writer.get(); }
+    operator const ArchiveWriter* () { return _writer.get(); }
     
 protected:
-    ArchiveWriter *     _writer;
+    unique_ptr<ArchiveWriter>   _writer;
     
     virtual bool write(const uint8_t *p, size_t len);
     virtual bool close();
+    
+    ArchiveXmlWriter(const ArchiveXmlWriter&&) _DELETED_;
 };
 
 EPUB3_END_NAMESPACE
