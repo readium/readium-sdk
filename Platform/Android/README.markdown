@@ -50,3 +50,14 @@ ndk-compile.sh build
 ```
 
 Everything else should be set up appropriately by that script.
+
+### Linux Notes (Ubuntu 13.04 64bit):
+
+
+everything as above for OSX, but
+
+* had problems with lower/upcase for libzip's Config.h -> make it lowercase for
+  Platform/Android/include/libzip/config.h
+  ePub3/ThirdParty/libzip/config.h
+* final linker step failed using the provided libboost_regex.a -> replace with
+  https://github.com/mcxiaoke/boost-ndk/raw/master/boost/android/lib/libboost_regex.a
