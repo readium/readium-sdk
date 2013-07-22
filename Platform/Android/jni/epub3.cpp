@@ -141,7 +141,7 @@ jobject javaEPub3_createStringList(JNIEnv *env) {
  * Calls the java addStringToList method of EPub3 class
  */
 void javaEPub3_addStringToList(JNIEnv *env, jobject list, jstring str) {
-	env->CallStaticObjectMethod(javaEPub3Class,
+	env->CallStaticVoidMethod(javaEPub3Class,
 			addStringToList_ID, list, str);
 }
 
@@ -159,7 +159,7 @@ jobject javaEPub3_createBuffer(JNIEnv *env, jint bufferSize) {
  * Calls the java createBuffer method of EPub3 class
  */
 void javaEPub3_appendBytesToBuffer(JNIEnv *env, jobject buffer, jbyteArray data) {
-	jobject buf = env->CallStaticObjectMethod(javaEPub3Class,
+	jobject buf = env->CallStaticVoidMethod(javaEPub3Class,
 			appendBytesToBuffer_ID, buffer, data);
 }
 
