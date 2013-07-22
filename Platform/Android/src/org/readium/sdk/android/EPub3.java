@@ -22,27 +22,17 @@
 package org.readium.sdk.android;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+
 
 
 /**
  * The ePub3 class implements the interface to the Native
  * ReadiumSDK C++ classes. This stores a reference to the
  * Native object and implements methods to talk with it.
- * 
- * @author Pedro Reis Colaco
  */
 public class EPub3 {
-
-	/*
-     * Private member fields
-     */
-
-	/**
-	 * TODO: Reference to NATIVE object. Don't use directly from
-	 * Java.
-	 */
-	private ByteBuffer __Native;
-
 
 	/*
 	 * Static Native library loader
@@ -52,29 +42,84 @@ public class EPub3 {
         System.loadLibrary("epub3");
 	}
 	
+	
 	/*
-	 * Constructors
+	 * Constants
 	 */
-	public EPub3() {
-		// Initialize private member fields
-		__Native = null; //TODO: Setup native object (TBD)
+
+	//TODO: Is this needed at all?
+	private static final int BUFFER_SIZE_INCREMENT = 2*1024*1024;
+
+	
+	/**
+	 * Private constructor to prevent creating objects
+	 * from this class.
+	 */
+	private EPub3() {}
+	
+	/*
+	 * Methods to be used from native code
+	 */
+	
+	/**
+	 * Helper method to create a new String List.
+	 * @return The newly created String List.
+	 */
+	private static List<String> createStringList() {
+		return new ArrayList<String>();
 	}
 	
-    /*
-     * Native JNI exported methods
-     */
-
 	/**
-	 * Open an epub book.
-	 * @param path Path to the epub book.
-	 * @return A handle to the opened epub book.
+	 * Helper method to add a string to a String List.
+	 * @param list The String List to add to.
+	 * @param str The String to be added.
 	 */
-	public final native int openBook(final String path);
+	private static void addStringToList(List<String> list, String str) {
+		list.add(str);
+	}
 	
 	/**
-	 * Closed a previously openned epub book.
-	 * @param handle The handle to the epub book to close.
+	 * Helper method to create a Buffer.
+	 * @param bufferSize The desired Buffer size.
+	 * @return The newly created Buffer.
 	 */
-    public final native void closeBook(final int handle);
+	private static ByteBuffer createBuffer(int bufferSize) {
+		ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
+		buffer.position(0);
+		buffer.limit(0);
+		return buffer;
+	}
+	
+	/**
+	 * Helper method to append bytes to a Buffer.
+	 * @param buffer The Buffer to append bytes to.
+	 * @param data The data bytes to be appended.
+	 */
+	private static void appendBytesToBuffer(ByteBuffer buffer, byte[] data) {
+		int newLimit = buffer.limit() + data.length;
+		buffer.limit(newLimit);
+		buffer.put(data);
+	}
+	
+	
+    /*
+     * Static native JNI exported methods
+     */
+	
+	/**
+	 * Sets the core ePub3 SDK cache path, where it can
+	 * store temporary files. This needs to be called before
+	 * any ePub3 library calls.
+	 * @param cachePath The cache path obtained from the
+	 * application context.
+	 */
+	public static native void setCachePath(String cachePath);
 
+	/**
+	 * Open an ePub3 book.
+	 * @param path Path to the ePub3 book.
+	 * @return A handle to the opened ePub3 book.
+	 */
+	public static native Container openBook(final String path);
+	
 }

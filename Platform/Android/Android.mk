@@ -162,7 +162,7 @@ LOCAL_C_INCLUDES += ${shell find $(LOCAL_PATH)/ePub3/ePub -type d}
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/Platform/Android/jni \
 		$(LOCAL_PATH)/Platform/Android/jni/android
 LOCAL_STATIC_LIBRARIES := xml2 crypto boost_regex
-LOCAL_LDLIBS := -lz -landroid
+LOCAL_LDLIBS := -lz -landroid -llog
 LOCAL_SRC_FILES := \
 		ePub3/ThirdParty/libzip/mkstemp.c \
 		ePub3/ThirdParty/libzip/zip_add.c \
@@ -278,7 +278,8 @@ LOCAL_SRC_FILES := \
 		ePub3/ePub/property.cpp \
 		ePub3/ePub/property_extension.cpp \
 		Platform/Android/jni/android/backup_atomics.cpp \
-		Platform/Android/jni/jni_cache_dir.c \
-		Platform/Android/jni/epub3_jni.cpp
+		Platform/Android/jni/epub3.cpp \
+		Platform/Android/jni/container.cpp \
+		Platform/Android/jni/package.cpp
 
 include $(BUILD_SHARED_LIBRARY)

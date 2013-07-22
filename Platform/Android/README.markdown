@@ -9,6 +9,8 @@ Please refer to the file HACKING at the root of the project for low-level detail
 * Android NDK release 8e
 * Correct some bugs in NDK 8e by following this tutorial:
     http://developer.appcelerator.com/blog/2013/03/correcting-a-bug-in-the-latest-google-ndk-r8e.html
+* Have "zsh" command shell installed (MacOSX should have it by default)
+* Clone this branch from the readium-sdk repository. All these instructions apply to this branch only.
 * A lot of patience
 
 ### To build and debug in Eclipse
@@ -17,7 +19,9 @@ Please refer to the file HACKING at the root of the project for low-level detail
 * Android Eclipse NDK Plugin by following this tutorial:
     http://tools.android.com/recent/usingthendkplugin
 * At least run once the `ndk-compile.sh` command-line compilation (see Compilation below) to generate the includes
-* Configure the build command to the following:
+* Import the "ePub3-Library" eclipse project from Platform/Android subdirectory:
+    File -> Import... -> Existing Projects into Workspace -> select the subdirectory and the project
+* Configure the build command (as described in the tutorial above) to the following:
     `ndk-build -C . V=1 NDK_APPLICATION_MK=Application.mk NDK_PROJECT_PATH="${workspace_loc:/ePub3-Library}" APP_BUILD_SCRIPT=Android.mk NDK_DEBUG=1`
 * Build the ePub3-Library project
 
