@@ -128,8 +128,9 @@ LOCAL_C_INCLUDES += \
 		$(THIRD_PARTY)/libxml2-android/include \
 		$(ICU_INCLUDE_PATH) \
 		$(LOCAL_PATH)/ePub3 \
-		$(LOCAL_PATH)/Platform/Android/src \
-		$(LOCAL_PATH)/Platform/Android/src/gnucxx-clang
+		$(LOCAL_PATH)/Platform/Android/jni \
+		$(LOCAL_PATH)/Platform/Android/jni/android \
+		$(LOCAL_PATH)/Platform/Android/jni/android/gnucxx-clang
 LOCAL_LDLIBS := -lz -lm
 LOCAL_STATIC_LIBRARIES := icuuc icui18n icuio icudata
 LOCAL_CFLAGS := -include prefix.h
@@ -158,9 +159,10 @@ LOCAL_C_INCLUDES += include
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/ePub3 $(LOCAL_PATH)/ePub3/utilities
 LOCAL_C_INCLUDES += ${shell find $(LOCAL_PATH)/ePub3/xml -type d}
 LOCAL_C_INCLUDES += ${shell find $(LOCAL_PATH)/ePub3/ePub -type d}
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/Platform/Android/src
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/Platform/Android/jni \
+		$(LOCAL_PATH)/Platform/Android/jni/android
 LOCAL_STATIC_LIBRARIES := xml2 crypto boost_regex
-LOCAL_LDLIBS := -lz -landroid
+LOCAL_LDLIBS := -lz -landroid -llog
 LOCAL_SRC_FILES := \
 		ePub3/ThirdParty/libzip/mkstemp.c \
 		ePub3/ThirdParty/libzip/zip_add.c \
@@ -271,9 +273,13 @@ LOCAL_SRC_FILES := \
 		ePub3/utilities/ref_counted.cpp \
 		ePub3/utilities/run_loop_android.cpp \
 		ePub3/utilities/epub_locale.cpp \
+		ePub3/utilities/error_handler.cpp \
 		ePub3/ePub/property_holder.cpp \
 		ePub3/ePub/property.cpp \
 		ePub3/ePub/property_extension.cpp \
-		Platform/Android/src/jni_cache_dir.c
+		Platform/Android/jni/android/backup_atomics.cpp \
+		Platform/Android/jni/epub3.cpp \
+		Platform/Android/jni/container.cpp \
+		Platform/Android/jni/package.cpp
 
 include $(BUILD_SHARED_LIBRARY)
