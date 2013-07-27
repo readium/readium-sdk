@@ -29,7 +29,9 @@
 NDK_PATH="$ANDROID_NDK"
 [[ "$NDK_PATH" == "" && $# == 2 ]] && {
     NDK_PATH="$2"
-} || [[ "$NDK_PATH" == "" ]] && {
+}
+
+[[ "$NDK_PATH" == "" ]] && {
     SHOW_HELP="true"
 }
 
