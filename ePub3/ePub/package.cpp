@@ -869,14 +869,14 @@ const CFI Package::CFIForManifestItem(shared_ptr<ManifestItem> item) const
 {
     CFI result;
     result._components.emplace_back(_spineCFIIndex);
-    result._components.emplace_back(_Str(IndexOfSpineItemWithIDRef(item->Identifier())*2, "[", item->Identifier(), "]!"));
+    result._components.emplace_back(_Str((IndexOfSpineItemWithIDRef(item->Identifier())+1)*2, "[", item->Identifier(), "]!"));
     return result;
 }
 const CFI Package::CFIForSpineItem(shared_ptr<SpineItem> item) const
 {
     CFI result;
     result._components.emplace_back(_spineCFIIndex);
-    result._components.emplace_back(_Str(item->Index()*2, "[", item->Idref(), "]!"));
+    result._components.emplace_back(_Str((item->Index()+1)*2, "[", item->Idref(), "]!"));
     return result;
 }
 shared_ptr<ManifestItem> Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRemainingCFI) const
