@@ -278,6 +278,7 @@ LOCAL_SRC_FILES := \
 		ePub3/ePub/property.cpp \
 		ePub3/ePub/property_extension.cpp \
 		Platform/Android/jni/android/backup_atomics.cpp \
+		Platform/Android/jni/jni_ptr.cpp \
 		Platform/Android/jni/epub3.cpp \
 		Platform/Android/jni/container.cpp \
 		Platform/Android/jni/package.cpp
