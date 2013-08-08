@@ -318,13 +318,22 @@ Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring p
         LOGD("EPub3.openBook(): package added");
     }
 
-	//TODO:test
-	std::string dump = jni::PointerPool::dump();
-	LOGE("openBook(): pointer pool dump: %s", dump.c_str());
+	//TODO: Just for testing dump
+	//std::string dump = jni::PointerPool::dump();
+	//LOGD("openBook(): pointer pool dump: %s", dump.c_str());
 
     RELEASE_UTF8(path, nativePath);
 
 	return jContainer;
+}
+
+/*
+ * Class:     org_readium_sdk_android_EPub3
+ * Method:    releaseNativePointer
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_org_readium_sdk_android_EPub3_releaseNativePointer(JNIEnv* env, jobject thiz, jlong ptr) {
+	jni::PointerPool::del(ptr);
 }
 
 
