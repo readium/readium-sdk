@@ -118,8 +118,24 @@ public class EPub3 {
 	/**
 	 * Open an ePub3 book.
 	 * @param path Path to the ePub3 book.
-	 * @return A handle to the opened ePub3 book.
+	 * @return A Container object corresponding to the opened
+	 * ePub3 book.
 	 */
 	public static native Container openBook(final String path);
+	
+	public static native void releaseNativePointer(final long nativePtr);
+	
+	/*
+	 * Helper java methods for handling native calls
+	 */
+	
+	/**
+	 * Close an ePub3 book.
+	 * @param container The Container object corresponding to
+	 * the ePub3 book to close.
+	 */
+	public static void closeBook(final Container container) {
+		container.close();
+	}
 	
 }
