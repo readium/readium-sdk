@@ -68,10 +68,24 @@ Pointer::Pointer(jlong id) {
 }
 
 /**
- * Returns true if this pointer is nullptr
+ * Returns true if this pointer is nullptr.
  */
 bool Pointer::isNull() {
 	return (_ptr == nullptr);
+}
+
+/**
+ * Returns true if this pointer is unique.
+ */
+bool Pointer::isUnique() {
+	return _ptr.unique();
+}
+
+/**
+ * Returns the current use_count of this pointer.
+ */
+long Pointer::useCount() {
+	return _ptr.use_count();
 }
 
 /**
@@ -176,7 +190,8 @@ jlong PointerPool::add(Pointer ptr) {
 	jlong id = ptr.getId();
 	_pool[id] = ptr;
 
-	LOGD("PointerPool::add(): added pointer '%s' [%X]", ptr.getName().c_str(), id);
+	LOGD("PointerPool::add(): added pointer %llX(%i) %s", id, ptr.useCount(), ptr.getName().c_str());
+	return id;
 }
 
 /**
@@ -186,8 +201,8 @@ Pointer PointerPool::get(jlong id) {
 	auto p = _pool.find(id);
 	if(p != _pool.end()) {
 		Pointer ptr(p->second);
-		LOGD("PointerPool::get(): got pointer '%s' [%X]", ptr.getName().c_str(), id);
 
+		LOGD("PointerPool::get(): got pointer %llX(%i) %s", id, ptr.useCount(), ptr.getName().c_str());
 		return ptr;
 	} else {
 		LOGE("PointerPool::get(): attempting to get non existing pointer from pool");
@@ -205,7 +220,13 @@ void PointerPool::del(jlong id) {
 
 		_pool.erase(p);
 
-		LOGD("PointerPool::del(): deleted pointer '%s' [%X]", ptr.getName().c_str(), id);
+		// Verify that we are deleting a pointer that is unique
+		// without any other copies alive, and raise warning otherwise
+		if(ptr.isUnique()) {
+			LOGD("PointerPool::del(): deleted pointer %llX(%i) %s", id, ptr.useCount(), ptr.getName().c_str());
+		} else {
+			LOGW("PointerPool::del(): deleted non-unique pointer %llX(%i) %s", id, ptr.useCount(), ptr.getName().c_str());
+		}
 	} else {
 		LOGE("PointerPool::del(): attempting to remove non existing pointer from pool");
 	}
@@ -223,10 +244,10 @@ std::string PointerPool::dump() {
 	if(_pool.size() > 0) {
 		dump << _pool.size() << " pointers in the pool:" << std::endl;
 		for(auto p = _pool.begin(); p != _pool.end(); ++p) {
-			auto id = p->first;
-			auto ptr = p->second;
+			jlong id = p->first;
+			Pointer& ptr = p->second;
 			std::string name;
-			if(ptr.getPtr() != nullptr) {
+			if(!ptr.isNull()) {
 				name = ptr.getName();
 				if(name.empty()) {
 					name = "(empty)";
@@ -236,7 +257,7 @@ std::string PointerPool::dump() {
 			}
 			char sid[100];
 			sprintf(sid, "%llX", id);
-			dump << "    " << sid << "(" << ptr.getPtr().use_count() << ")" << " " << name << std::endl;
+			dump << "    " << sid << "(" << ptr.useCount() << ")" << " " << name << std::endl;
 		}
 		return dump.str();
 	} else {

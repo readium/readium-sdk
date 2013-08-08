@@ -42,14 +42,15 @@ class PointerPool;
  * Macro for Pointer name so that it keeps a record of file and
  * line where it came from.
  */
-#define POINTER_GPS(name) name "[" __FILE__ ":" STRINGIZE(__LINE__) "]"
+#define POINTER_GPS(name) name " [" __FILE__ ":" STRINGIZE(__LINE__) "]"
 
 /**
  * Pointer helper class to ease the manipulation of the Pointer
  * pool. When creating an object of this class it's pointer is
  * added automatically to the pool. It also can recycle a previous
  * object by constructing it with the id. Or release it and the
- * pointer is taken out of the pool to be freed.
+ * pointer is taken out of the pool to be freed by C++ smart pointer
+ * architecture when refcount is 0.
  */
 class Pointer {
 
@@ -109,6 +110,16 @@ public:
 	 * Returns true if this pointer is nullptr
 	 */
 	bool isNull();
+
+	/**
+	 * Returns true if this pointer is unique.
+	 */
+	bool isUnique();
+
+	/**
+	 * Returns the current use_count of this pointer.
+	 */
+	long useCount();
 
 	/**
 	 * Gets the id of this pointer.

@@ -63,6 +63,11 @@ public class Container {
      */
     private final List<Package> mPackages;
     
+	/**
+	 * Know when we were closed already.
+	 */
+	private boolean mClosed = false;
+	
     /**
      * Container version
      */
@@ -76,7 +81,7 @@ public class Container {
      */
     private Container(long nativePtr, String path) {
     	// Log creation
-        Log.i(TAG, "Creating container [ptr:" + nativePtr + ", path:" + path + "]");
+        Log.i(TAG, "Creating container [ptr:" + String.format("%X", nativePtr) + ", path:" + path + "]");
     	
         // Setup fields
         __nativePtr = nativePtr;
@@ -84,6 +89,14 @@ public class Container {
         mPackages = new ArrayList<Package>();
     }
     
+	@Override
+	protected void finalize() {
+		// If we are not closed yet?
+		if(!mClosed) {
+			close();
+		}
+	}
+	
     
 	/*
 	 * Methods to be used from native code
@@ -112,6 +125,32 @@ public class Container {
 	/*
 	 * Public methods
 	 */
+	
+	/**
+	 * Closes this container and releases any data of it.
+	 */
+	public void close() {
+		if(!mClosed) {
+	    	// Log closing
+	        Log.i(TAG, "Closing container [ptr:" + String.format("%X", __nativePtr) + ", path:" + mPath + "]");
+	    	
+			// Release the native container
+			// We do this first to avoid warnings coming from the native pointer
+			// pool, due to releasing the native packages pointers while there was
+			// still a native pointer in the container pointing to each package.
+			// This way the native container is disposed completely and then the
+			// packages can be safely disposed without any warning.
+			EPub3.releaseNativePointer(__nativePtr);
+			
+			// Close packages of this container
+			for( Package p : mPackages) {
+				p.close();
+			}
+		} else {
+			// Log error
+			Log.e(TAG, "Closing already closed container [ptr:" + String.format("%X", __nativePtr) + ", path:" + mPath + "]");
+		}
+	}
 	
     /**
      * Returns the native Container pointer.
