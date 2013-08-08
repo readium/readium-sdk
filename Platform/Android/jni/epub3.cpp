@@ -30,6 +30,7 @@
 #include "epub3.h"
 #include "log.h"
 #include "helpers.h"
+#include "jni_ptr.h"
 #include "container.h"
 #include "package.h"
 
@@ -298,24 +299,41 @@ Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring p
 	std::string spath = std::string(nativePath);
 	shared_ptr<ePub3::Container> _container = ePub3::Container::OpenContainer(spath);
 	LOGD("EPub3.openBook(): _container OK, version: %s\n", _container->Version().c_str());
-	currentContainer = _container;	//TODO: Why is this?
 
-	jobject jContainer = javaContainer_createContainer(env, (jlong) &currentContainer, path);
+	// Save container before sending it to Java
+	jni::Pointer container(_container, POINTER_GPS("container"));
+
+	jobject jContainer = javaContainer_createContainer(env, container.getId(), path);
 
     auto packages = _container->Packages();
 
     for (auto packageIt = packages.begin(); packageIt != packages.end(); ++packageIt) {
-    	auto package = &*(&*packageIt);
-        LOGD("EPub3.openBook(): package type: %p %s\n", package, typeid(package).name());
-        currentPckgPtr = *package;	//TODO: Why is this?
+    	auto _package = &*(&*packageIt);
+        LOGD("EPub3.openBook(): package type: %p %s\n", _package, typeid(_package).name());
 
-        javaContainer_addPackageToContainer(env, jContainer, (jint) &currentPckgPtr);
+    	// Save package before sending it to Java
+    	jni::Pointer package(*_package, POINTER_GPS("package"));
+
+        javaContainer_addPackageToContainer(env, jContainer, package.getId());
         LOGD("EPub3.openBook(): package added");
     }
+
+	//TODO: Just for testing dump
+	//std::string dump = jni::PointerPool::dump();
+	//LOGD("openBook(): pointer pool dump: %s", dump.c_str());
 
     RELEASE_UTF8(path, nativePath);
 
 	return jContainer;
+}
+
+/*
+ * Class:     org_readium_sdk_android_EPub3
+ * Method:    releaseNativePointer
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_org_readium_sdk_android_EPub3_releaseNativePointer(JNIEnv* env, jobject thiz, jlong ptr) {
+	jni::PointerPool::del(ptr);
 }
 
 

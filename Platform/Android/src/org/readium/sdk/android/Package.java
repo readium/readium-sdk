@@ -40,8 +40,17 @@ import org.readium.sdk.android.components.navigation.NavigationTable;
 public class Package {
 	private static final String TAG = "Package";
 	
+    /**
+     * Native Package Pointer.
+     * DO NOT USE FROM JAVA SIDE!
+     */
 	private final long __nativePtr;
 
+	/**
+	 * Know when we were closed already.
+	 */
+	private boolean mClosed = false;
+	
 	//TODO: Make all these final changeable only from native code
 	private Container container;
 	private String title;
@@ -75,15 +84,44 @@ public class Package {
 
 
 	private Package(long nativePtr) {
+    	// Log creation
+        Log.i(TAG, "Creating package [ptr:" + String.format("%X", nativePtr) + "]");
+    	
 		__nativePtr = nativePtr;
 //        Log.i(TAG, "package nativePtr: "+nativePtr);
         loadData();
+	}
+	
+	@Override
+	protected void finalize() {
+		// If we are not closed yet?
+		if(!mClosed) {
+			close();
+		}
 	}
 	
 	private static Package createPackage(long nativePtr) {
 		Package pack = new Package(nativePtr);
 		
 		return pack;
+	}
+	
+	/**
+	 * Closes this package and releases any data of it.
+	 */
+	public void close() {
+		if(!mClosed) {
+	    	// Log closing
+	        Log.i(TAG, "Closing package [ptr:" + String.format("%X", __nativePtr) + "]");
+	    	
+			//TODO: cleanup data
+			
+			// Release the native package
+			EPub3.releaseNativePointer(__nativePtr);
+		} else {
+			// Log error
+			Log.e(TAG, "Closing already closed package [ptr:" + String.format("%X", __nativePtr) + "]");
+		}
 	}
 	
 	public void setContainer(Container container) {
