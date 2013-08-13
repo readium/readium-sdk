@@ -24,6 +24,7 @@
 
 #include <ePub3/filter.h>
 #include <ePub3/encryption.h>
+#include <ePub3/container_constructor_parameter.h>
 #include REGEX_INCLUDE
 #include <cstring>
 
@@ -64,6 +65,8 @@ protected:
         return REGEX_NS::regex_match(item->MediaType().stl_str(), TypeCheck);
     }
     
+    static ContentFilter *FontObfuscatorFactory(const ContentFilter::ConstructorParameters *parameters);
+    
 private:
     ///
     /// There is no default constructor.
@@ -78,8 +81,8 @@ public:
      only used during construction.
      @see BuildKey(const Container*)
      */
-    FontObfuscator(const Container* container) : ContentFilter(FontTypeSniffer), _bytesFiltered(0) {
-        BuildKey(container);
+    FontObfuscator(const ContainerConstructorParameter *parameter) : ContentFilter(FontTypeSniffer), _bytesFiltered(0) {
+        BuildKey(parameter->GetContainer());
     }
     ///
     /// Copy constructor.
@@ -101,6 +104,8 @@ public:
      @result The obfuscated or de-obfuscated bytes.
      */
     virtual void * FilterData(void * data, size_t len, size_t *outputLen);
+    
+    static void Register();
     
 protected:
     uint8_t             _key[KeySize];

@@ -255,6 +255,12 @@ bool Package::_OpenForTest(xmlDocPtr doc, const string& basePath)
     _pathBase = basePath;
     return Unpack();
 }
+
+unique_ptr<ArchiveReader> Package::ReaderForRelativePath(const string& path)       const
+{
+    return _archive->ReaderAtPath((_pathBase + path).stl_str(), Owner().get());
+}
+
 bool Package::Unpack()
 {
     PackagePtr sharedMe = shared_from_this();
