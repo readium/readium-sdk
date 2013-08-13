@@ -33,6 +33,8 @@
 #include "font_obfuscation.h"
 #include "container.h"
 #include "package.h"
+#include "filter_manager.h"
+#include "container_constructor_parameter.h"
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -110,6 +112,22 @@ bool FontObfuscator::BuildKey(const Container* container)
     SHA1_Final(_key, &ctx);
 #endif
     return true;
+}
+
+ContentFilter *FontObfuscator::FontObfuscatorFactory(const ContentFilter::ConstructorParameters *parameters)
+{
+    const ContainerConstructorParameter *parameter = dynamic_cast<const ContainerConstructorParameter *>(parameters);
+    if (parameter == nullptr)
+    {
+        return nullptr;
+    }
+    
+    return new FontObfuscator(parameter);
+}
+
+void FontObfuscator::Register()
+{
+    FilterManager::Instance()->RegisterFilter(FontTypeSniffer, FontObfuscatorFactory);
 }
 
 EPUB3_END_NAMESPACE
