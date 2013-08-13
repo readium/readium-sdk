@@ -72,6 +72,8 @@ bool Container::Open(const string& path)
     if ( nodes == nullptr || nodes->nodeNr == 0 )
         return false;
     
+    LoadEncryption();
+    
     for ( int i = 0; i < nodes->nodeNr; i++ )
     {
         xmlNodePtr n = nodes->nodeTab[i];
@@ -88,7 +90,6 @@ bool Container::Open(const string& path)
             _packages.push_back(pkg);
     }
 
-    LoadEncryption();
     return true;
 }
 shared_ptr<Container> Container::OpenContainer(const string &path)

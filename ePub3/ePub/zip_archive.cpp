@@ -37,6 +37,10 @@
 extern "C" char* gAndroidCacheDir;
 #endif
 
+#include "filter_manager.h"
+#include "byte_buffer.h"
+#include "container_constructor_parameter.h"
+
 EPUB3_BEGIN_NAMESPACE
 
 static string GetTempFilePath(const string& ext)
@@ -85,15 +89,20 @@ static string GetTempFilePath(const string& ext)
 class ZipReader : public ArchiveReader
 {
 public:
-    ZipReader(struct zip_file* file) : _file(file) {}
-    ZipReader(ZipReader&& o) : _file(o._file) { o._file = nullptr; }
-    virtual ~ZipReader() { if (_file != nullptr) zip_fclose(_file); }
+    ZipReader(struct zip_file* file, ContentFilter *contentFilter) : ArchiveReader(contentFilter), m_file(file), m_reminderBuffer() {}
+    ZipReader(ZipReader&& o) : ArchiveReader(std::move(o)), m_file(o.m_file), m_reminderBuffer(std::move(o.m_reminderBuffer)) { o.m_file = nullptr; }
+    virtual ~ZipReader() { if (m_file != nullptr) zip_fclose(m_file); }
     
-    virtual bool operator !() const { return _file == nullptr || _file->bytes_left == 0; }
-    virtual ssize_t read(void* p, size_t len) const { return zip_fread(_file, p, len); }
+    virtual bool operator !() const { return m_file == nullptr || m_file->bytes_left == 0; }
+    virtual ssize_t read(void* p, size_t len);
     
 private:
-    struct zip_file * _file;
+    static const size_t c_readBufferSize = 4096;
+    
+    struct zip_file * m_file;
+    unique_ptr<ByteBuffer> m_reminderBuffer;
+    
+    ZipReader(const ZipReader &o) _DELETED_;
 };
 
 class ZipWriter : public ArchiveWriter
@@ -209,7 +218,25 @@ unique_ptr<ArchiveReader> ZipArchive::ReaderAtPath(const string & path) const
     if (file == nullptr)
         return nullptr;
     
-    return unique_ptr<ZipReader>(new ZipReader(file));
+    return unique_ptr<ZipReader>(new ZipReader(file, nullptr));
+}
+unique_ptr<ArchiveReader> ZipArchive::ReaderAtPath(const string &path, Container *container) const
+{
+    if (container == nullptr)
+    {
+        return ReaderAtPath(path);
+    }
+        
+    ContainerConstructorParameter *parameters = new ContainerConstructorParameter(container);
+    ContentFilter *filter = FilterManager::Instance()->GetFilter(nullptr, container->EncryptionInfoForPath(path).get(), parameters);
+    
+    struct zip_file* file = zip_fopen(_zip, Sanitized(path).c_str(), 0);
+    if (file == nullptr)
+    {
+        return nullptr;
+    }
+    
+    return unique_ptr<ZipReader>(new ZipReader(file, filter));
 }
 unique_ptr<ArchiveWriter> ZipArchive::WriterAtPath(const string & path, bool compressed, bool create)
 {
@@ -241,6 +268,35 @@ string ZipArchive::Sanitized(const string& path) const
     if ( path.find('/') == 0 )
         return path.substr(1);
     return path;
+}
+
+ssize_t ZipReader::read(void* p, size_t len)
+{
+    if (m_reminderBuffer && !m_reminderBuffer->IsEmpty())
+    {
+
+        return m_reminderBuffer->MoveTo((unsigned char *)p, len);
+    }
+    
+    unsigned char *readBuffer = new unsigned char[c_readBufferSize];
+    ssize_t readBytes = zip_fread(m_file, readBuffer, c_readBufferSize);
+    if (readBytes < 0)
+    {
+        return readBytes;
+    }
+    
+    if (!m_contentFilter)
+    {
+        m_reminderBuffer.reset(new ByteBuffer(readBuffer, readBytes));
+    }
+    else
+    {
+        size_t outputBufferSize = 0;
+        void *bufferPtr = m_contentFilter->FilterData(readBuffer, readBytes, &outputBufferSize);
+        m_reminderBuffer.reset(new ByteBuffer((unsigned char *)bufferPtr, outputBufferSize));
+    }
+    
+    return m_reminderBuffer->MoveTo((unsigned char *)p, len);
 }
 
 void ZipWriter::DataBlob::Append(const void *data, size_t len)

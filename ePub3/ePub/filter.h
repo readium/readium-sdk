@@ -65,6 +65,20 @@ class Container;
 class ContentFilter
 {
 public:
+    
+    class ConstructorParameters
+    {
+    public:
+        
+        ConstructorParameters(const ConstructorParameters &o) {}
+        ConstructorParameters(ConstructorParameters &&o) {}
+        virtual ~ConstructorParameters() {}
+        
+    protected:
+        
+        ConstructorParameters() {}
+    };
+    
     /**
      The type-sniffer function must match this prototype.
      @param item A ManifestItem to inspect.
@@ -73,6 +87,8 @@ public:
      `false` otherwise.
      */
     typedef std::function<bool(const ManifestItem* item, const EncryptionInfo* encInfo)> TypeSnifferFn;
+    
+    typedef std::function<ContentFilter *(const ConstructorParameters *parameters)> TypeFactoryFn;
     
 private:
     ///

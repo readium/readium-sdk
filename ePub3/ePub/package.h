@@ -29,6 +29,7 @@
 #include <list>
 #include <libxml/tree.h>
 #include <ePub3/utilities/owned_by.h>
+#include <epub3/encryption.h>
 #include <ePub3/spine.h>
 #include <ePub3/manifest.h>
 #include <ePub3/cfi.h>
@@ -455,9 +456,8 @@ public:
     /// @{
     /// @name Raw Data Access
     
-    unique_ptr<ArchiveReader>   ReaderForRelativePath(const string& path)       const {
-        return _archive->ReaderAtPath((_pathBase + path).stl_str());
-    }
+    unique_ptr<ArchiveReader>   ReaderForRelativePath(const string& path)       const;
+    
     unique_ptr<ArchiveXmlReader>    XmlReaderForRelativePath(const string& path)    const {
         return unique_ptr<ArchiveXmlReader>(new ArchiveXmlReader(ReaderForRelativePath(path)));
     }

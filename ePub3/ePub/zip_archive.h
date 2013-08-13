@@ -23,6 +23,7 @@
 #define __ePub3__zip_archive__
 
 #include <ePub3/archive.h>
+#include <ePub3/container.h>
 #include <libzip/zip.h>
 #include <list>
 
@@ -75,6 +76,7 @@ public:
     virtual unique_ptr<ByteStream> ByteStreamAtPath(const string& path) const;
     
     virtual unique_ptr<ArchiveReader> ReaderAtPath(const string & path) const;
+    virtual unique_ptr<ArchiveReader> ReaderAtPath(const string &path, Container *container) const;
     virtual unique_ptr<ArchiveWriter> WriterAtPath(const string & path, bool compress=true, bool create=true);
         
     virtual ArchiveItemInfo InfoAtPath(const string & path) const;

@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1ED0083B17A9B7F800819EBD /* byte_buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED0083A17A9B7F800819EBD /* byte_buffer.cpp */; };
+		1ED0083C17A9B7F800819EBD /* byte_buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED0083A17A9B7F800819EBD /* byte_buffer.cpp */; };
+		1ED0084417A9D6E800819EBD /* filter_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED0084317A9D6E800819EBD /* filter_manager.cpp */; };
+		1ED0084517A9D6E800819EBD /* filter_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED0084317A9D6E800819EBD /* filter_manager.cpp */; };
+		1ED0084817A9DC6F00819EBD /* initialization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED0084717A9DC6F00819EBD /* initialization.cpp */; };
+		1ED0084917A9DC6F00819EBD /* initialization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED0084717A9DC6F00819EBD /* initialization.cpp */; };
+		1EFA3ACB17AB0BEF003A4BC2 /* filter_manager_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EFA3ACA17AB0BEF003A4BC2 /* filter_manager_impl.cpp */; };
+		1EFA3ACC17AB0C7A003A4BC2 /* filter_manager_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EFA3ACA17AB0BEF003A4BC2 /* filter_manager_impl.cpp */; };
 		3418BA7D16C4151E009AA7EF /* ring_buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA88FD116C2B4ED00F2014B /* ring_buffer.cpp */; };
 		850B1AE916A75AC600619C3C /* TestData in CopyFiles */ = {isa = PBXBuildFile; fileRef = 850B1AE816A75AB000619C3C /* TestData */; };
 		A250D0731D530005B0FFF5D5 /* media-overlays_smil_model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250D119DCB804938466E3D6 /* media-overlays_smil_model.cpp */; };
@@ -378,6 +386,15 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1ED0082217A8416C00819EBD /* container_constructor_parameter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = container_constructor_parameter.h; sourceTree = "<group>"; };
+		1ED0083917A9B7A000819EBD /* byte_buffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = byte_buffer.h; sourceTree = "<group>"; };
+		1ED0083A17A9B7F800819EBD /* byte_buffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = byte_buffer.cpp; sourceTree = "<group>"; };
+		1ED0084217A9D4A400819EBD /* filter_manager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = filter_manager.h; sourceTree = "<group>"; };
+		1ED0084317A9D6E800819EBD /* filter_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filter_manager.cpp; sourceTree = "<group>"; };
+		1ED0084617A9DB9800819EBD /* initialization.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = initialization.h; sourceTree = "<group>"; };
+		1ED0084717A9DC6F00819EBD /* initialization.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = initialization.cpp; sourceTree = "<group>"; };
+		1EFA3AC917AB0BC0003A4BC2 /* filter_manager_impl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = filter_manager_impl.h; sourceTree = "<group>"; };
+		1EFA3ACA17AB0BEF003A4BC2 /* filter_manager_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filter_manager_impl.cpp; sourceTree = "<group>"; };
 		850B1AE816A75AB000619C3C /* TestData */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TestData; path = ../../TestData; sourceTree = "<group>"; };
 		A250D0D74FF2AD1AB643D2FA /* media-overlays_smil_data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "media-overlays_smil_data.h"; sourceTree = "<group>"; };
 		A250D119DCB804938466E3D6 /* media-overlays_smil_model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "media-overlays_smil_model.cpp"; sourceTree = "<group>"; };
@@ -924,6 +941,8 @@
 				AB6EEE0317466CAD007E951E /* compressed_pair.h */,
 				AB6EEE0717467A00007E951E /* swap_traits.h */,
 				ABB0459F1754FDD3001274E3 /* make_unique.h */,
+				1ED0083917A9B7A000819EBD /* byte_buffer.h */,
+				1ED0083A17A9B7F800819EBD /* byte_buffer.cpp */,
 			);
 			path = utilities;
 			sourceTree = "<group>";
@@ -934,6 +953,11 @@
 				AB95448016BAD2D200EFD2FD /* Content Preprocessing */,
 				AB6AC71E1684B698000DE924 /* Encryption */,
 				AB6AC7201684B6AD000DE924 /* filter.h */,
+				1ED0082217A8416C00819EBD /* container_constructor_parameter.h */,
+				1ED0084217A9D4A400819EBD /* filter_manager.h */,
+				1ED0084317A9D6E800819EBD /* filter_manager.cpp */,
+				1EFA3AC917AB0BC0003A4BC2 /* filter_manager_impl.h */,
+				1EFA3ACA17AB0BEF003A4BC2 /* filter_manager_impl.cpp */,
 			);
 			name = Filters;
 			sourceTree = "<group>";
@@ -1420,6 +1444,8 @@
 				ABAB94C31666AC4F0018D451 /* Components */,
 				ABAB94BC166560840018D451 /* Archives */,
 				ABAB94BB1665503C0018D451 /* epub3.h */,
+				1ED0084617A9DB9800819EBD /* initialization.h */,
+				1ED0084717A9DC6F00819EBD /* initialization.cpp */,
 			);
 			path = ePub;
 			sourceTree = "<group>";
@@ -1935,8 +1961,12 @@
 				AB976C591738057900AC26CF /* property_holder.cpp in Sources */,
 				AB976C5F17393AD600AC26CF /* epub_locale.cpp in Sources */,
 				AB976C651742D15500AC26CF /* error_handler.cpp in Sources */,
+				1ED0083C17A9B7F800819EBD /* byte_buffer.cpp in Sources */,
+				1ED0084517A9D6E800819EBD /* filter_manager.cpp in Sources */,
 				A250D734238DE7D230862196 /* media-overlays_smil_model.cpp in Sources */,
 				A250D59027FBAC9390F2D39C /* media-overlays_smil_data.cpp in Sources */,
+				1ED0084917A9DC6F00819EBD /* initialization.cpp in Sources */,
+				1EFA3ACC17AB0C7A003A4BC2 /* filter_manager_impl.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2056,8 +2086,12 @@
 				AB976C581738057900AC26CF /* property_holder.cpp in Sources */,
 				AB976C5E17393AD600AC26CF /* epub_locale.cpp in Sources */,
 				AB976C641742D15500AC26CF /* error_handler.cpp in Sources */,
+				1ED0083B17A9B7F800819EBD /* byte_buffer.cpp in Sources */,
+				1ED0084417A9D6E800819EBD /* filter_manager.cpp in Sources */,
 				A250D0731D530005B0FFF5D5 /* media-overlays_smil_model.cpp in Sources */,
 				A250DCD0523C05493141CE3B /* media-overlays_smil_data.cpp in Sources */,
+				1ED0084817A9DC6F00819EBD /* initialization.cpp in Sources */,
+				1EFA3ACB17AB0BEF003A4BC2 /* filter_manager_impl.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2108,8 +2142,10 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
 					"$(SRCROOT)/include",
+					"$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/lib";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -2131,8 +2167,10 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
 					"$(SRCROOT)/include",
+					"$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/lib";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -2211,8 +2249,10 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
 					"$(SRCROOT)/include",
+					"$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/include",
 				);
 				LD_DYLIB_INSTALL_NAME = "$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)";
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/lib";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -2231,8 +2271,10 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
 					"$(SRCROOT)/include",
+					"$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/include",
 				);
 				LD_DYLIB_INSTALL_NAME = "$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)";
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/lib";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
