@@ -27,10 +27,11 @@
 #include <ePub3/archive.h>
 #include <ePub3/container.h>
 
+#include "jni/jni.h"
+
 #include "epub3.h"
 #include "log.h"
 #include "helpers.h"
-#include "jni_ptr.h"
 #include "container.h"
 #include "package.h"
 
