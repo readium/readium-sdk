@@ -24,7 +24,6 @@
 #include <sstream>
 #include <cstdio>
 
-
 #include <jni.h>
 
 #include "jni_ptr.h"

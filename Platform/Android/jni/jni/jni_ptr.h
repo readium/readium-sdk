@@ -20,16 +20,16 @@
 //
 
 
+#ifndef _JNI_JNIPTR_H_
+#define _JNI_JNIPTR_H_
+
+
 #include <memory>
 #include <map>
 
 #include <jni.h>
 
 #include "log.h"
-
-
-#ifndef _JNIPTR_JNI_H_
-#define _JNIPTR_JNI_H_
 
 
 namespace jni {
@@ -164,7 +164,6 @@ public:
 class PointerPool {
 
 private:
-
 	/**
 	 * Internal static pointer pool.
 	 */
@@ -172,7 +171,6 @@ private:
 	static PointerPoolMap _pool;
 
 public:
-
 	/**
 	 * Construct a pointer pool.
 	 */
@@ -211,4 +209,4 @@ public:
 } //namespace JNI
 
 
-#endif //ifndef _JNIPTR_JNI_H_
+#endif //ifndef _JNI_JNIPTR_H_
