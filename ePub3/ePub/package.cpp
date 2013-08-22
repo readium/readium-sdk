@@ -912,7 +912,7 @@ shared_ptr<ManifestItem> Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRema
     {
         if ( (component.nodeIndex % 2) == 1 )
             throw CFI::InvalidCFI("CFI spine item index is odd, which makes no sense for always-empty spine nodes.");
-        SpineItemPtr item = _spine->at(component.nodeIndex/2);
+        SpineItemPtr item = _spine->at((component.nodeIndex/2) - 1);
         
         // check and correct any qualifiers
         item = ConfirmOrCorrectSpineItemQualifier(item, &component);
