@@ -123,6 +123,10 @@ public class EPub3 {
 	 */
 	public static native Container openBook(final String path);
 	
+	/**
+	 * Releases a native pointer from the PointerPool.
+	 * @param nativePtr The native pointer.
+	 */
 	public static native void releaseNativePointer(final long nativePtr);
 	
 	/*

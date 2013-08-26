@@ -200,6 +200,8 @@ public:
 
 	const jchar &operator[] (int i) const { return _resource[i]; }
 	const int length() const { return _env->GetStringLength(_jresource); }
+
+	operator const char *() const { return (const char *)_resource; }
 };
 
 /**

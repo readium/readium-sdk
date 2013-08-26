@@ -29,7 +29,7 @@
 
 #include <jni.h>
 
-#include "log.h"
+#include "jni_log.h"
 
 
 namespace jni {

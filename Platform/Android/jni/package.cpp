@@ -35,7 +35,6 @@
 #include "jni/jni.h"
 
 #include "epub3.h"
-#include "log.h"
 #include "helpers.h"
 #include "package.h"
 
