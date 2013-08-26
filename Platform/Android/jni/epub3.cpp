@@ -30,10 +30,10 @@
 #include "jni/jni.h"
 
 #include "epub3.h"
-#include "log.h"
 #include "helpers.h"
 #include "container.h"
 #include "package.h"
+#include "iri.h"
 
 
 using namespace std;
@@ -102,14 +102,25 @@ static jmethodID addStringToList_ID;
 static jmethodID createBuffer_ID;
 static jmethodID appendBytesToBuffer_ID;
 
-//TODO: Why is this needed? Just to make the refcounting count a copy?
-static shared_ptr<ePub3::Package> currentPckgPtr;
-static shared_ptr<ePub3::Container> currentContainer;
-
 
 /*
  * Exported functions
  **************************************************/
+
+/**
+ * Helper function to get the __nativePtr from the Java object
+ * and translate it to a smart pointer on result.
+ */
+std::shared_ptr<void> getNativePtr(JNIEnv *env, jobject thiz) {
+	// Get the native pointer id
+	jlong id = jni::Field<jlong>(env, thiz, "__nativePtr");
+
+	// Get the smart pointer
+	std::shared_ptr<void> res(jni::Pointer(id).getPtr());
+
+	// Return result
+	return res;
+}
 
 /**
  * Helper function to create a jstring from a native string.
@@ -236,6 +247,12 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
     	return ONLOAD_ERROR;
     }
 
+    // Initialize the cached java elements from package
+    if(onLoad_cacheJavaElements_iri(env) == ONLOAD_ERROR) {
+    	LOGE("JNI_OnLoad(): failed to cache IRI java elements");
+    	return ONLOAD_ERROR;
+    }
+
     // Initialize the rest of the cached java elements that are still in JavaObjectsFactory class
     // TODO: Move all these elements to each respective class and remove these lines
 
@@ -265,7 +282,6 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved) {
 	//TODO: Fill when needed
 }
-
 
 /*
  * Class:     org_readium_sdk_android_EPub3

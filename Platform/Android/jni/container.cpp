@@ -28,7 +28,6 @@
 #include <typeinfo>
 
 #include "epub3.h"
-#include "log.h"
 #include "helpers.h"
 #include "container.h"
 #include "package.h"
