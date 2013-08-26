@@ -173,6 +173,7 @@ public:
 	 */
 	operator Resource() { return get(); }
 	operator const Resource() const { return get(); }
+	operator ResourceHandle() const { return _resource; }
 
 	/**
 	 * Function get() returns the resource

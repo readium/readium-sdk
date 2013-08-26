@@ -84,8 +84,8 @@ struct IntDeclarations {
 struct LongDeclarations {
 	typedef jlong NativeType;
 	typedef jlongArray ArrayType;
-	static const char *signature() { return "L"; }
-	static const char *array_signature() { return "[L"; }
+	static const char *signature() { return "J"; }
+	static const char *array_signature() { return "[J"; }
 };
 
 struct FloatDeclarations {
@@ -207,6 +207,22 @@ struct ObjectDeclarations {
 };
 
 TYPE_DECLARATIONS(Object)
+
+/*
+ * Declaration of Void type.
+ * This is needed by Method<jvoid> for methods returning void.
+ */
+
+typedef void jvoid;
+
+struct VoidDeclarations {
+	typedef jvoid NativeType;
+	typedef jvoid ArrayType;
+	static const char *signature() { return "V"; }
+	static const char *array_signature() { return "V"; }
+};
+
+TYPE_DECLARATIONS(Void)
 
 /*
  * Macros for mapping any JNI type (jint, jintArray, jobject, etc.)

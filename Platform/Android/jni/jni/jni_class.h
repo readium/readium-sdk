@@ -24,7 +24,10 @@
 #define _JNI_JNICLASS_H_
 
 
-#include "jni_types.h"
+#include <jni.h>
+
+#include "jni_exception.h"
+#include "jni_log.h"
 
 
 namespace jni {
@@ -49,21 +52,44 @@ protected:
    
 public:
 	/**
+	 * Default empty constructor
+	 */
+	Class() : _clazz(NULL) { }
+
+	/**
 	 * Construct a Class from full java class name like
 	 * "java/lang/String".
 	 */
 	Class(JNIEnv *env, const char *name) : _clazz(env->FindClass(name)) {
-		if (_clazz == 0)
-			throw Exception("Failed to get a class");
+		if (_clazz != NULL) {
+			LOGD("Class(): found class '%s'", name);
+		} else {
+			LOGE("Class(): couldn't find class '%s'", name);
+		}
 	}
 
 	/**
 	 * Construct a Class from a JNI jobject.
 	 */
 	Class(JNIEnv *env, jobject obj) : _clazz(env->GetObjectClass(obj)) {
-		if (_clazz == 0)
-			throw Exception("Failed to get a class");
+		if (_clazz != NULL) {
+			LOGD("Class(): found class from jobject");
+		} else {
+			LOGE("Class(): couldn't find class from jobject");
+		}
 	}
+
+protected:
+	/**
+	 * Check if empty and throw.
+	 */
+	void throwIfEmpty() const {
+		if(IsEmpty()) {
+			throw Exception("Using empty or invalid Class. Check logcat for details...");
+		}
+	}
+
+public:
 
 	/**
 	 * Construct Class from a JNI jclass.
@@ -74,8 +100,13 @@ public:
 	/**
 	 * Casting operators to JNI jclass
 	 */
-	operator jclass() { return _clazz; }
-	operator const jclass() const { return _clazz; }
+	operator jclass() { throwIfEmpty(); return _clazz; }
+	operator const jclass() const { throwIfEmpty(); return _clazz; }
+
+	/**
+	 * Checks if this class is empty
+	 */
+	bool IsEmpty() const { return _clazz == NULL; }
 };
 
 
