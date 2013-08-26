@@ -20,6 +20,8 @@
 //
 
 
+#include <memory>
+
 #include <jni.h>
 
 
@@ -71,6 +73,12 @@ extern jmethodID addElementToParent_ID;
 /*
  * Exported functions
  **************************************************/
+
+/**
+ * Helper function to get the __nativePtr from the Java object
+ * and translate it to a smart pointer on result.
+ */
+std::shared_ptr<void> getNativePtr(JNIEnv *env, jobject thiz);
 
 /**
  * Helper function to create a jstring from a native string.

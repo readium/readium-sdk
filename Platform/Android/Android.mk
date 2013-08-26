@@ -281,6 +281,7 @@ LOCAL_SRC_FILES := \
 		Platform/Android/jni/jni/jni_ptr.cpp \
 		Platform/Android/jni/epub3.cpp \
 		Platform/Android/jni/container.cpp \
-		Platform/Android/jni/package.cpp
+		Platform/Android/jni/package.cpp \
+		Platform/Android/jni/iri.cpp
 
 include $(BUILD_SHARED_LIBRARY)
