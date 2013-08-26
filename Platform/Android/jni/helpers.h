@@ -26,7 +26,7 @@
 
 #include <jni.h>
 
-#include "log.h"
+#include "jni/jni_log.h"
 
 
 /*

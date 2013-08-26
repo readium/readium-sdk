@@ -53,25 +53,56 @@ namespace jni {
  */
 class GenericFieldId {
 protected:
-	JNIEnv *_env;  // Environment handle for subsequent field manipulation
-	jfieldID _id;  // Field ID
+	JNIEnv *_env;  		// Environment handle for subsequent field manipulation
+	jfieldID _id;  		// Field ID
+	std::string _name;	// Field name
 
-protected:
-	GenericFieldId(JNIEnv *env, jfieldID id) : _env(env), _id(id) {
-		if (_id == 0)
-			throw Exception("Field not found");
+	/**
+	 * Default empty constructor
+	 */
+	GenericFieldId() : _env(NULL), _id(0), _name("") { }
+
+	/**
+	 * Constructor with a jfieldID
+	 */
+	GenericFieldId(JNIEnv *env, jfieldID id, std::string name) : _env(env), _id(id), _name(name) {
+		if (!IsEmpty()) {
+			LOGD("GenericFieldId(): found an id for field '%s'", _name.c_str());
+		} else {
+			LOGE("GenericFieldId(): couldn't find an id for field '%s'", _name.c_str());
+		}
+	}
+
+public:
+	/**
+	 * Checks if this field id is empty
+	 */
+	bool IsEmpty() const { return _id == 0; }
+
+	/**
+	 * Cast to std::string
+	 */
+	operator std::string() const {
+		std::string res;
+		res = _name;
+		return res;
 	}
 };
 
 /**
  * FieldId class implements four ways to construct a field
- * using a class, an object of the class, a class name, or a JNIClass object.
+ * using a class, an object of the class, a class name, or a Class object.
  * The template is suitable for any JNI type, and is subsequently specialized
  * (preinstantiated) for the primitive types.
  */
 template<class JavaType>
 class FieldId : public GenericFieldId {
 public:
+	/**
+	 * Default empty constructor
+	 */
+	FieldId() : GenericFieldId() { }
+
 	/**
 	 * FieldId constructor: given a 'protoClass' (i.e., 'jclass', 'jobject'
 	 * or 'const char *'), obtain the corresponding field id by calling
@@ -82,7 +113,7 @@ public:
 	template<class T>
 	FieldId(JNIEnv *env, T protoClass, const char *name,
 			const char *sig = SIGNATURE_OF(JavaType)) :
-			GenericFieldId(env, env->GetFieldID(JNIClass(env, protoClass), name, sig))
+			GenericFieldId(env, env->GetFieldID(Class(env, protoClass), name, sig), name)
 	{ }
 
 	/**
@@ -101,19 +132,18 @@ public:
  * to facilitate its explicit instantiation for the primitive types.
  * The 'Type' parameter of the template serves an index into the lookup table
  * to retrieve the type-specific declarations.
- *
- * Preprocessor output for the integer primitive type (corresponding
- * to the 'jint' native type) is given in file 'jni_preprocessor.cpp'.
  */
 
 #define FIELD_ID_METHODS(Type)												\
 template<> class FieldId<NATIVE_TYPE(Type)> : public GenericFieldId 		\
 {																			\
 public:																		\
+	FieldId() : GenericFieldId() { }										\
+																			\
 	template<class T>														\
 	FieldId(JNIEnv *env, T protoClass, const char *name) :					\
-			GenericFieldId(env, env->GetFieldID(JNIClass(env, protoClass),	\
-					name, SIGNATURE(Type))) { }								\
+			GenericFieldId(env, env->GetFieldID(Class(env, protoClass),		\
+					name, SIGNATURE(Type)), name) { }						\
 																			\
 	NATIVE_TYPE(Type) Get(jobject obj) const {								\
 		return _env->Get##Type##Field(obj, _id);							\
@@ -136,6 +166,11 @@ INSTANTIATE_FOR_PRIMITIVE_TYPES(FIELD_ID_METHODS)
 template<class JavaType>
 class StaticFieldId : public GenericFieldId {
 public:
+	/**
+	 * Default empty constructor
+	 */
+	StaticFieldId() : GenericFieldId() { }
+
    /**
     * StaticFieldId constructor: given a 'protoClass' (i.e., 'jclass',
     * 'jobject' or 'const char *'), obtain the corresponding static field id
@@ -146,8 +181,8 @@ public:
 	template<class T>
 	StaticFieldId(JNIEnv *env, T protoClass, const char *name,
 			const char *sig = SIGNATURE_OF(JavaType)) :
-			GenericFieldId(env, env->GetStaticFieldID(JNIClass(env, protoClass),
-					name, sig)) { }
+			GenericFieldId(env, env->GetStaticFieldID(Class(env, protoClass),
+					name, sig), name) { }
 
 	/**
 	 * Get and Set utilities
@@ -174,11 +209,13 @@ template<>																	\
 class StaticFieldId<NATIVE_TYPE(Type)> : public GenericFieldId				\
 {																			\
 public:																		\
+	StaticFieldId() : GenericFieldId() { }									\
+																			\
 	template<class T>														\
 	StaticFieldId(JNIEnv *env, T protoClass, const char *name) :			\
 			GenericFieldId(env,												\
-					env->GetStaticFieldID(JNIClass(env, protoClass),		\
-					name, SIGNATURE(Type))) { }								\
+					env->GetStaticFieldID(Class(env, protoClass),			\
+					name, SIGNATURE(Type)), name) { }						\
 																			\
 	NATIVE_TYPE(Type) Get(jclass clazz) const {								\
 		return _env->GetStatic##Type##Field(clazz, _id);					\
@@ -211,6 +248,11 @@ private:
 
 public:
 	/**
+	 * Default empty constructor
+	 */
+	Field() : _obj(NULL), _id() { }
+
+	/**
 	 * Construct a field given a field id and an object.
 	 */
 	Field(FieldId<NativeType> id, jobject obj) : _obj(obj), _id(id) { }
@@ -223,15 +265,28 @@ public:
 
 	/**
 	 * Construct a field given an object and field name (this constructor
-	 * is appropriate for classes that have a JNITypeDeclarations structure).
+	 * is appropriate for classes that have a TypeDeclarations structure).
 	 */
 	Field(JNIEnv *env, jobject obj, const char *name) :
 			_obj(obj), _id(env, obj, name) { }
+
+protected:
+	/**
+	 * Check if empty and throw.
+	 */
+	void throwIfEmpty() const {
+		if(_id.IsEmpty()) {
+			throw Exception("Using empty or invalid Field. Check logcat for details...");
+		}
+	}
+
+public:
 
 	/**
 	 * Assignment operator
 	 */
 	_self &operator= (const _self &rhs) {
+		throwIfEmpty();
 		if (this != &rhs)
 			_id.Set(_obj, rhs.Get(rhs._obj));
 		return *this;
@@ -244,6 +299,7 @@ public:
 	 * converted to Field.
 	 */
 	_self &operator= (const NativeType &rhs) {
+		throwIfEmpty();
 		_id.Set(_obj, rhs);
 		return *this;
 	}
@@ -252,6 +308,7 @@ public:
 	 * Casting to NativeType
 	 */
 	operator NativeType() const {
+		throwIfEmpty();
 		return _id.Get(_obj);
 	}
 };
@@ -267,10 +324,15 @@ class StaticField {
 	typedef StaticField<NativeType> _self;
    
 private:
-	jclass _clazz;					   	// The Java class that hosts the field
-	StaticFieldId<NativeType> _id;	// field id
+	jclass _clazz;					// The Java class that hosts the field
+	StaticFieldId<NativeType> _id;	// Field id
 
 public:
+	/**
+	 * Default empty constructor
+	 */
+	StaticField() : _clazz(NULL), _id() { }
+
 	/**
 	 * Construct a field given a field id and a class
 	 */
@@ -284,23 +346,36 @@ public:
 	template<class T>
 	StaticField(JNIEnv *env, T protoClass, const char *name,
 			const char *sig) :
-			_clazz(JNIClass(env, protoClass)),
-			_id(env, JNIClass(env, protoClass), name, sig) { }
+			_clazz(Class(env, protoClass)),
+			_id(env, Class(env, protoClass), name, sig) { }
 
 	/**
 	 * Construct a field given some object from which a class can be
 	 * constructed, a field name and signature (this constructor is
-	 * appropriate for classes that have a JNITypeDeclarations structure).
+	 * appropriate for classes that have a TypeDeclarations structure).
 	 */
 	template<class T>
 	StaticField(JNIEnv *env, T protoClass, const char *name) :
-			_clazz(JNIClass(env, protoClass)),
-			_id(env, JNIClass(env, protoClass), name) { }
+			_clazz(Class(env, protoClass)),
+			_id(env, Class(env, protoClass), name) { }
+
+protected:
+	/**
+	 * Check if empty and throw.
+	 */
+	void throwIfEmpty() const {
+		if(_id.IsEmpty()) {
+			throw Exception("Using empty or invalid StaticField. Check logcat for details...");
+		}
+	}
+
+public:
 
 	/**
 	 * Assignment operator
 	 */
 	_self &operator= (const _self &rhs) {
+		throwIfEmpty();
 		if (this != &rhs)
 			_id.Set(_clazz, rhs.Get(rhs._clazz));
 		return *this;
@@ -311,6 +386,7 @@ public:
 	 * (note that the operator returns a Field<NativeType> object).
 	 */
 	_self &operator= (const NativeType &rhs) {
+		throwIfEmpty();
 		_id.Set(_clazz, rhs);
 		return *this;
 	}
@@ -319,6 +395,7 @@ public:
 	 * Casting to NativeType
 	 */
 	operator NativeType() const {
+		throwIfEmpty();
 		return _id.Get(_clazz);
 	}
 };
