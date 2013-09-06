@@ -40,8 +40,25 @@ inline const url_parse::Component ComponentForString(const string& str)
     return url_parse::Component(0, str.empty() ? -1 : static_cast<int>(str.utf8_size()));
 }
 
-IRI::IRI(const string& iriStr) : _url(make_unique<GURL>(iriStr.stl_str())), _pureIRI(iriStr)
+void IRI::AddStandardScheme(const string& scheme)
 {
+    url_util::AddStandardScheme(scheme.c_str());
+}
+
+IRI::IRI(const string& iriStr) : _urnComponents(), _url(make_unique<GURL>(iriStr.stl_str())), _pureIRI(iriStr)
+{
+    // is it a URN?
+    if ( iriStr.find("urn:", 0, 4) == 0 )
+    {
+        REGEX_NS::regex reg(":");
+        auto components = iriStr.split(reg);
+        if ( components.size() == 3 )
+        {
+            _urnComponents.push_back(gURNScheme);
+            _urnComponents.push_back(components[1]);
+            _urnComponents.push_back(components[2]);
+        }
+    }
 }
 IRI::IRI(const string& nameID, const string& namespacedString) :
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
@@ -92,6 +109,34 @@ IRI& IRI::operator=(IRI &&o)
     _pureIRI = std::move(o._pureIRI);
     _url = std::move(o._url);
     o._url = nullptr;
+    return *this;
+}
+IRI& IRI::operator=(const string& str)
+{
+    // Support for URN strings
+    bool isURN = false;
+    if ( str.find("urn:", 0, 4) == 0 )
+    {
+        REGEX_NS::regex reg(":");
+        auto components = str.split(reg);
+        if ( components.size() == 3 )
+        {
+            _urnComponents.push_back(gURNScheme);
+            _urnComponents.push_back(components[1]);
+            _urnComponents.push_back(components[2]);
+            isURN = true;
+        }
+    }
+    
+    auto newURL = make_unique<GURL>(str.stl_str());
+    if ( !newURL->is_valid() && !isURN )
+        throw std::invalid_argument(_Str("IRI: '", str, "' is not a valid URL string."));
+    
+    _url = std::move(newURL);
+    _pureIRI = str;
+    if ( !isURN )
+        _urnComponents.clear();
+    
     return *this;
 }
 bool IRI::operator==(const IRI &o) const
@@ -162,6 +207,17 @@ void IRI::SetHost(const string& host)
 {
     url_canon::Replacements<char> rep;
     rep.SetHost(host.c_str(), ComponentForString(host));
+    _url->ReplaceComponentsInline(rep);
+    
+    // can't keep the IRI up to date
+    _pureIRI.clear();
+}
+void IRI::SetPort(uint16_t port)
+{
+    char portStr[6];
+    int len = ::snprintf(portStr, 6, "%hu", port);
+    url_canon::Replacements<char> rep;
+    rep.SetPort(portStr, url_parse::Component(0, len));
     _url->ReplaceComponentsInline(rep);
     
     // can't keep the IRI up to date
