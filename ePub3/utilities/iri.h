@@ -61,6 +61,9 @@ public:
     EPUB3_EXPORT
     static string gEPUBScheme;
     
+    EPUB3_EXPORT
+    static void AddStandardScheme(const string& scheme);
+    
 public:
     ///
     /// Initializes an empty (and thus invalid) IRI.
@@ -124,6 +127,14 @@ public:
     /// Assigns ownership of the value of another IRI (move assignment).
     EPUB3_EXPORT
     IRI&            operator=(IRI&& o);
+    
+    /**
+     Assigns the IRI the value represented by the given string.
+     @param str The IRI string to parse and assign.
+     @throw std::invalid_argument if the input string does not represent a valid IRI.
+     */
+    EPUB3_EXPORT
+    IRI&            operator=(const string& str);
     
     /// @}
     
@@ -239,10 +250,20 @@ public:
     
     /**
      Assigns a host to this IRI.
+     @note The host **must not** contain a port number. Any instance of the
+     characters '`[`', '`]`', or '`:`' will cause the host to be rejected, as these
+     characters are only valid in IPv6-address hostnames such as `[ff:8::1]`.
      @param host The new host component.
      */
     EPUB3_EXPORT
     void            SetHost(const string& host);
+    
+    /**
+     Assigns a port number to this IRI.
+     @param port The new port number.
+     */
+    EPUB3_EXPORT
+    void            SetPort(uint16_t port);
     
     /**
      Sets credentials for this IRI.
