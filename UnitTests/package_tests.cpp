@@ -1004,14 +1004,16 @@ TEST_CASE("Package should be able to create and resolve basic CFIs", "")
 {
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = c->DefaultPackage();
-    size_t spineIdx = arc4random() % pkg->FirstSpineItem()->Count();
+    
+    uint32_t numSpineItems = static_cast<uint32_t>(pkg->FirstSpineItem()->Count());
+    size_t spineIdx = arc4random_uniform(numSpineItems);
     auto spineItem = pkg->SpineItemAt(spineIdx);
     
     // create a mutable CFI
     CFI cfi(pkg->CFIForSpineItem(spineItem));
     REQUIRE_FALSE(cfi.Empty());
     
-    std::string str(_Str("/", pkg->SpineCFIIndex(), "/", spineIdx*2, "[", spineItem->Idref(), "]!"));
+    std::string str(_Str("/", pkg->SpineCFIIndex(), "/", (spineIdx+1)*2, "[", spineItem->Idref(), "]!"));
     REQUIRE(cfi.String() == _Str("epubcfi(", str, ")"));
     REQUIRE(cfi == _Str("epubcfi(", str, ")"));
     
