@@ -68,6 +68,9 @@ extern jmethodID addSpineItemToList_ID;
 extern jmethodID createNavigationTable_ID;
 extern jmethodID createNavigationPoint_ID;
 extern jmethodID addElementToParent_ID;
+extern jmethodID createManifestItemList_ID;
+extern jmethodID createManifestItem_ID;
+extern jmethodID addManifestItemToList_ID;
 
 
 /*
