@@ -21,7 +21,7 @@
 
 package org.readium.sdk.android;
 
-
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -81,6 +81,8 @@ public class Package {
 	private NavigationTable listOfIllustrations;
 	private NavigationTable listOfTables;
 	private NavigationTable pageList;
+
+	private List<ManifestItem> manifestTable;
 
 
 	private Package(long nativePtr) {
@@ -158,6 +160,7 @@ public class Package {
 		listOfIllustrations = nativeGetListOfIllustrations(__nativePtr);
 		listOfTables = nativeGetListOfTables(__nativePtr);
 		pageList = nativeGetPageList(__nativePtr);
+		manifestTable = nativeGetManifestTable(__nativePtr);
 		Log.i(TAG, "package nativePtr: " + __nativePtr);
 		Log.i(TAG, "title: "+title);
 		Log.i(TAG, "subtitle: "+subtitle);
@@ -187,6 +190,7 @@ public class Package {
 		Log.i(TAG, "listOfIllustrations: "+listOfIllustrations);
 		Log.i(TAG, "listOfTables: "+listOfTables);
 		Log.i(TAG, "pageList: "+pageList);
+		Log.i(TAG, "manifestTable: "+manifestTable.size());
 	}
 
 	public long getNativePtr() {
@@ -305,8 +309,41 @@ public class Package {
 		return pageList;
 	}
 
+	/**
+	 * Returns true if a manifest item is found AND its media type is "application/xhtml+xml".
+	 * Returns false otherwise.
+	 * @param relativePath needed to find a manifest item
+	 * @return
+	 */
+	public boolean isHtml(String relativePath) {
+		ManifestItem manifestItem = getManifestItem(relativePath);
+		if (manifestItem != null) {
+			return manifestItem.isHtml();
+		}
+		return false;
+	}
+
+	/**
+	 * Returns a manifest item if one is found.
+	 * Returns null if not found.
+	 * @param relativePath needed to find a manifest item
+	 * @return a manifest item or null
+	 */
+	public ManifestItem getManifestItem(String relativePath) {
+		for (ManifestItem item : manifestTable) {
+			if (relativePath.equals(item.getHref())) {
+				return item;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Fetch the whole file into a byte array.
+	 * @param relativePath the location of the resource to load
+	 * @return the resource as a byte array. If no data is retrieved, the byte array length is 0.
+	 */
 	public byte[] getContent(String relativePath) {
-//		Log.i(TAG, "getContent-nativePtr: "+Integer.toHexString(nativePtr));
 		ByteBuffer buffer = nativeReadStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath);
 		if (buffer == null) {
 			return new byte[0];
@@ -315,8 +352,31 @@ public class Package {
 		System.arraycopy(buffer.array(), 0, content, 0, content.length);
 		return content;
 	}
-	
-	public String toJSON() {
+
+	/**
+	 * Create an InputStream that .
+	 * @param relativePath the location of the resource to load
+	 * @return the InputStream. If no data is retrieved, the InputStream is null.
+	 */
+	public InputStream getInputStream(String relativePath) {
+		return nativeInputStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath);
+	}
+
+	/**
+	 * This method is useful to know the size of a specific resource 
+	 * without having to actually load that resource.
+	 * @param relativePath the location of the resource
+	 * @return the size of the file or -1 if no resource match the path
+	 */
+	public int getArchiveInfoSize(String relativePath) {
+		return nativeGetArchiveInfoSize(__nativePtr, container.getNativePtr(), relativePath);
+	}
+
+	/**
+	 * Convert the package to JSON object.
+	 * @return representation of the package to be consumed by the Readium JS library.
+	 */
+	public JSONObject toJSON() {
 		JSONObject o = new JSONObject();
 		try {
 			o.put("rootUrl", basePath);
@@ -329,11 +389,12 @@ public class Package {
 			spine.put("items", spineArray);
 			spine.put("direction", pageProgressionDirection);
 			o.put("spine", spine);
+			o.put("mediaOverlays", new JSONArray());
 //			Log.i(TAG, "JSON: " + o.toString(2));
 		} catch (JSONException e) {
 			Log.e(TAG, "" + e.getMessage(), e);
 		}
-		return o.toString();
+		return o;
 	}
 
 	/*
@@ -372,11 +433,17 @@ public class Package {
 	private native NavigationTable nativeGetListOfIllustrations(long nativePtr);
 	private native NavigationTable nativeGetListOfTables(long nativePtr);
 	private native NavigationTable nativeGetPageList(long nativePtr);
+	private native List<ManifestItem> nativeGetManifestTable(long nativePtr);
 	
 	/*
 	 * Content 
 	 */
+	private native InputStream nativeInputStreamForRelativePath(long nativePtr, 
+			long containerPtr, String relativePath);
 	private native ByteBuffer nativeReadStreamForRelativePath(long nativePtr, 
+			long containerPtr, String relativePath);
+	
+	private native int nativeGetArchiveInfoSize(long nativePtr, 
 			long containerPtr, String relativePath);
 
 }

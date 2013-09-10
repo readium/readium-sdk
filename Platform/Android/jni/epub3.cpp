@@ -34,6 +34,7 @@
 #include "container.h"
 #include "package.h"
 #include "iri.h"
+#include "resource_stream.h"
 
 
 using namespace std;
@@ -85,6 +86,9 @@ jmethodID addSpineItemToList_ID;
 jmethodID createNavigationTable_ID;
 jmethodID createNavigationPoint_ID;
 jmethodID addElementToParent_ID;
+jmethodID createManifestItemList_ID;
+jmethodID createManifestItem_ID;
+jmethodID addManifestItemToList_ID;
 
 
 /*
@@ -253,6 +257,12 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
     	return ONLOAD_ERROR;
     }
 
+    // Initialize the cached java elements from package
+    if(onLoad_cacheJavaElements_ResourceInputStream(env) == ONLOAD_ERROR) {
+    	LOGE("JNI_OnLoad(): failed to cache ResourceInputStream java elements");
+    	return ONLOAD_ERROR;
+    }
+
     // Initialize the rest of the cached java elements that are still in JavaObjectsFactory class
     // TODO: Move all these elements to each respective class and remove these lines
 
@@ -271,6 +281,13 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 			"createNavigationPoint", "(Ljava/lang/String;Ljava/lang/String;)Lorg/readium/sdk/android/components/navigation/NavigationPoint;", ONLOAD_ERROR);
 	INIT_STATIC_METHOD_ID_RETVAL(addElementToParent_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
 			"addElementToParent", "(Lorg/readium/sdk/android/components/navigation/NavigationElement;Lorg/readium/sdk/android/components/navigation/NavigationElement;)V", ONLOAD_ERROR);
+
+	INIT_STATIC_METHOD_ID_RETVAL(createManifestItemList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
+			"createManifestItemList", "()Ljava/util/List;", ONLOAD_ERROR);
+	INIT_STATIC_METHOD_ID_RETVAL(createManifestItem_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
+			"createManifestItem", "(Ljava/lang/String;Ljava/lang/String;)Lorg/readium/sdk/android/ManifestItem;", ONLOAD_ERROR);
+	INIT_STATIC_METHOD_ID_RETVAL(addManifestItemToList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
+			"addManifestItemToList", "(Ljava/util/List;Lorg/readium/sdk/android/ManifestItem;)V", ONLOAD_ERROR);
 
 	// Return the JNI version this library wants to use
     return JNI_VERSION;
