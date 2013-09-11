@@ -74,9 +74,9 @@ public:
     virtual bool CreateFolder(const string & path);
     
     virtual unique_ptr<ByteStream> ByteStreamAtPath(const string& path) const;
+    virtual unique_ptr<AsyncByteStream> AsyncByteStreamAtPath(const string& path) const;
     
     virtual unique_ptr<ArchiveReader> ReaderAtPath(const string & path) const;
-    virtual unique_ptr<ArchiveReader> ReaderAtPath(const string &path, Container *container) const;
     virtual unique_ptr<ArchiveWriter> WriterAtPath(const string & path, bool compress=true, bool create=true);
         
     virtual ArchiveItemInfo InfoAtPath(const string & path) const;

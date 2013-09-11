@@ -28,6 +28,7 @@
 #include <ios>
 #include <thread>
 #include <ePub3/utilities/run_loop.h>
+#include <ePub3/utilities/make_unique.h>
 
 struct zip;
 struct zip_file;
@@ -59,7 +60,7 @@ public:
     static const size_type          UnknownSize = 0;
     
 public:
-                            ByteStream()                            {}
+                             ByteStream() : _eof(false), _err(0)    {}
     virtual                 ~ByteStream()                           {}
     
 private:
@@ -128,13 +129,13 @@ enum class EPUB3_EXPORT AsyncEvent : uint8_t
     HasBytesAvailable,      ///< There is some data ready to read from the stream.
     HasSpaceAvailable,      ///< There is room in the output buffer to write more data.
     ErrorOccurred,          ///< An error occurred. Call ByteStream::Error() for details.
-    EndEncountered          ///< The end of a finite-length stream was encountered; no more data is available.
+    EndEncountered          ///< The end of a finite-length stream was encountered; no more data is available. Also posted when a pipe stream is closed.
 };
 
 class AsyncByteStream;
 ///
 /// The type of an asynchronous stream's event-handler function.
-#if EPUB_COMPILER_SUPPORTS(ALIAS_TEMPLATES)
+#if EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES)
 using StreamEventHandler = std::function<void(AsyncEvent, AsyncByteStream*)>;
 #else
 typedef std::function<void(AsyncEvent, AsyncByteStream*)> StreamEventHandler;
@@ -176,6 +177,18 @@ protected:
     ///
     /// Data has been written to the stream and can be written to the resource now.
     static const ThreadEvent    DataToWrite             = 1 << 1;
+    ///
+    /// An exceptional circumstance has occurred (EOF, error)
+    static const ThreadEvent    Exceptional             = 1 << 2;
+    
+public:
+    ///
+    /// Timeouts are expressed as seconds in floating-point (as in OS X/iOS)
+    typedef std::chrono::duration<double>   timeout_type;
+    
+    ///
+    /// The type of a callback used to notify assignment to a runloop.
+    typedef std::function<void(RunLoopPtr, AsyncByteStream*)> StreamScheduledHandler;
     
 public:
     /**
@@ -200,10 +213,14 @@ private:
 public:
     ///
     /// Retrieve the stream's event-handler function.
-    StreamEventHandler          GetEventHandler()                   const           { return _eventHandler; }
+    StreamEventHandler          GetEventHandler()                   const _NOEXCEPT { return _eventHandler; }
     ///
     /// Assign an event-handler to an asynchronous stream.
-    void                        SetEventHandler(StreamEventHandler handler)         { _eventHandler = handler; }
+    void                        SetEventHandler(StreamEventHandler handler) _NOEXCEPT { _eventHandler = handler; }
+    
+    ///
+    /// Synchronously wait for an event to occur.
+    AsyncEvent                  WaitNextEvent(timeout_type timeout=timeout_type::max());
     
     /**
      Retrieve the RunLoop on which the event-handler will be invoked.
@@ -211,10 +228,21 @@ public:
      If no RunLoop has been assigned, the event-handler will be invoked from the
      shared I/O thread directly.
      */
-    RunLoop*                    EventTargetRunLoop()                const           { return _targetRunLoop; }
+    virtual RunLoopPtr            EventTargetRunLoop()                const _NOEXCEPT { return _targetRunLoop; }
     ///
     /// Assign a RunLoop on which to invoke the event-handler.
-    void                        SetTargetRunLoop(RunLoop* rl)                       { _targetRunLoop = rl; }
+    virtual void                SetTargetRunLoop(RunLoopPtr rl)             _NOEXCEPT;
+    
+    ///
+    /// Retrieve the runloop-assignment callback.
+    StreamScheduledHandler      GetScheduledHandler()               const _NOEXCEPT {
+        return _streamScheduled;
+    }
+    ///
+    /// Assign a handler function to be called when the stream is scheduled on a runloop.
+    void                        SetScheduledHandler(StreamScheduledHandler handler) _NOEXCEPT {
+        _streamScheduled = handler;
+    }
     
     ///
     /// @copydoc ByteStream::BytesAvailable()
@@ -257,22 +285,36 @@ public:
     
 private:
     size_type                   _bufsize;           ///< The size of the read/write data buffers.
-    shared_ptr<RingBuffer>          _readbuf;           ///< The read buffer, if opened for reading.
-    shared_ptr<RingBuffer>          _writebuf;          ///< The write buffer, if opened for writing.
+    shared_ptr<RingBuffer>      _readbuf;           ///< The read buffer, if opened for reading.
+    shared_ptr<RingBuffer>      _writebuf;          ///< The write buffer, if opened for writing.
     StreamEventHandler          _eventHandler;      ///< The event-handler function to notify of stream status changes.
     
     static std::thread          _asyncIOThread;     ///< The shared async I/O thread.
-    static RunLoop*             _asyncRunLoop;      ///< The shared I/O thread's run loop, to which streams will attach.
+    static RunLoopPtr           _asyncRunLoop;      ///< The shared I/O thread's run loop, to which streams will attach.
+    static std::atomic_flag     _asyncInited;       ///< Set when the async thread is live, unset otherwise.
     
-    RunLoop::EventSource*       _eventSource;       ///< The event source used to communicate with the shared I/O thread.
+    RunLoop::EventSourcePtr     _eventSource;       ///< The event source used to communicate with the shared I/O thread.
     std::atomic<ThreadEvent>    _event;             ///< The internal event bitmask. @see ThreadEvent.
-    RunLoop*                    _targetRunLoop;     ///< The runloop on which this stream should post status events.
+    RunLoopPtr                  _targetRunLoop;     ///< The runloop on which this stream should post status events.
+    RunLoop::EventSourcePtr     _eventDispatchSource;   ///< The source used to post events to _targetRunLoop.
+    
+    StreamScheduledHandler      _streamScheduled;   ///< A callback to invoke when _targetRunLoop is assigned.
+    
+    // The AsyncPipe class wants to assign the buffers itself.
+    friend class AsyncPipe;
     
 protected:
     ///
     /// Called by subclasses to initialize the asynchronous event handler and RunLoop.
     /// @throw std::logic_error if this stream has already set up its RunLoop::EventSource.
     virtual void                InitAsyncHandler();
+    ///
+    /// Subclasses can override this to return their own EventSource. AsyncByteStream's
+    /// implementation uses read_for_async() and write_for_async().
+    virtual RunLoop::EventSourcePtr AsyncEventSource();
+    ///
+    /// Subclasses can implement this to return an event-dispatch source.
+    virtual RunLoop::EventSourcePtr EventDispatchSource();
     ///
     /// Implemented by subclasses to synchronously read data from the underlying resource.
     /// @see ByteStream::ReadBytes(void*, size_type)
@@ -281,6 +323,72 @@ protected:
     /// Implemented by subclasses to synchronously write data to the underlying resource.
     /// @see ByteStream::WriteBytes(const void*, size_type)
     virtual size_type           write_for_async(const void* buf, size_type len) = 0;
+    
+    ///
+    /// Used to prod the event source for this stream into action (if appropriate) when
+    /// the stream is assigned to a runloop.
+    void                        ReadyToRun();
+};
+
+/**
+ A concrete AsyncByteStream subclass, providing a Unix-like bidirectional pipe.
+ 
+ Pipes are created only through the Pair() static function. This returns a pair of
+ streams which share their buffers, in reverse order. In other words, stream A's
+ read-buffer is also stream B's write-buffer, and vice versa.
+ @ingroup utilities
+ */
+class AsyncPipe : public AsyncByteStream
+{
+public:
+    typedef std::pair<std::shared_ptr<AsyncPipe>, std::shared_ptr<AsyncPipe>> Pair;
+    
+    ///
+    /// Create a pair of linked pipes. Writes to one will be available to read on the other.
+    static Pair LinkedPair(size_type bufsize=4096);
+    
+    // The real constructor should be considered protected. Use Pair() to get a pipe.
+    AsyncPipe(size_type bufsize=4096) : AsyncByteStream(bufsize), _counterpart(nullptr), _self_closed(false), _pair_closed(false) {}
+    ~AsyncPipe();
+    
+private:
+    AsyncPipe(const AsyncPipe&)                 _DELETED_;
+    AsyncPipe(AsyncPipe&&)                      _DELETED_;
+    AsyncPipe&                  operator=(const AsyncPipe&)               _DELETED_;
+    AsyncPipe&                  operator=(AsyncPipe&&)                    _DELETED_;
+    
+protected:
+    ///
+    /// This is not callable by those on the outside...
+    virtual void Open(std::ios::openmode mode=std::ios::in|std::ios::out) {
+        _self_closed = false;
+        AsyncByteStream::Open(mode);
+    }
+    
+public:
+    virtual void                Close() OVERRIDE;
+    
+    virtual bool                IsOpen() const _NOEXCEPT OVERRIDE { return !_self_closed; }
+    
+    virtual void                SetTargetRunLoop(RunLoopPtr rl) _NOEXCEPT OVERRIDE;
+    
+    virtual size_type           ReadBytes(void* buf, size_type len) OVERRIDE;
+    virtual size_type           WriteBytes(const void* buf, size_type len) OVERRIDE;
+    
+protected:
+    AsyncPipe*                  _counterpart;
+    bool                        _self_closed;
+    bool                        _pair_closed;
+    
+    // These do nothing here -- all the action is in this class's implementation of
+    //  InitAsyncHandler()
+    virtual size_type read_for_async(void* buf, size_type len);
+    virtual size_type write_for_async(const void* buf, size_type len);
+    
+    virtual RunLoop::EventSourcePtr AsyncEventSource();
+    
+    virtual void                CounterpartClosed();
+    
 };
 
 /**
@@ -423,6 +531,11 @@ public:
     ///
     /// Create a new unattached stream.
                             AsyncFileByteStream() : AsyncByteStream(), FileByteStream() {}
+    
+    ///
+    /// Create a new stream attached to a filesystem resource and no event handler.
+                            AsyncFileByteStream(size_type bufsize=4096) : AsyncByteStream(bufsize), FileByteStream() {}
+    
     ///
     /// Create a new unattached stream with a given event-handler.
     /// @see AsyncByteStream::AsyncByteStream(StreamEventHandler,size_type)
@@ -431,8 +544,8 @@ public:
     /// Create a new stream attached to a filesystem resource with an event-handler.
     /// @see AsyncByteStream::AsyncByteStream(StreamEventHandler,size_type)
     /// @see FileByteStream::FileByteStream(const string&,std::ios::openmode)
-                            AsyncFileByteStream(StreamEventHandler handler, const string& path, std::ios::openmode mode = std::ios::in | std::ios::out, size_type bufsize=4096) : AsyncByteStream(handler, bufsize), FileByteStream(path, mode) {}
-    virtual                 ~AsyncFileByteStream();
+                            AsyncFileByteStream(StreamEventHandler handler, const string& path, std::ios::openmode mode = std::ios::in | std::ios::out, size_type bufsize=4096);
+    virtual                 ~AsyncFileByteStream() {}
     
 private:
                             AsyncFileByteStream(const AsyncFileByteStream&) _DELETED_;
@@ -471,8 +584,8 @@ public:
     
 private:
     // seeking disabled on async streams, because I value my sanity
-    virtual size_type       Seek();
-    
+    virtual size_type       Seek()                                          { return 0; }
+
 protected:
     virtual size_type       read_for_async(void* buf, size_type len)        { return __F::ReadBytes(buf, len); }
     virtual size_type       write_for_async(const void* buf, size_type len) { return __F::WriteBytes(buf, len); }
@@ -492,6 +605,10 @@ public:
     ///
     /// Create a new unattached stream.
                             AsyncZipFileByteStream() : AsyncByteStream(), ZipFileByteStream() {}
+    
+    ///
+    /// Create a new opened stream with no default handler.
+                            AsyncZipFileByteStream(struct zip* archive, const string& path, int zipFlags=0);
     ///
     /// @copydoc AsyncFileByteStream::AsyncFileByteStream(StreamEventHandler)
                             AsyncZipFileByteStream(StreamEventHandler handler) : AsyncByteStream(handler), ZipFileByteStream() {}
@@ -500,7 +617,7 @@ public:
     /// @see AsyncByteStream::AsyncByteStream(StreamEventHandler,size_type)
     /// @see ZipFileByteStream::ZipFileByteStream(struct zip*,const string&,int)
                             AsyncZipFileByteStream(StreamEventHandler handler, struct zip* archive, const string& path, int zipFlags=0) : AsyncByteStream(handler), ZipFileByteStream(archive, path, zipFlags) {}
-    virtual                 ~AsyncZipFileByteStream();
+    virtual                 ~AsyncZipFileByteStream() {}
     
 private:
                             AsyncZipFileByteStream(const AsyncZipFileByteStream&)   _DELETED_;
@@ -532,7 +649,7 @@ public:
     
     ///
     /// @copydoc ZipFileByteStream::Open()
-    virtual bool            Open(struct zip* archive, const string& path, int zipFlags=0);
+    virtual bool            Open(struct zip* archive, const string& path, int zipFlags=0) OVERRIDE;
     ///
     /// @copydoc ByteStream::Close()
     virtual void            Close();

@@ -44,13 +44,13 @@ RunLoop::~RunLoop()
 }
 void RunLoop::PerformFunction(std::function<void ()> fn)
 {
-    EventSource* ev = new EventSource([fn](EventSource& __e) {
+    EventSourcePtr ev = EventSource::New([fn](EventSource& __e) {
         fn();
     });
     AddEventSource(ev);
     ev->Signal();
 }
-void RunLoop::AddTimer(Timer* timer)
+void RunLoop::AddTimer(TimerPtr timer)
 {
     StackLock lock(_listLock);
     if ( ContainsTimer(timer) )
@@ -66,17 +66,17 @@ void RunLoop::AddTimer(Timer* timer)
         WakeUp();
     }
 }
-bool RunLoop::ContainsTimer(Timer* timer) const
+bool RunLoop::ContainsTimer(TimerPtr timer) const
 {
     StackLock lock(const_cast<RunLoop*>(this)->_listLock);
-    for ( const Timer* t : _timers )
+    for ( const TimerPtr t : _timers )
     {
         if ( timer == t )
             return true;
     }
     return false;
 }
-void RunLoop::RemoveTimer(Timer* timer)
+void RunLoop::RemoveTimer(TimerPtr timer)
 {
     StackLock lock(_listLock);
     for ( auto iter = _timers.begin(), end = _timers.end(); iter != end; ++iter )
@@ -104,7 +104,7 @@ void RunLoop::RemoveTimer(Timer* timer)
         }
     }
 }
-void RunLoop::AddObserver(Observer* observer)
+void RunLoop::AddObserver(ObserverPtr observer)
 {
     StackLock lock(_listLock);
     if ( ContainsObserver(observer) )
@@ -113,17 +113,17 @@ void RunLoop::AddObserver(Observer* observer)
     _observers.push_back(observer);
     _observerMask |= observer->_acts;
 }
-bool RunLoop::ContainsObserver(Observer* obs) const
+bool RunLoop::ContainsObserver(ObserverPtr obs) const
 {
     StackLock lock(const_cast<RunLoop*>(this)->_listLock);
-    for ( const Observer* o : _observers )
+    for ( const ObserverPtr o : _observers )
     {
         if ( obs == o )
             return true;
     }
     return false;
 }
-void RunLoop::RemoveObserver(Observer* obs)
+void RunLoop::RemoveObserver(ObserverPtr obs)
 {
     StackLock lock(_listLock);
     for ( auto iter = _observers.begin(), end = _observers.end(); iter != end; ++iter )
@@ -135,7 +135,7 @@ void RunLoop::RemoveObserver(Observer* obs)
         }
     }
 }
-void RunLoop::AddEventSource(EventSource* ev)
+void RunLoop::AddEventSource(EventSourcePtr ev)
 {
     StackLock lock(_listLock);
     if ( ContainsEventSource(ev) )
@@ -143,17 +143,17 @@ void RunLoop::AddEventSource(EventSource* ev)
     
     _sources.push_back(ev);
 }
-bool RunLoop::ContainsEventSource(EventSource* ev) const
+bool RunLoop::ContainsEventSource(EventSourcePtr ev) const
 {
     StackLock lock(const_cast<RunLoop*>(this)->_listLock);
-    for ( const EventSource* e : _sources )
+    for ( const EventSourcePtr e : _sources )
     {
         if ( ev == e )
             return true;
     }
     return false;
 }
-void RunLoop::RemoveEventSource(EventSource* ev)
+void RunLoop::RemoveEventSource(EventSourcePtr ev)
 {
     StackLock lock(_listLock);
     for ( auto iter = _sources.begin(), end = _sources.end(); iter != end; ++iter )
@@ -215,6 +215,12 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
 
     do
     {
+        if ( _timers.empty() && _sources.empty() )
+        {
+            reason = ExitReason::RunFinished;
+            break;
+        }
+        
         std::vector<Timer*> timersToFire = CollectFiringTimers();
         if ( !timersToFire.empty() )
         {
@@ -328,7 +334,7 @@ std::vector<RunLoop::Timer*> RunLoop::CollectFiringTimers()
     std::vector<Timer*> result;
     
     std::vector<Timer*> timersToRemove;
-    for ( Timer* timer : _timers )
+    for ( TimerPtr timer : _timers )
     {
         if ( timer->IsCancelled() )
         {
@@ -351,13 +357,13 @@ std::vector<RunLoop::Timer*> RunLoop::CollectFiringTimers()
     
     return result;
 }
-std::vector<RunLoop::EventSource*> RunLoop::CollectFiringSources(bool onlyOne)
+shared_vector<RunLoop::EventSource> RunLoop::CollectFiringSources(bool onlyOne)
 {
     // _listLock MUST ALREADY BE HELD
-    std::vector<EventSource*> result;
+    shared_vector<EventSourcePtr> result;
     
-    std::vector<EventSource*> cancelledSources;
-    for ( EventSource* source : _sources )
+    shared_vector<EventSource> cancelledSources;
+    for ( EventSourcePtr source : _sources )
     {
         if ( source->IsCancelled() )
         {
@@ -427,7 +433,7 @@ RunLoop::Observer& RunLoop::Observer::operator=(Observer&& o)
 }
 bool RunLoop::Observer::operator==(const Observer& o) const
 {
-    // cast as void* to compare function addresses
+    // cast as voidPtr to compare function addresses
     return _fn.target<void>() == o._fn.target<void>();
 }
 RunLoop::Observer::Activity RunLoop::Observer::GetActivities() const

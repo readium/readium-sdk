@@ -15,6 +15,9 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+class FilterChain;
+typedef std::shared_ptr<FilterChain> FilterChainPtr;
+
 class FilterManager
 {
 public:
@@ -22,25 +25,35 @@ public:
     class Record
     {
     public:
+        typedef ContentFilter::FilterPriority   FilterPriority;
         
-        Record(ContentFilter::TypeSnifferFn sniffer, ContentFilter::TypeFactoryFn factory) : m_sniffer(sniffer), m_factory(factory) {}
-        Record(const Record &o) : m_sniffer(o.m_sniffer), m_factory(o.m_factory) {}
-        Record(Record &&o) : m_sniffer(std::move(o.m_sniffer)), m_factory(std::move(o.m_factory)) {}
+        Record(const string& name, FilterPriority priority, ContentFilter::TypeFactoryFn factory) : m_name(name), m_priority(priority), m_factory(factory) {}
+        Record(const Record &o) : m_name(o.m_name), m_priority(o.m_priority), m_factory(o.m_factory) {}
+        Record(Record &&o) : m_name(std::move(o.m_name)), m_priority(o.m_priority), m_factory(std::move(o.m_factory)) {}
         virtual ~Record() {}
         
-        bool IsFilterApplicable(const ManifestItem *item, const EncryptionInfo *encInfo) const
+        const string& GetFilterName() const
         {
-            return m_sniffer(item, encInfo);
+            return m_name;
+        }
+        ContentFilterPtr CreateFilter(ConstPackagePtr package) const
+        {
+            return m_factory(package);
         }
         
-        ContentFilter *CreateFilter(const ContentFilter::ConstructorParameters *parameters) const
+        bool operator<(const Record& o) const
         {
-            return m_factory(parameters);
+            return m_priority < o.m_priority;
+        }
+        bool operator==(const Record& o) const
+        {
+            return (m_priority == o.m_priority) && (m_name == o.m_name);
         }
         
     private:
         
-        ContentFilter::TypeSnifferFn m_sniffer;
+        string                       m_name;
+        FilterPriority               m_priority;
         ContentFilter::TypeFactoryFn m_factory;
         
     };
@@ -51,8 +64,10 @@ public:
     
     static void SetInstance(FilterManager *newInstance) { s_instance.reset(newInstance); }
     
-    virtual ContentFilter *GetFilter(const ManifestItem *item, const EncryptionInfo *encInfo, const ContentFilter::ConstructorParameters *parameters) = 0;
-    virtual void RegisterFilter(ContentFilter::TypeSnifferFn sniffer, ContentFilter::TypeFactoryFn factory) = 0;
+    virtual ContentFilterPtr GetFilterByName(const string& name, ConstPackagePtr package) const = 0;
+    virtual void RegisterFilter(const string& name, ContentFilter::FilterPriority priority, ContentFilter::TypeFactoryFn factory) = 0;
+    
+    virtual FilterChainPtr BuildFilterChainForPackage(ConstPackagePtr package) const = 0;
     
 protected:
     

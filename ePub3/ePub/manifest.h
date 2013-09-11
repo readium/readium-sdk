@@ -36,6 +36,9 @@ class Package;
 class ManifestItem;
 class ArchiveReader;
 class ByteStream;
+class AsyncByteStream;
+
+typedef shared_ptr<Package>         PackagePtr;
 
 typedef shared_ptr<ManifestItem>    ManifestItemPtr;
 
@@ -248,7 +251,7 @@ private:
  
  @ingroup epub-model
  */
-class ManifestItem : public std::enable_shared_from_this<ManifestItem>, public OwnedBy<Package>, public PropertyHolder, public XMLIdentifiable
+class ManifestItem : public PointerType<ManifestItem>, public OwnedBy<Package>, public PropertyHolder, public XMLIdentifiable
 {
 public:
     typedef string              MimeType;
@@ -262,7 +265,10 @@ public:
     EPUB3_EXPORT                ManifestItem(ManifestItem&&);
     virtual                     ~ManifestItem();
     
-    virtual bool                ParseXML(shared_ptr<ManifestItem>& sharedMe, xmlNodePtr node);
+    FORCE_INLINE
+    PackagePtr                  GetPackage()                        const   { return Owner(); }
+    
+    virtual bool                ParseXML(xmlNodePtr node);
 
     EPUB3_EXPORT
     string                      AbsolutePath()                      const;
@@ -286,6 +292,9 @@ public:
     EPUB3_EXPORT
     bool                        HasProperty(const std::vector<IRI>& properties)  const;
     
+    // fetch any relevant encryption information
+    EncryptionInfoPtr           GetEncryptionInfo()                 const;
+    
     // one-shot XML document loader
     EPUB3_EXPORT
     xmlDocPtr                   ReferencedDocument()                const;
@@ -293,6 +302,9 @@ public:
     // stream the data
     EPUB3_EXPORT
     unique_ptr<ByteStream>      Reader()                            const;
+    
+    EPUB3_EXPORT
+    unique_ptr<AsyncByteStream> AsyncReader()                       const;
     
 protected:
     string                  _href;

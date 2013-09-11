@@ -8,6 +8,21 @@
 
 #include "run_loop.h"
 
+#if EPUB_COMPILER_SUPPORTS(CXX_THREAD_LOCAL)
+
+ePub3::RunLoopPtr ePub3::RunLoop::CurrentRunLoop()
+{
+    static thread_local RunLoopPtr __myRunLoopPtr;
+    if ( !bool(__myRunLoopPtr) )
+    {
+        __myRunLoopPtr.reset(new RunLoop);
+    }
+    
+    return __myRunLoopPtr;
+}
+
+#else
+
 #if EPUB_OS(WINDOWS)
 # include <windows.h>
 # include <stdio.h>
@@ -32,8 +47,8 @@ static pthread_key_t RunLoopTLSKey;
 #if !EPUB_OS(WINDOWS)
 static void _DestroyTLSRunLoop(void* data)
 {
-    RunLoop* rl = reinterpret_cast<RunLoop*>(data);
-    delete rl;
+    RunLoopPtr* p = reinterpret_cast<RunLoopPtr*>(data);
+    delete p;
 }
 #endif
 static void KillRunLoopTLSKey()
@@ -60,15 +75,17 @@ INITIALIZER(InitRunLoopTLSKey)
 #endif
 }
 
-RunLoop* RunLoop::CurrentRunLoop()
+RunLoopPtr RunLoop::CurrentRunLoop()
 {
-    RunLoop* p = reinterpret_cast<RunLoop*>(TLS_GET(RunLoopTLSKey));
+    RunLoopPtr* p = reinterpret_cast<RunLoopPtr*>(TLS_GET(RunLoopTLSKey));
     if ( p == nullptr )
     {
-        p = new RunLoop();
+        p = new std::shared_ptr<RunLoop>(new RunLoop());
         TLS_SET(RunLoopTLSKey, reinterpret_cast<void*>(p));
     }
-    return p;
+    return *p;
 }
 
 EPUB3_END_NAMESPACE
+
+#endif      // !EPUB_COMPILER_SUPPORTS(CXX_THREAD_LOCAL)

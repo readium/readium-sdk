@@ -29,6 +29,8 @@
 #include "iri.h"
 #include "basic.h"
 #include "byte_stream.h"
+#include "filter_chain.h"
+#include "filter_manager.h"
 #include <ePub3/utilities/error_handler.h>
 #include <sstream>
 #include <list>
@@ -146,7 +148,7 @@ string PackageBase::CFISubpathForManifestItemWithID(const string &ident) const
     if ( sz == size_t(-1) )
         throw std::invalid_argument(_Str("Identifier '", ident, "' was not found in the spine."));
     
-    return _Str(_spineCFIIndex, "/", sz*2, "[", ident, "]!");
+    return _Str(_spineCFIIndex, "/", (sz+1)*2, "[", ident, "]!");
 }
 const shared_vector<ManifestItem> PackageBase::ManifestItemsWithProperties(PropertyIRIList properties) const
 {
@@ -196,8 +198,9 @@ shared_ptr<SpineItem> PackageBase::ConfirmOrCorrectSpineItemQualifier(shared_ptr
     
     return pItem;
 }
-NavigationList PackageBase::NavTablesFromManifestItem(shared_ptr<PackageBase> owner, shared_ptr<ManifestItem> pItem)
+NavigationList PackageBase::NavTablesFromManifestItem(shared_ptr<PackageBase> owner, ManifestItemPtr pItem)
 {
+    // have to do this one manually, as PackageBase doesn't inherit from PointerType itself
     PackagePtr sharedPkg = std::dynamic_pointer_cast<Package>(owner);
     if ( !sharedPkg )
         return NavigationList();
@@ -225,7 +228,7 @@ NavigationList PackageBase::NavTablesFromManifestItem(shared_ptr<PackageBase> ow
     for ( int i = 0; i < nodes->nodeNr; i++ )
     {
         xmlNodePtr navNode = nodes->nodeTab[i];
-        auto navTablePtr = std::make_shared<class NavigationTable>(sharedPkg, pItem->Href());
+        auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
         if ( navTablePtr->ParseXML(navNode) )
             tables.push_back(navTablePtr);
     }
@@ -258,7 +261,7 @@ bool Package::_OpenForTest(xmlDocPtr doc, const string& basePath)
 
 unique_ptr<ArchiveReader> Package::ReaderForRelativePath(const string& path)       const
 {
-    return _archive->ReaderAtPath((_pathBase + path).stl_str(), Owner().get());
+    return _archive->ReaderAtPath((_pathBase + path).stl_str());
 }
 
 bool Package::Unpack()
@@ -346,8 +349,8 @@ bool Package::Unpack()
         
         for ( int i = 0; i < manifestNodes->nodeNr; i++ )
         {
-            auto p = std::make_shared<ManifestItem>(sharedMe);
-            if ( p->ParseXML(p, manifestNodes->nodeTab[i]) )
+            auto p = ManifestItem::New(sharedMe);
+            if ( p->ParseXML(manifestNodes->nodeTab[i]) )
             {
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
                 _manifest.emplace(p->Identifier(), p);
@@ -389,8 +392,8 @@ bool Package::Unpack()
         SpineItemPtr cur;
         for ( int i = 0; i < spineNodes->nodeNr; i++ )
         {
-            auto next = std::make_shared<SpineItem>(sharedMe);
-            if ( next->ParseXML(next, spineNodes->nodeTab[i]) == false )
+            auto next = SpineItem::New(sharedMe);
+            if ( next->ParseXML(spineNodes->nodeTab[i]) == false )
             {
                 // TODO: need an error code here
                 continue;
@@ -463,7 +466,7 @@ bool Package::Unpack()
     
     try
     {
-        shared_ptr<PropertyHolder> holderPtr = std::dynamic_pointer_cast<PropertyHolder>(sharedMe);
+        PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
         metadataNodes = xpath.Nodes("/opf:package/opf:metadata/*");
         if ( metadataNodes == nullptr )
             HandleError(EPUBError::OPFNoMetadata);
@@ -481,7 +484,7 @@ bool Package::Unpack()
             if ( node->ns != nullptr && xmlStrcmp(node->ns->href, BAD_CAST DCNamespace) == 0 )
             {
                 // definitely a main node
-                p = std::make_shared<Property>(holderPtr);
+                p = Property::New(holderPtr);
             }
             else if ( _getProp(node, "name").size() > 0 )
             {
@@ -491,7 +494,7 @@ bool Package::Unpack()
             else if ( _getProp(node, "refines").empty() )
             {
                 // not refining anything, so it's a main node
-                p = std::make_shared<Property>(holderPtr);
+                p = Property::New(holderPtr);
             }
             else
             {
@@ -585,17 +588,17 @@ bool Package::Unpack()
             if ( prop )
             {
                 // it's a property, so this is an extension
-                PropertyExtensionPtr extPtr = std::make_shared<PropertyExtension>(prop);
+                PropertyExtensionPtr extPtr = PropertyExtension::New(prop);
                 if ( extPtr->ParseMetaElement(node) )
                     prop->AddExtension(extPtr);
             }
             else
             {
                 // not a property, so treat this as a plain property
-                shared_ptr<PropertyHolder> ptr = std::dynamic_pointer_cast<PropertyHolder>(found->second);
+                PropertyHolderPtr ptr = std::dynamic_pointer_cast<PropertyHolder>(found->second);
                 if ( ptr )
                 {
-                    prop = std::make_shared<Property>(ptr);
+                    prop = Property::New(ptr);
                     if ( prop->ParseMetaElement(node) )
                         ptr->AddProperty(prop);
                 }
@@ -610,7 +613,7 @@ bool Package::Unpack()
         string value = _getProp(spineNode, "page-progression-direction");
         if ( !value.empty() )
         {
-            PropertyPtr prop = std::make_shared<Property>(holderPtr);
+            PropertyPtr prop = Property::New(holderPtr);
             prop->SetPropertyIdentifier(MakePropertyIRI("page-progression-direction"));
             prop->SetValue(value);
             AddProperty(prop);
@@ -712,7 +715,7 @@ bool Package::Unpack()
                 }
                 
                 // all good-- install it now
-                _contentHandlers[mediaType].push_back(std::make_shared<MediaHandler>(sharedMe, mediaType, handlerItem->AbsolutePath()));
+                _contentHandlers[mediaType].push_back(MediaHandler::New<MediaHandler>(sharedMe, mediaType, handlerItem->AbsolutePath()));
             }
         }
     }
@@ -739,10 +742,10 @@ bool Package::Unpack()
             continue;
         
         NavigationList tables = NavTablesFromManifestItem(sharedMe, item.second);
-        for ( auto table : tables )
+        for ( auto& table : tables )
         {
             // have to dynamic_cast these guys to get the right pointer type
-            shared_ptr<class NavigationTable> navTable = std::dynamic_pointer_cast<class NavigationTable>(table);
+            NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
             _navigation.emplace(navTable->Type(), navTable);
 #else
@@ -751,8 +754,10 @@ bool Package::Unpack()
         }
     }
     
-    // lastly, let's set the media support information
+    // lastly, let's set the media support information...
     InitMediaSupport();
+    // ...and get our filter chain set up
+    BuildFilterChain();
     
     return true;
 }
@@ -943,7 +948,11 @@ shared_ptr<ManifestItem> Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRema
 }
 unique_ptr<ByteStream> Package::ReadStreamForRelativePath(const string &path) const
 {
-    return _archive->ByteStreamAtPath(path.stl_str());
+    return _archive->ByteStreamAtPath(_Str(_pathBase, path.stl_str()));
+}
+shared_ptr<AsyncByteStream> Package::ContentStreamForItem(ManifestItemPtr manifestItem) const
+{
+    return _filterChain->GetFilteredOutputStreamForManifestItem(manifestItem);
 }
 const string& Package::Title(bool localized) const
 {
@@ -1307,7 +1316,7 @@ shared_ptr<MediaHandler> Package::OPFHandlerForMediaType(const string &mediaType
     
     for ( auto ptr : found->second )
     {
-        shared_ptr<MediaHandler> handler = std::dynamic_pointer_cast<MediaHandler>(ptr);
+        MediaHandlerPtr handler = ptr->CastPtr<MediaHandler>();
         if ( handler )
             return handler;
     }
@@ -1352,13 +1361,12 @@ void Package::SetMediaSupport(MediaSupportList &&list)
 }
 void Package::InitMediaSupport()
 {
-    PackagePtr sharedMe = std::enable_shared_from_this<Package>::shared_from_this();
     for ( auto& mediaType : AllMediaTypes() )
     {
         if ( CoreMediaTypes.find(mediaType) != CoreMediaTypes.end() )
         {
             // support for core types is required
-            _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo(sharedMe, mediaType)));
+            _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo(Ptr(), mediaType)));
         }
         else
         {
@@ -1366,15 +1374,19 @@ void Package::InitMediaSupport()
             if ( pHandler )
             {
                 // supported through a handler
-                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo(sharedMe, mediaType, MediaSupportInfo::SupportType::SupportedWithHandler)));
+                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo(Ptr(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler)));
             }
             else
             {
                 // unsupported
-                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo(sharedMe, mediaType, false)));
+                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo(Ptr(), mediaType, false)));
             }
         }
     }
+}
+void Package::BuildFilterChain()
+{
+    _filterChain = FilterManager::Instance()->BuildFilterChainForPackage(Ptr());
 }
 
 EPUB3_END_NAMESPACE

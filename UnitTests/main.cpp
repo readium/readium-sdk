@@ -24,6 +24,7 @@
 #include "catch.hpp"
 #include "../ePub3/ePub/archive.h"
 #include "../ePub3/xml/utilities/io.h"
+#include "../ePub3/ePub/filter_manager_impl.h"
 
 extern "C" void DumpXMLString(xmlNodePtr node)
 {
@@ -45,6 +46,7 @@ int main(int argc, char * const argv[])
     //////////////////////////////////////
     
     ePub3::Archive::Initialize();
+    ePub3::FilterManager::SetInstance(new ePub3::FilterManagerImpl());
     
     int result = Catch::Main(argc, argv);
     

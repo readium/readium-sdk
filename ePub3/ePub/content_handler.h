@@ -56,7 +56,7 @@ class Package;
  @ingroup media-handlers
  @see operator()(const string&, const ParameterList&)
  */
-class ContentHandler : public std::enable_shared_from_this<ContentHandler>, public OwnedBy<Package>
+class ContentHandler : public PointerType<ContentHandler>, public OwnedBy<Package>
 {
 public:
     ///

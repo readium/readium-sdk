@@ -641,7 +641,7 @@ TEST_CASE("Packages with no version should raise a spec error", "")
     });
     
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
     xmlDocPtr doc = xmlParseMemory(kInvalidVersion, (int)strlen(kInvalidVersion));
     pkg->_OpenForTest(doc, "EPUB/");
@@ -661,7 +661,7 @@ TEST_CASE("Packages with no title metadata should raise a spec error", "")
     });
     
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
     xmlDocPtr doc = xmlParseMemory(kMissingTitle, (int)strlen(kMissingTitle));
     pkg->_OpenForTest(doc, "EPUB/");
@@ -681,7 +681,7 @@ TEST_CASE("Packages with no identifier should raise a spec error", "")
     });
     
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
     xmlDocPtr doc = xmlParseMemory(kMissingIdentifier, (int)strlen(kMissingIdentifier));
     pkg->_OpenForTest(doc, "EPUB/");
@@ -701,7 +701,7 @@ TEST_CASE("Packages with no language metadata should raise a spec error", "")
     });
     
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
     xmlDocPtr doc = xmlParseMemory(kMissingLanguage, (int)strlen(kMissingLanguage));
     pkg->_OpenForTest(doc, "EPUB/");
@@ -721,7 +721,7 @@ TEST_CASE("Packages with no midification date should raise a spec error", "")
     });
     
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
     xmlDocPtr doc = xmlParseMemory(kMissingModDate, (int)strlen(kMissingModDate));
     pkg->_OpenForTest(doc, "EPUB/");
@@ -741,7 +741,7 @@ TEST_CASE("Packages with an invalid unique-id reference should raise a spec erro
     });
     
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
     xmlDocPtr doc = xmlParseMemory(kInvalidUniqueIDRef, (int)strlen(kInvalidUniqueIDRef));
     pkg->_OpenForTest(doc, "EPUB/");
@@ -761,7 +761,7 @@ TEST_CASE("'refines' should contain a valid IRI", "")
     });
     
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
     xmlDocPtr doc = xmlParseMemory(kInvalidRefinementIRI, (int)strlen(kInvalidRefinementIRI));
     pkg->_OpenForTest(doc, "EPUB/");
@@ -781,7 +781,7 @@ TEST_CASE("'refine' should contain a relative IRI", "")
     });
     
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
     xmlDocPtr doc = xmlParseMemory(kAbsoluteRefinementIRI, (int)strlen(kAbsoluteRefinementIRI));
     pkg->_OpenForTest(doc, "EPUB/");
@@ -801,7 +801,7 @@ TEST_CASE("'refine' IRI should reference an existing item", "")
     });
     
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
     xmlDocPtr doc = xmlParseMemory(kInvalidRefinement, (int)strlen(kInvalidRefinement));
     pkg->_OpenForTest(doc, "EPUB/");
@@ -821,7 +821,7 @@ TEST_CASE("Spine 'idref' should reference an existing manifest item", "")
     });
     
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
     xmlDocPtr doc = xmlParseMemory(kInvalidSpineIDRef, (int)strlen(kInvalidSpineIDRef));
     pkg->_OpenForTest(doc, "EPUB/");
@@ -841,7 +841,7 @@ TEST_CASE("Should raise an error if the Metadata is out of place", "")
     });
     
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
     xmlDocPtr doc = xmlParseMemory(kMetadataOutOfPlace, (int)strlen(kMetadataOutOfPlace));
     pkg->_OpenForTest(doc, "EPUB/");
@@ -861,7 +861,7 @@ TEST_CASE("Should raise an error if the Manifest is out of place", "")
     });
     
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
     xmlDocPtr doc = xmlParseMemory(kManifestOutOfPlace, (int)strlen(kManifestOutOfPlace));
     pkg->_OpenForTest(doc, "EPUB/");
@@ -881,7 +881,7 @@ TEST_CASE("Should raise an error if the spine is out of place", "")
     });
     
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
     xmlDocPtr doc = xmlParseMemory(kSpineOutOfPlace, (int)strlen(kSpineOutOfPlace));
     pkg->_OpenForTest(doc, "EPUB/");
@@ -901,7 +901,7 @@ TEST_CASE("Should raise an error if a spine item doesn't reference a content ite
     });
     
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
     xmlDocPtr doc = xmlParseMemory(kNoContentDocInSpine, (int)strlen(kNoContentDocInSpine));
     pkg->_OpenForTest(doc, "EPUB/");
@@ -921,7 +921,7 @@ TEST_CASE("Should be happy of a spine item only references a content item via th
     });
     
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
     xmlDocPtr doc = xmlParseMemory(kContentDocInFallback, (int)strlen(kContentDocInFallback));
     pkg->_OpenForTest(doc, "EPUB/");
@@ -941,7 +941,7 @@ TEST_CASE("Should raise an error if a fallback chain contains circular reference
     });
     
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-    PackagePtr pkg = std::make_shared<Package>(c, "application/oebps-package+xml");
+    PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
     xmlDocPtr doc = xmlParseMemory(kCircularFallbackChain, (int)strlen(kCircularFallbackChain));
     pkg->_OpenForTest(doc, "EPUB/");

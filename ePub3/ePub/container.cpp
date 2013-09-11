@@ -48,7 +48,6 @@ Container::~Container()
 }
 bool Container::Open(const string& path)
 {
-    ContainerPtr sharedThis(shared_from_this());
     _archive = std::move(Archive::Open(path.stl_str()));
     if ( _archive == nullptr )
         throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
@@ -85,7 +84,7 @@ bool Container::Open(const string& path)
         if ( _path == nullptr )
             continue;
         
-        auto pkg = std::make_shared<Package>(sharedThis, type);
+        auto pkg = Package::New(Ptr(), type);
         if ( pkg->Open(_path) )
             _packages.push_back(pkg);
     }
@@ -94,7 +93,7 @@ bool Container::Open(const string& path)
 }
 shared_ptr<Container> Container::OpenContainer(const string &path)
 {
-    ContainerPtr container = std::make_shared<Container>();
+    ContainerPtr container = Container::New();
     if ( container->Open(path) == false )
         return nullptr;
     return container;
@@ -141,7 +140,6 @@ string Container::Version() const
 }
 void Container::LoadEncryption()
 {
-    ContainerPtr sharedThis(shared_from_this());
     unique_ptr<ArchiveReader> pZipReader = _archive->ReaderAtPath(gEncryptionFilePath);
     if ( !pZipReader )
         return;
@@ -171,7 +169,7 @@ void Container::LoadEncryption()
     
     for ( int i = 0; i < nodes->nodeNr; i++ )
     {
-        auto encPtr = std::make_shared<EncryptionInfo>(sharedThis);
+        auto encPtr = EncryptionInfo::New(Ptr());
         if ( encPtr->ParseXML(nodes->nodeTab[i]) )
             _encryption.push_back(encPtr);
     }
