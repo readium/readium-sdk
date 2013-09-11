@@ -25,6 +25,7 @@
 #include "archive_xml.h"
 #include "xpath_wrangler.h"
 #include "byte_stream.h"
+#include "filter_manager.h"
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -87,6 +88,11 @@ bool Container::Open(const string& path)
         auto pkg = Package::New(Ptr(), type);
         if ( pkg->Open(_path) )
             _packages.push_back(pkg);
+    }
+    
+    for ( auto& pkg : _packages )
+    {
+        pkg->SetFilterChain(FilterManager::Instance()->BuildFilterChainForPackage(pkg));
     }
 
     return true;

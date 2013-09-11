@@ -13,12 +13,29 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+/**
+ Special value passed to ByteBuffer initializer to tell it to only set its capacity,
+ not its size.
+ */
+struct EPUB3_EXPORT prealloc_buf_t {};
+
+#if !EPUB_COMPILER_SUPPORTS(CXX_CONSTEXPR) || defined(_EPUB3_BUILDING_BYTE_BUFFER)
+
+extern const prealloc_buf_t prealloc_buf;
+
+#else
+
+constexpr prealloc_buf_t prealloc_buf = prealloc_buf_t();
+
+#endif
+
 class ByteBuffer
 {
 public:
     
     ByteBuffer() : m_buffer(nullptr), m_bufferSize(0), m_bufferCapacity(0) {}
     ByteBuffer(size_t bufferSize);
+    ByteBuffer(size_t bufferSize, prealloc_buf_t);
     ByteBuffer(const unsigned char *buffer, size_t bufferSize);   // copy-in
 #if EPUB_COMPILER_SUPPORTS(CXX_DELEGATING_CONSTRUCTORS)
     ByteBuffer(const ByteBuffer& o) : ByteBuffer(o.m_buffer, o.m_bufferSize) {}
@@ -27,6 +44,12 @@ public:
 #endif
     ByteBuffer(ByteBuffer &&o) : m_buffer(std::move(o.m_buffer)), m_bufferSize(o.m_bufferSize), m_bufferCapacity(o.m_bufferCapacity) { o.m_bufferSize = o.m_bufferCapacity = 0; }
     virtual ~ByteBuffer();
+    
+    ByteBuffer& operator=(const ByteBuffer&);
+    ByteBuffer& operator=(ByteBuffer&&);
+    
+    bool operator==(const ByteBuffer&) const;
+    bool operator!=(const ByteBuffer& o) const { return !(*this == o); }
     
     /**
      Tells the buffer to perform secure erasure by zeroing all unused memory.

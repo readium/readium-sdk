@@ -68,6 +68,8 @@ protected:
         ChainLink                       _output;
         ByteBuffer                      _collectionBuffer;
         
+        void FunnelBytes();
+        
     };
     
     static thread_pool      _filterThreadPool;

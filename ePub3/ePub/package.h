@@ -750,6 +750,18 @@ public:
      */
     virtual void            SetMediaSupport(MediaSupportList&& list);
     
+    /**
+     Assigns a filter chain to this package.
+     
+     This is called automatically by Container at the end of its initialization. The
+     public API here is available only for quite specific circumstances where the
+     built-in chain creation is not enough.
+     @param chain The filter chain for the receiving Package instance.
+     */
+    virtual void            SetFilterChain(FilterChainPtr chain) _NOEXCEPT {
+        _filterChain = chain;
+    }
+    
     /// @}
     
 protected:
@@ -779,7 +791,6 @@ protected:
     void                    InitMediaSupport();
     
     FilterChainPtr          _filterChain;           ///< The filter chain for this package.
-    void                    BuildFilterChain();     ///< Compiles a filter chain based on this package's content.
 };
 
 EPUB3_END_NAMESPACE
