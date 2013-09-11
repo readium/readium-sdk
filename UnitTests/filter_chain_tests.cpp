@@ -125,89 +125,89 @@ static void RegisterTestFilter()
     }
 }
 
-//TEST_CASE("Filters apply automatically", "")
-//{
-//    RegisterTestFilter();
+TEST_CASE("Filters apply automatically", "")
+{
+    RegisterTestFilter();
+    
+    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+    PackagePtr pkg = c->DefaultPackage();
+    
+    SpineItemPtr item = pkg->FirstSpineItem();
+    REQUIRE(bool(item));
+    
+    // JCD: I used this code to generate the ROT13 output seen above
+//    // read raw bytes
+//    ByteBuffer rawBytes;
+//    auto rawStream = item->ManifestItem()->Reader();
+//    REQUIRE(bool(rawStream));
 //    
-//    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
-//    PackagePtr pkg = c->DefaultPackage();
+//    size_t numRead = 0;
+//    do
+//    {
+//#define BUF_SIZE 4096*4
+//        uint8_t buf[BUF_SIZE];
+//        numRead = rawStream->ReadBytes(buf, BUF_SIZE);
+//        if ( numRead > 0 )
+//            rawBytes.AddBytes(buf, numRead);
+//        
+//    } while (numRead > 0);
 //    
-//    SpineItemPtr item = pkg->FirstSpineItem();
-//    REQUIRE(bool(item));
+//    std::cout << "Raw Bytes:" << std::endl << std::endl;
+//    std::cout.write(reinterpret_cast<char*>(rawBytes.GetBytes()), rawBytes.GetBufferSize());
+//    std::cout << std::endl;
 //    
-//    // JCD: I used this code to generate the ROT13 output seen above
-////    // read raw bytes
-////    ByteBuffer rawBytes;
-////    auto rawStream = item->ManifestItem()->Reader();
-////    REQUIRE(bool(rawStream));
-////    
-////    size_t numRead = 0;
-////    do
-////    {
-////#define BUF_SIZE 4096*4
-////        uint8_t buf[BUF_SIZE];
-////        numRead = rawStream->ReadBytes(buf, BUF_SIZE);
-////        if ( numRead > 0 )
-////            rawBytes.AddBytes(buf, numRead);
-////        
-////    } while (numRead > 0);
-////    
-////    std::cout << "Raw Bytes:" << std::endl << std::endl;
-////    std::cout.write(reinterpret_cast<char*>(rawBytes.GetBytes()), rawBytes.GetBufferSize());
-////    std::cout << std::endl;
-////    
-////    ROT13Filter tmp;
-////    tmp.FilterData(nullptr, rawBytes.GetBytes(), rawBytes.GetBufferSize(), nullptr);
-////    
-////    std::cout << "Manually Filtered Bytes:" << std::endl << std::endl;
-////    std::cout.write(reinterpret_cast<char*>(rawBytes.GetBytes()), rawBytes.GetBufferSize());
-////    std::cout << std::endl;
+//    ROT13Filter tmp;
+//    tmp.FilterData(nullptr, rawBytes.GetBytes(), rawBytes.GetBufferSize(), nullptr);
 //    
-//    auto filteredStream = pkg->ContentStreamForItem(item);
-//    
-//    // this stream is asynchronous, remember
-//    string output;
-//    RunLoopPtr runloop = RunLoop::CurrentRunLoop();
-//    filteredStream->SetEventHandler([&](AsyncEvent evt, AsyncByteStream* stream){
-//        switch ( evt )
-//        {
-//            case AsyncEvent::HasBytesAvailable:
-//            {
-//                char buf[4096];
-//                size_t numRead = stream->ReadBytes(buf, 4096);
-//                output.append(buf, numRead);
-//                break;
-//            }
-//                
-//            case AsyncEvent::ErrorOccurred:
-//            {
-//                FAIL("An error occurred on the stream");
-//                runloop->Stop();
-//                break;
-//            }
-//                
-//            case AsyncEvent::EndEncountered:
-//            {
-//                runloop->Stop();
-//                break;
-//            }
-//                
-//            default:
-//                break;
-//        }
-//    });
-//    
-//    filteredStream->SetTargetRunLoop(runloop);
-//    
-//    // run until done
-//    runloop->Run();
-//    
-//    std::cout << "Read filtered data:" << std::endl << std::endl;
-//    std::cout << output << std::endl;
-//    
-//    string expected(kROT13Content);
-//    REQUIRE(output == expected);
-//}
+//    std::cout << "Manually Filtered Bytes:" << std::endl << std::endl;
+//    std::cout.write(reinterpret_cast<char*>(rawBytes.GetBytes()), rawBytes.GetBufferSize());
+//    std::cout << std::endl;
+    
+    auto filteredStream = pkg->ContentStreamForItem(item);
+    
+    // this stream is asynchronous, remember
+    string output;
+    RunLoopPtr runloop = RunLoop::CurrentRunLoop();
+    filteredStream->SetEventHandler([&](AsyncEvent evt, AsyncByteStream* stream){
+        switch ( evt )
+        {
+            case AsyncEvent::HasBytesAvailable:
+            {
+                char buf[4096];
+                size_t numRead = stream->ReadBytes(buf, 4096);
+                output.append(buf, numRead);
+                break;
+            }
+                
+            case AsyncEvent::ErrorOccurred:
+            {
+                FAIL("An error occurred on the stream");
+                runloop->Stop();
+                break;
+            }
+                
+            case AsyncEvent::EndEncountered:
+            {
+                runloop->Stop();
+                break;
+            }
+                
+            default:
+                break;
+        }
+    });
+    
+    filteredStream->SetTargetRunLoop(runloop);
+    
+    // run until done
+    runloop->Run();
+    
+    std::cout << "Read filtered data:" << std::endl << std::endl;
+    std::cout << output << std::endl;
+    
+    string expected(kROT13Content);
+    REQUIRE(output == expected);
+}
 
 TEST_CASE("Font de-obfuscation happens automatically", "")
 {
