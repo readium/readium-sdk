@@ -754,10 +754,8 @@ bool Package::Unpack()
         }
     }
     
-    // lastly, let's set the media support information...
+    // lastly, let's set the media support information
     InitMediaSupport();
-    // ...and get our filter chain set up
-    BuildFilterChain();
     
     return true;
 }
@@ -1383,10 +1381,6 @@ void Package::InitMediaSupport()
             }
         }
     }
-}
-void Package::BuildFilterChain()
-{
-    _filterChain = FilterManager::Instance()->BuildFilterChainForPackage(Ptr());
 }
 
 EPUB3_END_NAMESPACE

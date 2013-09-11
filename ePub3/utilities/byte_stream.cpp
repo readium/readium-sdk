@@ -138,7 +138,7 @@ void AsyncByteStream::Open(std::ios::openmode mode)
 }
 ByteStream::size_type AsyncByteStream::ReadBytes(void *buf, size_type len)
 {
-    if ( !_readbuf )
+    if ( !bool(_readbuf) )
         throw InvalidDuplexStreamOperationError("Stream not opened for reading");
     
     size_type result =_readbuf->ReadBytes(reinterpret_cast<uint8_t*>(buf), len);
@@ -152,7 +152,7 @@ ByteStream::size_type AsyncByteStream::ReadBytes(void *buf, size_type len)
 }
 ByteStream::size_type AsyncByteStream::WriteBytes(const void *buf, size_type len)
 {
-    if ( !_writebuf )
+    if ( !bool(_writebuf) )
         throw InvalidDuplexStreamOperationError("Stream not opened for writing");
     
     size_type result = _writebuf->WriteBytes(reinterpret_cast<const uint8_t*>(buf), len);
@@ -311,12 +311,10 @@ RunLoop::EventSourcePtr AsyncByteStream::AsyncEventSource()
 RunLoop::EventSourcePtr AsyncByteStream::EventDispatchSource()
 {
     return RunLoop::EventSource::New([this](RunLoop::EventSource&) {
-        if ( bool(_eventHandler) == false )
-            return;
-        
         if ( _err != 0 )
         {
-            _eventHandler(AsyncEvent::ErrorOccurred, this);
+            if ( bool(_eventHandler) )
+                _eventHandler(AsyncEvent::ErrorOccurred, this);
             if ( bool(_eventDispatchSource) )
                 _eventDispatchSource->Cancel();
             if ( bool(_eventSource) )
@@ -325,7 +323,8 @@ RunLoop::EventSourcePtr AsyncByteStream::EventDispatchSource()
         }
         if ( _eof )
         {
-            _eventHandler(AsyncEvent::EndEncountered, this);
+            if ( bool(_eventHandler) )
+                _eventHandler(AsyncEvent::EndEncountered, this);
             if ( bool(_eventDispatchSource) )
                 _eventDispatchSource->Cancel();
             if ( bool(_eventSource) )
@@ -333,9 +332,9 @@ RunLoop::EventSourcePtr AsyncByteStream::EventDispatchSource()
             return;
         }
         
-        if ( BytesAvailable() )
+        if ( BytesAvailable() && bool(_eventHandler) )
             _eventHandler(AsyncEvent::HasBytesAvailable, this);
-        if ( SpaceAvailable() )
+        if ( SpaceAvailable() && bool(_eventHandler) )
             _eventHandler(AsyncEvent::HasSpaceAvailable, this);
     });
 }

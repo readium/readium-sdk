@@ -6,6 +6,8 @@
 //  Copyright (c) 2013 The Readium Foundation and contributors. All rights reserved.
 //
 
+#define _EPUB3_BUILDING_BYTE_BUFFER
+
 #include "byte_buffer.h"
 #include <stdexcept>
 #import "CPUCacheUtils.h"
@@ -23,6 +25,8 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+const prealloc_buf_t prealloc_buf = {};
+
 ByteBuffer::ByteBuffer(size_t bufferSize) : m_buffer(nullptr), m_bufferSize(0), m_bufferCapacity(0)
 {
     size_t cap = GoodSize(bufferSize);
@@ -32,6 +36,15 @@ ByteBuffer::ByteBuffer(size_t bufferSize) : m_buffer(nullptr), m_bufferSize(0), 
     
     bzero(m_buffer, bufferSize);
     m_bufferSize = bufferSize;
+    m_bufferCapacity = cap;
+}
+ByteBuffer::ByteBuffer(size_t bufferSize, prealloc_buf_t) : m_buffer(nullptr), m_bufferSize(0), m_bufferCapacity(0)
+{
+    size_t cap = GoodSize(bufferSize);
+    m_buffer = reinterpret_cast<unsigned char*>(malloc(cap));
+    if ( m_buffer == nullptr )
+        throw std::system_error(std::make_error_code(std::errc::not_enough_memory), "ByteBuffer");
+    
     m_bufferCapacity = cap;
 }
 ByteBuffer::ByteBuffer(const unsigned char* buffer, size_t bufferSize)
@@ -70,6 +83,44 @@ ByteBuffer::~ByteBuffer()
     m_buffer = nullptr;
     m_bufferSize = 0;
     m_bufferCapacity = 0;
+}
+
+ByteBuffer& ByteBuffer::operator=(const ByteBuffer& o)
+{
+    EnsureCapacity(o.m_bufferCapacity);
+    if ( m_secure && o.m_bufferSize < m_bufferSize )
+        Clean(m_buffer+o.m_bufferSize, m_bufferSize-o.m_bufferSize);
+    ::memcpy(m_buffer, o.m_buffer, o.m_bufferSize);
+    
+    m_bufferSize = o.m_bufferSize;
+    return *this;
+}
+ByteBuffer& ByteBuffer::operator=(ByteBuffer&& o)
+{
+    if ( m_buffer != nullptr )
+    {
+        if ( m_secure )
+            Clean(m_buffer, m_bufferCapacity);
+        ::free(m_buffer);
+    }
+    
+    m_buffer = o.m_buffer;
+    m_bufferSize = o.m_bufferSize;
+    m_bufferCapacity = o.m_bufferCapacity;
+    m_secure = o.m_secure;
+    
+    o.m_buffer = nullptr;
+    o.m_bufferSize = o.m_bufferCapacity = 0;
+    o.m_secure = false;
+    
+    return *this;
+}
+
+bool ByteBuffer::operator==(const ByteBuffer& o) const
+{
+    if ( m_bufferSize != o.m_bufferSize )
+        return false;
+    return (::memcmp(m_buffer, o.m_buffer, m_bufferSize) == 0);
 }
 
 size_t ByteBuffer::MoveTo(unsigned char *targetBuffer, size_t targetBufferSize)

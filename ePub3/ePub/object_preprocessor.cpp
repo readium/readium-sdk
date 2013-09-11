@@ -42,6 +42,10 @@ ContentFilterPtr ObjectPreprocessor::ObjectFilterFactory(ConstPackagePtr package
         return nullptr;
     return New(package, "Open");
 }
+void ObjectPreprocessor::Register()
+{
+    FilterManager::Instance()->RegisterFilter("ObjectPreprocessor", ObjectPreprocessing, ObjectFilterFactory);
+}
 ObjectPreprocessor::ObjectPreprocessor(ConstPackagePtr pkg, const string& buttonTitle) : ContentFilter(ShouldApply), _button(buttonTitle)
 {
     Package::StringList mediaTypes = pkg->MediaTypesWithDHTMLHandlers();

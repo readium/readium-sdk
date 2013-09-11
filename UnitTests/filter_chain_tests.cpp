@@ -18,6 +18,10 @@
 
 #define EPUB_PATH "TestData/cole-voyage-of-life-20120320.epub"
 
+#define FONT_EPUB_PATH "TestData/wasteland-otf-obf-20120118.epub"
+#define FONT_SUBPATH "EPUB/OldStandard-Regular.obf.otf"
+#define FONT_MANIFEST_ID "font.OldStandard.regular"
+
 static const char* kROT13Content = R"raw(<?kzy irefvba="1.0" rapbqvat="HGS-8"?>
 <ugzy kzyaf="uggc://jjj.j3.bet/1999/kugzy">
     <urnq>
@@ -121,57 +125,138 @@ static void RegisterTestFilter()
     }
 }
 
-TEST_CASE("Filters apply automatically", "")
+//TEST_CASE("Filters apply automatically", "")
+//{
+//    RegisterTestFilter();
+//    
+//    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
+//    PackagePtr pkg = c->DefaultPackage();
+//    
+//    SpineItemPtr item = pkg->FirstSpineItem();
+//    REQUIRE(bool(item));
+//    
+//    // JCD: I used this code to generate the ROT13 output seen above
+////    // read raw bytes
+////    ByteBuffer rawBytes;
+////    auto rawStream = item->ManifestItem()->Reader();
+////    REQUIRE(bool(rawStream));
+////    
+////    size_t numRead = 0;
+////    do
+////    {
+////#define BUF_SIZE 4096*4
+////        uint8_t buf[BUF_SIZE];
+////        numRead = rawStream->ReadBytes(buf, BUF_SIZE);
+////        if ( numRead > 0 )
+////            rawBytes.AddBytes(buf, numRead);
+////        
+////    } while (numRead > 0);
+////    
+////    std::cout << "Raw Bytes:" << std::endl << std::endl;
+////    std::cout.write(reinterpret_cast<char*>(rawBytes.GetBytes()), rawBytes.GetBufferSize());
+////    std::cout << std::endl;
+////    
+////    ROT13Filter tmp;
+////    tmp.FilterData(nullptr, rawBytes.GetBytes(), rawBytes.GetBufferSize(), nullptr);
+////    
+////    std::cout << "Manually Filtered Bytes:" << std::endl << std::endl;
+////    std::cout.write(reinterpret_cast<char*>(rawBytes.GetBytes()), rawBytes.GetBufferSize());
+////    std::cout << std::endl;
+//    
+//    auto filteredStream = pkg->ContentStreamForItem(item);
+//    
+//    // this stream is asynchronous, remember
+//    string output;
+//    RunLoopPtr runloop = RunLoop::CurrentRunLoop();
+//    filteredStream->SetEventHandler([&](AsyncEvent evt, AsyncByteStream* stream){
+//        switch ( evt )
+//        {
+//            case AsyncEvent::HasBytesAvailable:
+//            {
+//                char buf[4096];
+//                size_t numRead = stream->ReadBytes(buf, 4096);
+//                output.append(buf, numRead);
+//                break;
+//            }
+//                
+//            case AsyncEvent::ErrorOccurred:
+//            {
+//                FAIL("An error occurred on the stream");
+//                runloop->Stop();
+//                break;
+//            }
+//                
+//            case AsyncEvent::EndEncountered:
+//            {
+//                runloop->Stop();
+//                break;
+//            }
+//                
+//            default:
+//                break;
+//        }
+//    });
+//    
+//    filteredStream->SetTargetRunLoop(runloop);
+//    
+//    // run until done
+//    runloop->Run();
+//    
+//    std::cout << "Read filtered data:" << std::endl << std::endl;
+//    std::cout << output << std::endl;
+//    
+//    string expected(kROT13Content);
+//    REQUIRE(output == expected);
+//}
+
+TEST_CASE("Font de-obfuscation happens automatically", "")
 {
-    RegisterTestFilter();
+    ContainerPtr c = Container::OpenContainer(FONT_EPUB_PATH);
+    REQUIRE(bool(c));
     
-    ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = c->DefaultPackage();
+    REQUIRE(bool(pkg));
     
-    SpineItemPtr item = pkg->FirstSpineItem();
+    ManifestItemPtr item = pkg->ManifestItemWithID(FONT_MANIFEST_ID);
     REQUIRE(bool(item));
     
-    // JCD: I used this code to generate the ROT13 output seen above
-//    // read raw bytes
-//    ByteBuffer rawBytes;
-//    auto rawStream = item->ManifestItem()->Reader();
-//    REQUIRE(bool(rawStream));
-//    
-//    size_t numRead = 0;
-//    do
-//    {
-//#define BUF_SIZE 4096*4
-//        uint8_t buf[BUF_SIZE];
-//        numRead = rawStream->ReadBytes(buf, BUF_SIZE);
-//        if ( numRead > 0 )
-//            rawBytes.AddBytes(buf, numRead);
-//        
-//    } while (numRead > 0);
-//    
-//    std::cout << "Raw Bytes:" << std::endl << std::endl;
-//    std::cout.write(reinterpret_cast<char*>(rawBytes.GetBytes()), rawBytes.GetBufferSize());
-//    std::cout << std::endl;
-//    
-//    ROT13Filter tmp;
-//    tmp.FilterData(nullptr, rawBytes.GetBytes(), rawBytes.GetBufferSize(), nullptr);
-//    
-//    std::cout << "Manually Filtered Bytes:" << std::endl << std::endl;
-//    std::cout.write(reinterpret_cast<char*>(rawBytes.GetBytes()), rawBytes.GetBufferSize());
-//    std::cout << std::endl;
+    // plain OpenType font header starts with this magic value:
+    uint8_t ident[4] = { 'O', 'T', 'T', 'O' };
     
-    auto filteredStream = pkg->ContentStreamForItem(item);
+    // raw byte stream-- test first 4 bytes to assert that the font is obfuscated,
+    // and keep the whole thing around so we can assert that everything past 1020 bytes
+    // is unchanged
+    ByteBuffer rawBuf(1080, prealloc_buf);
+    auto rawBytes = item->Reader();
     
-    // this stream is asynchronous, remember
-    string output;
+    ByteStream::size_type numRead = 0;
+    do
+    {
+        uint8_t buf[4096];
+        numRead = rawBytes->ReadBytes(buf, 4096);
+        if ( numRead > 0 )
+            rawBuf.AddBytes(buf, numRead);
+        
+    } while ( numRead > 0 );
+    
+    rawBytes->Close();
+    
+    // first four bytes should be obfuscated
+    REQUIRE_FALSE(memcmp(rawBuf.GetBytes(), ident, 4) == 0);
+    
+    // now we get an async stream to read the output-filtered data...
+    ByteBuffer filteredBuffer(1080, prealloc_buf);
+    auto filterStream = pkg->ContentStreamForItem(item);
+    
     RunLoopPtr runloop = RunLoop::CurrentRunLoop();
-    filteredStream->SetEventHandler([&](AsyncEvent evt, AsyncByteStream* stream){
+    filterStream->SetEventHandler([&filteredBuffer, runloop](AsyncEvent evt, AsyncByteStream* stream) {
         switch ( evt )
         {
             case AsyncEvent::HasBytesAvailable:
             {
-                char buf[4096];
+                uint8_t buf[4096];
                 size_t numRead = stream->ReadBytes(buf, 4096);
-                output.append(buf, numRead);
+                filteredBuffer.AddBytes(buf, numRead);
                 break;
             }
                 
@@ -193,14 +278,23 @@ TEST_CASE("Filters apply automatically", "")
         }
     });
     
-    filteredStream->SetTargetRunLoop(runloop);
+    filterStream->SetTargetRunLoop(runloop);
     
-    // run until done
+    // run until all data has been consumed
     runloop->Run();
     
-    std::cout << "Read filtered data:" << std::endl << std::endl;
-    std::cout << output << std::endl;
+    // assert that we got enough data
+    REQUIRE(filteredBuffer.GetBufferSize() >= 1080);
     
-    string expected(kROT13Content);
-    REQUIRE(output == expected);
+    // assert that the first chunk has been successfully de-obfuscated
+    REQUIRE(memcmp(filteredBuffer.GetBytes(), ident, 4) == 0);
+    
+    // assert that the data in the first 1020 bytes is different from the raw bytes
+    REQUIRE_FALSE(memcmp(filteredBuffer.GetBytes(), rawBuf.GetBytes(), 1040) == 0);
+    
+    // remove the first 1040 bytes, and assert that the rest is equal
+    filteredBuffer.RemoveBytes(1040);
+    rawBuf.RemoveBytes(1040);
+    
+    REQUIRE(filteredBuffer == rawBuf);
 }
