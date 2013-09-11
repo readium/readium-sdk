@@ -49,7 +49,7 @@ public:
 protected:
     typedef std::shared_ptr<AsyncByteStream>    ChainLink;
     
-    class ChainLinkProcessor
+    class ChainLinkProcessor : public PointerType<ChainLinkProcessor>
     {
     public:
         ChainLinkProcessor(ContentFilterPtr filter, ChainLink input);
@@ -68,7 +68,7 @@ protected:
         ChainLink                       _output;
         ByteBuffer                      _collectionBuffer;
         
-        void FunnelBytes();
+        ssize_t FunnelBytes();
         
     };
     
