@@ -83,7 +83,7 @@ bool NavigationTable::ParseXML(xmlNodePtr node)
         return false;
     }
 
-    LoadChildElements(std::enable_shared_from_this<NavigationTable>::shared_from_this(), nodes->nodeTab[0]);
+    LoadChildElements(Ptr(), nodes->nodeTab[0]);
 
     xmlXPathFreeNodeSet(nodes);
     
@@ -117,7 +117,7 @@ void NavigationTable::LoadChildElements(shared_ptr<NavigationElement> pElement, 
 
 shared_ptr<NavigationElement> NavigationTable::BuildNavigationPoint(xmlNodePtr liNode)
 {
-    auto elementPtr = std::dynamic_pointer_cast<NavigationElement>(shared_from_this());
+    auto elementPtr = CastPtr<NavigationElement>();
     xmlNodePtr liChild = liNode->children;
 
     if(liChild == nullptr)
@@ -125,7 +125,7 @@ shared_ptr<NavigationElement> NavigationTable::BuildNavigationPoint(xmlNodePtr l
         return nullptr;
     }
 
-    auto point = std::make_shared<NavigationPoint>(elementPtr);
+    auto point = NavigationPoint::New(elementPtr);
 
     for ( ; liChild != nullptr; liChild = liChild->next )
     {

@@ -7,22 +7,37 @@
 //
 
 #include "filter_manager_impl.h"
+#include "filter_chain.h"
+#include <vector>
 
 EPUB3_BEGIN_NAMESPACE
 
-ContentFilter *FilterManagerImpl::GetFilter(const ManifestItem *item, const EncryptionInfo *encInfo, const ContentFilter::ConstructorParameters *parameters)
+ContentFilterPtr FilterManagerImpl::GetFilterByName(const string& name, ConstPackagePtr package) const
 {
-    if (m_filterRecord && m_filterRecord->IsFilterApplicable(item, encInfo))
+    for ( auto& item : m_registeredFilters )
     {
-        return m_filterRecord->CreateFilter(parameters);
+        if ( item.GetFilterName() == name )
+            return item.CreateFilter(package);
     }
-    
     return nullptr;
 }
 
-void FilterManagerImpl::RegisterFilter(ContentFilter::TypeSnifferFn sniffer, ContentFilter::TypeFactoryFn factory)
+void FilterManagerImpl::RegisterFilter(const string& name, ContentFilter::FilterPriority priority, ContentFilter::TypeFactoryFn factory)
 {
-    m_filterRecord.reset(new FilterManager::Record(sniffer, factory));
+    m_registeredFilters.emplace(name, priority, factory);
+}
+
+FilterChainPtr FilterManagerImpl::BuildFilterChainForPackage(ConstPackagePtr package) const
+{
+    shared_vector<ContentFilter> filters;
+    for ( auto& record : m_registeredFilters )
+    {
+        ContentFilterPtr filter = record.CreateFilter(package);
+        if ( filter )
+            filters.push_back(filter);
+    }
+    
+    return FilterChain::New(filters);
 }
 
 EPUB3_END_NAMESPACE

@@ -31,6 +31,8 @@
 #include <sstream>
 #include <libxml/tree.h>
 
+#include <ePub3/Forward.h>
+
 #define ePub3NamespaceURI "http://www.idpf.org/2007/ops"
 #define MathMLNamespaceURI "http://www.w3.org/1998/Math/MathML"
 #define PLSNamespaceURI "http://www.w3.org/2005/01/pronunciation-lexicon"

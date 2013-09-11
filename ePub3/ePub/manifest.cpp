@@ -22,6 +22,7 @@
 #include "manifest.h"
 #include "package.h"
 #include "byte_stream.h"
+#include "container.h"
 #include REGEX_INCLUDE
 #include <sstream>
 
@@ -155,7 +156,7 @@ ManifestItem::ManifestItem(ManifestItem&& o) : OwnedBy(std::move(o)), PropertyHo
 ManifestItem::~ManifestItem()
 {
 }
-bool ManifestItem::ParseXML(ManifestItemPtr& sharedMe, xmlNodePtr node)
+bool ManifestItem::ParseXML(xmlNodePtr node)
 {
     SetXMLIdentifier(_getProp(node, "id"));
     if ( XMLIdentifier().empty() )
@@ -176,7 +177,7 @@ bool ManifestItem::ParseXML(ManifestItemPtr& sharedMe, xmlNodePtr node)
 }
 string ManifestItem::AbsolutePath() const
 {
-    return _Str(this->Owner()->BasePath(), BaseHref());
+    return _Str(GetPackage()->BasePath(), BaseHref());
 }
 shared_ptr<ManifestItem> ManifestItem::MediaOverlay() const
 {
@@ -214,6 +215,11 @@ bool ManifestItem::HasProperty(const std::vector<IRI>& properties) const
     }
     return false;
 }
+EncryptionInfoPtr ManifestItem::GetEncryptionInfo() const
+{
+    ContainerPtr container = GetPackage()->GetContainer();
+    return container->EncryptionInfoForPath(AbsolutePath());
+}
 xmlDocPtr ManifestItem::ReferencedDocument() const
 {
     // TODO: handle remote URLs
@@ -238,10 +244,27 @@ xmlDocPtr ManifestItem::ReferencedDocument() const
 }
 unique_ptr<ByteStream> ManifestItem::Reader() const
 {
-    auto package = this->Owner();
+    auto package = GetPackage();
     if ( !package )
         return nullptr;
-    return package->ReadStreamForRelativePath(BaseHref());
+    
+    auto container = package->GetContainer();
+    if ( !container )
+        return nullptr;
+    
+    return container->GetArchive()->ByteStreamAtPath(AbsolutePath());
+}
+unique_ptr<AsyncByteStream> ManifestItem::AsyncReader() const
+{
+    auto package = GetPackage();
+    if ( !package )
+        return nullptr;
+    
+    auto container = package->GetContainer();
+    if ( !container )
+        return nullptr;
+    
+    return container->GetArchive()->AsyncByteStreamAtPath(AbsolutePath());
 }
 
 EPUB3_END_NAMESPACE

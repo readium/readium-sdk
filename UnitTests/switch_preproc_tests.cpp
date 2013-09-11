@@ -312,10 +312,11 @@ xml:lang="en">
 TEST_CASE("Default processor should render epub:default only", "")
 {
     SwitchPreprocessor proc;
+    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext());
     
     size_t outLen = 0;
     char* input = strdup(gInput);
-    char* output = reinterpret_cast<char*>(proc.FilterData(input, sizeof(gInput), &outLen));
+    char* output = reinterpret_cast<char*>(proc.FilterData(ctx.get(), input, sizeof(gInput), &outLen));
     output[outLen] = '\0';
     
     INFO("Output:\n" << output);
@@ -328,11 +329,13 @@ TEST_CASE("Default processor should render epub:default only", "")
 
 TEST_CASE("Processors should be able to support a mix of supported and unsupported namespaces", "")
 {
-    SwitchPreprocessor cmlProc({"http://www.xml-cml.org/schema"}), mathmlProc({MathMLNamespaceURI});
+    SwitchPreprocessor proc;
+    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext());
     
+    SwitchPreprocessor::SetSupportedNamespaces({"http://www.xml-cml.org/schema"});
     size_t outLen = 0;
     char* input = strdup(gInput);
-    char* output = reinterpret_cast<char*>(cmlProc.FilterData(input, sizeof(gInput), &outLen));
+    char* output = reinterpret_cast<char*>(proc.FilterData(ctx.get(), input, sizeof(gInput), &outLen));
     output[outLen] = '\0';
     
     INFO("CML output:\n" << output);
@@ -342,8 +345,10 @@ TEST_CASE("Processors should be able to support a mix of supported and unsupport
         delete [] output;
     free(input);
     
+    SwitchPreprocessor::SetSupportedNamespaces({MathMLNamespaceURI});
+    ctx.reset(proc.MakeFilterContext());
     input = strdup(gInput);
-    output = reinterpret_cast<char*>(mathmlProc.FilterData(input, sizeof(gInput), &outLen));
+    output = reinterpret_cast<char*>(proc.FilterData(ctx.get(), input, sizeof(gInput), &outLen));
     output[outLen] = '\0';
     
     INFO("MathML output:\n" << output);
@@ -352,15 +357,20 @@ TEST_CASE("Processors should be able to support a mix of supported and unsupport
     if ( output != input )
         delete [] output;
     free(input);
+    
+    SwitchPreprocessor::SetSupportedNamespaces({});
 }
 
 TEST_CASE("Processors should be able to support multiple supported namespaces", "")
 {
-    SwitchPreprocessor proc({"http://www.xml-cml.org/schema", MathMLNamespaceURI});
+    SwitchPreprocessor proc;
+    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext());
+    
+    SwitchPreprocessor::SetSupportedNamespaces({"http://www.xml-cml.org/schema", MathMLNamespaceURI});
     
     size_t outLen = 0;
     char* input = strdup(gInput);
-    char* output = reinterpret_cast<char*>(proc.FilterData(input, sizeof(gInput), &outLen));
+    char* output = reinterpret_cast<char*>(proc.FilterData(ctx.get(), input, sizeof(gInput), &outLen));
     output[outLen] = '\0';
     
     INFO("Output:\n" << output);
@@ -369,15 +379,20 @@ TEST_CASE("Processors should be able to support multiple supported namespaces", 
     if ( output != input )
         delete [] output;
     free(input);
+    
+    SwitchPreprocessor::SetSupportedNamespaces({});
 }
 
 TEST_CASE("Processors should gracefully handle comments around non-default switched content", "")
 {
     SwitchPreprocessor proc;
+    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext());
+    
+    SwitchPreprocessor::SetSupportedNamespaces({});
     
     size_t outLen = 0;
     char* input = strdup(gCommentedInput);
-    char* output = reinterpret_cast<char*>(proc.FilterData(input, sizeof(gCommentedInput), &outLen));
+    char* output = reinterpret_cast<char*>(proc.FilterData(ctx.get(), input, sizeof(gCommentedInput), &outLen));
     output[outLen] = '\0';
     
     INFO("Output:\n" << output);
@@ -386,15 +401,18 @@ TEST_CASE("Processors should gracefully handle comments around non-default switc
     if ( output != input )
         delete [] output;
     free(input);
+    
+    SwitchPreprocessor::SetSupportedNamespaces({});
 }
 
 TEST_CASE("Processors should NOT uncomment switch constructs which have been commented out in their entirety", "Note that the switches themselves will still be processed.")
 {
     SwitchPreprocessor proc;
+    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext());
     
     size_t outLen = 0;
     char* input = strdup(gTotallyCommentedInput);
-    char* output = reinterpret_cast<char*>(proc.FilterData(input, sizeof(gTotallyCommentedInput), &outLen));
+    char* output = reinterpret_cast<char*>(proc.FilterData(ctx.get(), input, sizeof(gTotallyCommentedInput), &outLen));
     output[outLen] = '\0';
     
     INFO("Output:\n" << output);
@@ -403,4 +421,6 @@ TEST_CASE("Processors should NOT uncomment switch constructs which have been com
     if ( output != input )
         delete [] output;
     free(input);
+    
+    SwitchPreprocessor::SetSupportedNamespaces({});
 }

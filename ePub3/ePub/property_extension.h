@@ -39,7 +39,7 @@ typedef shared_ptr<PropertyExtension>   PropertyExtensionPtr;
 
 ///
 /// An extension to an existing property, providing additional related metadata.
-class PropertyExtension : public std::enable_shared_from_this<PropertyExtension>, public OwnedBy<Property>, public XMLIdentifiable
+class PropertyExtension : public PointerType<PropertyExtension>, public OwnedBy<Property>, public XMLIdentifiable
 {
 private:
     ///

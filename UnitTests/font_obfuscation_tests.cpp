@@ -36,23 +36,24 @@ TEST_CASE("Obfuscated fonts are decrypted properly", "")
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = c->DefaultPackage();
     ManifestItemPtr manifestItem = pkg->ManifestItemWithID(FONT_MANIFEST_ID);
+    ManifestItemPtr nonFontItem = pkg->FirstSpineItem()->ManifestItem();
     auto encInfo = c->EncryptionInfoForPath(FONT_SUBPATH);
     
     // should match this manifest item & encInfo
-    FontObfuscator obfuscator(c.get());
-    REQUIRE(obfuscator.TypeSniffer()(manifestItem.get(), encInfo.get()));
+    FontObfuscator obfuscator(c);
+    FilterContext* ctx = obfuscator.MakeFilterContext();
+    
+    REQUIRE(obfuscator.TypeSniffer()(manifestItem));
     
     // should not match this manifest item
-    REQUIRE_FALSE(obfuscator.TypeSniffer()(pkg->ManifestItemWithID("nav").get(), encInfo.get()));
-    
-    // should not match with no encInfo
-    REQUIRE_FALSE(obfuscator.TypeSniffer()(manifestItem.get(), nullptr));
+    REQUIRE_FALSE(obfuscator.TypeSniffer()(pkg->ManifestItemWithID("nav")));
     
     // should not match with a different algorithm
     EncryptionInfo otherEncInfo(c);
-    otherEncInfo.SetPath(FONT_SUBPATH);
-    otherEncInfo.SetAlgorithm("http://www.w3.org/2001/04/xmlenc#rsa-1_5");
-    REQUIRE_FALSE(obfuscator.TypeSniffer()(manifestItem.get(), &otherEncInfo));
+    auto alg = encInfo->Algorithm();
+    encInfo->SetAlgorithm("http://www.w3.org/2001/04/xmlenc#rsa-1_5");
+    REQUIRE_FALSE(obfuscator.TypeSniffer()(manifestItem));
+    encInfo->SetAlgorithm(alg);
     
     // Read the first 1080 bytes of the font file
     auto stream = c->ReadStreamAtPath(FONT_SUBPATH);
@@ -66,10 +67,12 @@ TEST_CASE("Obfuscated fonts are decrypted properly", "")
     REQUIRE_FALSE(memcmp(bytes, ident, 4) == 0);
     
     size_t outLen = 0;
-    void* output = obfuscator.FilterData(bytes, numRead, &outLen);
+    void* output = obfuscator.FilterData(ctx, bytes, numRead, &outLen);
     REQUIRE(outLen != 0);
     REQUIRE(memcmp(output, ident, 4) == 0);
     
     if ( output != bytes )
         delete [] reinterpret_cast<uint8_t*>(output);
+    
+    delete ctx;
 }

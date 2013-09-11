@@ -59,39 +59,39 @@ void RunLoop::PerformFunction(std::function<void ()> fn)
 {
     CFRunLoopPerformBlock(_cf, ADD_MODE_ARG, ^{fn();});
 }
-void RunLoop::AddTimer(Timer* timer)
+void RunLoop::AddTimer(TimerPtr timer)
 {
     CFRunLoopAddTimer(_cf, timer->_cf, ADD_MODE_ARG);
 }
-bool RunLoop::ContainsTimer(Timer* timer) const
+bool RunLoop::ContainsTimer(TimerPtr timer) const
 {
     return (CFRunLoopContainsTimer(_cf, timer->_cf, ADD_MODE_ARG) == TRUE);
 }
-void RunLoop::RemoveTimer(Timer* timer)
+void RunLoop::RemoveTimer(TimerPtr timer)
 {
     CFRunLoopRemoveTimer(_cf, timer->_cf, ADD_MODE_ARG);
 }
-void RunLoop::AddEventSource(EventSource* source)
+void RunLoop::AddEventSource(EventSourcePtr source)
 {
     CFRunLoopAddSource(_cf, source->_cf, ADD_MODE_ARG);
 }
-bool RunLoop::ContainsEventSource(EventSource* source) const
+bool RunLoop::ContainsEventSource(EventSourcePtr source) const
 {
     return (CFRunLoopContainsSource(_cf, source->_cf, ADD_MODE_ARG) == TRUE);
 }
-void RunLoop::RemoveEventSource(EventSource* source)
+void RunLoop::RemoveEventSource(EventSourcePtr source)
 {
     CFRunLoopRemoveSource(_cf, source->_cf, ADD_MODE_ARG);
 }
-void RunLoop::AddObserver(Observer* observer)
+void RunLoop::AddObserver(ObserverPtr observer)
 {
     CFRunLoopAddObserver(_cf, observer->_cf, ADD_MODE_ARG);
 }
-bool RunLoop::ContainsObserver(Observer* observer) const
+bool RunLoop::ContainsObserver(ObserverPtr observer) const
 {
     return (CFRunLoopContainsObserver(_cf, observer->_cf, ADD_MODE_ARG) == TRUE);
 }
-void RunLoop::RemoveObserver(Observer* observer)
+void RunLoop::RemoveObserver(ObserverPtr observer)
 {
     CFRunLoopRemoveObserver(_cf, observer->_cf, ADD_MODE_ARG);
 }
@@ -237,7 +237,7 @@ void RunLoop::Observer::Cancel()
     CFRunLoopObserverInvalidate(_cf);
 }
 
-RunLoop::EventSource::EventSource(EventHandlerFn fn) : _cf(nullptr), _rl(), _fn()
+RunLoop::EventSource::EventSource(EventHandlerFn fn) : _cf(nullptr), _rl(), _fn(fn)
 {
     CFRunLoopSourceContext ctx = {
         .version            = 0,

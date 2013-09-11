@@ -24,7 +24,6 @@
 
 #include <ePub3/filter.h>
 #include <ePub3/encryption.h>
-#include <ePub3/container_constructor_parameter.h>
 #include REGEX_INCLUDE
 #include <cstring>
 
@@ -39,7 +38,7 @@ EPUB3_BEGIN_NAMESPACE
  loading or when storing content.
  @see http://www.idpf.org/epub/30/spec/epub30-ocf.html#font-obfuscation
  */
-class FontObfuscator : public ContentFilter
+class FontObfuscator : public ContentFilter, public PointerType<FontObfuscator>
 {
 protected:
     static const size_t         KeySize = 20;       // SHA-1 key size = 20 bytes
@@ -59,18 +58,34 @@ protected:
      obfuscation algorithm.
      2. The item must be a font resource.
      */
-    static bool FontTypeSniffer(const ManifestItem* item, const EncryptionInfo* encInfo) {
+    static bool FontTypeSniffer(ConstManifestItemPtr item) {
+        EncryptionInfoPtr encInfo = item->GetEncryptionInfo();
         if ( encInfo == nullptr || encInfo->Algorithm() != FontObfuscationAlgorithmID )
             return false;
         return REGEX_NS::regex_match(item->MediaType().stl_str(), TypeCheck);
     }
     
-    static ContentFilter *FontObfuscatorFactory(const ContentFilter::ConstructorParameters *parameters);
+    static ContentFilterPtr FontObfuscatorFactory(ConstPackagePtr item);
     
 private:
     ///
     /// There is no default constructor.
     FontObfuscator() _DELETED_;
+    
+private:
+    class FontObfuscationContext : public FilterContext
+    {
+    private:
+        size_t          _count;
+        
+    public:
+        FontObfuscationContext() : FilterContext(), _count(0) {}
+        virtual ~FontObfuscationContext() {}
+        
+        size_t  ProcessedCount() const      { return _count; }
+        void SetProcessedCount(size_t val)  { _count = val; }
+        
+    };
 
 public:
     /**
@@ -81,19 +96,21 @@ public:
      only used during construction.
      @see BuildKey(const Container*)
      */
-    FontObfuscator(const ContainerConstructorParameter *parameter) : ContentFilter(FontTypeSniffer), _bytesFiltered(0) {
-        BuildKey(parameter->GetContainer());
+    FontObfuscator(ConstContainerPtr container) : ContentFilter(FontTypeSniffer) {
+        BuildKey(container);
     }
     ///
     /// Copy constructor.
-    FontObfuscator(const FontObfuscator& o) : ContentFilter(o), _bytesFiltered(o._bytesFiltered) {
+    FontObfuscator(const FontObfuscator& o) : ContentFilter(o) {
         std::memcpy(_key, o._key, KeySize);
     }
     ///
     /// Move constructor.
-    FontObfuscator(FontObfuscator&& o) : ContentFilter(std::move(o)), _bytesFiltered(o._bytesFiltered) {
+    FontObfuscator(FontObfuscator&& o) : ContentFilter(std::move(o)) {
         std::memcpy(_key, o._key, KeySize);
     }
+    
+    virtual FilterContext* MakeFilterContext() const OVERRIDE { return new FontObfuscationContext; }
     
     /**
      Applies the font obfuscation algorithm to the resource data.
@@ -103,13 +120,12 @@ public:
      @param outputLen Storage for the count of bytes being returned.
      @result The obfuscated or de-obfuscated bytes.
      */
-    virtual void * FilterData(void * data, size_t len, size_t *outputLen);
+    virtual void * FilterData(FilterContext* context, void * data, size_t len, size_t *outputLen) OVERRIDE;
     
     static void Register();
     
 protected:
     uint8_t             _key[KeySize];
-    size_t              _bytesFiltered;     // NOT copied
     
     /**
      Builds the obfuscaton key using data from the container.
@@ -119,7 +135,7 @@ protected:
      @see http://www.idpf.org/epub/30/spec/epub30-ocf.html#fobfus-keygen
      */
     EPUB3_EXPORT
-    bool BuildKey(const Container* container);
+    bool BuildKey(ConstContainerPtr container);
 };
 
 EPUB3_END_NAMESPACE

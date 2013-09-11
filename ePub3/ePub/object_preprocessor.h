@@ -37,12 +37,15 @@ class Package;
  elements with `iframe` elements referencing the appropriate DHTML handler.
  @ingroup filters
  */
-class ObjectPreprocessor : public ContentFilter
+class ObjectPreprocessor : public ContentFilter, public PointerType<ObjectPreprocessor>
 {
 protected:
     ///
     /// Matches only mnifest items with a media-type of "application/xhtml+xml" or "text/html".
-    static bool ShouldApply(const ManifestItem* item, const EncryptionInfo* encInfo);
+    static bool ShouldApply(ConstManifestItemPtr item);
+    
+    /// The factory routine
+    static ContentFilterPtr ObjectFilterFactory(ConstPackagePtr package);
 
 private:
     ///
@@ -56,7 +59,7 @@ public:
      @param pkg The package to which this filter will apply.
      */
     EPUB3_EXPORT
-    ObjectPreprocessor(const Package* pkg, const string& openButtonTitle = "Open Fullscreen");
+    ObjectPreprocessor(ConstPackagePtr pkg, const string& openButtonTitle = "Open Fullscreen");
     
     ///
     /// Standard copy constructor.
@@ -72,7 +75,7 @@ public:
     
     ///
     /// This preprocessor requires access to the entire content document at once.
-    virtual bool    RequiresCompleteData()      const   { return true; }
+    virtual bool    RequiresCompleteData() const OVERRIDE   { return true; }
     
     /**
      Performs the static replacement of `object` tags whose `type` attribute
@@ -97,7 +100,10 @@ public:
      is our intention that these rules will make it possible for content authors to
      anticipate these substitutions and build CSS or JavaScript rules directly.
      */
-    virtual void*   FilterData(void* data, size_t len, size_t* outputLen);
+    virtual void*   FilterData(FilterContext* context, void* data, size_t len, size_t* outputLen) OVERRIDE;
+    
+    // register with the filter manager
+    static void Register();
     
 protected:
     /**

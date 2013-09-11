@@ -44,7 +44,7 @@ class ManifestItem;
  
  @ingroup utilities
  */
-class MediaSupportInfo : public std::enable_shared_from_this<MediaSupportInfo>, public OwnedBy<Package>
+class MediaSupportInfo : public PointerType<MediaSupportInfo>, public OwnedBy<Package>
 {
 public:
     ///
@@ -63,13 +63,13 @@ public:
 public:
     ///
     /// The default constructor creates an object with no information.
-    EPUB3_EXPORT    MediaSupportInfo(shared_ptr<Package>& owner);
+    EPUB3_EXPORT    MediaSupportInfo(shared_ptr<Package> owner);
     ///
     /// A simple constructor, normally used to define intrinsic support.
-    EPUB3_EXPORT    MediaSupportInfo(shared_ptr<Package>& owner, const string& mediaType, bool supported=true);
+    EPUB3_EXPORT    MediaSupportInfo(shared_ptr<Package> owner, const string& mediaType, bool supported=true);
     ///
     /// The real constructor takes a specific SupportType value.
-    EPUB3_EXPORT    MediaSupportInfo(shared_ptr<Package>& owner, const string& mediaType, SupportType support);
+    EPUB3_EXPORT    MediaSupportInfo(shared_ptr<Package> owner, const string& mediaType, SupportType support);
     ///
     /// Copy constructor.
     EPUB3_EXPORT    MediaSupportInfo(const MediaSupportInfo& o);

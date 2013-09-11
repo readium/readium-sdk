@@ -38,7 +38,7 @@ typedef shared_ptr<NavigationPoint> NavigationPointPtr;
 /**
  @ingroup navigation
  */
-class NavigationPoint : public NavigationElement, public std::enable_shared_from_this<NavigationPoint>, public OwnedBy<NavigationElement>
+class NavigationPoint : public NavigationElement, public PointerType<NavigationPoint>, public OwnedBy<NavigationElement>
 {
 private:
                             NavigationPoint(const NavigationPoint&)     _DELETED_;

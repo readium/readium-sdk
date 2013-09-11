@@ -76,7 +76,7 @@ void RunLoop::PerformFunction(std::function<void ()> fn)
     AddEventSource(ev);
     ev->Signal();
 }
-void RunLoop::AddTimer(Timer* timer)
+void RunLoop::AddTimer(TimerPtr timer)
 {
     StackLock lock(_listLock);
     if ( ContainsTimer(timer) )
@@ -85,12 +85,12 @@ void RunLoop::AddTimer(Timer* timer)
     _handlers[timer->_pipeFDs[0]] = timer;
     ALooper_addFd(_looper, timer->_pipeFDs[0], ALOOPER_POLL_CALLBACK, ALOOPER_EVENT_INPUT, &RunLoop::_ReceiveLoopEvent, reinterpret_cast<void*>(this));
 }
-bool RunLoop::ContainsTimer(Timer* timer) const
+bool RunLoop::ContainsTimer(TimerPtr timer) const
 {
     StackLock lock(const_cast<RunLoop*>(this)->_listLock);
     return (_handlers.find(timer->_pipeFDs[0]) != _handlers.end());
 }
-void RunLoop::RemoveTimer(Timer* timer)
+void RunLoop::RemoveTimer(TimerPtr timer)
 {
     StackLock lock(_listLock);
     auto found = _handlers.find(timer->_pipeFDs[0]);
@@ -100,7 +100,7 @@ void RunLoop::RemoveTimer(Timer* timer)
         _handlers.erase(found);
     }
 }
-void RunLoop::AddObserver(Observer* observer)
+void RunLoop::AddObserver(ObserverPtr observer)
 {
     StackLock lock(_listLock);
     if ( ContainsObserver(observer) )
@@ -109,17 +109,17 @@ void RunLoop::AddObserver(Observer* observer)
     _observers.push_back(observer);
     _observerMask |= observer->_acts;
 }
-bool RunLoop::ContainsObserver(Observer* obs) const
+bool RunLoop::ContainsObserver(ObserverPtr obs) const
 {
     StackLock lock(const_cast<RunLoop*>(this)->_listLock);
-    for ( const Observer* o : _observers )
+    for ( const ObserverPtr o : _observers )
     {
         if ( obs == o )
             return true;
     }
     return false;
 }
-void RunLoop::RemoveObserver(Observer* obs)
+void RunLoop::RemoveObserver(ObserverPtr obs)
 {
     StackLock lock(_listLock);
     for ( auto iter = _observers.begin(), end = _observers.end(); iter != end; ++iter )
@@ -131,7 +131,7 @@ void RunLoop::RemoveObserver(Observer* obs)
         }
     }
 }
-void RunLoop::AddEventSource(EventSource* ev)
+void RunLoop::AddEventSource(EventSourcePtr ev)
 {
     StackLock lock(_listLock);
     if ( ContainsEventSource(ev) )
@@ -140,12 +140,12 @@ void RunLoop::AddEventSource(EventSource* ev)
     _handlers[ev->_evt[0]] = ev;
     ALooper_addFd(_looper, ev->_evt[0], ALOOPER_POLL_CALLBACK, ALOOPER_EVENT_INPUT, &_ReceiveLoopEvent, reinterpret_cast<void*>(this));
 }
-bool RunLoop::ContainsEventSource(EventSource* ev) const
+bool RunLoop::ContainsEventSource(EventSourcePtr ev) const
 {
     StackLock lock(const_cast<RunLoop*>(this)->_listLock);
     return (_handlers.find(ev->_evt[0]) != _handlers.end());
 }
-void RunLoop::RemoveEventSource(EventSource* ev)
+void RunLoop::RemoveEventSource(EventSourcePtr ev)
 {
     StackLock lock(_listLock);
     auto found = _handlers.find(ev->_evt[0]);
@@ -192,6 +192,12 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
 
     do
     {
+        if ( _handlers.empty() )
+        {
+            reason = ExitReason::RunFinished;
+            break;
+        }
+        
         RunObservers(Observer::ActivityFlags::RunLoopBeforeWaiting);
         _listLock.unlock();
         _waiting = true;
@@ -239,7 +245,7 @@ void RunLoop::RunObservers(Observer::Activity activity)
     if ( (_observerMask & activity) == 0 )
         return;
     
-    std::vector<Observer*> observersToRemove;
+    shared_vector<Observer> observersToRemove;
     for ( auto observer : _observers )
     {
         if ( observer->IsCancelled() )
@@ -275,7 +281,7 @@ int RunLoop::_ReceiveLoopEvent(int fd, int events, void* data)
     ::read(fd, buf, 12);
     
     // what type is it?
-    Timer* pTimer = (Timer*)(iter->second);
+    TimerPtr pTimer = std::dynamic_pointer_cast<Timer>(iter->second);
     if (pTimer != nullptr)
     {
         // it's a Timer!
@@ -302,7 +308,7 @@ int RunLoop::_ReceiveLoopEvent(int fd, int events, void* data)
     }
     
     // not a Timer? Must be an EventSource then
-    EventSource *pSource = (EventSource*)(iter->second);
+    EventSourcePtr pSource = std::dynamic_pointer_cast<EventSource>(iter->second);
     if ( pSource != nullptr )
     {
         // it *is* an EventSource!

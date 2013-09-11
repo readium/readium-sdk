@@ -77,7 +77,7 @@ void RunLoop::PerformFunction(std::function<void ()> fn)
     AddEventSource(ev);
     ev->Signal();
 }
-void RunLoop::AddTimer(Timer* timer)
+void RunLoop::AddTimer(TimerPtr timer)
 {
     StackLock _(_listLock);
     if ( ContainsTimer(timer) )
@@ -87,12 +87,12 @@ void RunLoop::AddTimer(Timer* timer)
     _resetHandles = true;
     WakeUp();
 }
-bool RunLoop::ContainsTimer(Timer* timer) const
+bool RunLoop::ContainsTimer(TimerPtr timer) const
 {
     StackLock _(const_cast<RunLoop*>(this)->_listLock);
     return _timers.find(timer->_handle) != _timers.end();
 }
-void RunLoop::RemoveTimer(Timer* timer)
+void RunLoop::RemoveTimer(TimerPtr timer)
 {
     StackLock _(_listLock);
     auto iter = _timers.find(timer->_handle);
@@ -103,7 +103,7 @@ void RunLoop::RemoveTimer(Timer* timer)
         WakeUp();
     }
 }
-void RunLoop::AddObserver(Observer* obs)
+void RunLoop::AddObserver(ObserverPtr obs)
 {
     StackLock _(_listLock);
     if ( ContainsObserver(obs) )
@@ -112,7 +112,7 @@ void RunLoop::AddObserver(Observer* obs)
     _observers.push_back(obs);
     _observerMask |= obs->_acts;
 }
-bool RunLoop::ContainsObserver(Observer* obs) const
+bool RunLoop::ContainsObserver(ObserverPtr obs) const
 {
     StackLock _(const_cast<RunLoop*>(this)->_listLock);
     for ( auto& o : _observers )
@@ -122,7 +122,7 @@ bool RunLoop::ContainsObserver(Observer* obs) const
     }
     return false;
 }
-void RunLoop::RemoveObserver(Observer* obs)
+void RunLoop::RemoveObserver(ObserverPtr obs)
 {
     StackLock _(_listLock);
     for ( auto pos = _observers.begin(), end = _observers.end(); pos != end; ++pos )
@@ -134,7 +134,7 @@ void RunLoop::RemoveObserver(Observer* obs)
         }
     }
 }
-void RunLoop::AddEventSource(EventSource* source)
+void RunLoop::AddEventSource(EventSourcePtr source)
 {
     StackLock _(_listLock);
     if ( ContainsEventSource(source) )
@@ -144,12 +144,12 @@ void RunLoop::AddEventSource(EventSource* source)
     _resetHandles = true;
     WakeUp();
 }
-bool RunLoop::ContainsEventSource(EventSource* source) const
+bool RunLoop::ContainsEventSource(EventSourcePtr source) const
 {
     StackLock _(const_cast<RunLoop*>(this)->_listLock);
     return _sources.find(source->_event) != _sources.end();
 }
-void RunLoop::RemoveEventSource(EventSource* source)
+void RunLoop::RemoveEventSource(EventSourcePtr source)
 {
     StackLock _(_listLock);
     auto iter = _sources.find(source->_event);
