@@ -141,7 +141,7 @@ std::size_t RingBuffer::WriteBytes(const uint8_t *buf, std::size_t len)
 void RingBuffer::RemoveBytes(std::size_t len) _NOEXCEPT
 {
     _readPos += len;
-    if ( _readPos > _capacity )
+    if ( _readPos >= _capacity )
         _readPos -= _capacity;
     _numBytes -= len;
 }

@@ -100,31 +100,8 @@ void FilterChain::ChainLinkProcessor::ScheduleProcessor(RunLoopPtr runLoop)
                 // we *know* that all links on a given chain fire events serially on
                 // the same thread, so we don't need to dick about with locks here
                 
-                uint8_t buf[ASYNC_BUF_SIZE];
-                ssize_t bytesToMove = std::min(stream->BytesAvailable(), _output->SpaceAvailable());
-                
-                while ( bytesToMove > 0 )
-                {
-                    ssize_t thisChunk = std::min(ssize_t(ASYNC_BUF_SIZE), bytesToMove);
-                    thisChunk = stream->ReadBytes(buf, thisChunk);      // consumes read bytes from the buffer
-                    
-                    if ( _filter->RequiresCompleteData() )
-                    {
-                        _collectionBuffer.AddBytes(buf, thisChunk);
-                    }
-                    else
-                    {
-                        size_t filteredLen = 0;
-                        void* filteredData = _filter->FilterData(_context.get(), buf, thisChunk, &filteredLen);
-                        if ( filteredData == nullptr || filteredLen == 0 ) {
-                            throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
-                        }
-                        
-                        _output->WriteBytes(filteredData, filteredLen);
-                    }
-                    
-                    bytesToMove -= thisChunk;
-                }
+                // there are bytes available to read -- pump as many through as we can
+                FunnelBytes();
                 
                 break;
             }
@@ -168,7 +145,61 @@ void FilterChain::ChainLinkProcessor::ScheduleProcessor(RunLoopPtr runLoop)
         }
     });
     
+    // if this is the last link in the chain, this will ultimately be replaced by the
+    // SDK client. If it's only an intermediary link, however, we need to ensure that
+    // notification of read-space-available messages is passed back down the chain to
+    // the actual resource stream, otherwise the whole process may stall...
+    _output->SetEventHandler([this](AsyncEvent evt, AsyncByteStream* stream) {
+        switch ( evt )
+        {
+            case AsyncEvent::HasSpaceAvailable:
+            {
+                // pull more data through into the output stream
+                FunnelBytes();
+                break;
+            }
+                
+            case AsyncEvent::ErrorOccurred:
+                std::cerr << "ChainLinkProcessor input stream error: " << stream->Error() << std::endl;
+                _output->Close();
+                break;
+                
+            default:
+                break;
+        }
+    });
+    
     _input->SetTargetRunLoop(runLoop);
+    _output->SetTargetRunLoop(runLoop);
+}
+
+void FilterChain::ChainLinkProcessor::FunnelBytes()
+{
+    uint8_t buf[ASYNC_BUF_SIZE];
+    ssize_t bytesToMove = std::min(_input->BytesAvailable(), _output->SpaceAvailable());
+    
+    while ( bytesToMove > 0 )
+    {
+        ssize_t thisChunk = std::min(ssize_t(ASYNC_BUF_SIZE), bytesToMove);
+        thisChunk = _input->ReadBytes(buf, thisChunk);      // consumes read bytes from the buffer
+        
+        if ( _filter->RequiresCompleteData() )
+        {
+            _collectionBuffer.AddBytes(buf, thisChunk);
+        }
+        else
+        {
+            size_t filteredLen = 0;
+            void* filteredData = _filter->FilterData(_context.get(), buf, thisChunk, &filteredLen);
+            if ( filteredData == nullptr || filteredLen == 0 ) {
+                throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
+            }
+            
+            _output->WriteBytes(filteredData, filteredLen);
+        }
+        
+        bytesToMove -= thisChunk;
+    }
 }
 
 EPUB3_END_NAMESPACE
