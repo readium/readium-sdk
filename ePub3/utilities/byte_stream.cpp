@@ -106,6 +106,9 @@ void AsyncByteStream::SetTargetRunLoop(RunLoopPtr rl) _NOEXCEPT
 }
 void AsyncByteStream::Close()
 {
+    if ( _closing.test_and_set() )
+        return;
+    
     if ( bool(_eventSource) )
     {
         if ( !(_eventSource->IsCancelled()) )
@@ -368,8 +371,8 @@ AsyncPipe::Pair AsyncPipe::LinkedPair(size_type bufsize)
     result.second->_readbuf = result.first->_writebuf;
     result.second->_writebuf = result.first->_readbuf;
     
-    result.first->_counterpart = result.second.get();
-    result.second->_counterpart = result.first.get();
+    result.first->_counterpart = result.second;
+    result.second->_counterpart = result.first;
     
     return result;
 }
@@ -381,20 +384,19 @@ void AsyncPipe::Close()
 {
     _self_closed = true;
     
-    if ( bool(_eventHandler) )
-        _eventHandler(AsyncEvent::EndEncountered, this);
+    auto handler = _eventHandler;
+    if ( bool(handler) )
+        handler(AsyncEvent::EndEncountered, this);
     
     AsyncByteStream::Close();
     
-    if (_counterpart != nullptr)
-    {
-        _counterpart->CounterpartClosed();
-        _counterpart = nullptr;
-    }
+    auto counterpart = _counterpart.lock();
+    if ( bool(counterpart) )
+        counterpart->CounterpartClosed();
 }
 void AsyncPipe::CounterpartClosed()
 {
-    _counterpart = nullptr;
+    _counterpart.reset();
     _pair_closed = true;
     
     if ( _readbuf->BytesAvailable() == 0 )
@@ -427,8 +429,9 @@ AsyncPipe::size_type AsyncPipe::WriteBytes(const void *buf, size_type len)
 void AsyncPipe::SetTargetRunLoop(RunLoopPtr rl) _NOEXCEPT
 {
     AsyncByteStream::SetTargetRunLoop(rl);
-    if ( _counterpart != nullptr && !_pair_closed && _counterpart->_targetRunLoop == nullptr )
-        _counterpart->SetTargetRunLoop(rl);
+    auto counterpart = _counterpart.lock();
+    if ( bool(counterpart) && !_pair_closed && counterpart->_targetRunLoop.get() == nullptr )
+        counterpart->SetTargetRunLoop(rl);
 }
 ByteStream::size_type AsyncPipe::read_for_async(void *buf, size_type len)
 {
@@ -475,19 +478,24 @@ RunLoop::EventSourcePtr AsyncPipe::AsyncEventSource()
             hasWritten = true;
         }
         
-        if ( (hasRead || hasWritten) && _counterpart != nullptr )
+        auto counterpart = _counterpart.lock();
+        if ( (hasRead || hasWritten) && bool(counterpart) )
         {
-            if ( _counterpart->_eventDispatchSource != nullptr && _counterpart->_targetRunLoop != nullptr )
+            auto source = counterpart->_eventDispatchSource;
+            if ( bool(source) && !source->IsCancelled() )
             {
-                _counterpart->_eventDispatchSource->Signal();
+                source->Signal();
             }
-            else if ( bool(_counterpart->_eventHandler) )
+            else
             {
-                if ( hasRead ) {
-                    _counterpart->_eventHandler(AsyncEvent::HasSpaceAvailable, _counterpart);
-                }
-                if ( hasWritten ) {
-                    _counterpart->_eventHandler(AsyncEvent::HasBytesAvailable, _counterpart);
+                auto handler = counterpart->_eventHandler;
+                if ( bool(handler) ) {
+                    if ( hasRead ) {
+                        handler(AsyncEvent::HasSpaceAvailable, counterpart.get());
+                    }
+                    if ( hasWritten ) {
+                        handler(AsyncEvent::HasBytesAvailable, counterpart.get());
+                    }
                 }
             }
         }
