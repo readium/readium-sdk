@@ -20,6 +20,10 @@
 //
 
 
+#include <string>
+#include <vector>
+#include <typeinfo>
+
 #include <ePub3/archive.h>
 #include <ePub3/container.h>
 #include <ePub3/nav_element.h>
@@ -27,12 +31,10 @@
 #include <ePub3/nav_table.h>
 #include <ePub3/property.h>
 #include <ePub3/zip_archive.h>
-#include <string>
-#include <vector>
-#include <typeinfo>
+
+#include "jni/jni.h"
 
 #include "epub3.h"
-#include "log.h"
 #include "helpers.h"
 #include "package.h"
 
@@ -46,8 +48,10 @@ extern "C" {
 
 
 //TODO: change these to something more readable like EPUB3_PACKAGE(nativePtr)
-#define pckg    (*((shared_ptr<ePub3::Package>*)pckgPtr))
-#define contnr    (*((shared_ptr<ePub3::Container>*)contnrPtr))
+//#define pckg    (*((shared_ptr<ePub3::Package>*)pckgPtr))
+#define pckg    (static_pointer_cast<ePub3::Package>(jni::Pointer(pckgPtr).getPtr()))
+//#define contnr    (*((shared_ptr<ePub3::Container>*)contnrPtr))
+#define contnr    (static_pointer_cast<ePub3::Container>(jni::Pointer(contnrPtr).getPtr()))
 
 
 /*
