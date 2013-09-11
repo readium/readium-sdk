@@ -140,7 +140,7 @@ public:
     virtual     ~UnknownPrefix()                     _NOEXCEPT                                      {}
 };
 
-class Property : public std::enable_shared_from_this<Property>, public OwnedBy<PropertyHolder>, public XMLIdentifiable
+class Property : public PointerType<Property>, public OwnedBy<PropertyHolder>, public XMLIdentifiable
 {
 public:
     ///

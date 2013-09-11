@@ -43,7 +43,7 @@ class Container;
  @see http://www.idpf.org/epub/30/spec/epub30-ocf.html#font-obfuscation
  @see http://www.w3.org/TR/xmlenc-core1/
  */
-class EncryptionInfo : public std::enable_shared_from_this<EncryptionInfo>, public OwnedBy<Container>
+class EncryptionInfo : public PointerType<EncryptionInfo>, public OwnedBy<Container>
 {
 public:
     ///
@@ -53,7 +53,7 @@ public:
 public:
     ///
     /// Creates a new EncryptionInfo with no details filled in.
-                    EncryptionInfo(shared_ptr<Container>& owner) : OwnedBy(owner), _algorithm(), _path() {}
+                    EncryptionInfo(ContainerPtr owner) : OwnedBy(owner), _algorithm(), _path() {}
     ///
     /// Copy constructor.
                     EncryptionInfo(const EncryptionInfo& o) : OwnedBy(o), _algorithm(o._algorithm), _path(o._path) {}

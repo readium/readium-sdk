@@ -54,8 +54,6 @@ class PackageBase;
 class Package;
 class MediaOverlaysSmilModel;
 
-typedef shared_ptr<Package>     PackagePtr;
-
 /**
  The PackageBase class implements the low-level components and all storage of an OPF
  package document.  It provides direct access to spine, manifest, and metadata tables,
@@ -299,7 +297,7 @@ public:
  
  @ingroup epub-model
  */
-class Package : public PackageBase, public std::enable_shared_from_this<Package>, public PropertyHolder, public OwnedBy<Container>
+class Package : public PackageBase, public PointerType<Package>, public PropertyHolder, public OwnedBy<Container>
 {
 public:
     /**
@@ -327,6 +325,8 @@ public:
     EPUB3_EXPORT            Package(const shared_ptr<Container>& owner, const string& type);
                             Package(Package&& o) : OwnedBy(std::move(o)), PackageBase(std::move(o)) {}
     virtual                 ~Package() {}
+    
+    ContainerPtr            GetContainer()          const       { return Owner(); }
     
     virtual bool            Open(const string& path);
     bool                    _OpenForTest(xmlDocPtr doc, const string& basePath);
@@ -461,8 +461,16 @@ public:
     unique_ptr<ArchiveXmlReader>    XmlReaderForRelativePath(const string& path)    const {
         return unique_ptr<ArchiveXmlReader>(new ArchiveXmlReader(ReaderForRelativePath(path)));
     }
+    
     EPUB3_EXPORT
     unique_ptr<ByteStream>        ReadStreamForRelativePath(const string& path)   const;
+    
+    EPUB3_EXPORT
+    shared_ptr<AsyncByteStream>     ContentStreamForItem(SpineItemPtr spineItem)    const {
+        return ContentStreamForItem(spineItem->ManifestItem());
+    }
+    EPUB3_EXPORT
+    shared_ptr<AsyncByteStream>     ContentStreamForItem(ManifestItemPtr manifestItem)  const;
     
     /// @}
     
@@ -818,6 +826,9 @@ protected:
     MediaSupportList        _mediaSupport;          ///< A list of media types with their support details.
     
     void                    InitMediaSupport();
+    
+    FilterChainPtr          _filterChain;           ///< The filter chain for this package.
+    void                    BuildFilterChain();     ///< Compiles a filter chain based on this package's content.
 };
 
 EPUB3_END_NAMESPACE

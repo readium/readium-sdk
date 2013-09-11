@@ -25,16 +25,16 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-MediaSupportInfo::MediaSupportInfo(shared_ptr<Package>& owner) : OwnedBy(owner), _mediaType(""), _support(SupportType::Unsupported)
+MediaSupportInfo::MediaSupportInfo(shared_ptr<Package> owner) : OwnedBy(owner), _mediaType(""), _support(SupportType::Unsupported)
 {
 }
-MediaSupportInfo::MediaSupportInfo(shared_ptr<Package>& owner, const string& mediaType, bool supported)
+MediaSupportInfo::MediaSupportInfo(shared_ptr<Package> owner, const string& mediaType, bool supported)
   : OwnedBy(owner),
     _mediaType(mediaType),
     _support(supported ? SupportType::IntrinsicSupport : SupportType::Unsupported)
 {
 }
-MediaSupportInfo::MediaSupportInfo(shared_ptr<Package>& owner, const string& mediaType, SupportType support)
+MediaSupportInfo::MediaSupportInfo(shared_ptr<Package> owner, const string& mediaType, SupportType support)
   : OwnedBy(owner),
     _mediaType(mediaType),
     _support(support)

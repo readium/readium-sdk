@@ -36,9 +36,6 @@ EPUB3_BEGIN_NAMESPACE
 class Archive;
 class ByteStream;
 
-class Container;
-typedef shared_ptr<Container>   ContainerPtr;
-
 /**
  The Container class provides an interface for interacting with an EPUB container,
  i.e. a `.epub` file.
@@ -54,7 +51,7 @@ typedef shared_ptr<Container>   ContainerPtr;
  
  @ingroup epub-model
  */
-class Container : public std::enable_shared_from_this<Container>
+class Container : public PointerType<Container>
 {
 public:
     ///
@@ -89,7 +86,7 @@ public:
     
     ///
     /// Creates and returns a new Container instance.
-    static shared_ptr<Container>    OpenContainer(const string& path);
+    static ContainerPtr    OpenContainer(const string& path);
     
     virtual         ~Container();
     
@@ -106,7 +103,7 @@ public:
      
      Equivalent to `this->Packages().at(0)`.
      */
-    virtual shared_ptr<Package>     DefaultPackage()        const;
+    virtual PackagePtr              DefaultPackage()        const;
     
     ///
     /// The OCF version of the container document.
@@ -122,7 +119,7 @@ public:
      to retrieve.
      @result Returns the encryption information, or `nullptr` if none was found.
      */
-    virtual shared_ptr<EncryptionInfo>    EncryptionInfoForPath(const string& path)   const;
+    virtual EncryptionInfoPtr       EncryptionInfoForPath(const string& path)   const;
     
     /**
      Obtains a pointer to a ReadStream for a specific file within the container.
@@ -134,11 +131,11 @@ public:
     
     ///
     /// The underlying archive.
-    shared_ptr<Archive>             GetArchive()            const   { return _archive; }
+    ArchivePtr                      GetArchive()            const   { return _archive; }
     
     
 protected:
-    shared_ptr<Archive> _archive;
+    ArchivePtr          _archive;
     xmlDocPtr           _ocf;
     PackageList         _packages;
     EncryptionList      _encryption;

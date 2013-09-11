@@ -28,11 +28,39 @@
 #include <ePub3/encryption.h>
 #include <string>
 #include <functional>
+#include <memory>
 
 EPUB3_BEGIN_NAMESPACE
 
 class Package;
 class Container;
+
+typedef std::shared_ptr<Package>    PackagePtr;
+
+class ContentFilter;
+typedef std::shared_ptr<ContentFilter>  ContentFilterPtr;
+
+/**
+ The FilterContext abstract class can be extended by individual filters to hold
+ data unique to each pass across a single stream of data.
+ 
+ A given filter subclass can allocate and return a new FilterContext pointer by
+ overriding the MakeFilterContext() function from ContentFilter. The base
+ class's implementation returns `nullptr`. It is important that each invocation of
+ MakeFilterContext() return a *new instance* of the appropriate object. A single
+ filter instance might be used to (simultaneously) handle multiple resource streams,
+ and a new context object will be requested for each new stream, to ensure state is
+ kept relative to the data stream, not the filter instance.
+ 
+ If a custom context object is created, then the filter chain will pass it to each
+ invocation of FilterData() on the same object for the same data stream.
+ */
+class FilterContext
+{
+public:
+    FilterContext() {}
+    virtual ~FilterContext() {}
+};
 
 /**
  ContentFilter is an abstract base class from which all content filters must be
@@ -66,42 +94,58 @@ class ContentFilter
 {
 public:
     
-    class ConstructorParameters
-    {
-    public:
-        
-        ConstructorParameters(const ConstructorParameters &o) {}
-        ConstructorParameters(ConstructorParameters &&o) {}
-        virtual ~ConstructorParameters() {}
-        
-    protected:
-        
-        ConstructorParameters() {}
-    };
+    // using 'enum class' means you can ONLY use these exact values, grr
+    // so I'm just making them constants
+    typedef uint32_t FilterPriority;
+    
+    ///
+    /// If you absolutely must see the bytes EXACTLY as they exist in the container, use this priority.
+    static const FilterPriority MustAccessRawBytes      = 1000;
+    
+    ///
+    /// This is the priority at which XML-ENC and XML-DSig filters take place.
+    static const FilterPriority EPUBDecryption          = 750;
+    
+    ///
+    /// This is the priority at which HTML content is modified to process `<switch>` elements and similar.
+    static const FilterPriority SwitchStaticHandling    = 500;
+    
+    ///
+    /// This is the priority at which `<object>` tags may be modified to use EPUB widgets.
+    static const FilterPriority ObjectPreprocessing     = 250;
+    
+    ///
+    /// Any items below this priority level are free to make platform-specific changes. Any validation
+    /// will already have taken place by now.
+    static const FilterPriority ValidationComplete      = 100;
     
     /**
      The type-sniffer function must match this prototype.
-     @param item A ManifestItem to inspect.
-     @param encInfo Any encryption information applicable to this item.
+     @param item A ManifestItem to inspect. All other information can be fetched
+                 through this object.
      @result Return `true` to pass this manifest item to the corresponding filter,
-     `false` otherwise.
+             `false` otherwise.
      */
-    typedef std::function<bool(const ManifestItem* item, const EncryptionInfo* encInfo)> TypeSnifferFn;
+    typedef std::function<bool(ConstManifestItemPtr item)> TypeSnifferFn;
     
-    typedef std::function<ContentFilter *(const ConstructorParameters *parameters)> TypeFactoryFn;
+    typedef std::function<ContentFilterPtr(ConstPackagePtr package)> TypeFactoryFn;
     
 private:
     ///
     /// No default constructor.
     ContentFilter() _DELETED_;
-
+    
 public:
     ///
     /// Copy constructor.
-    ContentFilter(const ContentFilter& o) : _sniffer(o._sniffer), _next(nullptr) {}
+    ContentFilter(const ContentFilter& o) : _sniffer(o._sniffer) {}
     ///
     /// C++11 move constructor.
-    ContentFilter(ContentFilter&& o) : _sniffer(std::move(o._sniffer)), _next(std::move(o._next)) {}
+    ContentFilter(ContentFilter&& o) : _sniffer(std::move(o._sniffer)) {}
+    
+    ///
+    /// Allocate and return a new FilterContext subclass. The default returns `nullptr`.
+    virtual FilterContext* MakeFilterContext() const { return nullptr; }
     
     /**
      Create a new content filter with a (required) type sniffer.
@@ -123,14 +167,6 @@ public:
     /// Assigns a new type-sniffer to this filter.
     virtual void SetTypeSniffer(TypeSnifferFn fn) { _sniffer = fn; }
     
-    ///
-    /// Fetches the next content filter in the chain.
-    virtual ContentFilter* Next() const { return _next.get(); }
-    
-    ///
-    /// Assigns the filter following this one in the chain.
-    virtual void SetNextFilter(ContentFilter* next) { _next.reset(next); }
-    
     /**
      The core processing function.
      
@@ -150,11 +186,10 @@ public:
      @see ePub3::SwitchPreprocessor or ePub3::ObjectPreprocessor for full-data
      examples.
      */
-    virtual void * FilterData(void *data, size_t len, size_t *outputLen) = 0;
+    virtual void * FilterData(FilterContext* context, void *data, size_t len, size_t *outputLen) = 0;
     
 protected:
     TypeSnifferFn       _sniffer;
-    unique_ptr<ContentFilter> _next;
 };
 
 EPUB3_END_NAMESPACE

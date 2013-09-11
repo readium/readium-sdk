@@ -143,6 +143,7 @@ void RingBuffer::RemoveBytes(std::size_t len) _NOEXCEPT
     _readPos += len;
     if ( _readPos > _capacity )
         _readPos -= _capacity;
+    _numBytes -= len;
 }
 
 EPUB3_END_NAMESPACE

@@ -37,7 +37,7 @@ typedef shared_ptr<NavigationTable> NavigationTablePtr;
 /**
  @ingroup navigation
  */
-class NavigationTable : public NavigationElement, public std::enable_shared_from_this<NavigationTable>, public OwnedBy<Package>
+class NavigationTable : public NavigationElement, public PointerType<NavigationTable>, public OwnedBy<Package>
 {
 private:
                             NavigationTable()                               _DELETED_;

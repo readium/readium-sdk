@@ -31,13 +31,6 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-class ManifestItem;
-class Package;
-class SpineItem;
-class IRI;
-
-typedef shared_ptr<SpineItem>   SpineItemPtr;
-
 /**
  The SpineItem class provides access to the spine of a publication.
  
@@ -79,7 +72,7 @@ typedef shared_ptr<SpineItem>   SpineItemPtr;
  
  @ingroup epub-model
  */
-class SpineItem : public std::enable_shared_from_this<SpineItem>, public OwnedBy<Package>, public PropertyHolder, public XMLIdentifiable
+class SpineItem : public PointerType<SpineItem>, public OwnedBy<Package>, public PropertyHolder, public XMLIdentifiable
 {
 public:
     typedef std::vector<IRI>        PropertyList;
@@ -110,8 +103,11 @@ public:
     // It will also reach back into _prev and nullify its _next
     virtual             ~SpineItem();
     
+    FORCE_INLINE
+    PackagePtr          GetPackage()        const       { return Owner(); }
+    
     EPUB3_EXPORT
-    bool                ParseXML(shared_ptr<SpineItem>& sharedMe, xmlNodePtr node);
+    bool                ParseXML(xmlNodePtr node);
     
     /// @{
     /// @name Metadata

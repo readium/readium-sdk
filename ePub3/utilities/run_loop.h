@@ -38,13 +38,13 @@ struct ALooper;
 # include <time.h>
 #endif
 
+#include <ePub3/epub3.h>
 #include <ePub3/utilities/basic.h>
 #include <ePub3/utilities/utfstring.h>
 #include <chrono>
 #include <list>
 #include <mutex>
 #include <atomic>
-#include <ePub3/utilities/ref_counted.h>
 
 #if EPUB_USE(CF)
 #include "cf_helpers.h"
@@ -52,7 +52,7 @@ struct ALooper;
 
 EPUB3_BEGIN_NAMESPACE
 
-class RunLoop
+class RunLoop : public PointerType<RunLoop>
 {
 public:
     enum class EPUB3_EXPORT ExitReason : uint8_t
@@ -63,7 +63,20 @@ public:
         RunHandledSource    = 4     ///< The RunLoop processed a single source and was told to return after doing so.
     };
     
-    class Observer : public RefCountable
+    class Observer;
+    class EventSource;
+    class Timer;
+        
+    typedef std::shared_ptr<Observer>       ObserverPtr;
+    typedef std::shared_ptr<EventSource>    EventSourcePtr;
+    typedef std::shared_ptr<Timer>          TimerPtr;
+    
+protected:
+    class _SourceBase {};
+    typedef std::shared_ptr<_SourceBase>    _SourceBasePtr;
+    
+public:
+    class Observer : public PointerType<Observer>
     {
     public:
         ///
@@ -153,7 +166,8 @@ public:
         void            Cancel();
     };
     
-    class EventSource : public RefCountable
+public:
+    class EventSource : public PointerType<EventSource>, public _SourceBase
     {
     public:
         typedef std::function<void(EventSource&)>   EventHandlerFn;
@@ -222,7 +236,7 @@ public:
         
     };
     
-    class Timer : public RefCountable
+    class Timer : public PointerType<Timer>, public _SourceBase
     {
     public:
         typedef std::function<void(Timer&)>  TimerFn;
@@ -397,7 +411,7 @@ public:
     ///
     /// This is the only way to obtain a RunLoop. Use it wisely.
     EPUB3_EXPORT
-    static RunLoop* CurrentRunLoop();
+    static RunLoopPtr CurrentRunLoop();
 
     EPUB3_EXPORT    ~RunLoop();
     
@@ -409,41 +423,41 @@ public:
     ///
     /// Adds a timer to the run loop.
     EPUB3_EXPORT
-    void            AddTimer(Timer* timer);
+    void            AddTimer(TimerPtr timer);
     ///
     /// Whether a timer is registered on this runloop.
     EPUB3_EXPORT
-    bool            ContainsTimer(Timer* timer)               const;
+    bool            ContainsTimer(TimerPtr timer)            const;
     ///
     /// Removes the timer from this RunLoop (without cancelling it).
     EPUB3_EXPORT
-    void            RemoveTimer(Timer* timer);
+    void            RemoveTimer(TimerPtr timer);
     
     ///
     /// Adds an event source to the run loop.
     EPUB3_EXPORT
-    void            AddEventSource(EventSource* source);
+    void            AddEventSource(EventSourcePtr source);
     ///
     /// Whether an event source is registered on this runloop.
     EPUB3_EXPORT
-    bool            ContainsEventSource(EventSource* source)  const;
+    bool            ContainsEventSource(EventSourcePtr source)  const;
     ///
     /// Removes an event source from this RunLoop (without cancelling it).
     EPUB3_EXPORT
-    void            RemoveEventSource(EventSource* source);
+    void            RemoveEventSource(EventSourcePtr source);
     
     ///
     /// Adds an observer to the run loop.
     EPUB3_EXPORT
-    void            AddObserver(Observer* observer);
+    void            AddObserver(ObserverPtr observer);
     ///
     /// Whether an observer is registered on this runloop.
     EPUB3_EXPORT
-    bool            ContainsObserver(Observer* observer)      const;
+    bool            ContainsObserver(ObserverPtr observer)      const;
     ///
     /// Removes an observer from this RunLoop (without cancelling it).
     EPUB3_EXPORT
-    void            RemoveObserver(Observer* observer);
+    void            RemoveObserver(ObserverPtr observer);
     
     /**
      Run the RunLoop, either indefinitely, for a specific duration, and/or until an event occurs.
@@ -514,20 +528,20 @@ private:
 #if !EPUB_OS(ANDROID) && !EPUB_OS(WINDOWS) && !EPUB_USE(CF)
     ///
     /// Collects all timers ready to fire
-    std::vector<Timer*>         CollectFiringTimers();
+    shared_vector<Timer>        CollectFiringTimers();
     ///
     /// Collects all sources that have been signalled
-    std::vector<EventSource*>   CollectFiringSources(bool onlyOne);
+    shared_vector<EventSource>  CollectFiringSources(bool onlyOne);
     ///
     /// If a timer will fire before the given timeout, returns a new timeout
     std::chrono::system_clock::time_point   TimeoutOrTimer(std::chrono::system_clock::time_point& timeout);
 #elif EPUB_OS(WINDOWS)
     ///
     /// Process a firing timer
-    void            ProcessTimer(RefCounted<Timer> timer);
+    void            ProcessTimer(std::shared_ptr<Timer> timer);
     ///
     /// Process a firing event source
-    void            ProcessEventSource(RefCounted<EventSource> source);
+    void            ProcessEventSource(std::shared_ptr<EventSource> source);
 #endif
     
 private:
@@ -539,33 +553,33 @@ private:
 
     std::recursive_mutex            _listLock;
     
-    typedef std::map<int,RefCounted<RefCountable>> SourceMap_t;
+    typedef std::map<int,_SourceBasePtr> SourceMap_t;
     SourceMap_t         _handlers;      ///< Maps event fds to their owners.
     
-    std::list<RefCounted<Observer>> _observers;
+    shared_list<Observer>           _observers;
     Observer::Activity              _observerMask;
     std::atomic<bool>               _waiting;
 #elif EPUB_OS(WINDOWS)
-    HANDLE                                      _wakeHandle;
-    std::map<HANDLE, RefCounted<Timer>>         _timers;
-    std::map<HANDLE, RefCounted<EventSource>>   _sources;
-    std::list<RefCounted<Observer>>             _observers;
-    std::recursive_mutex                        _listLock;
-    std::atomic<bool>                           _waiting;
-    std::atomic<bool>                           _stop;
-    std::atomic<bool>                           _resetHandles;
-    Observer::Activity                          _observerMask;
+    HANDLE                              _wakeHandle;
+    std::map<HANDLE, TimerPtr>          _timers;
+    std::map<HANDLE, EventSourcePtr>    _sources;
+    shared_list<Observer>               _observers;
+    std::recursive_mutex                _listLock;
+    std::atomic<bool>                   _waiting;
+    std::atomic<bool>                   _stop;
+    std::atomic<bool>                   _resetHandles;
+    Observer::Activity                  _observerMask;
 #else
-    std::list<RefCounted<Timer>>        _timers;
-    std::list<RefCounted<Observer>>     _observers;
-    std::list<RefCounted<EventSource>>  _sources;
+    shared_list<Timer>                  _timers;
+    shared_list<Observer>               _observers;
+    shared_list<EventSource>            _sources;
     std::recursive_mutex                _listLock;
     std::mutex                          _conditionLock;
     std::condition_variable             _wakeUp;
     std::atomic<bool>                   _waiting;
     std::atomic<bool>                   _stop;
     Observer::Activity                  _observerMask;
-    const Timer*                        _waitingUntilTimer;
+    const TimerPtr                      _waitingUntilTimer;
 #endif
 
 };

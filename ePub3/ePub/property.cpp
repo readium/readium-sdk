@@ -184,7 +184,6 @@ DCType DCTypeFromIRI(const IRI& iri)
 
 bool Property::ParseMetaElement(xmlNodePtr node)
 {
-    PropertyPtr sharedMe = std::enable_shared_from_this<Property>::shared_from_this();
     if ( node == nullptr )
         return false;
     

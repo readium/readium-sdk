@@ -23,7 +23,6 @@
 #define __ePub3__archive__
 
 #include <ePub3/epub3.h>
-#include <ePub3/filter.h>
 #include <iostream>
 #include <list>
 #include <functional>
@@ -44,6 +43,7 @@ class ArchiveItemInfo;
 class ArchiveReader;
 class ArchiveWriter;
 class ByteStream;
+class AsyncByteStream;
 
 /**
  An abstract class representing a generic archive.
@@ -171,20 +171,19 @@ public:
     virtual unique_ptr<ByteStream> ByteStreamAtPath(const string& path) const = 0;
     
     /**
+     Obtains a stream to asynchronously read or write to a file within the archive.
+     @param path The path of the item to access.
+     @result Returns a (managed) pointer to the resulting byte stream, or `nullptr`.
+     */
+    virtual unique_ptr<AsyncByteStream> AsyncByteStreamAtPath(const string& path) const = 0;
+    
+    /**
      Obtain an object used to read data from a file within the archive.
      @param path The path of the item to read.
      @result A pointer (unmanaged) to a reader object, or `nullptr`.
      @deprecated Please use ByteStreamAtPath(const string&)const instead.
      */
     virtual unique_ptr<ArchiveReader> ReaderAtPath(const string & path) const = 0;
-    
-    /**
-     Obtain an object used to read data from a file within the archive. It may use a ContentFilter.
-     @param path The path of the item to read.
-     @param Container A pointer to the Container object that contains the current archive.
-     @result A pointer (unmanaged) to a reader object, or nullptr.
-     */
-    virtual unique_ptr<ArchiveReader> ReaderAtPath(const string &path, Container *container) const = 0;
     
     /**
      Obtain an object used to write data to a file within the archive.
@@ -368,18 +367,12 @@ public:
      be read from the archive during this call.
      @result Returns the number of bytes read, or `-1` in case of error.
      */
-    virtual ssize_t read(void *p, size_t len) { return 0; }
+    virtual ssize_t read(void *p, size_t len) const { return 0; }
     
 protected:
-    ArchiveReader(ContentFilter *contentFilter) : m_contentFilter(contentFilter) {}
-    ArchiveReader(ArchiveReader &&o) : m_contentFilter(std::move(o.m_contentFilter)) {}
-    
-    unique_ptr<ContentFilter> m_contentFilter;
-    
-private:
-    ArchiveReader() _DELETED_;
-    ArchiveReader(const ArchiveReader &o) _DELETED_;
-    
+    ArchiveReader() {}
+    ArchiveReader(const ArchiveReader &) _DELETED_;
+    ArchiveReader(ArchiveReader &&) {}
 };
 
 /**

@@ -21,45 +21,105 @@
 
 #include "byte_stream.h"
 #include <cstdio>
+#include <iostream>
 #include <libzip/zip.h>
 #include <libzip/zipint.h>          // for internals of zip_file
 #include <sys/stat.h>
 #if EPUB_OS(ANDROID) || EPUB_OS(LINUX) || EPUB_OS(WINDOWS)
 # include <condition_variable>
 #endif
+#include <ePub3/utilities/make_unique.h>
+
+// I'm putting this here because it's the AsyncFileByteStream class that needs it
+#if defined(_LIBCPP_VERSION) && _LIBCPP_VERSION <= 1101
+////////////////////////////////////////////////////////////////////////////////////
+// libcxxabi fix
+//
+// When a virtual function is marked deleted, the Clang compiler outputs a reference
+// to __cxa_deleted_virtual. Unfortunately, as of right now (Clang 3.3), libcxxabi
+// doesn't actually export that symbol.
+extern "C" _LIBCPP_NORETURN void __cxa_deleted_virtual()
+{
+    abort();
+}
+#endif
 
 EPUB3_BEGIN_NAMESPACE
 
-std::thread AsyncByteStream::_asyncIOThread;
-RunLoop*    AsyncByteStream::_asyncRunLoop(nullptr);
+std::thread         AsyncByteStream::_asyncIOThread;
+RunLoopPtr          AsyncByteStream::_asyncRunLoop(nullptr);
+std::atomic_flag    AsyncByteStream::_asyncInited(false);
 
 AsyncByteStream::AsyncByteStream(size_type bufsize)
   : _bufsize(bufsize),
     _eventHandler(nullptr),
     _eventSource(nullptr),
-    _event(ReadSpaceAvailable)
+    _event(ReadSpaceAvailable),
+    _targetRunLoop(nullptr),
+    _eventDispatchSource(nullptr)
 {
 }
 AsyncByteStream::AsyncByteStream(StreamEventHandler handler, size_type bufsize)
   : _bufsize(bufsize),
     _eventHandler(handler),
     _eventSource(nullptr),
-    _event(ReadSpaceAvailable)
+    _event(ReadSpaceAvailable),
+    _targetRunLoop(nullptr),
+    _eventDispatchSource(nullptr)
 {
 }
 AsyncByteStream::~AsyncByteStream()
 {
     Close();
 }
-void AsyncByteStream::Close()
+void AsyncByteStream::SetTargetRunLoop(RunLoopPtr rl) _NOEXCEPT
 {
-    if ( _eventSource != nullptr )
+    if ( _eventDispatchSource == nullptr )
+        _eventDispatchSource = EventDispatchSource();
+    
+    if ( _targetRunLoop != nullptr )
+        _targetRunLoop->RemoveEventSource(_eventDispatchSource);
+    
+    _targetRunLoop = rl;
+    
+    if ( _targetRunLoop != nullptr )
+        _targetRunLoop->AddEventSource(_eventDispatchSource);
+    
+    if ( (bool)_streamScheduled )
     {
-        _eventSource->Cancel();
-        delete _eventSource;
+        try
+        {
+            _streamScheduled(_targetRunLoop, this);
+        }
+        catch (std::exception& e)
+        {
+            std::cerr << "AsyncByteStream: exception calling _streamScheduled : " << e.what() << std::endl;
+        }
+        catch (...)
+        {
+            std::cerr << "AsyncByteStream: unknown exception calling _streamScheduled" << std::endl;
+        }
     }
     
-    this->_readbuf = nullptr;
+    if ( IsOpen() )
+        ReadyToRun();
+}
+void AsyncByteStream::Close()
+{
+    if ( bool(_eventSource) )
+    {
+        if ( !(_eventSource->IsCancelled()) )
+            _eventSource->Cancel();
+        _eventSource = nullptr;
+    }
+    if ( bool(_eventDispatchSource) )
+    {
+        if ( !(_eventDispatchSource->IsCancelled()) )
+            _eventDispatchSource->Cancel();
+        _eventDispatchSource = nullptr;
+    }
+    
+    _readbuf = nullptr;
     _writebuf = nullptr;
 }
 void AsyncByteStream::Open(std::ios::openmode mode)
@@ -72,6 +132,9 @@ void AsyncByteStream::Open(std::ios::openmode mode)
     {
         _writebuf = std::make_shared<RingBuffer>(_bufsize);
     }
+    
+    if ( _targetRunLoop != nullptr )
+        ReadyToRun();
 }
 ByteStream::size_type AsyncByteStream::ReadBytes(void *buf, size_type len)
 {
@@ -97,72 +160,39 @@ ByteStream::size_type AsyncByteStream::WriteBytes(const void *buf, size_type len
     _eventSource->Signal();
     return result;
 }
+AsyncEvent AsyncByteStream::WaitNextEvent(timeout_type timeout)
+{
+    AsyncEvent event = AsyncEvent::None;
+    
+    StreamEventHandler oldHandler = GetEventHandler();
+    RunLoopPtr oldRunLoop = EventTargetRunLoop();
+    
+    SetTargetRunLoop(RunLoop::CurrentRunLoop());
+    SetEventHandler([&](AsyncEvent evt, AsyncByteStream* st) {
+        event = evt;
+        RunLoop::CurrentRunLoop()->Stop();
+    });
+    RunLoop::CurrentRunLoop()->Run(false, timeout);
+    
+    SetTargetRunLoop(oldRunLoop);
+    SetEventHandler(oldHandler);
+    
+    return event;
+}
 void AsyncByteStream::InitAsyncHandler()
 {
     if ( _eventSource != nullptr )
         throw std::logic_error("This stream is already set up for async operation.");
     
-    weak_ptr<RingBuffer> weakReadBuf = _readbuf;
-    weak_ptr<RingBuffer> weakWriteBuf = _writebuf;
+    _eventSource = AsyncEventSource();
     
-    _eventSource = new RunLoop::EventSource([=](RunLoop::EventSource&) {
-        // atomically pull out the event flags here
-        ThreadEvent t = _event.exchange(Wait);
-        
-        bool hasRead = false, hasWritten = false;
-        
-        uint8_t buf[4096];
-        
-        shared_ptr<RingBuffer> readBuf = weakReadBuf.lock();
-        shared_ptr<RingBuffer> writeBuf = weakWriteBuf.lock();
-        
-        if ( (t & ReadSpaceAvailable) == ReadSpaceAvailable && readBuf )
-        {
-            std::lock_guard<RingBuffer> _(*readBuf);
-            size_type read = this->read_for_async(buf, readBuf->SpaceAvailable());
-            if ( read != 0 )
-            {
-                readBuf->WriteBytes(buf, read);
-                hasRead = true;
-            }
-        }
-        if ( (t & DataToWrite) == DataToWrite && writeBuf )
-        {
-            std::lock_guard<RingBuffer> _(*writeBuf);
-            size_type written = writeBuf->ReadBytes(buf, writeBuf->BytesAvailable());
-            written = this->write_for_async(buf, written);
-            if ( written != 0 )
-            {
-                // only remove as much as actually went out
-                writeBuf->RemoveBytes(written);
-                hasWritten = true;
-            }
-        }
-        
-        auto invocation = [this, hasRead, hasWritten] () {
-            if ( hasRead )
-                _eventHandler(AsyncEvent::HasBytesAvailable, this);
-            if ( hasWritten )
-                _eventHandler(AsyncEvent::HasSpaceAvailable, this);
-        };
-        
-        if ( _targetRunLoop != nullptr )
-        {
-            _targetRunLoop->PerformFunction(invocation);
-        }
-        else
-        {
-            invocation();
-        }
-    });
+    static std::mutex __mut;
+    static std::condition_variable __inited;
     
-    if ( _asyncRunLoop == nullptr )
+    if ( _asyncInited.test_and_set() == false )
     {
-        std::mutex __mut;
-        std::condition_variable __inited;
-        
         std::unique_lock<std::mutex> __lock(__mut);
-        _asyncIOThread = std::thread([&](){
+        _asyncIOThread = std::thread([&]() {
             AsyncByteStream::_asyncRunLoop = RunLoop::CurrentRunLoop();
             {
                 std::unique_lock<std::mutex> __(__mut);
@@ -198,14 +228,271 @@ void AsyncByteStream::InitAsyncHandler()
             // nullify the global before we quit
             // deletion isn't necessary, it's done by TLS in run_loop.cpp
             _asyncRunLoop = nullptr;
+            _asyncInited.clear();
         });
         
+        // detach the new thread
+        _asyncIOThread.detach();
+        
         // wait for the runloop to be set
-        __inited.wait(__lock, [&](){return _asyncRunLoop != nullptr;});
+        __inited.wait(__lock, [](){return bool(_asyncRunLoop);});
+    }
+    else if ( _asyncRunLoop == nullptr )
+    {
+        std::unique_lock<std::mutex> __lock(__mut);
+        __inited.wait_for(__lock, std::chrono::milliseconds(150), [](){return bool(_asyncRunLoop);});
     }
     
     // install the event source into the run loop, then we're all done
     _asyncRunLoop->AddEventSource(_eventSource);
+}
+RunLoop::EventSourcePtr AsyncByteStream::AsyncEventSource()
+{
+    weak_ptr<RingBuffer> weakReadBuf = _readbuf;
+    weak_ptr<RingBuffer> weakWriteBuf = _writebuf;
+    
+    return RunLoop::EventSource::New([=](RunLoop::EventSource&) {
+        // atomically pull out the event flags here
+        ThreadEvent t = _event.exchange(Wait);
+        if ( t == Wait )
+            return;
+        
+        bool hasRead = false, hasWritten = false;
+        
+        uint8_t buf[4096];
+        
+        shared_ptr<RingBuffer> readBuf = weakReadBuf.lock();
+        shared_ptr<RingBuffer> writeBuf = weakWriteBuf.lock();
+        
+        if ( (t & ReadSpaceAvailable) == ReadSpaceAvailable && readBuf )
+        {
+            std::lock_guard<RingBuffer> _(*readBuf);
+            size_type read = this->read_for_async(buf, readBuf->SpaceAvailable());
+            if ( read != 0 )
+            {
+                readBuf->WriteBytes(buf, read);
+                hasRead = true;
+            }
+            else
+            {
+                _eof = true;
+            }
+        }
+        if ( (t & DataToWrite) == DataToWrite && writeBuf )
+        {
+            std::lock_guard<RingBuffer> _(*writeBuf);
+            size_type written = writeBuf->ReadBytes(buf, writeBuf->BytesAvailable());
+            written = this->write_for_async(buf, written);
+            if ( written != 0 )
+            {
+                // only remove as much as actually went out
+                writeBuf->RemoveBytes(written);
+                hasWritten = true;
+            }
+            else
+            {
+                _eof = true;
+            }
+        }
+        
+        if ( _targetRunLoop != nullptr )
+        {
+            _eventDispatchSource->Signal();
+        }
+        else if ( bool(_eventHandler) )
+        {
+            if ( readBuf->HasData() )
+                _eventHandler(AsyncEvent::HasBytesAvailable, this);
+            if ( writeBuf->HasSpace() )
+                _eventHandler(AsyncEvent::HasSpaceAvailable, this);
+        }
+    });
+}
+RunLoop::EventSourcePtr AsyncByteStream::EventDispatchSource()
+{
+    return RunLoop::EventSource::New([this](RunLoop::EventSource&) {
+        if ( bool(_eventHandler) == false )
+            return;
+        
+        if ( _err != 0 )
+        {
+            _eventHandler(AsyncEvent::ErrorOccurred, this);
+            if ( bool(_eventDispatchSource) )
+                _eventDispatchSource->Cancel();
+            if ( bool(_eventSource) )
+                _eventSource->Cancel();
+            return;
+        }
+        if ( _eof )
+        {
+            _eventHandler(AsyncEvent::EndEncountered, this);
+            if ( bool(_eventDispatchSource) )
+                _eventDispatchSource->Cancel();
+            if ( bool(_eventSource) )
+                _eventSource->Cancel();
+            return;
+        }
+        
+        if ( BytesAvailable() )
+            _eventHandler(AsyncEvent::HasBytesAvailable, this);
+        if ( SpaceAvailable() )
+            _eventHandler(AsyncEvent::HasSpaceAvailable, this);
+    });
+}
+void AsyncByteStream::ReadyToRun()
+{
+    if ( _eventSource == nullptr )
+        InitAsyncHandler();
+    
+    ThreadEvent wakeEvent = Wait;
+    if ( _readbuf->HasSpace() )
+        wakeEvent |= ReadSpaceAvailable;
+    if ( _writebuf->HasData() )
+        wakeEvent |= DataToWrite;
+    
+    if ( wakeEvent != Wait )
+    {
+        _event |= wakeEvent;
+        _eventSource->Signal();
+    }
+}
+
+#if 0
+#pragma mark -
+#endif
+
+AsyncPipe::Pair AsyncPipe::LinkedPair(size_type bufsize)
+{
+    Pair result = std::make_pair(std::make_shared<AsyncPipe>(bufsize), std::make_shared<AsyncPipe>(bufsize));
+    
+    result.first->Open();
+    result.second->_readbuf = result.first->_writebuf;
+    result.second->_writebuf = result.first->_readbuf;
+    
+    result.first->_counterpart = result.second.get();
+    result.second->_counterpart = result.first.get();
+    
+    return result;
+}
+AsyncPipe::~AsyncPipe()
+{
+    Close();
+}
+void AsyncPipe::Close()
+{
+    _self_closed = true;
+    
+    if ( bool(_eventHandler) )
+        _eventHandler(AsyncEvent::EndEncountered, this);
+    
+    AsyncByteStream::Close();
+    
+    if (_counterpart != nullptr)
+    {
+        _counterpart->CounterpartClosed();
+        _counterpart = nullptr;
+    }
+}
+void AsyncPipe::CounterpartClosed()
+{
+    _counterpart = nullptr;
+    _pair_closed = true;
+    
+    if ( _readbuf->BytesAvailable() == 0 )
+    {
+        _eof = true;
+        _event |= Exceptional;
+        _eventSource->Signal();
+    }
+}
+AsyncPipe::size_type AsyncPipe::ReadBytes(void *buf, size_type len)
+{
+    size_type result = AsyncByteStream::ReadBytes(buf, len);
+    if ( _readbuf->BytesAvailable() == 0 && _pair_closed )
+    {
+        _eof = true;
+        _event |= Exceptional;
+        _eventSource->Signal();
+    }
+    return result;
+}
+AsyncPipe::size_type AsyncPipe::WriteBytes(const void *buf, size_type len)
+{
+    if ( _pair_closed )
+    {
+        Close();
+        return 0;
+    }
+    return AsyncByteStream::WriteBytes(buf, len);
+}
+void AsyncPipe::SetTargetRunLoop(RunLoopPtr rl) _NOEXCEPT
+{
+    AsyncByteStream::SetTargetRunLoop(rl);
+    if ( _counterpart != nullptr && !_pair_closed && _counterpart->_targetRunLoop == nullptr )
+        _counterpart->SetTargetRunLoop(rl);
+}
+ByteStream::size_type AsyncPipe::read_for_async(void *buf, size_type len)
+{
+    return _readbuf->BytesAvailable();
+}
+ByteStream::size_type AsyncPipe::write_for_async(const void* buf, size_type len)
+{
+    return _writebuf->BytesAvailable();
+}
+RunLoop::EventSourcePtr AsyncPipe::AsyncEventSource()
+{
+    return RunLoop::EventSource::New([this](RunLoop::EventSource&) {
+        // atomically pull out the event flags here
+        ThreadEvent t = _event.exchange(Wait);
+        if ( t == Wait )
+            return;
+        
+        if ( (t & Exceptional) == Exceptional )
+        {
+            // fire our own item
+            if ( _eventDispatchSource != nullptr && _targetRunLoop != nullptr )
+            {
+                _eventDispatchSource->Signal();
+            }
+            else if ( bool(_eventHandler) )
+            {
+                if ( _err != 0 ) {
+                    _eventHandler(AsyncEvent::ErrorOccurred, this);
+                } else if ( _eof != 0 ) {
+                    _eventHandler(AsyncEvent::EndEncountered, this);
+                }
+            }
+        }
+        
+        bool hasRead = false, hasWritten = false;
+        
+        if ( (t & ReadSpaceAvailable) == ReadSpaceAvailable )
+        {
+            // data pulled out of here, so room to write there
+            hasRead = true;
+        }
+        if ( (t & DataToWrite) == DataToWrite )
+        {
+            hasWritten = true;
+        }
+        
+        if ( (hasRead || hasWritten) && _counterpart != nullptr )
+        {
+            if ( _counterpart->_eventDispatchSource != nullptr && _counterpart->_targetRunLoop != nullptr )
+            {
+                _counterpart->_eventDispatchSource->Signal();
+            }
+            else if ( bool(_counterpart->_eventHandler) )
+            {
+                if ( hasRead ) {
+                    _counterpart->_eventHandler(AsyncEvent::HasSpaceAvailable, _counterpart);
+                }
+                if ( hasWritten ) {
+                    _counterpart->_eventHandler(AsyncEvent::HasBytesAvailable, _counterpart);
+                }
+            }
+        }
+    });
 }
 
 #if 0
@@ -433,12 +720,19 @@ ByteStream::size_type ZipFileByteStream::WriteBytes(const void *buf, size_type l
 #pragma mark -
 #endif
 
+AsyncFileByteStream::AsyncFileByteStream(StreamEventHandler handler, const string& path, std::ios::openmode mode, size_type bufsize)
+  : AsyncByteStream(handler, bufsize),
+    FileByteStream()
+{
+    if ( !Open(path, mode) )
+        throw std::invalid_argument("AsyncFileByteStream: failed to Open() file");
+}
 bool AsyncFileByteStream::Open(const string &path, std::ios::openmode mode)
 {
     if ( __F::Open(path, mode) == false )
         return false;
     
-    InitAsyncHandler();
+    __A::Open(mode);
     return true;
 }
 void AsyncFileByteStream::Close()
@@ -451,12 +745,19 @@ void AsyncFileByteStream::Close()
 #pragma mark -
 #endif
 
+AsyncZipFileByteStream::AsyncZipFileByteStream(struct zip* archive, const string& path, int zipFlags)
+ : AsyncByteStream(),
+   ZipFileByteStream()
+{
+    if ( !Open(archive, path, zipFlags) )
+        throw std::invalid_argument("AsyncZipFileByteStream: failed to Open() archive");
+}
 bool AsyncZipFileByteStream::Open(struct zip *archive, const string &path, int flags)
 {
     if ( __F::Open(archive, path, flags) == false )
         return false;
     
-    InitAsyncHandler();
+    __A::Open(std::ios::in|std::ios::out);
     return true;
 }
 void AsyncZipFileByteStream::Close()
