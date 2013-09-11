@@ -36,7 +36,7 @@ std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifest
             if ( !thisChain.empty() )
                 thisChain.back()->SetOutputLink(linkPipe.first);
             
-            thisChain.push_back(std::make_shared<ChainLinkProcessor>(filter, input));
+            thisChain.push_back(ChainLinkProcessor::New(filter, input));
             linkPipe = AsyncPipe::LinkedPair();
             input = linkPipe.second;
         }
@@ -92,7 +92,13 @@ void FilterChain::ChainLinkProcessor::ScheduleProcessor(RunLoopPtr runLoop)
     if ( _filter->RequiresCompleteData() )
         _collectionBuffer.SetUsesSecureErasure();
     
-    _input->SetEventHandler([this](AsyncEvent evt, AsyncByteStream* stream) {
+    std::weak_ptr<typeof(*this)> weakSelf(Ptr());
+    _input->SetEventHandler([this, weakSelf](AsyncEvent evt, AsyncByteStream* stream) {
+        // we use this variable ONLY to ensure that the 'this' ptr is still valid
+        auto strongSelf = weakSelf.lock();
+        if ( !bool(strongSelf) )
+            return;
+        
         switch ( evt )
         {
             case AsyncEvent::HasBytesAvailable:
@@ -101,7 +107,9 @@ void FilterChain::ChainLinkProcessor::ScheduleProcessor(RunLoopPtr runLoop)
                 // the same thread, so we don't need to dick about with locks here
                 
                 // there are bytes available to read -- pump as many through as we can
-                FunnelBytes();
+                ssize_t numMoved = FunnelBytes();
+                if ( numMoved == 0 && !_output->IsOpen() )
+                    stream->Close();
                 
                 break;
             }
@@ -137,7 +145,6 @@ void FilterChain::ChainLinkProcessor::ScheduleProcessor(RunLoopPtr runLoop)
                 }
                 
                 _output->Close();
-                stream->Close();
                 break;
             }
             default:
@@ -155,13 +162,23 @@ void FilterChain::ChainLinkProcessor::ScheduleProcessor(RunLoopPtr runLoop)
             case AsyncEvent::HasSpaceAvailable:
             {
                 // pull more data through into the output stream
-                FunnelBytes();
+                if ( FunnelBytes() <= 0 && (_input->AtEnd() || !_input->IsOpen()) )
+                {
+                    stream->Close();
+                    return;
+                }
+                
                 break;
             }
                 
             case AsyncEvent::ErrorOccurred:
                 std::cerr << "ChainLinkProcessor input stream error: " << stream->Error() << std::endl;
-                _output->Close();
+                stream->Close();
+                _input->Close();
+                break;
+                
+            case AsyncEvent::EndEncountered:
+                _input->Close();
                 break;
                 
             default:
@@ -173,7 +190,7 @@ void FilterChain::ChainLinkProcessor::ScheduleProcessor(RunLoopPtr runLoop)
     _output->SetTargetRunLoop(runLoop);
 }
 
-void FilterChain::ChainLinkProcessor::FunnelBytes()
+ssize_t FilterChain::ChainLinkProcessor::FunnelBytes()
 {
     uint8_t buf[ASYNC_BUF_SIZE];
     ssize_t bytesToMove = std::min(_input->BytesAvailable(), _output->SpaceAvailable());
@@ -200,6 +217,8 @@ void FilterChain::ChainLinkProcessor::FunnelBytes()
         
         bytesToMove -= thisChunk;
     }
+    
+    return bytesToMove;
 }
 
 EPUB3_END_NAMESPACE

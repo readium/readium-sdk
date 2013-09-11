@@ -289,6 +289,8 @@ private:
     shared_ptr<RingBuffer>      _writebuf;          ///< The write buffer, if opened for writing.
     StreamEventHandler          _eventHandler;      ///< The event-handler function to notify of stream status changes.
     
+    std::atomic_flag            _closing;           ///< A flag used to prevent double-closures.
+    
     static std::thread          _asyncIOThread;     ///< The shared async I/O thread.
     static RunLoopPtr           _asyncRunLoop;      ///< The shared I/O thread's run loop, to which streams will attach.
     static std::atomic_flag     _asyncInited;       ///< Set when the async thread is live, unset otherwise.
@@ -348,7 +350,7 @@ public:
     static Pair LinkedPair(size_type bufsize=4096);
     
     // The real constructor should be considered protected. Use Pair() to get a pipe.
-    AsyncPipe(size_type bufsize=4096) : AsyncByteStream(bufsize), _counterpart(nullptr), _self_closed(false), _pair_closed(false) {}
+    AsyncPipe(size_type bufsize=4096) : AsyncByteStream(bufsize), _counterpart(), _self_closed(false), _pair_closed(false) {}
     ~AsyncPipe();
     
 private:
@@ -376,7 +378,7 @@ public:
     virtual size_type           WriteBytes(const void* buf, size_type len) OVERRIDE;
     
 protected:
-    AsyncPipe*                  _counterpart;
+    std::weak_ptr<AsyncPipe>    _counterpart;
     bool                        _self_closed;
     bool                        _pair_closed;
     
