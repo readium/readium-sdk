@@ -24,7 +24,7 @@
 
 #include <ePub3/base.h>
 
-//#include <cmath>
+#include <cmath>
 
 #include <sstream>
 
@@ -44,9 +44,11 @@ EPUB3_BEGIN_NAMESPACE
 	http://www.w3.org/TR/smil-animation/#TimingAttrValGrammars
 	http://dxr.mozilla.org/mozilla-central/source/content/smil/test/test_smilTiming.xhtml
 	
- @remarks whitespace padding (at beginning and end of given string expression) is not permitted (must be trimmed on client side). Exception std::invalid_argument is thrown when an invalid character is encountered.
+ @remarks whitespace padding (at beginning and end of given string expression) is not permitted (must be trimmed on client side of this API).
+          Exception std::invalid_argument is thrown when an invalid character is encountered.
+          Note: "0:0:0.5006" == "500.6ms"
  
- @see SmilXmlParser for reading a SMIL (XML) file into an in-memory data model
+ @see SmilXmlReader for parsing a SMIL (XML) file into an in-memory data model
  
  @ingroup epub-model
  */
@@ -59,13 +61,6 @@ public:
     //EPUB3_EXPORT
     static
     double ToSeconds(const string& str)
-    {
-        return SmilClockValuesParser::ToMilliseconds(str) / 1000.0;
-    }
-
-    //EPUB3_EXPORT
-    static
-    uint32_t ToMilliseconds(const string& str)
     {
         //printf("SMIL CLOCK VALUE STRING: %s\n", str.c_str());
 
@@ -128,7 +123,7 @@ public:
             current = str[index];
         }
 
-        return offset * 1000.0;
+        return offset;
     }
 
 private:
@@ -273,14 +268,23 @@ private:
     }
 };
 
-static inline uint32_t ParseSmilClockValueToMilliseconds(const string& str)
-{
-    return SmilClockValuesParser::ToMilliseconds(str);
-}
-
 static inline double ParseSmilClockValueToSeconds(const string& str)
 {
     return SmilClockValuesParser::ToSeconds(str);
+}
+
+static inline uint32_t ParseSmilClockValueToWholeMilliseconds(const string& str)
+{
+    double fractional = ParseSmilClockValueToSeconds(str) * 1000.0;
+    uint32_t whole = (uint32_t)floor(fractional);
+    return whole;
+}
+
+static inline uint32_t ParseSmilClockValueToWholeNanoseconds(const string& str)
+{
+    double fractional = ParseSmilClockValueToSeconds(str) * 1000000.0;
+    uint32_t whole = (uint32_t)floor(fractional);
+    return whole;
 }
 
 EPUB3_END_NAMESPACE
