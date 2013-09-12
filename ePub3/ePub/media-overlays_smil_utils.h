@@ -31,6 +31,8 @@
 //#include <string>
 #include <ePub3/utilities/utfstring.h>
 
+#include <ePub3/property_holder.h>
+
 EPUB3_BEGIN_NAMESPACE
 
 /**
@@ -44,8 +46,9 @@ EPUB3_BEGIN_NAMESPACE
 	http://www.w3.org/TR/smil-animation/#TimingAttrValGrammars
 	http://dxr.mozilla.org/mozilla-central/source/content/smil/test/test_smilTiming.xhtml
 	
- @remarks whitespace padding (at beginning and end of given string expression) is not permitted (must be trimmed on client side of this API).
-          Exception std::invalid_argument is thrown when an invalid character is encountered.
+ @remarks whitespace padding (i.e. at beginning and end of given string expression) is not permitted,
+          so it must be trimmed on client side of this API, otherwise an "invalid character" exception will be thrown.
+          The exception std::invalid_argument is thrown when an invalid character is encountered.
           Note: "0:0:0.5006" == "500.6ms"
  
  @see SmilXmlReader for parsing a SMIL (XML) file into an in-memory data model
@@ -58,6 +61,24 @@ private:
     SmilClockValuesParser();
 
 public:
+    //EPUB3_EXPORT
+    static
+    uint32_t ToWholeMilliseconds(const string& str)
+    {
+        double fractional = ToSeconds(str) * 1000.0;
+        uint32_t whole = (uint32_t) floor(fractional);
+        return whole;
+    }
+
+    //EPUB3_EXPORT
+    static
+    uint32_t ToWholeNanoseconds(const string& str)
+    {
+        double fractional = ToSeconds(str) * 1000000.0;
+        uint32_t whole = (uint32_t) floor(fractional);
+        return whole;
+    }
+
     //EPUB3_EXPORT
     static
     double ToSeconds(const string& str)
@@ -268,24 +289,69 @@ private:
     }
 };
 
-static inline double ParseSmilClockValueToSeconds(const string& str)
-{
-    return SmilClockValuesParser::ToSeconds(str);
-}
 
-static inline uint32_t ParseSmilClockValueToWholeMilliseconds(const string& str)
-{
-    double fractional = ParseSmilClockValueToSeconds(str) * 1000.0;
-    uint32_t whole = (uint32_t)floor(fractional);
-    return whole;
-}
+/**
+ Convenience functions to access Media Overlays metadata
 
-static inline uint32_t ParseSmilClockValueToWholeNanoseconds(const string& str)
+	See:
+	http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
+
+ @remarks playback-active-class was introduced with the EPUB 3.0.1 revision, see https://epub-revision.googlecode.com/svn/trunk/build/301/spec/epub30-mediaoverlays.html#sec-package-metadata
+
+ @see NOP
+
+ @ingroup epub-model
+ */
+class MediaOverlaysMetadata
 {
-    double fractional = ParseSmilClockValueToSeconds(str) * 1000000.0;
-    uint32_t whole = (uint32_t)floor(fractional);
-    return whole;
-}
+private:
+    MediaOverlaysMetadata();
+
+    //EPUB3_EXPORT
+    static
+    const string *Get(const string& name, std::shared_ptr<ePub3::PropertyHolder> propertyHolder)
+    {
+        PropertyPtr prop = propertyHolder->PropertyMatching(name, "media");
+        if (prop != nullptr)
+        {
+            return &prop->Value();
+        }
+        else
+        {
+            return nullptr;
+        }
+    }
+
+public:
+
+    //EPUB3_EXPORT
+    static
+    const string *GetDuration(std::shared_ptr<ePub3::PropertyHolder> propertyHolder)
+    {
+        return Get("duration", propertyHolder);
+    }
+
+    //EPUB3_EXPORT
+    static
+    const string *GetNarrator(std::shared_ptr<ePub3::PropertyHolder> propertyHolder)
+    {
+        return Get("narrator", propertyHolder);
+    }
+
+    //EPUB3_EXPORT
+    static
+    const string *GetActiveClass(std::shared_ptr<ePub3::PropertyHolder> propertyHolder)
+    {
+        return Get("active-class", propertyHolder);
+    }
+
+    //EPUB3_EXPORT
+    static
+    const string *GetPlaybackActiveClass(std::shared_ptr<ePub3::PropertyHolder> propertyHolder)
+    {
+        return Get("playback-active-class", propertyHolder);
+    }
+};
 
 EPUB3_END_NAMESPACE
 
