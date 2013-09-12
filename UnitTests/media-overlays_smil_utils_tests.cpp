@@ -32,16 +32,16 @@ using ePub3::string;
 void testParseSmilClockValue_MillisecondsResolution(const string& str, uint32_t timeExpectedWholeMS)
 {
     SCOPED_INFO("SMIL Clock Value: '" << str.c_str() << "' (expects: " << timeExpectedWholeMS << "ms)");
-    REQUIRE_NOTHROW(ePub3::ParseSmilClockValueToSeconds(str));
-    uint32_t timeObtainedWholeMS = ePub3::ParseSmilClockValueToWholeMilliseconds(str);
+    REQUIRE_NOTHROW(ePub3::SmilClockValuesParser::ToSeconds(str));
+    uint32_t timeObtainedWholeMS = ePub3::SmilClockValuesParser::ToWholeMilliseconds(str);
     REQUIRE(timeObtainedWholeMS == timeExpectedWholeMS);
 }
 
 void testParseSmilClockValue_NanosecondsResolution(const string& str, double timeExpectedFractionalMS)
 {
     SCOPED_INFO("SMIL Clock Value: '" << str.c_str() << "' (expects: " << timeExpectedFractionalMS << "ms)");
-    REQUIRE_NOTHROW(ePub3::ParseSmilClockValueToSeconds(str));
-    uint32_t timeObtainedWholeNS = ePub3::ParseSmilClockValueToWholeNanoseconds(str);
+    REQUIRE_NOTHROW(ePub3::SmilClockValuesParser::ToSeconds(str));
+    uint32_t timeObtainedWholeNS = ePub3::SmilClockValuesParser::ToWholeNanoseconds(str);
     uint32_t timeExpectedWholeNS = (uint32_t)floor(timeExpectedFractionalMS * 1000.0);
     REQUIRE(timeObtainedWholeNS == timeExpectedWholeNS);
 }
