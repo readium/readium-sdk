@@ -51,7 +51,7 @@ EPUB3_BEGIN_NAMESPACE
           The exception std::invalid_argument is thrown when an invalid character is encountered.
           Note: "0:0:0.5006" == "500.6ms"
  
- @see SmilXmlReader for parsing a SMIL (XML) file into an in-memory data model
+ @see MediaOverlaysSmilModel for parsing a SMIL (XML) file into an in-memory data model
  
  @ingroup epub-model
  */
