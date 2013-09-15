@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		3418BA7D16C4151E009AA7EF /* ring_buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA88FD116C2B4ED00F2014B /* ring_buffer.cpp */; };
 		850B1AE916A75AC600619C3C /* TestData in CopyFiles */ = {isa = PBXBuildFile; fileRef = 850B1AE816A75AB000619C3C /* TestData */; };
+		A250DC01BC9BA0BC38B025E9 /* media-overlays_smil_utils_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250D509FCF18CA865884D31 /* media-overlays_smil_utils_tests.cpp */; };
+		A250DE10D82D8E57AF08A3B7 /* media-overlays_smil_utils.h in Headers */ = {isa = PBXBuildFile; fileRef = A250DAE420004486FD140F14 /* media-overlays_smil_utils.h */; };
 		AB17B29B170C872E00FD5917 /* font_obfuscation_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB17B29A170C872E00FD5917 /* font_obfuscation_tests.cpp */; };
 		AB17B29E171301C800FD5917 /* run_loop_cf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB17B29C171301C700FD5917 /* run_loop_cf.cpp */; };
 		AB17B29F171301C800FD5917 /* run_loop_cf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB17B29C171301C700FD5917 /* run_loop_cf.cpp */; };
@@ -371,6 +373,8 @@
 
 /* Begin PBXFileReference section */
 		850B1AE816A75AB000619C3C /* TestData */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TestData; path = ../../TestData; sourceTree = "<group>"; };
+		A250D509FCF18CA865884D31 /* media-overlays_smil_utils_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "media-overlays_smil_utils_tests.cpp"; sourceTree = "<group>"; };
+		A250DAE420004486FD140F14 /* media-overlays_smil_utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "media-overlays_smil_utils.h"; sourceTree = "<group>"; };
 		AB17B29A170C872E00FD5917 /* font_obfuscation_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = font_obfuscation_tests.cpp; sourceTree = "<group>"; };
 		AB17B29C171301C700FD5917 /* run_loop_cf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = run_loop_cf.cpp; sourceTree = "<group>"; };
 		AB17B29D171301C800FD5917 /* run_loop.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = run_loop.h; sourceTree = "<group>"; };
@@ -816,6 +820,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A250DE47346B36E8BC291F6D /* MediaOverlays */ = {
+			isa = PBXGroup;
+			children = (
+				A250DAE420004486FD140F14 /* media-overlays_smil_utils.h */,
+			);
+			name = MediaOverlays;
+			sourceTree = "<group>";
+		};
 		AB5D103D17209D38001D3C95 /* utf8-cpp */ = {
 			isa = PBXGroup;
 			children = (
@@ -866,6 +878,7 @@
 				AB95448D16BC539200EFD2FD /* object_preproc_tests.cpp */,
 				AB17B29A170C872E00FD5917 /* font_obfuscation_tests.cpp */,
 				ABB0459D175407A9001274E3 /* page_spread_tests.cpp */,
+				A250D509FCF18CA865884D31 /* media-overlays_smil_utils_tests.cpp */,
 			);
 			name = UnitTests;
 			path = ../../UnitTests;
@@ -1435,6 +1448,7 @@
 				AB6AC728168E05A3000DE924 /* encryption.h */,
 				AB6AC734169225E2000DE924 /* signatures.cpp */,
 				AB6AC735169225E3000DE924 /* signatures.h */,
+				A250DE47346B36E8BC291F6D /* MediaOverlays */,
 			);
 			name = Components;
 			sourceTree = "<group>";
@@ -1647,6 +1661,7 @@
 				AB976C6017393AD600AC26CF /* epub_locale.h in Headers */,
 				AB976C661742D15500AC26CF /* error_handler.h in Headers */,
 				AB6EEE0617466CAD007E951E /* compressed_pair.h in Headers */,
+				A250DE10D82D8E57AF08A3B7 /* media-overlays_smil_utils.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1783,6 +1798,7 @@
 				AB17B29B170C872E00FD5917 /* font_obfuscation_tests.cpp in Sources */,
 				ABB0459E175407A9001274E3 /* page_spread_tests.cpp in Sources */,
 				ABE1252A17D7B5B300342D59 /* iri_tests.cpp in Sources */,
+				A250DC01BC9BA0BC38B025E9 /* media-overlays_smil_utils_tests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2129,7 +2145,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
@@ -2156,7 +2172,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				SDKROOT = macosx;
 			};
 			name = Release;
