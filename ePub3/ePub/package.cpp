@@ -1224,7 +1224,7 @@ const string& Package::MediaOverlays_ActiveClass() const
     std::shared_ptr<Package> sharedMe = shared_from_this();
     //std::shared_ptr<Package> sharedMe = std::enable_shared_from_this<Package>::shared_from_this();
 
-    shared_ptr<PropertyHolder> holderPtr = std::dynamic_pointer_cast<PropertyHolder>(sharedMe);
+    shared_ptr<PropertyHolder> holderPtr = std::dynamic_pointer_cast<PropertyHolder>(sharedMe / manifestItem);
     //PackagePtr sharedPkg = std::dynamic_pointer_cast<Package>(sharedMe);
 
     const string * strPtr = MediaOverlaysMetadata::GetActiveClass(holderPtr);
@@ -1262,8 +1262,6 @@ const string& Package::MediaOverlays_DurationTotal() const
     // See:
     // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
 
-    //std::shared_ptr<ePub3::PropertyHolder> propertyHolder
-
     PropertyPtr prop = PropertyMatching("duration", "media", false);
     if (prop != nullptr)
     {
@@ -1279,18 +1277,13 @@ const string& Package::MediaOverlays_DurationItem(const std::shared_ptr<Manifest
     // See:
     // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
 
-    //printf("--- Media Overlays BASE REF: %s\n", manifestItem->Href().c_str());
-
     auto iri = MakePropertyIRI("duration", "media");
 
-    //std::shared_ptr<PropertyHolder> holderPtr = std::dynamic_pointer_cast<PropertyHolder>(manifestItem);
     PropertyPtr prop = manifestItem->PropertyMatching(iri, false);
     if (prop == nullptr)
     //auto items = holderPtr->PropertiesMatching(iri);
     //if (items.empty())
     {
-        //printf("--- Media Overlays NULL\n");
-
         const string & mediaOverlayID = manifestItem->MediaOverlayID();
         printf("--- Media Overlays ID: %s\n", mediaOverlayID.c_str());
 
@@ -1299,7 +1292,6 @@ const string& Package::MediaOverlays_DurationItem(const std::shared_ptr<Manifest
         {
             printf("--- Media Overlays SMIL REF: %s\n", mediaOverlay->Href().c_str());
 
-            //holderPtr = std::dynamic_pointer_cast<PropertyHolder>(mediaOverlay);
             prop = mediaOverlay->PropertyMatching(iri, false);
             //items = holderPtr->PropertiesMatching(iri);
         }
