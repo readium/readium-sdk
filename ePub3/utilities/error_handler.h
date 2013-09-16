@@ -306,7 +306,11 @@ enum class EPUBError
     MediaOverlayInvalidAudio,               ///< An <audio> element MUST have a 'src' attribute. Critical.
     MediaOverlayInvalidAudioSource,         ///< An <audio> element's 'src' attribute MUST reference an item in the publication's <manifest>. Major.
     MediaOverlayInvalidAudioType,           ///< An <audio> element's 'src' attribute MUST reference an item which is a member of the EPUB 3 Core Media Types. Medium.
-    
+
+    MediaOverlayMissingDurationMetadata,           ///< A SMIL manifest item has no corresponding media:duration metadata. Medium.
+    MediaOverlayMismatchDurationMetadata,           ///< A SMIL manifest item has no corresponding media:duration metadata. Medium.
+    MediaOverlayInvalidSmilClockValue,           ///< A given SMIL Clock Value (media:duration, clipBegin or clipEnd) has an invalid syntax. Major.
+
     MediaOverlayErrorMax,
     
     
