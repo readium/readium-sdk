@@ -24,7 +24,9 @@
 
 #include <ePub3/epub3.h>
 #include <ePub3/utilities/owned_by.h>
+#import <ePub3/manifest.h>
 #include <libxml/xpath.h> // for xmlNodeSetPtr
+#include "xpath_wrangler.h"
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -52,6 +54,11 @@ private:
 public:
     EPUB3_EXPORT MediaOverlaysSmilModel(const shared_ptr<Package>& owner); //PackagePtr
     virtual ~MediaOverlaysSmilModel();
+
+private:
+    uint32_t checkMetadata(const shared_ptr<Package>& package);
+    uint32_t checkSMILs(const shared_ptr<Package>& package);
+    uint32_t checkSMIL(const shared_ptr<ManifestItem>& item, const xmlNodePtr body, const XPathWrangler xpath);
 
 protected:
     bool ParseXML(xmlNodePtr node);
