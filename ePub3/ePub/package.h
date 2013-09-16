@@ -138,9 +138,6 @@ public:
     /// Returns an immutable reference to the map of navigation tables.
     const NavigationMap&    NavigationTables()      const       { return _navigation; }
 
-
-    //shared_ptr<MediaOverlaysSmilModel>    MediaOverlaysSmilModel()      const       { return _mediaOverlays; }
-
     /// @}
     
     /// @{
@@ -239,8 +236,8 @@ protected:
     ContentHandlerMap       _contentHandlers;   ///< All installed content handlers, indexed by media-type.
     shared_ptr<SpineItem>   _spine;             ///< The first item in the spine (SpineItems are a linked list).
     XMLIDLookup             _xmlIDLookup;       ///< Lookup table for all items with XML ID values.
-    //shared_ptr<MediaOverlaysSmilModel> _mediaOverlays;      ///< The Media Overlays SMIL model
-    
+
+protected:
     // used to verify/correct CFIs
     uint32_t                _spineCFIIndex;     ///< The CFI index for the `<spine>` element in the package document.
     
@@ -280,6 +277,11 @@ protected:
 #endif
         }
     }
+
+protected:
+    shared_ptr<MediaOverlaysSmilModel> _mediaOverlays;      ///< The Media Overlays SMIL model
+public:
+    shared_ptr<MediaOverlaysSmilModel>    MediaOverlaysSmilModel()      const       { return _mediaOverlays; }
 };
 
 /**
@@ -645,14 +647,14 @@ public:
      @result The publication's Media Overlays media:duration
      */
     EPUB3_EXPORT
-    const string& MediaOverlays_Duration() const;
+    const string& MediaOverlays_DurationTotal() const;
 
     /**
      Retrieves the Media Overlays media:duration (may be empty string, if unspecified in the OPF package)
      @result The publication's Media Overlays media:duration
      */
     EPUB3_EXPORT
-    const string& MediaOverlays_Duration(const std::shared_ptr<PropertyHolder> propertyHolder) const;
+    const string& MediaOverlays_DurationItem(const std::shared_ptr<ManifestItem> manifestItem);
 
     /**
      Retrieves a the Media Overlays media:narrator (may be empty string, if unspecified in the OPF package)

@@ -748,7 +748,7 @@ bool Package::Unpack()
 
 
     PackagePtr sharedPkg = std::dynamic_pointer_cast<Package>(sharedMe);
-    //_mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedPkg);
+    _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedPkg);
 
 
     // lastly, let's set the media support information
@@ -1257,14 +1257,14 @@ const string& Package::MediaOverlays_PlaybackActiveClass() const
         return string::EmptyString;
     }
 }
-const string& Package::MediaOverlays_Duration() const
+const string& Package::MediaOverlays_DurationTotal() const
 {
     // See:
     // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
 
     //std::shared_ptr<ePub3::PropertyHolder> propertyHolder
 
-    PropertyPtr prop = PropertyMatching("duration", "media");
+    PropertyPtr prop = PropertyMatching("duration", "media", false);
     if (prop != nullptr)
     {
         return prop->Value();
@@ -1274,21 +1274,45 @@ const string& Package::MediaOverlays_Duration() const
         return string::EmptyString;
     }
 }
-const string& Package::MediaOverlays_Duration(const std::shared_ptr<PropertyHolder> propertyHolder) const
+const string& Package::MediaOverlays_DurationItem(const std::shared_ptr<ManifestItem> manifestItem)
 {
     // See:
     // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
 
-    PropertyPtr prop = propertyHolder->PropertyMatching("duration", "media");
-    if (prop != nullptr)
+    //printf("--- Media Overlays BASE REF: %s\n", manifestItem->Href().c_str());
+
+    auto iri = MakePropertyIRI("duration", "media");
+
+    //std::shared_ptr<PropertyHolder> holderPtr = std::dynamic_pointer_cast<PropertyHolder>(manifestItem);
+    PropertyPtr prop = manifestItem->PropertyMatching(iri, false);
+    if (prop == nullptr)
+    //auto items = holderPtr->PropertiesMatching(iri);
+    //if (items.empty())
     {
-        return prop->Value();
+        //printf("--- Media Overlays NULL\n");
+
+        const string & mediaOverlayID = manifestItem->MediaOverlayID();
+        printf("--- Media Overlays ID: %s\n", mediaOverlayID.c_str());
+
+        std::shared_ptr<ManifestItem> mediaOverlay = manifestItem->MediaOverlay();
+        if (mediaOverlay != nullptr)
+        {
+            printf("--- Media Overlays SMIL REF: %s\n", mediaOverlay->Href().c_str());
+
+            //holderPtr = std::dynamic_pointer_cast<PropertyHolder>(mediaOverlay);
+            prop = mediaOverlay->PropertyMatching(iri, false);
+            //items = holderPtr->PropertiesMatching(iri);
+        }
     }
-    else
+
+    //if (items.empty())
+    if (prop == nullptr)
     {
-        //TODO: given manifest item may be content document instead of SMIL => search for corresponding SMIL media-overlay="ID" (if any)
         return string::EmptyString;
     }
+
+    //PropertyPtr prop = items[0];
+    return prop->Value();
 }
 const string& Package::MediaOverlays_Narrator(bool localized) const
 {

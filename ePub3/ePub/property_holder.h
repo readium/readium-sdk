@@ -90,25 +90,25 @@ public:
     virtual void        ErasePropertyAt(size_type idx);
     
     EPUB3_EXPORT
-    virtual bool        ContainsProperty(DCType type) const;
+    virtual bool        ContainsProperty(DCType type, bool lookupParents=true) const;
     EPUB3_EXPORT
-    virtual bool        ContainsProperty(const IRI& iri) const;
+    virtual bool        ContainsProperty(const IRI& iri, bool lookupParents=true) const;
     EPUB3_EXPORT
-    virtual bool        ContainsProperty(const string& reference, const string& prefix="") const;
+    virtual bool        ContainsProperty(const string& reference, const string& prefix="", bool lookupParents=true) const;
     
     EPUB3_EXPORT
-    const PropertyList  PropertiesMatching(DCType type) const;
+    const PropertyList  PropertiesMatching(DCType type, bool lookupParents=true) const;
     EPUB3_EXPORT
-    const PropertyList  PropertiesMatching(const IRI& iri) const;
+    const PropertyList  PropertiesMatching(const IRI& iri, bool lookupParents=true) const;
     EPUB3_EXPORT
-    const PropertyList  PropertiesMatching(const string& reference, const string& prefix="") const;
+    const PropertyList  PropertiesMatching(const string& reference, const string& prefix="", bool lookupParents=true) const;
     
     EPUB3_EXPORT
-    PropertyPtr         PropertyMatching(DCType type) const;
+    PropertyPtr         PropertyMatching(DCType type, bool lookupParents=true) const;
     EPUB3_EXPORT
-    PropertyPtr         PropertyMatching(const IRI& iri) const;
+    PropertyPtr         PropertyMatching(const IRI& iri, bool lookupParents=true) const;
     EPUB3_EXPORT
-    PropertyPtr         PropertyMatching(const string& reference, const string& prefix="") const;
+    PropertyPtr         PropertyMatching(const string& reference, const string& prefix="", bool lookupParents=true) const;
     
     template <class _Function>
     inline FORCE_INLINE

@@ -23,43 +23,40 @@
 #define ePub3_mo_smil_model_h
 
 #include <ePub3/epub3.h>
-#include <ePub3/package.h>
 #include <ePub3/utilities/owned_by.h>
 #include <libxml/xpath.h> // for xmlNodeSetPtr
 
 EPUB3_BEGIN_NAMESPACE
 
-        class Package;
+class Package;
 
-        class MediaOverlaysSmilModel;
+class MediaOverlaysSmilModel;
 
-        typedef shared_ptr<MediaOverlaysSmilModel> MediaOverlaysSmilModelPtr;
+typedef shared_ptr<MediaOverlaysSmilModel> MediaOverlaysSmilModelPtr;
 
 /**
- Parser that reads SMIL XML files into an in-memory data model
+Parser that reads SMIL XML files into an in-memory data model
 
-	See:
-	http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
-	
- @remarks For API consistency, this is loosely based on the design pattern used by nav_table.h (class NavigationTable)
- 
- @ingroup epub-model
- */
-        class MediaOverlaysSmilModel : public std::enable_shared_from_this<MediaOverlaysSmilModel>, public OwnedBy<Package>
-        {
-        private:
-            MediaOverlaysSmilModel() _DELETED_;
-            MediaOverlaysSmilModel(const MediaOverlaysSmilModel&) _DELETED_;
-            MediaOverlaysSmilModel(MediaOverlaysSmilModel&&) _DELETED_;
+See:
+http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
-        public:
-            EPUB3_EXPORT MediaOverlaysSmilModel(const shared_ptr<Package>& owner); //PackagePtr
-            virtual ~MediaOverlaysSmilModel();
+@ingroup epub-model
+*/
+class MediaOverlaysSmilModel : public std::enable_shared_from_this<MediaOverlaysSmilModel>, public OwnedBy<Package>
+{
+private:
+    MediaOverlaysSmilModel() _DELETED_;
+    MediaOverlaysSmilModel(const MediaOverlaysSmilModel&) _DELETED_;
+    MediaOverlaysSmilModel(MediaOverlaysSmilModel&&) _DELETED_;
 
-        protected:
-            bool ParseXML(xmlNodePtr node);
-        };
+public:
+    EPUB3_EXPORT MediaOverlaysSmilModel(const shared_ptr<Package>& owner); //PackagePtr
+    virtual ~MediaOverlaysSmilModel();
 
-        EPUB3_END_NAMESPACE
+protected:
+    bool ParseXML(xmlNodePtr node);
+};
+
+EPUB3_END_NAMESPACE
 
 #endif /* defined(ePub3_mo_smil_model_h) */
