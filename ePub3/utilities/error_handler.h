@@ -310,6 +310,8 @@ enum class EPUBError
     MediaOverlayMissingDurationMetadata,           ///< A SMIL manifest item has no corresponding media:duration metadata. Medium.
     MediaOverlayMismatchDurationMetadata,           ///< A SMIL manifest item has no corresponding media:duration metadata. Medium.
     MediaOverlayInvalidSmilClockValue,           ///< A given SMIL Clock Value (media:duration, clipBegin or clipEnd) has an invalid syntax. Major.
+    MediaOverlayCannotParseSMILXML,           ///< A given SMIL XML file fails to parse. Major.
+
 
     MediaOverlayErrorMax,
     

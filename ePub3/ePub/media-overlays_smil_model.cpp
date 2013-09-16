@@ -22,24 +22,9 @@
 #include "media-overlays_smil_model.h"
 #include "package.h"
 #include <ePub3/media-overlays_smil_utils.h>
-#include "xpath_wrangler.h"
 #include "error_handler.h"
 
 EPUB3_BEGIN_NAMESPACE
-
-// upside: nice syntax for checking
-// downside: operator[] always creates a new item
-#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-static std::map<string, bool> AllowedRootNodeNames = {
-{ "smil", true }
-};
-#else
-        typedef std::pair<string, bool> __name_pair_t;
-        static __name_pair_t __name_pairs[1] = {
-                __name_pair_t("smil", true)
-        };
-        static std::map<string, bool> AllowedRootNodeNames(&__name_pairs[0], &__name_pairs[1]);
-#endif
 
         MediaOverlaysSmilModel::~MediaOverlaysSmilModel()
         {
@@ -47,6 +32,216 @@ static std::map<string, bool> AllowedRootNodeNames = {
 
         MediaOverlaysSmilModel::MediaOverlaysSmilModel(const PackagePtr& package) //shared_ptr<Package>
         : OwnedBy(package)
+        {
+            uint32_t totalDurationFromMetadata = checkMetadata(package);
+
+            uint32_t totalDurationFromSMILs = checkSMILs(package);
+
+            if (totalDurationFromMetadata != totalDurationFromSMILs)
+            {
+                std::stringstream s;
+                s << "Media Overlays duration mismatch (milliseconds): METADATA " << (long) totalDurationFromMetadata << " != SMILs " << (long) totalDurationFromSMILs;
+                HandleError(EPUBError::MediaOverlayMismatchDurationMetadata, _Str(s.str()));
+            }
+            else
+            {
+                printf("Media Overlays SMILs parsed, total duration checked okay (milliseconds): %ld\n", (long)totalDurationFromSMILs);
+            }
+        }
+
+        uint32_t MediaOverlaysSmilModel::checkSMILs(const PackagePtr& package)
+        {
+            uint32_t accumulatedDurationMilliseconds = 0;
+
+            //std::map<string, shared_ptr<ManifestItem>>
+            const ManifestTable& manifestTable = package->Manifest();
+
+            for (ManifestTable::const_iterator iter = manifestTable.begin(); iter != manifestTable.end(); iter++)
+            {
+                ManifestItemPtr item = iter->second; //shared_ptr<ManifestItem>
+
+                //string
+                const ManifestItem::MimeType& mediaType = item->MediaType();
+
+                if (mediaType != "application/smil+xml")
+                {
+                    continue;
+                }
+
+                printf("Media Overlays SMIL PARSING: %s\n", item->Href().c_str());
+
+                //unique_ptr<ArchiveXmlReader> xmlReader = package->XmlReaderForRelativePath(item->Href());
+                xmlDocPtr doc = item->ReferencedDocument();
+
+                if (doc == nullptr)
+                {
+                    HandleError(EPUBError::MediaOverlayCannotParseSMILXML, _Str("Cannot parse XML: ", item->Href().c_str()));
+                }
+
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI}});
+#else
+                XPathWrangler::NamespaceList __ns;
+                __ns["epub"] = ePub3NamespaceURI;
+                __ns["smil"] = SMILNamespaceURI;
+                XPathWrangler xpath(doc, __ns);
+#endif
+                xpath.NameDefaultNamespace("smil");
+
+                xmlNodeSetPtr nodes = xpath.Nodes("/smil:smil");
+
+                if (nodes->nodeNr == 0)
+                {
+                    HandleError(EPUBError::MediaOverlayInvalidRootElement, _Str("'smil' root element not found: ", item->Href().c_str()));
+                }
+                else if (nodes->nodeNr > 1)
+                {
+                    HandleError(EPUBError::MediaOverlayInvalidRootElement, _Str("Multiple 'smil' root elements found: ", item->Href().c_str()));
+                }
+
+                if (nodes->nodeNr != 1)
+                {
+                    xmlXPathFreeNodeSet(nodes);
+                    return 0;
+                }
+
+                const xmlNodePtr smil = nodes->nodeTab[0];
+
+                string version = _getProp(smil, "version", SMILNamespaceURI);
+                if (version.empty())
+                {
+                    HandleError(EPUBError::MediaOverlayVersionMissing, _Str("SMIL version not found: ", item->Href().c_str()));
+                }
+                else if (version != "3.0")
+                {
+                    HandleError(EPUBError::MediaOverlayInvalidVersion, _Str("Invalid SMIL version (", version, "): ", item->Href().c_str()));
+                }
+
+                xmlXPathFreeNodeSet(nodes);
+
+                nodes = xpath.Nodes("./smil:body", smil);
+
+                if (nodes->nodeNr == 0)
+                {
+                    HandleError(EPUBError::MediaOverlayNoBody, _Str("'body' element not found: ", item->Href().c_str()));
+                }
+                else if (nodes->nodeNr > 1)
+                {
+                    HandleError(EPUBError::MediaOverlayMultipleBodies, _Str("multiple 'body' elements found: ", item->Href().c_str()));
+                }
+
+                if (nodes->nodeNr != 1)
+                {
+                    xmlXPathFreeNodeSet(nodes);
+                    return 0;
+                }
+
+                const xmlNodePtr body = nodes->nodeTab[0];
+
+                uint32_t smilDur = checkSMIL(item, body, xpath);
+
+                printf("Media Overlays SMIL DURATION (milliseconds): %ld\n", (long) smilDur);
+
+                accumulatedDurationMilliseconds += smilDur;
+
+                xmlXPathFreeNodeSet(nodes);
+            }
+
+            return accumulatedDurationMilliseconds;
+        }
+
+        uint32_t MediaOverlaysSmilModel::checkSMIL(const ManifestItemPtr& item, const xmlNodePtr element, const XPathWrangler xpath)
+        {
+            if (element == nullptr || element->type != XML_ELEMENT_NODE)
+            {
+                return 0;
+            }
+
+            uint32_t accumulatedDurationMilliseconds = 0;
+
+            std::string elementName(reinterpret_cast<const char *>(element->name));
+
+            if (elementName == "body" || elementName == "seq")
+            {
+                //const string& str = reinterpret_cast<const char *>(xmlNodeGetContent(linkedChildrenList));
+            }
+            else if (elementName == "par")
+            {
+
+            }
+            else if (elementName == "audio")
+            {
+                uint32_t clipBeginMilliseconds = 0;
+                uint32_t clipEndMilliseconds = 0;
+
+                string clipBeginStr = _getProp(element, "clipBegin", SMILNamespaceURI);
+                //printf("Media Overlays CLIP BEGIN: %s\n", clipBeginStr.c_str());
+                if (!clipBeginStr.empty())
+                {
+                    try
+                    {
+                        clipBeginMilliseconds = ePub3::SmilClockValuesParser::ToWholeMilliseconds(clipBeginStr);
+                    }
+                    catch (const std::invalid_argument& exc)
+                    {
+                        HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str(item->Href().c_str(), " -- clipBegin=", clipBeginStr, " => invalid SMIL Clock Value syntax"));
+                    }
+                    //catch (...)
+                    //{
+                    //}
+                }
+
+                string clipEndStr = _getProp(element, "clipEnd", SMILNamespaceURI);
+                //printf("Media Overlays CLIP END: %s\n", clipEndStr.c_str());
+                if (!clipEndStr.empty())
+                {
+                    try
+                    {
+                        clipEndMilliseconds = ePub3::SmilClockValuesParser::ToWholeMilliseconds(clipEndStr);
+                    }
+                    catch (const std::invalid_argument& exc)
+                    {
+                        HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str(item->Href().c_str(), " -- clipEnd=", clipEndStr, " => invalid SMIL Clock Value syntax"));
+                    }
+                    //catch (...)
+                    //{
+                    //}
+                }
+
+                uint32_t clipDuration = clipEndMilliseconds - clipBeginMilliseconds;
+
+                if (clipDuration <= 0)
+                {
+                    HandleError(EPUBError::MediaOverlayInvalidAudio, _Str(item->Href().c_str(), " -- clipBegin=", clipBeginStr, ", clipEnd=", clipEndStr, " => invalid time values"));
+                }
+                else
+                {
+                    accumulatedDurationMilliseconds += clipDuration;
+                }
+            }
+            else if (elementName == "text")
+            {
+
+            }
+
+            xmlNodePtr linkedChildrenList = element->children;
+            if (linkedChildrenList != nullptr)
+            {
+                for (; linkedChildrenList != nullptr; linkedChildrenList = linkedChildrenList->next)
+                {
+                    if (linkedChildrenList->type != XML_ELEMENT_NODE)
+                    {
+                        continue;
+                    }
+
+                    accumulatedDurationMilliseconds += checkSMIL(item, linkedChildrenList, xpath);
+                }
+            }
+
+            return accumulatedDurationMilliseconds;
+        }
+
+        uint32_t MediaOverlaysSmilModel::checkMetadata(const PackagePtr& package)
         {
             const string& narrator = package->MediaOverlays_Narrator();
             printf("Media Overlays NARRATOR: %s\n", narrator.c_str());
@@ -60,14 +255,13 @@ static std::map<string, bool> AllowedRootNodeNames = {
             const string& durationStr = package->MediaOverlays_DurationTotal();
             printf("Media Overlays TOTAL DURATION (string): %s\n", durationStr.c_str());
 
-            uint32_t totalDurationWholeMilliseconds = -1;
+            uint32_t totalDurationWholeMilliseconds = 0;
             if (!durationStr.empty())
             {
                 try
                 {
                     totalDurationWholeMilliseconds = ePub3::SmilClockValuesParser::ToWholeMilliseconds(durationStr);
                     printf("Media Overlays TOTAL DURATION (milliseconds): %ld\n", (long) totalDurationWholeMilliseconds);
-
                 }
                 catch (const std::invalid_argument& exc)
                 {
@@ -106,7 +300,7 @@ static std::map<string, bool> AllowedRootNodeNames = {
                 }
                 else
                 {
-                    uint32_t durationWholeMilliseconds = -1;
+                    uint32_t durationWholeMilliseconds = 0;
                     try
                     {
                         durationWholeMilliseconds = ePub3::SmilClockValuesParser::ToWholeMilliseconds(itemDurationStr);
@@ -125,7 +319,7 @@ static std::map<string, bool> AllowedRootNodeNames = {
 
             if (accumulatedDurationMilliseconds != totalDurationWholeMilliseconds)
             {
-                if (totalDurationWholeMilliseconds == -1)
+                if (totalDurationWholeMilliseconds == 0)
                 {
                     HandleError(EPUBError::MediaOverlayMissingDurationMetadata, _Str("OPF package", " => missing media:duration metadata"));
                 }
@@ -140,68 +334,8 @@ static std::map<string, bool> AllowedRootNodeNames = {
             {
                 printf("Media Overlays SMIL DURATION check okay.\n");
             }
-        }
 
-        bool MediaOverlaysSmilModel::ParseXML(xmlNodePtr node)
-        {
-            if (node == nullptr)
-                return false;
-
-            string name(node->name);
-            if (AllowedRootNodeNames.find(name) == AllowedRootNodeNames.end())
-                return false;
-
-            string version = _getProp(node, "version", SMILNamespaceURI);
-            if (!version.empty())
-            {
-                printf("SMIL VERSION: %s\n", version.c_str()); //"3.0"
-            }
-            else
-            {
-                printf("NO SMIL VERSION?\n");
-            }
-
-#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-XPathWrangler xpath(node->doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI}});
-#else
-            XPathWrangler::NamespaceList __ns;
-            __ns["epub"] = ePub3NamespaceURI;
-            __ns["smil"] = SMILNamespaceURI;
-            XPathWrangler xpath(node->doc, __ns);
-#endif
-            xpath.NameDefaultNamespace("smil");
-
-            xmlNodeSetPtr nodes = xpath.Nodes("./smil:body", node);
-            if (nodes == nullptr)
-                return false;
-            if (nodes->nodeNr != 1)
-            {
-                xmlXPathFreeNodeSet(nodes);
-                return false;
-            }
-
-            xmlNodePtr linkedChildrenList = nodes->nodeTab[0]->children;
-            if (linkedChildrenList == nullptr)
-            {
-                return false;
-            }
-
-            for (; linkedChildrenList != nullptr; linkedChildrenList = linkedChildrenList->next)
-            {
-                if (linkedChildrenList->type != XML_ELEMENT_NODE)
-                    continue;
-
-                std::string elementName(reinterpret_cast<const char *>(linkedChildrenList->name));
-
-                if (elementName == "p")
-                {
-                    const string& str = reinterpret_cast<const char *>(xmlNodeGetContent(linkedChildrenList));
-                }
-            }
-
-            xmlXPathFreeNodeSet(nodes);
-
-            return true;
+            return totalDurationWholeMilliseconds;
         }
 
         EPUB3_END_NAMESPACE
