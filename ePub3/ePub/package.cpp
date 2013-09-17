@@ -746,10 +746,8 @@ bool Package::Unpack()
         }
     }
 
-
-    PackagePtr sharedPkg = std::dynamic_pointer_cast<Package>(sharedMe);
-    _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedPkg);
-
+    _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
+    _mediaOverlays->InitData();
 
     // lastly, let's set the media support information
     InitMediaSupport();
