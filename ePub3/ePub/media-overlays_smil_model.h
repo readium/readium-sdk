@@ -25,8 +25,7 @@
 #include <ePub3/epub3.h>
 #include <ePub3/utilities/owned_by.h>
 #import <ePub3/manifest.h>
-#include <libxml/xpath.h> // for xmlNodeSetPtr
-#include "xpath_wrangler.h"
+#include <libxml/xpath.h> // xmlNodePtr
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -35,6 +34,8 @@ class Package;
 class MediaOverlaysSmilModel;
 
 typedef shared_ptr<MediaOverlaysSmilModel> MediaOverlaysSmilModelPtr;
+
+//typedef std::map<string, shared_ptr<SMILData>>  ManifestItemSMILMap;
 
 /**
 Parser that reads SMIL XML files into an in-memory data model
@@ -51,17 +52,19 @@ private:
     MediaOverlaysSmilModel(const MediaOverlaysSmilModel&) _DELETED_;
     MediaOverlaysSmilModel(MediaOverlaysSmilModel&&) _DELETED_;
 
+    string _narrator;
+    string _activeClass;
+    string _playbackActiveClass;
+    uint32_t _totalDuration; //whole milliseconds (resolution = 1ms)
+
 public:
-    EPUB3_EXPORT MediaOverlaysSmilModel(const shared_ptr<Package>& owner); //PackagePtr
+    EPUB3_EXPORT MediaOverlaysSmilModel(const shared_ptr<Package>& package); //PackagePtr
     virtual ~MediaOverlaysSmilModel();
 
 private:
-    uint32_t checkMetadata(const shared_ptr<Package>& package);
-    uint32_t checkSMILs(const shared_ptr<Package>& package);
-    uint32_t checkSMIL(const shared_ptr<ManifestItem>& item, const xmlNodePtr body, const XPathWrangler xpath);
-
-protected:
-    bool ParseXML(xmlNodePtr node);
+    void parseMetadata();
+    uint32_t parseSMILs();
+    uint32_t parseSMIL(const shared_ptr<ManifestItem>& item, const xmlNodePtr element); // recursive
 };
 
 EPUB3_END_NAMESPACE
