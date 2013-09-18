@@ -151,6 +151,9 @@ public class Container {
 			for( Package p : mPackages) {
 				p.close();
 			}
+			
+			// Set closed
+			mClosed = true;
 		} else {
 			// Log error
 			Log.e(TAG, "Closing already closed container [ptr:" + String.format("%X", __nativePtr) + ", path:" + mPath + "]");
