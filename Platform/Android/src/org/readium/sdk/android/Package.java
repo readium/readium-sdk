@@ -120,6 +120,9 @@ public class Package {
 			
 			// Release the native package
 			EPub3.releaseNativePointer(__nativePtr);
+			
+			// Set closed
+			mClosed = true;
 		} else {
 			// Log error
 			Log.e(TAG, "Closing already closed package [ptr:" + String.format("%X", __nativePtr) + "]");
