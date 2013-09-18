@@ -27,6 +27,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+/*
         void debugTreeAudio(const SMILData::Audio *audio)
         {
             printf("-- DEBUG TREE AUDIO\n");
@@ -106,6 +107,7 @@ EPUB3_BEGIN_NAMESPACE
                 debugTreeSeq(smilData->Body());
             }
         }
+*/
 
         MediaOverlaysSmilModel::~MediaOverlaysSmilModel()
         {
@@ -150,7 +152,7 @@ EPUB3_BEGIN_NAMESPACE
             }
             else
             {
-                printf("Media Overlays SMILs parsed, total duration checked okay (milliseconds): %ld\n", (long) totalDurationFromSMILs);
+                //printf("Media Overlays SMILs parsed, total duration checked okay (milliseconds): %ld\n", (long) totalDurationFromSMILs);
             }
 
             //debugSmilData(_smilDatas);
@@ -159,18 +161,18 @@ EPUB3_BEGIN_NAMESPACE
         void MediaOverlaysSmilModel::parseMetadata()
         {
             const string& _narrator = Narrator();
-            printf("Media Overlays NARRATOR: %s\n", _narrator.c_str());
+            //printf("Media Overlays NARRATOR: %s\n", _narrator.c_str());
 
             const string& _activeClass = ActiveClass();
-            printf("Media Overlays ACTIVE CLASS: %s\n", _activeClass.c_str());
+            //printf("Media Overlays ACTIVE CLASS: %s\n", _activeClass.c_str());
 
             const string& _playbackActiveClass = PlaybackActiveClass();
-            printf("Media Overlays PLAYBACK ACTIVE CLASS: %s\n", _playbackActiveClass.c_str());
+            //printf("Media Overlays PLAYBACK ACTIVE CLASS: %s\n", _playbackActiveClass.c_str());
 
             PackagePtr package = Owner();
 
             const string& durationStr = package->MediaOverlays_DurationTotal();
-            printf("Media Overlays TOTAL DURATION (string): %s\n", durationStr.c_str());
+            //printf("Media Overlays TOTAL DURATION (string): %s\n", durationStr.c_str());
 
             _totalDuration = 0;
             if (!durationStr.empty())
@@ -178,7 +180,7 @@ EPUB3_BEGIN_NAMESPACE
                 try
                 {
                     _totalDuration = ePub3::SmilClockValuesParser::ToWholeMilliseconds(durationStr);
-                    printf("Media Overlays TOTAL DURATION (milliseconds): %ld\n", (long) _totalDuration);
+                    //printf("Media Overlays TOTAL DURATION (milliseconds): %ld\n", (long) _totalDuration);
                 }
                 catch (const std::invalid_argument& exc)
                 {
@@ -215,10 +217,10 @@ EPUB3_BEGIN_NAMESPACE
                     continue;
                 }
 
-                printf("Media Overlays SMIL HREF: %s\n", item->Href().c_str());
+                //printf("Media Overlays SMIL HREF: %s\n", item->Href().c_str());
 
                 const string& itemDurationStr = package->MediaOverlays_DurationItem(item);
-                printf("Media Overlays SMIL DURATION (string): %s\n", itemDurationStr.c_str());
+                //printf("Media Overlays SMIL DURATION (string): %s\n", itemDurationStr.c_str());
 
                 if (itemDurationStr.empty())
                 {
@@ -230,7 +232,7 @@ EPUB3_BEGIN_NAMESPACE
                     try
                     {
                         durationWholeMilliseconds = ePub3::SmilClockValuesParser::ToWholeMilliseconds(itemDurationStr);
-                        printf("Media Overlays SMIL DURATION (milliseconds): %ld\n", (long) durationWholeMilliseconds);
+                        //printf("Media Overlays SMIL DURATION (milliseconds): %ld\n", (long) durationWholeMilliseconds);
 
                         SMILDataPtr smilData = std::make_shared<class SMILData>(sharedMe, item, durationWholeMilliseconds);
                         _smilDatas.push_back(smilData);
@@ -264,7 +266,7 @@ EPUB3_BEGIN_NAMESPACE
             }
             else
             {
-                printf("Media Overlays SMIL DURATION check okay.\n");
+                //printf("Media Overlays SMIL DURATION check okay.\n");
             }
         }
 
@@ -292,7 +294,7 @@ EPUB3_BEGIN_NAMESPACE
                     continue;
                 }
 
-                printf("Media Overlays SMIL PARSING: %s\n", item->Href().c_str());
+                //printf("Media Overlays SMIL PARSING: %s\n", item->Href().c_str());
 
                 //unique_ptr<ArchiveXmlReader> xmlReader = package->XmlReaderForRelativePath(item->Href());
                 xmlDocPtr doc = item->ReferencedDocument();
@@ -365,14 +367,14 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 SMILDataPtr smilData = getDataForSMILManifestItem(item->Identifier());
 
 
-                printf("ITEM DUR: %ld\n", (long) smilData->DurationMilliseconds());
+                //printf("Media Overlays ITEM DUR: %ld\n", (long) smilData->DurationMilliseconds());
 
                 const xmlNodePtr body = nodes->nodeTab[0];
 
                 uint32_t smilDur = parseSMIL(smilData, nullptr, nullptr, item, body);
 
 
-                printf("Media Overlays SMIL DURATION (milliseconds): %ld\n", (long) smilDur);
+                //printf("Media Overlays SMIL DURATION (milliseconds): %ld\n", (long) smilDur);
 
                 accumulatedDurationMilliseconds += smilDur;
 
