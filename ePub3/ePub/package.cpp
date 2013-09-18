@@ -747,7 +747,7 @@ bool Package::Unpack()
     }
 
     _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
-    _mediaOverlays->InitData();
+    _mediaOverlays->Initialize();
 
     // lastly, let's set the media support information
     InitMediaSupport();
@@ -1217,18 +1217,6 @@ const string& Package::MediaOverlays_ActiveClass() const
     // See:
     // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
 
-    /*
-    //PackagePtr
-    std::shared_ptr<Package> sharedMe = shared_from_this();
-    //std::shared_ptr<Package> sharedMe = std::enable_shared_from_this<Package>::shared_from_this();
-
-    shared_ptr<PropertyHolder> holderPtr = std::dynamic_pointer_cast<PropertyHolder>(sharedMe / manifestItem);
-    //PackagePtr sharedPkg = std::dynamic_pointer_cast<Package>(sharedMe);
-
-    const string * strPtr = MediaOverlaysMetadata::GetActiveClass(holderPtr);
-    return strPtr == nullptr ? string::EmptyString : *strPtr;
-    */
-
     PropertyPtr prop = PropertyMatching("active-class", "media");
     if (prop != nullptr)
     {
@@ -1279,29 +1267,19 @@ const string& Package::MediaOverlays_DurationItem(const std::shared_ptr<Manifest
 
     PropertyPtr prop = manifestItem->PropertyMatching(iri, false);
     if (prop == nullptr)
-    //auto items = holderPtr->PropertiesMatching(iri);
-    //if (items.empty())
     {
-        const string & mediaOverlayID = manifestItem->MediaOverlayID();
-        printf("--- Media Overlays ID: %s\n", mediaOverlayID.c_str());
-
         std::shared_ptr<ManifestItem> mediaOverlay = manifestItem->MediaOverlay();
         if (mediaOverlay != nullptr)
         {
-            printf("--- Media Overlays SMIL REF: %s\n", mediaOverlay->Href().c_str());
-
             prop = mediaOverlay->PropertyMatching(iri, false);
-            //items = holderPtr->PropertiesMatching(iri);
         }
     }
 
-    //if (items.empty())
     if (prop == nullptr)
     {
         return string::EmptyString;
     }
 
-    //PropertyPtr prop = items[0];
     return prop->Value();
 }
 const string& Package::MediaOverlays_Narrator(bool localized) const
