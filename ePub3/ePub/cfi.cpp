@@ -427,7 +427,10 @@ void CFI::Component::Parse(const string &str)
             case '[':
             {
                 size_t pos = static_cast<size_t>(iss.tellg());
-                iss.ignore(std::numeric_limits<std::streamsize>::max(), ']');
+                while ( !iss.eof() && next != ']' )
+                {
+                    iss >> next;
+                }
                 size_t end = ((size_t)iss.tellg()) - 1;
                 
                 if ( iss.eof() )
