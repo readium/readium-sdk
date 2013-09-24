@@ -22,7 +22,10 @@
 #ifndef __ePub3__c14n__
 #define __ePub3__c14n__
 
-#include <ePub3/xml/base.h>
+#include "../utilities/base.h"
+
+#if EPUB_ENABLE(XML_C14N)
+
 #include <ePub3/xml/io.h>
 #include <ePub3/utilities/utfstring.h>
 #include <sstream>
@@ -111,5 +114,7 @@ struct C14N
 };
 
 EPUB3_XML_END_NAMESPACE
+
+#endif	// EPUB_ENABLE(XML_C14N)
 
 #endif /* defined(__ePub3__c14n__) */

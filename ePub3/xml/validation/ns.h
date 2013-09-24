@@ -22,10 +22,13 @@
 #ifndef __ePub3_xml_ns__
 #define __ePub3_xml_ns__
 
-#include <ePub3/xml/base.h>
-#include <ePub3/utilities/utfstring.h>
+#include "../utilities/base.h"
+#include "../utilities/xmlstring.h"
 #include <vector>
+
+#if EPUB_USE(LIBXML2)
 #include <libxml/tree.h>
+#endif
 
 EPUB3_XML_BEGIN_NAMESPACE
 
@@ -40,6 +43,8 @@ typedef std::vector<Namespace *> NamespaceList;
 /**
  @ingroup validation
  */
+#if EPUB_USE(LIBXML2)
+
 class Namespace : public WrapperBase
 {
 public:
@@ -62,6 +67,34 @@ protected:
     _xmlNs *    _xml;
     
 };
+
+#elif EPUB_USE(WIN_XML)
+
+// optimization: use Platform::String directly
+class Namespace
+{
+protected:
+	::Platform::String^		_href;
+	::Platform::String^		_prefix;
+	Namespace*				_next;
+
+public:
+	Namespace() : _href(), _prefix() {}
+	Namespace(Document* doc, ::Platform::StringReference prefix, ::Platform::StringReference uri) : _href(uri), _prefix(prefix) {}
+	Namespace(Document* doc, ::Platform::String^ prefix, ::Platform::String^ uri) : _href(uri), _prefix(prefix) {}
+	virtual ~Namespace() {}
+
+	bool IsEmpty() const { return _href->IsEmpty(); }
+
+	Namespace* Next() const { return _next; }
+	bool IsGlobal() const { return true; }
+
+	::Platform::String^ URI() const { return _href; }
+	::Platform::String^ Prefix() const { return _prefix; }
+
+};
+
+#endif
 
 EPUB3_XML_END_NAMESPACE
 
