@@ -113,7 +113,7 @@ protected:
     static void _XMLFunctionWrapper(xmlXPathParserContextPtr ctx, int nargs);
     void PerformFunction(xmlXPathParserContextPtr ctx, const string & name, const string & uri, int nargs);
 #endif
-    string             _xpath;
+    string					_xpath;
     const class Document *  _document;
 #if EPUB_USE(LIBXML2)
     _xmlXPathContext *      _ctx;
@@ -122,7 +122,8 @@ protected:
     
     _xmlXPathObject *       _lastResult;
 #elif EPUB_USE(WIN_XML)
-
+	::Windows::Data::Xml::Dom::XmlNodeList^	_lastResult;
+	std::map<string, string>				_namespaces;
 #endif
 };
 

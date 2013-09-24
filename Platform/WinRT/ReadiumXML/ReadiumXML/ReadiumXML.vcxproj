@@ -223,9 +223,12 @@
     <ClInclude Include="..\..\..\..\ePub3\_config.h" />
     <ClInclude Include="..\..\..\..\ePub3\_platform.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Class1.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\ePub3\xml\tree\document_win.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\xml\tree\element_win.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\xml\tree\node_win.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\xml\tree\xpath_win.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -234,7 +237,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Class1.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

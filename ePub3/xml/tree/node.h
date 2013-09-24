@@ -41,6 +41,8 @@ class Namespace;
 class Node;
 typedef std::vector<Node*> NodeSet;
 
+typedef std::map<string, string> NamespaceMap;
+
 #if EPUB_PLATFORM(WINRT)
 enum class NodeType {
 	Element						= int(Windows::Data::Xml::Dom::NodeType::ElementNode),
@@ -115,7 +117,7 @@ public:
 	typedef Windows::Data::Xml::Dom::IXmlNode^	NativePtr;
 #endif
 
-    typedef std::list<Node*>                    NodeList;
+    typedef std::list<Node*>					NodeList;
     
     class InvalidNodeType : public exception
     {
@@ -126,9 +128,11 @@ public:
     
 public:
     explicit Node(NativePtr node);
+#if EPUB_ENABLE(XML_BUILDER)
     Node(const string & name, NodeType type,
          const string & content = string(),
          const Namespace & ns = xml::Namespace());
+#endif
     Node(Node && o);
     virtual ~Node();
     
@@ -136,7 +140,9 @@ public:
     // Properties
     
     string Name() const;
+#if EPUB_ENABLE(XML_BUILDER)
     void SetName(const string & name);
+#endif
     
     string Content() const;
     void SetContent(const string & content);
@@ -157,10 +163,11 @@ public:
     NodeType Type() const;
     bool IsTextNode() const { return Type() == NodeType::Text; }
     bool IsElementNode() const { return Type() == NodeType::Element; }
-    
+
+#if EPUB_USE(LIBXML2)
     int Index() const;
-    
     int Line() const;
+#endif
     
     NativePtr xml() { return _xml; }
     const NativePtr xml() const { return _xml; }
@@ -198,7 +205,7 @@ public:
     const Node * PreviousSibling() const;
     const Node * FirstChild(const string & filterByName = string()) const;
     const NodeList Children(const string & filterByName = string()) const;
-    
+#if EPUB_ENABLE(XML_BUILDER)
     Element * AddChild(const string & name, const string & prefix = string());
     void AddChild(Node * child);
     
@@ -211,7 +218,7 @@ public:
     Node * CopyIn(const Node * nodeToCopy, bool recursive = true);
     
     void Detach();
-    
+#endif
     ///////////////////////////////////////////////////////
     // XPaths
     
@@ -220,18 +227,21 @@ public:
     // these are simple wrappers for the XPathEvaluator class's functionality
     NodeSet FindByXPath(const string & xpath) const;
     NodeSet FindByXPath(const string & xpath, const NamespaceMap & namespaces) const;
-    
+
+	///////////////////////////////////////////////////////
+	// Wrapper Factory
+
 #if EPUB_USE(LIBXML2)
-    ///////////////////////////////////////////////////////
-    // Wrapper Factory
-    
     static WrapperBase * Wrap(_xmlNode * xml);
     static void Unwrap(_xmlNode * xml);
+#elif EPUB_USE(WIN_XML)
+	static Node* NewNode(NativePtr ptr);
 #endif
 protected:
     NativePtr _xml;
-    
+#if EPUB_ENABLE(XML_BUILDER)
     NativePtr createChild(const string & name, const string & prefix) const;
+#endif
 #if EPUB_USE(LIBXML2)
     void rebind(NativePtr newNode);
 #endif

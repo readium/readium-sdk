@@ -56,32 +56,39 @@ class Document : public Node
 {
 public:
 #if EPUB_USE(LIBXML2)
-	typedef _xmlDoc*										NativeDocPtr;
-	typedef xmlEntityPtr									NativeEntityPtr;
+	typedef _xmlDoc*								NativeDocPtr;
+	typedef xmlEntityPtr							NativeEntityPtr;
 #elif EPUB_USE(WIN_XML)
-	typedef Windows::Data::Xml::Dom::XmlDocument^			NativeDocPtr;
-	typedef Windows::Data::Xml::Dom::XmlEntityReference^	NativeEntityPtr;
+	typedef Windows::Data::Xml::Dom::XmlDocument^	NativeDocPtr;
+	typedef Windows::Data::Xml::Dom::DtdEntity^		NativeEntityPtr;
 #endif
 
 public:
+	explicit Document(NativeDocPtr xml);
+#if EPUB_ENABLE(XML_BUILDER)
     explicit Document(const string & version = "1.0");
-    explicit Document(NativeDocPtr xml);
     explicit Document(Element * rootElement);
+#endif
     virtual ~Document();
     
     string Encoding() const;
     DTD * InternalSubset() const;
+#if EPUB_ENABLE(XML_BUILDER)
     void SetInternalSubset(const string & name, const string & externalID,
                            const string & systemID);
     
-    Element * Root();
-    const Element * Root() const;
-    
+#endif
+
+	Element * Root();
+	const Element * Root() const;
+#if EPUB_ENABLE(XML_BUILDER)
     Element * SetRoot(const string & name, const string & nsUri = string(),
                       const string & nsPrefix = string());
     Element * SetRoot(const Node * nodeToCopy, bool recursive = true);
     Element * SetRoot(Element * root);
+#endif
 
+#if EPUB_ENABLE(XML_BUILDER)
     // only comments and processing instructions can be outside the root node;
     // this will throw if another type of node is passed in-- it checks the node's Type()
     Node * AddNode(Node * commentOrPINode, bool beforeRoot = true);
@@ -91,11 +98,14 @@ public:
     
     // add an entity declaration to a given subset
     void DeclareEntity(const string & name, EntityType type, const string & publicID, const string & systemID, const string & value);
-    
+#endif
+
+#if EPUB_USE(LIBXML2)
     int ProcessXInclude(bool generateXIncludeNodes = true);
-    
-    NativeDocPtr xml() { return reinterpret_cast<NativeDocPtr>(Node::xml()); }
-    const NativeDocPtr xml() const { return reinterpret_cast<const NativeDocPtr>(Node::xml()); }
+#endif
+
+    NativeDocPtr xml() { return xml_native_cast<NativeDocPtr>(Node::xml()); }
+    const NativeDocPtr xml() const { return xml_native_cast<const NativeDocPtr>(Node::xml()); }
     
     NativeEntityPtr NamedEntity(const string & name) const;
     string ContentOfNamedEntity(const string & name) const;

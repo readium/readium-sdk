@@ -40,14 +40,16 @@ public:
 	typedef Windows::Data::Xml::Dom::XmlElement^	NativeElementPtr;
 #endif
 public:
-    explicit Element(const NativeElementPtr xml) : Node(xml) {}
+    explicit Element(const NativeElementPtr xml) : Node(xml_native_cast<NativePtr>(xml)) {}
+#if EPUB_ENABLE(XML_BUILDER)
     Element(const string & name, class Document * doc = nullptr, const string & nsUri=string(), const string & nsPrefix=string()) : Node(name, NodeType::Element, "") {
         if ( doc != nullptr && !nsUri.empty() ) {
             class Namespace ns(doc, nsPrefix, nsUri);
             SetNamespace(&ns);
         }
     }
-    Element(const string & name, const class Namespace & ns = xml::Namespace()) : Node(name, NodeType::Element, "", ns) {}
+	Element(const string & name, const class Namespace & ns = xml::Namespace()) : Node(name, NodeType::Element, "", ns) {}
+#endif
     Element(Element &&o) : Node(std::move(dynamic_cast<Node&>(o))) {}
     virtual ~Element() {}
 };
