@@ -22,6 +22,7 @@
 #ifndef __ePub3_xml_io__
 #define __ePub3_xml_io__
 
+#if EPUB_USE(LIBXML2)
 #include <ePub3/xml/base.h>
 #include <iostream>
 #include <libxml/xmlIO.h>
@@ -123,5 +124,6 @@ protected:
 };
 
 EPUB3_XML_END_NAMESPACE
+#endif	// EPUB_USE(LIBXML2)
 
 #endif /* defined(__ePub3_xml_io__) */
