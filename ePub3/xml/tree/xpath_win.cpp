@@ -19,7 +19,6 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "pch.h"
 #include "xpath.h"
 #include "node.h"
 #include "element.h"

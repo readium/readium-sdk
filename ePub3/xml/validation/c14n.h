@@ -22,7 +22,7 @@
 #ifndef __ePub3__c14n__
 #define __ePub3__c14n__
 
-#include "../utilities/base.h"
+#include <ePub3/xml/base.h>
 
 #if EPUB_ENABLE(XML_C14N)
 

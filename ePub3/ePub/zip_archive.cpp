@@ -30,7 +30,7 @@
 #include <unistd.h>
 #endif
 #include <fcntl.h>
-#if EPUB_PLATFORM(WIN)
+#if EPUB_OS(WINDOWS)
 #include <windows.h>
 #endif
 
@@ -56,6 +56,20 @@ static string GetTempFilePath(const string& ext)
 
     string r(tmpFile);
     return r;
+#elif EPUB_PLATFORM(WINRT)
+	using ToUTF8 = std::wstring_convert<std::codecvt_utf8<wchar_t>>;
+
+	auto tempFolder = ::Windows::Storage::ApplicationData::Current->TemporaryFolder;
+	std::wstring tempFolderPath(tempFolder->Path->Data(), tempFolder->Path->Length());
+	std::wstringstream ss;
+
+	ss << tempFolderPath;
+	ss << TEXT("\\epub3.");
+	ss << Windows::Security::Cryptography::CryptographicBuffer::GenerateRandomNumber();
+	ss << TEXT(".");
+	ss << ToUTF8().from_bytes(ext.stl_str());
+	
+	return ToUTF8().to_bytes(ss.str());
 #else
     std::stringstream ss;
 #if EPUB_OS(ANDROID)
@@ -70,8 +84,6 @@ static string GetTempFilePath(const string& ext)
 
 #if EPUB_OS(ANDROID)
     int fd = ::mkstemp(buf);
-#elif EPUB_PLATFORM(WIN)
-    
 #else
     int fd = ::mkstemps(buf, static_cast<int>(ext.size()+1));
 #endif
@@ -106,7 +118,7 @@ class ZipWriter : public ArchiveWriter
         DataBlob(DataBlob&& o) : _tmpPath(std::move(o._tmpPath)), _fs(_tmpPath.c_str(), std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc) {}
         ~DataBlob() {
             _fs.close();
-#if EPUB_PLATFORM(WIN)
+#if EPUB_OS(WINDOWS)
             ::_unlink(_tmpPath.c_str());
 #else
             ::unlink(_tmpPath.c_str());

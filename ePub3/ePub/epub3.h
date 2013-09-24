@@ -29,7 +29,10 @@
 // this chunk will go away once we have the C++ XML interface complete
 #include <string>
 #include <sstream>
+
+#if EPUB_USE(LIBXML2)
 #include <libxml/tree.h>
+#endif
 
 #include <ePub3/Forward.h>
 
@@ -43,6 +46,7 @@
 #define XMLENCNamespaceURI "http://www.w3.org/2001/04/xmlenc#"
 #define XMLDSigNamespaceURI "http://www.w3.org/2000/09/xmldsig#"
 
+#if EPUB_USE(LIBXML2)
 EPUB3_BEGIN_NAMESPACE
 
 /**
@@ -80,5 +84,6 @@ static inline string _getProp(xmlNodePtr node, const char *name, const char *nsU
 }
 
 EPUB3_END_NAMESPACE
+#endif	// EPUB_USE(LIBXML2)
 
 #endif

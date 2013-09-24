@@ -35,10 +35,6 @@
 #include "../_config.h"
 #include "url_canon_internal.h"
 
-#if EPUB_OS(WINDOWS)
-#define snprintf(a,b,c,...) _snprintf_s(a,b,b,c,__VA_ARGS__)
-#endif
-
 namespace url_canon {
 
 namespace {

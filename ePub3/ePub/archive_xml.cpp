@@ -20,6 +20,8 @@
 //
 
 #include "archive_xml.h"
+
+#if EPUB_USE(LIBXML2)
 #include <ePub3/utilities/error_handler.h>
 #include <sstream>
 
@@ -86,3 +88,5 @@ bool ArchiveXmlWriter::close()
 }
 
 EPUB3_END_NAMESPACE
+
+#endif // EPUB_USE(LIBXML2)
