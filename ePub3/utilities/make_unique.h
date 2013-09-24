@@ -31,6 +31,10 @@
 #include <type_traits>
 #include <utility>
 
+#if EPUB_PLATFORM(WINRT)
+using std::make_unique;
+#else
+
 EPUB3_BEGIN_NAMESPACE
 
 template <class _Tp>
@@ -160,5 +164,7 @@ make_unique(...) { static_assert(false, "Calling a deleted function"); }
 #endif
 
 EPUB3_END_NAMESPACE
+
+#endif // !EPUB_PLATFORM(WINRT)
 
 #endif

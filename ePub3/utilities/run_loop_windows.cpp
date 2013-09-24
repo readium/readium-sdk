@@ -62,7 +62,7 @@ static inline void LargeIntegerToTimePoint(LARGE_INTEGER* ft, std::chrono::time_
 
 RunLoop::RunLoop() : _wakeHandle(NULL), _timers(), _sources(), _observers(), _listLock(), _waiting(false), _stop(false), _resetHandles(false), _observerMask(0)
 {
-    _wakeHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
+    _wakeHandle = CreateEventEx(NULL, NULL, 0, 0);
     if ( _wakeHandle == NULL )
         _THROW_LAST_ERROR();
 }
@@ -73,7 +73,7 @@ RunLoop::~RunLoop()
 }
 void RunLoop::PerformFunction(std::function<void ()> fn)
 {
-    RefCounted<EventSource> ev(new EventSource([fn](EventSource& __e){fn();}), adopt_ref);
+    EventSourcePtr ev = EventSource::New([fn](EventSource& __e){fn();});
     AddEventSource(ev);
     ev->Signal();
 }
@@ -244,7 +244,7 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
         _waiting = true;
 
         milliseconds millis = duration_cast<milliseconds>(timeoutTime - system_clock::now());
-        DWORD signaled = ::WaitForMultipleObjects(handleCount, pHandles, FALSE, static_cast<DWORD>(millis.count()));
+        DWORD signaled = ::WaitForMultipleObjectsEx(handleCount, pHandles, FALSE, static_cast<DWORD>(millis.count()), FALSE);
 
         _waiting = false;
         _listLock.lock();
@@ -311,7 +311,7 @@ void RunLoop::RunObservers(Observer::Activity activity)
     if ( (_observerMask & activity) == 0 )
         return;
 
-    std::vector<RefCounted<Observer>> observersToRemove;
+    shared_vector<Observer> observersToRemove;
     for ( auto& observer : _observers )
     {
         if ( observer->IsCancelled() )
@@ -332,7 +332,7 @@ void RunLoop::RunObservers(Observer::Activity activity)
         RemoveObserver(observer);
     }
 }
-void RunLoop::ProcessTimer(RefCounted<Timer> timer)
+void RunLoop::ProcessTimer(TimerPtr timer)
 {
     if ( timer->IsCancelled() )
     {
@@ -347,7 +347,7 @@ void RunLoop::ProcessTimer(RefCounted<Timer> timer)
         RemoveTimer(timer);
     }
 }
-void RunLoop::ProcessEventSource(RefCounted<EventSource> source)
+void RunLoop::ProcessEventSource(EventSourcePtr source)
 {
     if ( source->IsCancelled() )
     {
@@ -415,13 +415,13 @@ void RunLoop::Observer::Cancel()
 
 RunLoop::EventSource::EventSource(EventHandlerFn fn) : _event(NULL), _fn(fn)
 {
-    _event = CreateEvent(NULL, FALSE, FALSE, NULL);
+	_event = CreateEventEx(NULL, NULL, 0, 0);
     if ( _event == NULL )
         _THROW_LAST_ERROR();
 }
 RunLoop::EventSource::EventSource(const EventSource& o) : _event(NULL), _fn(o._fn)
 {
-    _event = CreateEvent(NULL, FALSE, FALSE, NULL);
+	_event = CreateEventEx(NULL, NULL, 0, 0);
     if ( _event == NULL )
         _THROW_LAST_ERROR();
 }
@@ -439,7 +439,7 @@ RunLoop::EventSource& RunLoop::EventSource::operator=(const EventSource& o)
     if ( _event != NULL )
         ::CloseHandle(_event);
     
-    _event = CreateEvent(NULL, FALSE, FALSE, NULL);
+	_event = CreateEventEx(NULL, NULL, 0, 0);
     if ( _event == NULL )
         _THROW_LAST_ERROR();
     return *this;
@@ -474,11 +474,51 @@ void RunLoop::EventSource::Signal()
     ::SetEvent(_event);
 }
 
+#if EPUB_PLATFORM(WINRT)
+ref class TimerCallbackWrapper
+{
+private:
+	typedef std::function<void()> CallbackType;
+
+	friend class ePub3::RunLoop::Timer;
+	TimerCallbackWrapper(CallbackType cb) : m_callback(cb) {}
+	void Fire(ThreadPoolTimer^ unused) {
+		m_callback();
+	}
+
+private:
+	CallbackType m_callback;
+};
+#endif
+
 RunLoop::Timer::Timer(Clock::time_point& fireDate, Clock::duration& interval, TimerFn fn) : _fireDate(fireDate), _interval(interval), _fn(fn)
 {
     using namespace std::chrono;
 
-    _handle = ::CreateWaitableTimer(NULL, FALSE, NULL);
+#if EPUB_PLATFORM(WINRT)
+	_handle = ::CreateEventEx(NULL, NULL, 0, 0);
+	if (_handle == NULL)
+		_THROW_LAST_ERROR();
+
+	auto doneFn = ref new TimerCallbackWrapper([this](){if (_handle != NULL)::SetEvent(_handle); });
+	auto elapsedHandler = ref new TimerElapsedHandler(doneFn, &TimerCallbackWrapper::Fire, Platform::CallbackContext::Any, true);
+
+	if (interval > Clock::duration(0))
+	{
+		// Periodic Timer
+		Windows::Foundation::TimeSpan timeSpan{ interval.count() };
+		_timer = ThreadPoolTimer::CreatePeriodicTimer(elapsedHandler, timeSpan);
+	}
+	else
+	{
+		// One-shot timer
+		long long theInterval = duration_cast<milliseconds>(fireDate.time_since_epoch() - Clock::now().time_since_epoch()).count();
+		Windows::Foundation::TimeSpan timeSpan{ theInterval };
+		_timer = ThreadPoolTimer::CreateTimer(elapsedHandler, timeSpan);
+	}
+
+#else
+    _handle = CreateWaitableTimer(NULL, FALSE);
     if ( _handle == NULL )
         _THROW_LAST_ERROR();
 
@@ -492,11 +532,22 @@ RunLoop::Timer::Timer(Clock::time_point& fireDate, Clock::duration& interval, Ti
         ::CloseHandle(_handle);
         _THROW_LAST_ERROR();
     }
+#endif
 }
 RunLoop::Timer::Timer(Clock::duration& interval, bool repeat, TimerFn fn) : _fireDate(Clock::now() + interval), _interval(interval), _fn(fn)
 {
     using namespace std::chrono;
+#if EPUB_PLATFORM(WINRT)
+	_handle = ::CreateEventEx(NULL, NULL, 0, 0);
+    if ( _handle == NULL )
+		_THROW_LAST_ERROR();
 
+	auto doneFn = ref new TimerCallbackWrapper([this](){if (_handle != NULL)::SetEvent(_handle); });
+	auto elapsedHandler = ref new TimerElapsedHandler(doneFn, &TimerCallbackWrapper::Fire, Platform::CallbackContext::Any, true);
+
+	Windows::Foundation::TimeSpan timeSpan{ interval.count() };
+	_timer = ThreadPoolTimer::CreatePeriodicTimer(elapsedHandler, timeSpan);
+#else
     _handle = ::CreateWaitableTimer(NULL, FALSE, NULL);
     if ( _handle == NULL )
         _THROW_LAST_ERROR();
@@ -512,11 +563,30 @@ RunLoop::Timer::Timer(Clock::duration& interval, bool repeat, TimerFn fn) : _fir
         ::CloseHandle(_handle);
         _THROW_LAST_ERROR();
     }
+#endif
 }
 RunLoop::Timer::Timer(const Timer& o) : _fireDate(o._fireDate), _interval(o._interval), _fn(o._fn)
 {
     using namespace std::chrono;
+#if EPUB_PLATFORM(WINRT)
+	_handle = ::CreateEventEx(NULL, NULL, 0, 0);
+	if (_handle == NULL)
+		_THROW_LAST_ERROR();
 
+	auto doneFn = ref new TimerCallbackWrapper([this](){if (_handle != NULL)::SetEvent(_handle); });
+	auto elapsedHandler = ref new TimerElapsedHandler(doneFn, &TimerCallbackWrapper::Fire, Platform::CallbackContext::Any, true);
+
+	if (o._timer->Period.Duration != 0)
+	{
+		// Periodic Timer
+		_timer = ThreadPoolTimer::CreatePeriodicTimer(elapsedHandler, o._timer->Period);
+	}
+	else
+	{
+		// One-shot timer
+		_timer = ThreadPoolTimer::CreateTimer(elapsedHandler, o._timer->Delay);
+	}
+#else
     _handle = ::CreateWaitableTimer(NULL, FALSE, NULL);
     if ( _handle == NULL )
         _THROW_LAST_ERROR();
@@ -532,13 +602,28 @@ RunLoop::Timer::Timer(const Timer& o) : _fireDate(o._fireDate), _interval(o._int
         ::CloseHandle(_handle);
         _THROW_LAST_ERROR();
     }
+#endif
 }
-RunLoop::Timer::Timer(Timer&& o) : _fireDate(std::move(_fireDate)), _interval(std::move(o._interval)), _fn(std::move(o._fn)), _handle(o._handle)
+RunLoop::Timer::Timer(Timer&& o) : _fireDate(std::move(_fireDate)), _interval(std::move(o._interval)), _fn(std::move(o._fn)),
+#if EPUB_PLATFORM(WINRT)
+	_timer(o._timer)
+#else
+	_handle(o._handle)
+#endif
 {
+#if EPUB_PLATFORM(WINRT)
+	o._timer = nullptr;
+#else
     o._handle = NULL;
+#endif
 }
 RunLoop::Timer::~Timer()
 {
+#if EPUB_PLATFORM(WINRT)
+	if (_timer != nullptr)
+		_timer->Cancel();
+	_timer = nullptr;
+#endif
     if ( _handle != NULL )
         ::CloseHandle(_handle);
 }
@@ -550,7 +635,36 @@ RunLoop::Timer& RunLoop::Timer::operator=(const Timer& o)
     _fireDate = o._fireDate;
     _interval = o._interval;
     _cancelled = o._cancelled;
+#if EPUB_PLATFORM(WINRT)
+	if (_handle != NULL)
+	{
+		CloseHandle(_handle);
+		_handle = NULL;
+	}
+	if (_timer != nullptr)
+	{
+		_timer->Cancel();
+		_timer = nullptr;
+	}
 
+	_handle = ::CreateEventEx(NULL, NULL, 0, 0);
+	if (_handle == NULL)
+		_THROW_LAST_ERROR();
+
+	auto doneFn = ref new TimerCallbackWrapper([this](){if (_handle != NULL)::SetEvent(_handle); });
+	auto elapsedHandler = ref new TimerElapsedHandler(doneFn, &TimerCallbackWrapper::Fire, Platform::CallbackContext::Any, true);
+
+	if (o._timer->Period.Duration != 0)
+	{
+		// Periodic Timer
+		_timer = ThreadPoolTimer::CreatePeriodicTimer(elapsedHandler, o._timer->Period);
+	}
+	else
+	{
+		// One-shot timer
+		_timer = ThreadPoolTimer::CreateTimer(elapsedHandler, o._timer->Delay);
+	}
+#else
     if ( _handle != NULL )
         ::CancelWaitableTimer(_handle);
     
@@ -574,7 +688,7 @@ RunLoop::Timer& RunLoop::Timer::operator=(const Timer& o)
             _THROW_LAST_ERROR();
         }
     }
-
+#endif
     return *this;
 }
 RunLoop::Timer& RunLoop::Timer::operator=(Timer&& o)
@@ -583,11 +697,14 @@ RunLoop::Timer& RunLoop::Timer::operator=(Timer&& o)
     _fireDate = std::move(o._fireDate);
     _interval = std::move(o._interval);
     _cancelled = o._cancelled;
-
+#if EPUB_PLATFORM(WINRT)
+	_timer = o._timer;
+	o._timer = nullptr;
+#else
     if ( _handle != NULL )
         ::CancelWaitableTimer(_handle);
     _handle = o._handle; o._handle = NULL;
-
+#endif
     return *this;
 }
 bool RunLoop::Timer::operator==(const Timer& o) const
@@ -597,7 +714,12 @@ bool RunLoop::Timer::operator==(const Timer& o) const
 void RunLoop::Timer::Cancel()
 {
     _cancelled = true;
+#if EPUB_PLATFORM(WINRT)
+	if (_timer != nullptr)
+		_timer->Cancel();
+#else
     ::CancelWaitableTimer(_handle);
+#endif
 }
 bool RunLoop::Timer::IsCancelled() const
 {
@@ -620,11 +742,26 @@ void RunLoop::Timer::SetNextFireDateTime(Clock::time_point& when)
     using namespace std::chrono;
     if ( _cancelled )
         return;
+	_fireDate = when;
+#if EPUB_PLATFORM(WINRT)
+	if (_timer != nullptr)
+	{
+		_timer->Cancel();
+		_timer = nullptr;
+	}
 
+	auto doneFn = ref new TimerCallbackWrapper([this](){if (_handle != NULL)::SetEvent(_handle); });
+	auto elapsedHandler = ref new TimerElapsedHandler(doneFn, &TimerCallbackWrapper::Fire, Platform::CallbackContext::Any, true);
+
+	long long delay = duration_cast<milliseconds>(_fireDate.time_since_epoch() - Clock::now().time_since_epoch()).count();
+	Windows::Foundation::TimeSpan timeSpan{delay};
+	_timer = ThreadPoolTimer::CreateTimer(elapsedHandler, timeSpan);
+#else
     LARGE_INTEGER due;
     TimePointToLargeInteger(_fireDate, &due);
     ::SetWaitableTimer(_handle, &due, static_cast<LONG>(duration_cast<milliseconds>(_interval).count()),
                        NULL, NULL, FALSE);
+#endif
 }
 RunLoop::Timer::Clock::duration RunLoop::Timer::GetNextFireDateDuration() const
 {
@@ -636,12 +773,25 @@ void RunLoop::Timer::SetNextFireDateDuration(Clock::duration& when)
     if ( _cancelled )
         return;
 
-    _fireDate = Clock::now() + when;
+	_fireDate = Clock::now() + when;
+#if EPUB_PLATFORM(WINRT)
+	if (_timer != nullptr)
+	{
+		_timer->Cancel();
+		_timer = nullptr;
+	}
 
+	auto doneFn = ref new TimerCallbackWrapper([this](){if (_handle != NULL)::SetEvent(_handle); });
+	auto elapsedHandler = ref new TimerElapsedHandler(doneFn, &TimerCallbackWrapper::Fire, Platform::CallbackContext::Any, true);
+
+	Windows::Foundation::TimeSpan timeSpan{ when.count() };
+	_timer = ThreadPoolTimer::CreatePeriodicTimer(elapsedHandler, timeSpan);
+#else
     LARGE_INTEGER due;
     TimePointToLargeInteger(_fireDate, &due);
     ::SetWaitableTimer(_handle, &due, static_cast<LONG>(duration_cast<milliseconds>(_interval).count()),
                        NULL, NULL, FALSE);
+#endif
 }
 
 EPUB3_END_NAMESPACE

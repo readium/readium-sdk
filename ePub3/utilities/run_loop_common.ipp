@@ -26,6 +26,10 @@ ePub3::RunLoopPtr ePub3::RunLoop::CurrentRunLoop()
 #if EPUB_OS(WINDOWS)
 # include <windows.h>
 # include <stdio.h>
+#if EPUB_PLATFORM(WINRT)
+# include "ThreadEmulation.h"
+using namespace ThreadEmulation;
+#endif
 # define __DestructorFn     static
 # define TLS_GET(key)       TlsGetValue(key)
 # define TLS_SET(key, data) TlsSetValue(key, data)
@@ -39,6 +43,9 @@ ePub3::RunLoopPtr ePub3::RunLoop::CurrentRunLoop()
 EPUB3_BEGIN_NAMESPACE
 
 #if EPUB_OS(WINDOWS)
+#ifndef TLS_OUT_OF_INDEXES
+# define TLS_OUT_OF_INDEXES ((DWORD)0xffffffff)
+#endif
 DWORD RunLoopTLSKey = TLS_OUT_OF_INDEXES;
 #else
 static pthread_key_t RunLoopTLSKey;
@@ -67,7 +74,7 @@ INITIALIZER(InitRunLoopTLSKey)
     if ( RunLoopTLSKey == TLS_OUT_OF_INDEXES )
     {
         fprintf(stderr, "No TLS Indexes for RunLoop!\n");
-        ExitProcess(0);
+        std::terminate();
     }
     atexit(KillRunLoopTLSKey);
 #else

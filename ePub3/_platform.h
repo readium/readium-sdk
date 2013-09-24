@@ -466,7 +466,11 @@
 #elif EPUB_OS(DARWIN)
 #define EPUB_PLATFORM_MAC 1
 #elif EPUB_OS(WINDOWS)
-#define EPUB_PLATFORM_WIN 1
+# ifdef __cplusplus_winrt
+#  define EPUB_PLATFORM_WINRT 1
+# else
+#  define EPUB_PLATFORM_WIN 1
+# endif
 #elif EPUB_OS(ANDROID)
 #define EPUB_PLATFORM_ANDROID 1
 #endif

@@ -17,6 +17,7 @@
 #include <mutex>
 #include <thread>
 #include <cassert>
+#include <condition_variable>
 
 EPUB3_BEGIN_NAMESPACE
 
