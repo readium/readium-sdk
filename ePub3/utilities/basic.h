@@ -24,7 +24,7 @@
 
 #include <ePub3/base.h>
 //#include "alphanum.hpp"
-#include <libxml/xmlstring.h>
+#include <ePub3/xml/xmlstring.h>
 #include <sstream>
 #include <memory>
 #include <vector>

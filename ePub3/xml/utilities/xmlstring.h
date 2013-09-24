@@ -22,14 +22,15 @@
 #ifndef __ePub3_xml_string_h__
 #define __ePub3_xml_string_h__
 
-#include "base.h"
+#include <ePub3/xml/base.h>
 #include <string>
 #include <codecvt>
 
 #if EPUB_USE(LIBXML2)
+#include <libxml2/xmlstring.h>
 #include <ePub3/utilities/utfstring.h>
 #elif EPUB_USE(WIN_XML)
-// nothing extra
+// Nothing
 #else
 #error No XML engine specified
 #endif

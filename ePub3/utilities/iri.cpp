@@ -25,10 +25,6 @@
 #include "make_unique.h"
 #include REGEX_INCLUDE
 
-#if EPUB_OS(WINDOWS)
-# define snprintf(a,b,c,...) _snprintf_s(a,b,b,c,__VA_ARGS__)
-#endif
-
 EPUB3_BEGIN_NAMESPACE
 
 #define INCREMENT_IF_VALID(x) if ((x) != 0) { (x)++; }

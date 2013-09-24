@@ -19,6 +19,8 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <ePub3/base.h>
+
 // OpenSSL APIs are deprecated on OS X and iOS
 #if EPUB_OS(DARWIN)
 #define COMMON_DIGEST_FOR_OPENSSL
@@ -26,6 +28,8 @@
 #elif EPUB_PLATFORM(WIN)
 #include <windows.h>
 #include <Wincrypt.h>
+#elif EPUB_PLATFORM(WINRT)
+using namespace ::Windows::Security::Cryptography::Core;
 #else
 #include <openssl/sha.h>
 #endif
@@ -109,6 +113,8 @@ bool FontObfuscator::BuildKey(ConstContainerPtr container)
 
     if ( winerr != NO_ERROR )
         _THROW_WIN_ERROR_(winerr);
+#elif EPUB_PLATFORM(WINRT)
+
 #else
     // hash the accumulated string (using OpenSSL syntax for portability)
     SHA_CTX ctx;

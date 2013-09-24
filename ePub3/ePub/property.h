@@ -30,7 +30,7 @@
 #include <ePub3/property_extension.h>
 #include <ePub3/utilities/epub_locale.h>
 #include <ePub3/utilities/xml_identifiable.h>
-#include <libxml/tree.h>
+#include <ePub3/xml/node.h>
 #include <vector>
 #include <map>
 
@@ -163,7 +163,7 @@ public:
     virtual                 ~Property() {}
     
     EPUB3_EXPORT
-    bool                    ParseMetaElement(xmlNodePtr node);
+    bool                    ParseMetaElement(xml::Node* node);
     
     
     /// @{

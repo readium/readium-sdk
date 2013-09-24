@@ -27,7 +27,7 @@
 #include <ePub3/utilities/utfstring.h>
 #include <ePub3/utilities/iri.h>
 #include <ePub3/utilities/xml_identifiable.h>
-#include <libxml/tree.h>
+#include <ePub3/xml/node.h>
 #include <memory>
 
 EPUB3_BEGIN_NAMESPACE
@@ -63,7 +63,7 @@ public:
     virtual         ~PropertyExtension() {}
     
     EPUB3_EXPORT
-    bool            ParseMetaElement(xmlNodePtr node);
+    bool            ParseMetaElement(xml::Node* node);
     
     ///
     /// Retrieves the extension's property IRI, declaring its type.

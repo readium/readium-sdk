@@ -22,8 +22,9 @@
 #ifndef __ePub3_xml_document__
 #define __ePub3_xml_document__
 
-#include "node.h"
-#include "element.h"
+#include <ePub3/xml/node.h>
+#include <ePub3/xml/document.h>
+
 #if EPUB_USE(LIBXML2)
 #include <ePub3/xml/io.h>
 #include <ePub3/xml/c14n.h>

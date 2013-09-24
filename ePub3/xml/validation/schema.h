@@ -22,10 +22,10 @@
 #ifndef __ePub3_xml_schema__
 #define __ePub3_xml_schema__
 
-#include "../utilities/base.h"
+#include <ePub3/xml/base.h>
 
 #if EPUB_USE(LIBXML2)
-#include "../utilities/xmlstring.h"
+#include <ePub3/xml/xmlstring.h>
 #include <string>
 #include <libxml/xmlschemastypes.h>
 #include <libxml/schemasInternals.h>

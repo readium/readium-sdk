@@ -19,7 +19,6 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "pch.h"
 #include "document.h"
 #include "element.h"
 #include "../validation/dtd.h"

@@ -322,7 +322,7 @@ protected:
     
     ///
     /// Breaks a CFI string into its components.
-    static StringList   CFIComponentStrings(const string& cfi, const string& delimiter = "/");
+    static StringList   CFIComponentStrings(const string& cfi, const string& delimiter = string("/"));
     ///
     /// Breaks a ranged CFI string into base, start, and end CFI strings
     static StringList   RangedCFIComponents(const string& cfi)          { return CFIComponentStrings(cfi, ","); }

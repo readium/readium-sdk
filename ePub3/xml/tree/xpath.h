@@ -22,9 +22,11 @@
 #ifndef __ePub3_xml_xpath__
 #define __ePub3_xml_xpath__
 
-#include "../utilities/base.h"
-#include "node.h"
-//#include <libxml/xpath.h>
+#include <ePub3/xml/base.h>
+#include <ePub3/xml/node.h>
+#if EPUB_USE(LIBXML2)
+#include <libxml/xpath.h>
+#endif
 #include <functional>
 #if EPUB_USE(PTHREADS)
 # include <pthread.h>

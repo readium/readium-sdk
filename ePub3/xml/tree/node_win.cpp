@@ -19,11 +19,10 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "pch.h"
-
 #include "node.h"
 #include "../validation/ns.h"
 #include "xpath.h"
+#include "element.h"
 #include "document.h"
 #include "../validation/dtd.h"
 #include <string>

@@ -34,7 +34,13 @@
 #include <map>
 #include <stdexcept>
 #include <limits>
+
+#if EPUB_USE(LIBXML2)
 #include <libxml/xmlstring.h>
+#else
+typedef unsigned char xmlChar;
+#define xmlStrlen(s) ::strlen(reinterpret_cast<const char*>(s))
+#endif
 
 #if EPUB_OS(WINDOWS)
 # include <codecvt>
@@ -144,7 +150,7 @@ public:
     string(const xmlChar * s, size_type n) : _base(reinterpret_cast<const char *>(s)) {}
     string(size_type n, xmlChar c) : _base(n, static_cast<char>(c)) {}
 
-#if EPUB_PLATFORM(WINRT)
+#if 0//EPUB_PLATFORM(WINRT)
 	string(::Platform::String^ s) : string(s->Data(), s->Length()) {}
 	string(const ::Platform::StringReference& s) : string(s.Data(), s.Length()) {}
 #endif
@@ -536,7 +542,7 @@ public:
     
     const __base& stl_str() const { return _base; }
 
-#if EPUB_PLATFORM(WINRT)
+#if 0//EPUB_PLATFORM(WINRT)
 	::Platform::String^ winrt_str() const;
 	operator ::Platform::String^() const { return winrt_str(); }
 #endif
