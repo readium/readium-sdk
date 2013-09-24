@@ -43,6 +43,7 @@ typedef struct xmlError* xmlErrorPtr;
 
 #if EPUB_USE(WIN_XML)
 #define xml_native_cast dynamic_cast
+#define __winstr(x) dynamic_cast<::Platform::String^>(x)
 #else
 #define xml_native_cast reinterpret_cast
 #endif
@@ -145,6 +146,40 @@ private:
 };
 #endif
 
+#if EPUB_PLATFORM(WINRT)
+static inline ::Platform::String^ GetAttributeValueRecursiveNS(::Windows::Data::Xml::Dom::IXmlNode^ node, ::Platform::String^ uri, ::Platform::String^ name)
+{
+	::Windows::Data::Xml::Dom::IXmlElement^ element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(node);
+	if (element == nullptr)
+		element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(node->ParentNode);
+
+	while (element != nullptr)
+	{
+		auto attr = element->GetAttributeNS(uri, name);
+		if (attr != nullptr)
+			return attr;
+		element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(element->ParentNode);
+	}
+
+	return nullptr;
+}
+static inline ::Platform::String^ GetAttributeValueRecursive(::Windows::Data::Xml::Dom::IXmlNode^ node, ::Platform::String^ name)
+{
+	::Windows::Data::Xml::Dom::IXmlElement^ element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(node);
+	if (element == nullptr)
+		element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(node->ParentNode);
+
+	while (element != nullptr)
+	{
+		auto attr = element->GetAttribute(name);
+		if (attr != nullptr)
+			return attr;
+		element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(element->ParentNode);
+	}
+
+	return nullptr;
+}
+#endif
 
 EPUB3_XML_END_NAMESPACE
 

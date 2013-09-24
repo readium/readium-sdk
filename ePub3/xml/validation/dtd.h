@@ -39,14 +39,19 @@ public:
 #endif
 public:
     explicit DTD(NativeDtdPtr dtd) : Node(xml_native_cast<NativePtr>(dtd)) {}
-#if EPUB_USE(LIBXML2)
+#if EPUB_USE(LIBXML2) && EPUB_ENABLE(XML_BUILDER)
     DTD(class Document * doc, const string & name, const string & externalID, const string & systemID) : Node(xml_native_cast<NativePtr>(xmlNewDtd(doc->xml(), name.utf8(), externalID.utf8(), systemID.utf8()))) {}
 #endif
     virtual ~DTD() {}
     
     // Name() is provided by Node already
+#if EPUB_USE(LIBXML2)
     string ExternalID() const { return xml()->ExternalID; }
     string SystemID() const { return xml()->SystemID; }
+#elif EPUB_USE(WIN_XML)
+	string ExternalID() const { return dynamic_cast<::Platform::String^>(const_cast<NativeDtdPtr>(xml())->PublicId); }
+	string SystemID() const { return dynamic_cast<::Platform::String^>(const_cast<NativeDtdPtr>(xml())->SystemId); }
+#endif
     
     NativeDtdPtr xml() { return xml_native_cast<NativeDtdPtr>(Node::xml()); }
     const NativeDtdPtr xml() const { return xml_native_cast<const NativeDtdPtr>(Node::xml()); }
