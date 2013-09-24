@@ -22,9 +22,9 @@
 #ifndef __ePub3_xml_xpath__
 #define __ePub3_xml_xpath__
 
-#include <ePub3/xml/base.h>
-#include <ePub3/xml/node.h>
-#include <libxml/xpath.h>
+#include "../utilities/base.h"
+#include "node.h"
+//#include <libxml/xpath.h>
 #include <functional>
 #if EPUB_USE(PTHREADS)
 # include <pthread.h>
@@ -38,11 +38,15 @@ class Element;
 /**
  @ingroup xml-utils
  */
-class XPathEvaluator : public WrapperBase
+class XPathEvaluator
+#if EPUB_USE(LIBXML2)
+	: public WrapperBase
+#endif
 {
 public:
+#if EPUB_USE(LIBXML2)
     typedef std::function<void(xmlXPathParserContextPtr ctx, int nargs)> XPathFunction;
-    
+
     enum class ObjectType : uint8_t {
         Undefined    = ::XPATH_UNDEFINED,
         NodeSet      = ::XPATH_NODESET,
@@ -57,6 +61,17 @@ public:
          XSLTTree     = ::XPATH_XSLT_TREE,
          */
     };
+#elif EPUB_USE(WIN_XML)
+	enum class ObjectType {
+		Undefined,
+		NodeSet,
+		Boolean,
+		Number,
+		String,
+	};
+#endif
+
+	typedef std::map<string, string> NamespaceMap;
     
 public:
     XPathEvaluator(const string & xpath, const Document * document);
@@ -85,27 +100,31 @@ public:
     bool RegisterNamespace(const string & prefix, const string & uri);
     bool RegisterNamespaces(const NamespaceMap & namespaces);
     bool RegisterAllNamespacesForElement(const Element * element);
-    
+#if EPUB_USE(LIBXML2)
     bool RegisterFunction(const string & name, XPathFunction fn);
     bool RegisterFunction(const string & name, const string & namespaceURI, XPathFunction fn);
     
     bool RegisterVariable(const string & name, void * data, ObjectType type, const string & namespaceURI = string());
-    
+#endif
 protected:
+#if EPUB_USE(LIBXML2)
     typedef std::map<string, XPathFunction>    FunctionLookup;
     
     static void _XMLFunctionWrapper(xmlXPathParserContextPtr ctx, int nargs);
     void PerformFunction(xmlXPathParserContextPtr ctx, const string & name, const string & uri, int nargs);
-    
-    string             _xpath;
+#endif
+    string					_xpath;
     const class Document *  _document;
-    
+#if EPUB_USE(LIBXML2)
     _xmlXPathContext *      _ctx;
     _xmlXPathCompExpr *     _compiled;
     FunctionLookup          _functions;
     
     _xmlXPathObject *       _lastResult;
-    
+#elif EPUB_USE(WIN_XML)
+	::Windows::Data::Xml::Dom::XmlNodeList^	_lastResult;
+	std::map<string, string>				_namespaces;
+#endif
 };
 
 EPUB3_XML_END_NAMESPACE

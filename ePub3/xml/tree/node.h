@@ -22,10 +22,10 @@
 #ifndef __ePub3_xml_node__
 #define __ePub3_xml_node__
 
-#include <ePub3/xml/base.h>
-#include <ePub3/xml/ns.h>
-#include <ePub3/utilities/utfstring.h>
-#include <libxml/xpath.h>
+#include "../utilities/base.h"
+#include "../validation/ns.h"
+#include "../utilities/xmlstring.h"
+
 #include <string>
 #include <list>
 #include <map>
@@ -41,6 +41,32 @@ class Namespace;
 class Node;
 typedef std::vector<Node*> NodeSet;
 
+typedef std::map<string, string> NamespaceMap;
+
+#if EPUB_PLATFORM(WINRT)
+enum class NodeType {
+	Element						= int(Windows::Data::Xml::Dom::NodeType::ElementNode),
+	Attribute					= int(Windows::Data::Xml::Dom::NodeType::AttributeNode),
+	Text						= int(Windows::Data::Xml::Dom::NodeType::TextNode),
+	CDATASection				= int(Windows::Data::Xml::Dom::NodeType::TextNode)+1,
+	EntityReference				= int(Windows::Data::Xml::Dom::NodeType::EntityReferenceNode),
+	Entity						= int(Windows::Data::Xml::Dom::NodeType::EntityNode),
+	ProcessingInstruction		= int(Windows::Data::Xml::Dom::NodeType::ProcessingInstructionNode),
+	Comment						= int(Windows::Data::Xml::Dom::NodeType::CommentNode),
+	Document					= int(Windows::Data::Xml::Dom::NodeType::DocumentNode),
+	DocumentType				= int(Windows::Data::Xml::Dom::NodeType::DocumentTypeNode),
+	DocumentFragment			= int(Windows::Data::Xml::Dom::NodeType::DocumentFragmentNode),
+	Notation					= int(Windows::Data::Xml::Dom::NodeType::NotationNode),
+	HTMLDocument				= int(Windows::Data::Xml::Dom::NodeType::TextNode)+2,
+	DTD							= int(Windows::Data::Xml::Dom::NodeType::TextNode)+3,
+	ElementDeclaration			= int(Windows::Data::Xml::Dom::NodeType::TextNode)+4,
+	AttributeDeclaration		= int(Windows::Data::Xml::Dom::NodeType::TextNode)+5,
+	EntityDeclaration			= int(Windows::Data::Xml::Dom::NodeType::TextNode)+6,
+	NamespaceDeclaration		= int(Windows::Data::Xml::Dom::NodeType::TextNode)+7,
+	XIncludeStart				= int(Windows::Data::Xml::Dom::NodeType::TextNode)+8,
+	XIncludeEnd					= int(Windows::Data::Xml::Dom::NodeType::TextNode)+9,
+};
+#else
 /**
  @ingroup tree
  */
@@ -69,6 +95,7 @@ enum class NodeType : uint8_t {
     DocbookSGMLDocument             = ::XML_DOCB_DOCUMENT_NODE,
 #endif
 };
+#endif
 
 /**
  @ingroup xml-utils
@@ -78,10 +105,19 @@ std::string TypeString(NodeType type);
 /**
  @ingroup tree
  */
-class Node : public WrapperBase
+class Node
+#if EPUB_USE(LIBXML2)
+	: public WrapperBase
+#endif
 {
 public:
-    typedef std::list<Node*>                    NodeList;
+#if EPUB_USE(LIBXML)
+	typedef _xmlNode*							NativePtr;
+#elif EPUB_USE(WIN_XML)
+	typedef Windows::Data::Xml::Dom::IXmlNode^	NativePtr;
+#endif
+
+    typedef std::list<Node*>					NodeList;
     
     class InvalidNodeType : public exception
     {
@@ -91,10 +127,12 @@ public:
     };
     
 public:
-    explicit Node(_xmlNode * node);
+    explicit Node(NativePtr node);
+#if EPUB_ENABLE(XML_BUILDER)
     Node(const string & name, NodeType type,
          const string & content = string(),
          const Namespace & ns = xml::Namespace());
+#endif
     Node(Node && o);
     virtual ~Node();
     
@@ -102,7 +140,9 @@ public:
     // Properties
     
     string Name() const;
+#if EPUB_ENABLE(XML_BUILDER)
     void SetName(const string & name);
+#endif
     
     string Content() const;
     void SetContent(const string & content);
@@ -123,13 +163,14 @@ public:
     NodeType Type() const;
     bool IsTextNode() const { return Type() == NodeType::Text; }
     bool IsElementNode() const { return Type() == NodeType::Element; }
-    
+
+#if EPUB_USE(LIBXML2)
     int Index() const;
-    
     int Line() const;
+#endif
     
-    _xmlNode * xml() { return _xml; }
-    const _xmlNode * xml() const { return _xml; }
+    NativePtr xml() { return _xml; }
+    const NativePtr xml() const { return _xml; }
     
     ///////////////////////////////////////////////////////
     // Values
@@ -141,7 +182,7 @@ public:
     double DoubleValue() const;
     bool BoolValue() const;
     
-    operator const xmlChar * () const { return XMLString().utf8(); }
+    operator const unsigned char * () const { return XMLString().utf8(); }
     operator string () const { return StringValue(); }
     operator int () const { return IntValue(); }
     operator double () const { return DoubleValue(); }
@@ -164,7 +205,7 @@ public:
     const Node * PreviousSibling() const;
     const Node * FirstChild(const string & filterByName = string()) const;
     const NodeList Children(const string & filterByName = string()) const;
-    
+#if EPUB_ENABLE(XML_BUILDER)
     Element * AddChild(const string & name, const string & prefix = string());
     void AddChild(Node * child);
     
@@ -177,7 +218,7 @@ public:
     Node * CopyIn(const Node * nodeToCopy, bool recursive = true);
     
     void Detach();
-    
+#endif
     ///////////////////////////////////////////////////////
     // XPaths
     
@@ -186,18 +227,24 @@ public:
     // these are simple wrappers for the XPathEvaluator class's functionality
     NodeSet FindByXPath(const string & xpath) const;
     NodeSet FindByXPath(const string & xpath, const NamespaceMap & namespaces) const;
-    
-    ///////////////////////////////////////////////////////
-    // Wrapper Factory
-    
+
+	///////////////////////////////////////////////////////
+	// Wrapper Factory
+
+#if EPUB_USE(LIBXML2)
     static WrapperBase * Wrap(_xmlNode * xml);
     static void Unwrap(_xmlNode * xml);
-    
+#elif EPUB_USE(WIN_XML)
+	static Node* NewNode(NativePtr ptr);
+#endif
 protected:
-    _xmlNode *  _xml;
-    
-    xmlNodePtr createChild(const string & name, const string & prefix) const;
-    void rebind(_xmlNode * newNode);
+    NativePtr _xml;
+#if EPUB_ENABLE(XML_BUILDER)
+    NativePtr createChild(const string & name, const string & prefix) const;
+#endif
+#if EPUB_USE(LIBXML2)
+    void rebind(NativePtr newNode);
+#endif
     
     friend class Document;
     friend class Element;
@@ -205,6 +252,7 @@ protected:
     
 };
 
+#if EPUB_USE(LIBXML2)
 // specialization for the polymorphic Node class
 template <>
 inline Node * Wrapped<Node, _xmlNode>(xmlNode * n)
@@ -215,7 +263,7 @@ inline Node * Wrapped<Node, _xmlNode>(xmlNode * n)
     // Node::Wrap() instantiates the correct WrapperBase subclass
     return dynamic_cast<Node*>(Node::Wrap(n));
 }
-
+#endif
 EPUB3_XML_END_NAMESPACE
 
 #endif /* defined(__ePub3_xml_node__) */

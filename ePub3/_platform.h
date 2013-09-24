@@ -466,11 +466,11 @@
 #elif EPUB_OS(DARWIN)
 #define EPUB_PLATFORM_MAC 1
 #elif EPUB_OS(WINDOWS)
-# ifdef __cplusplus_winrt
-#  define EPUB_PLATFORM_WINRT 1
-# else
-#  define EPUB_PLATFORM_WIN 1
-# endif
+#if __cplusplus_winrt
+#define EPUB_PLATFORM_WINRT 1
+#else
+#define EPUB_PLATFORM_WIN 1
+#endif
 #elif EPUB_OS(ANDROID)
 #define EPUB_PLATFORM_ANDROID 1
 #endif
@@ -534,11 +534,11 @@
 #define EPUB_USE_CFNETWORK 1
 #endif /* PLATFORM(IOS) */
 
-#if EPUB_PLATFORM(WIN)
+#if EPUB_PLATFORM(WIN) || EPUB_PLATFORM(WINRT)
 #define EPUB_USE_CF 0
 #endif
 
-#if EPUB_PLATFORM(WIN)
+#if EPUB_PLATFORM(WIN) || EPUB_PLATFORM(WINRT)
 #define EPUB_USE_CFNETWORK 0
 #endif
 
@@ -547,7 +547,7 @@
 #endif
 
 #if !defined(EPUB_HAVE_ACCESSIBILITY)
-#if EPUB_PLATFORM(IOS) || EPUB_PLATFORM(MAC) || EPUB_PLATFORM(WIN)
+#if EPUB_PLATFORM(IOS) || EPUB_PLATFORM(MAC) || EPUB_PLATFORM(WIN) || EPUB_PLATFORM(WINRT)
 #define EPUB_HAVE_ACCESSIBILITY 1
 #endif
 #endif /* !defined(EPUB_HAVE_ACCESSIBILITY) */

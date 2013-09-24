@@ -22,8 +22,7 @@
 #ifndef ePub3_xml_base_h
 #define ePub3_xml_base_h
 
-#include <ePub3/base.h>
-#include <ePub3/utilities/basic.h>
+#include "../../base.h"
 
 #define EPUB3_XML_BEGIN_NAMESPACE EPUB3_BEGIN_NAMESPACE namespace xml {
 #define EPUB3_XML_END_NAMESPACE } EPUB3_END_NAMESPACE
@@ -31,10 +30,27 @@
 #include <exception>
 #include <string>
 #include <map>
+
+#if EPUB_USE(LIBXML2)
 #include <libxml/xmlerror.h>
+#define xml_native_cast reinterpret_cast
+#else
+struct xmlError {
+	char* message;
+};
+typedef struct xmlError* xmlErrorPtr;
+#endif
+
+#if EPUB_USE(WIN_XML)
+#define xml_native_cast dynamic_cast
+#define __winstr(x) dynamic_cast<::Platform::String^>(x)
+#else
+#define xml_native_cast reinterpret_cast
+#endif
 
 EPUB3_XML_BEGIN_NAMESPACE
 
+#if !EPUB_PLATFORM(WINRT)
 // generic 'get me a wrapper' template
 /**
  @ingroup xml-utils
@@ -46,7 +62,7 @@ static inline _Tp * Wrapped(_Nm * n)
     if ( n->_private != nullptr ) return reinterpret_cast<_Tp*>(n->_private);
     return new _Tp(n);
 }
-
+#endif
 /**
  @ingroup xml-utils
  */
@@ -110,7 +126,7 @@ public:
     InternalError(const char * s, xmlErrorPtr err = NULL) throw () : exception(s, err) {}
     virtual ~InternalError() throw () {}
 };
-
+#if !EPUB_PLATFORM(WINRT)
 // note that MOVE is allowed, just not COPY
 /**
  @ingroup xml-utils
@@ -128,8 +144,42 @@ private:
     WrapperBase(WrapperBase & o);
     WrapperBase & operator = (WrapperBase & o);
 };
+#endif
 
+#if EPUB_PLATFORM(WINRT)
+static inline ::Platform::String^ GetAttributeValueRecursiveNS(::Windows::Data::Xml::Dom::IXmlNode^ node, ::Platform::String^ uri, ::Platform::String^ name)
+{
+	::Windows::Data::Xml::Dom::IXmlElement^ element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(node);
+	if (element == nullptr)
+		element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(node->ParentNode);
 
+	while (element != nullptr)
+	{
+		auto attr = element->GetAttributeNS(uri, name);
+		if (attr != nullptr)
+			return attr;
+		element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(element->ParentNode);
+	}
+
+	return nullptr;
+}
+static inline ::Platform::String^ GetAttributeValueRecursive(::Windows::Data::Xml::Dom::IXmlNode^ node, ::Platform::String^ name)
+{
+	::Windows::Data::Xml::Dom::IXmlElement^ element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(node);
+	if (element == nullptr)
+		element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(node->ParentNode);
+
+	while (element != nullptr)
+	{
+		auto attr = element->GetAttribute(name);
+		if (attr != nullptr)
+			return attr;
+		element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(element->ParentNode);
+	}
+
+	return nullptr;
+}
+#endif
 
 EPUB3_XML_END_NAMESPACE
 

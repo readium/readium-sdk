@@ -22,8 +22,10 @@
 #ifndef __ePub3_xml_schema__
 #define __ePub3_xml_schema__
 
-#include <ePub3/xml/base.h>
-#include <ePub3/utilities/utfstring.h>
+#include "../utilities/base.h"
+
+#if EPUB_USE(LIBXML2)
+#include "../utilities/xmlstring.h"
 #include <string>
 #include <libxml/xmlschemastypes.h>
 #include <libxml/schemasInternals.h>
@@ -64,5 +66,6 @@ private:
 };
 
 EPUB3_XML_END_NAMESPACE
+#endif	// EPUB_USE(LIBXML2)
 
 #endif /* defined(__ePub3_xml_schema__) */
