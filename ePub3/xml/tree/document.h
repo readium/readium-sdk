@@ -22,21 +22,25 @@
 #ifndef __ePub3_xml_document__
 #define __ePub3_xml_document__
 
-#include <ePub3/xml/node.h>
-#include <ePub3/xml/element.h>
+#include "node.h"
+#include "element.h"
+#if EPUB_USE(LIBXML2)
 #include <ePub3/xml/io.h>
 #include <ePub3/xml/c14n.h>
+#endif
 
 EPUB3_XML_BEGIN_NAMESPACE
 
 class DTD;
 class Element;
+#if EPUB_USE(LIBXML2)
 class C18N;
+#endif
 
 /**
  @ingroup tree
  */
-enum class EntityType : uint8_t {
+enum class EntityType {
     InternalGeneral,
     ExternalGeneralParsed,
     ExternalGeneralUnparsed,
@@ -51,8 +55,17 @@ enum class EntityType : uint8_t {
 class Document : public Node
 {
 public:
+#if EPUB_USE(LIBXML2)
+	typedef _xmlDoc*										NativeDocPtr;
+	typedef xmlEntityPtr									NativeEntityPtr;
+#elif EPUB_USE(WIN_XML)
+	typedef Windows::Data::Xml::Dom::XmlDocument^			NativeDocPtr;
+	typedef Windows::Data::Xml::Dom::XmlEntityReference^	NativeEntityPtr;
+#endif
+
+public:
     explicit Document(const string & version = "1.0");
-    explicit Document(xmlDocPtr xml);
+    explicit Document(NativeDocPtr xml);
     explicit Document(Element * rootElement);
     virtual ~Document();
     
@@ -81,22 +94,23 @@ public:
     
     int ProcessXInclude(bool generateXIncludeNodes = true);
     
-    _xmlDoc * xml() { return reinterpret_cast<_xmlDoc*>(Node::xml()); }
-    const _xmlDoc * xml() const { return reinterpret_cast<const _xmlDoc*>(Node::xml()); }
+    NativeDocPtr xml() { return reinterpret_cast<NativeDocPtr>(Node::xml()); }
+    const NativeDocPtr xml() const { return reinterpret_cast<const NativeDocPtr>(Node::xml()); }
     
-    xmlEntityPtr NamedEntity(const string & name) const;
+    NativeEntityPtr NamedEntity(const string & name) const;
     string ContentOfNamedEntity(const string & name) const;
     
     //////////////////////////////////////////////////////////////////////////////
     // Output
-    
+#if EPUB_USE(LIBXML2)
     template <C14NVersion _Version, bool _WithComments>
     string Canonicalize(const C14NParams<_Version, _WithComments> & params) const;
-    
+
     void WriteXML(OutputBuffer & outbuf) const;
+#endif
     void WriteXML(string & string) const;
     
-    string XMLString() const { string __s; WriteXML(__s); return std::move(__s); }
+    string XMLString() const { string __s; WriteXML(__s); return __s; }
     
 };
 

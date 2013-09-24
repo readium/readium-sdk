@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>9ce06881-6829-4afe-a221-e8b59557cc90</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="ePub3">
+      <UniqueIdentifier>{f1d91e0b-dfd0-4b10-a315-f1f9f0da660f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ePub3\xml">
+      <UniqueIdentifier>{2d8cc05b-e794-4717-a2f4-a41386ac243f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ePub3\xml\tree">
+      <UniqueIdentifier>{279a100b-b20a-483f-b525-7f5ae571a05d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ePub3\xml\utilities">
+      <UniqueIdentifier>{c676892b-fcf2-4b78-a3e2-24b484f486c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ePub3\xml\validation">
+      <UniqueIdentifier>{028c2472-41f6-4386-849c-b0550688a207}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Class1.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Class1.h" />
+    <ClInclude Include="..\..\..\..\ePub3\_compiler.h">
+      <Filter>ePub3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\_config.h">
+      <Filter>ePub3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\_platform.h">
+      <Filter>ePub3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\base.h">
+      <Filter>ePub3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\document.h">
+      <Filter>ePub3\xml\tree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\element.h">
+      <Filter>ePub3\xml\tree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\node.h">
+      <Filter>ePub3\xml\tree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\xpath.h">
+      <Filter>ePub3\xml\tree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\utilities\base.h">
+      <Filter>ePub3\xml\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\utilities\io.h">
+      <Filter>ePub3\xml\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\validation\c14n.h">
+      <Filter>ePub3\xml\validation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\validation\dtd.h">
+      <Filter>ePub3\xml\validation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\validation\ns.h">
+      <Filter>ePub3\xml\validation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\validation\schema.h">
+      <Filter>ePub3\xml\validation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\utilities\xmlstring.h">
+      <Filter>ePub3\xml\utilities</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
