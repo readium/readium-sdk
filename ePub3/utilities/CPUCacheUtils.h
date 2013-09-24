@@ -11,7 +11,7 @@
 #ifndef ePub3_CPUCacheUtils_h
 #define ePub3_CPUCacheUtils_h
 
-#include <stdlib.h>
+#include <ePub3/base.h>
 
 // operation codes for epub_sys_cache_control()
 enum

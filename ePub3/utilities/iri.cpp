@@ -25,6 +25,10 @@
 #include "make_unique.h"
 #include REGEX_INCLUDE
 
+#if EPUB_OS(WINDOWS)
+# define snprintf(a,b,c,...) _snprintf_s(a,b,b,c,__VA_ARGS__)
+#endif
+
 EPUB3_BEGIN_NAMESPACE
 
 #define INCREMENT_IF_VALID(x) if ((x) != 0) { (x)++; }
@@ -62,7 +66,7 @@ IRI::IRI(const string& iriStr) : _urnComponents(), _url(make_unique<GURL>(iriStr
 }
 IRI::IRI(const string& nameID, const string& namespacedString) :
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-    _urnComponents{gURNScheme, nameID, namespacedString},
+    _urnComponents({gURNScheme, nameID, namespacedString}),
 #endif
     _pureIRI(_Str("urn:", nameID, ":", namespacedString)),
     _url(make_unique<GURL>(_pureIRI.stl_str()))

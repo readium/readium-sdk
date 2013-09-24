@@ -10,7 +10,7 @@
 
 #include "byte_buffer.h"
 #include <stdexcept>
-#import "CPUCacheUtils.h"
+#include "CPUCacheUtils.h"
 
 #if EPUB_OS(BSD)
 # include <malloc/malloc.h>
@@ -19,7 +19,8 @@
 # define GoodSize(size)     size
 #endif
 
-#if EPUB_PLATFORM(WIN)
+#if EPUB_OS(WINDOWS)
+#include <Windows.h>
 # define bzero(mem, size)   ZeroMemory(mem, size)
 #endif
 

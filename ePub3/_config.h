@@ -86,6 +86,11 @@
 #endif
 
 #if EPUB_OS(WINDOWS)
+// Windows doesn't define ssize_t it seems
+typedef signed long ssize_t;
+#endif
+
+#if EPUB_PLATFORM(WIN)
 # ifndef EPUB3_EXPORT
 #  ifdef BUILDING_EPUB3
 #   define EPUB3_EXPORT __declspec(dllexport)
@@ -93,8 +98,6 @@
 #   define EPUB3_EXPORT __declspec(dllimport)
 #  endif
 # endif
-// Windows doesn't define ssize_t it seems
-typedef signed long ssize_t;
 #else
 # define EPUB3_EXPORT
 #endif

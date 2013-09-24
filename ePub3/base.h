@@ -24,7 +24,32 @@
 
 #include "_config.h"
 
+#if EPUB_OS(WINDOWS)
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
+
+#include <stdlib.h>
+
+#ifdef __cplusplus
 #define EPUB3_BEGIN_NAMESPACE namespace ePub3 {
 #define EPUB3_END_NAMESPACE };
+#endif
+
+#ifndef __BEGIN_DECLS
+# ifdef __cplusplus
+#  define __BEGIN_DECLS extern "C" {
+# else
+#  define __BEGIN_DECLS
+# endif
+#endif
+
+#ifndef __END_DECLS
+# ifdef __cplusplus
+#  define __END_DECLS }
+# else
+#  define __END_DECLS
+# endif
+#endif
 
 #endif
