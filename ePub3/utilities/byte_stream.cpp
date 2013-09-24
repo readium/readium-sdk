@@ -48,7 +48,7 @@ EPUB3_BEGIN_NAMESPACE
 
 std::thread         AsyncByteStream::_asyncIOThread;
 RunLoopPtr          AsyncByteStream::_asyncRunLoop(nullptr);
-std::atomic_flag    AsyncByteStream::_asyncInited(false);
+std::atomic_flag    AsyncByteStream::_asyncInited;
 
 AsyncByteStream::AsyncByteStream(size_type bufsize)
   : _bufsize(bufsize),
@@ -523,7 +523,7 @@ ByteStream::size_type FileByteStream::BytesAvailable() const _NOEXCEPT
         return 0;
     
     struct stat sb;
-#if EPUB_PLATFORM(WIN)
+#if EPUB_OS(WINDOWS)
     int fd = _fileno(const_cast<FILE*>(_file));
 #else
     int fd = fileno(const_cast<FILE*>(_file));
@@ -595,8 +595,11 @@ bool FileByteStream::Open(const string &path, std::ios::openmode mode)
         default:
             return false;
     }
-    
+#if EPUB_OS(WINDOWS)
+	::fopen_s(&_file, path.c_str(), __mdstr);
+#else
     _file = ::fopen(path.c_str(), __mdstr);
+#endif
     if ( _file == nullptr )
         return false;
     

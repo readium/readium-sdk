@@ -33,9 +33,10 @@
 #include REGEX_INCLUDE
 #include <map>
 #include <stdexcept>
+#include <limits>
 #include <libxml/xmlstring.h>
 
-#if EPUB_PLATFORM(WIN)
+#if EPUB_OS(WINDOWS)
 # include <codecvt>
 #endif
 
@@ -142,6 +143,11 @@ public:
     string(const xmlChar * s) : _base(reinterpret_cast<const char *>(s)) {}
     string(const xmlChar * s, size_type n) : _base(reinterpret_cast<const char *>(s)) {}
     string(size_type n, xmlChar c) : _base(n, static_cast<char>(c)) {}
+
+#if EPUB_PLATFORM(WINRT)
+	string(::Platform::String^ s) : string(s->Data(), s->Length()) {}
+	string(const ::Platform::StringReference& s) : string(s.Data(), s.Length()) {}
+#endif
     
     template <class InputIterator>
     EPUB3_EXPORT string(InputIterator begin, InputIterator end);
@@ -529,6 +535,11 @@ public:
     __base::const_pointer data() const _NOEXCEPT { return _base.data(); }
     
     const __base& stl_str() const { return _base; }
+
+#if EPUB_PLATFORM(WINRT)
+	::Platform::String^ winrt_str() const;
+	operator ::Platform::String^() const { return winrt_str(); }
+#endif
     
     const xmlChar * utf8() const { return reinterpret_cast<const xmlChar *>(c_str()); }
     const xmlChar * xml_str() const { return reinterpret_cast<const xmlChar*>(c_str()); }

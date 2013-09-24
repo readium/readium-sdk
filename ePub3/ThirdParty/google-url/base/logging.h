@@ -4,6 +4,8 @@
 #ifndef BASE_LOGGING_H__
 #define BASE_LOGGING_H__
 
+#include "../_config.h"
+
 #include <string>
 #include <cstring>
 #if _WIN32 || _WIN64
@@ -243,7 +245,7 @@ std::string* MakeCheckOpString(const int& v1, const int& v2, const char* names) 
 //     foo.CheckThatFoo();
 //   #endif
 
-#ifndef NDEBUG
+#if defined(NDEBUG) && !EPUB_PLATFORM(WINRT)
 
 #define DLOG(severity) LOG(severity)
 #define DLOG_IF(severity, condition) LOG_IF(severity, condition)
@@ -415,7 +417,7 @@ enum { DEBUG_MODE = 0 };
 // above.
 class LogMessage {
  public:
-  LogMessage(const char* file, int line, LogSeverity severity, int ctr);
+	 LogMessage(const char* file, int line, LogSeverity severity, int ctr) {}
 
   // Two special constructors that generate reduced amounts of code at
   // LOG call sites for common cases.
@@ -425,20 +427,20 @@ class LogMessage {
   //
   // Using this constructor instead of the more complex constructor above
   // saves a couple of bytes per call site.
-  LogMessage(const char* file, int line);
+	 LogMessage(const char* file, int line) {}
 
   // Used for LOG(severity) where severity != INFO.  Implied
   // are: ctr = 0
   //
   // Using this constructor instead of the more complex constructor above
   // saves a couple of bytes per call site.
-  LogMessage(const char* file, int line, LogSeverity severity);
+	 LogMessage(const char* file, int line, LogSeverity severity) {}
 
   // A special constructor used for check failures.
   // Implied severity = LOG_FATAL
-  LogMessage(const char* file, int line, const CheckOpString& result);
+	 LogMessage(const char* file, int line, const CheckOpString& result) {}
 
-  ~LogMessage();
+	 ~LogMessage() {}
 
   std::ostream& stream() { return stream_; }
 

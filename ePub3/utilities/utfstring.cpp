@@ -21,7 +21,12 @@
 
 #include "utfstring.h"
 #include <locale>
-//#include <codecvt>
+
+#if EPUB_PLATFORM(WINRT)
+// need a converter from UTF-8 to Windows' wchar_t
+#include <codecvt>
+using WinRTCharConverter = std::wstring_convert<std::codecvt_utf8<wchar_t>>;
+#endif
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -157,6 +162,13 @@ void string::resize(size_type n)
         _base.resize(newByteSize);
     }
 }
+#if EPUB_PLATFORM(WINRT)
+::Platform::String^ string::winrt_str() const
+{
+	auto wstr = WinRTCharConverter().from_bytes(_base);
+	return ref new ::Platform::String(wstr.data(), wstr.length());
+}
+#endif
 const string::value_type string::at(size_type pos) const
 {
     return const_cast<string*>(this)->at(pos);

@@ -34,6 +34,10 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "../_config.h"
+#if EPUB_PLATFORM(WINRT)
+#define ZIP_EXTERN
+#endif
 #ifndef ZIP_EXTERN
 #ifdef _MSC_VER
 #define ZIP_EXTERN __declspec(dllexport)
@@ -42,13 +46,13 @@
 #endif
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <sys/types.h>
 #include <stdio.h>
 #include <time.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* flags for zip_open */
 

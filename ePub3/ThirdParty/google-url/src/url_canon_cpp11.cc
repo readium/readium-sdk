@@ -43,7 +43,7 @@
 # include <codecvt>
 #endif
 
-#if EPUB_PLATFORM(WIN)
+#if EPUB_OS(WINDOWS)
 # define strlcat(dst,src,sz) strcat_s(dst,sz,src)
 # define strlcpy(dst,src,sz) strcpy_s(dst,sz,src)
 #endif

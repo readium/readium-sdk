@@ -25,6 +25,8 @@
 //#undef EPUB_USE_CF
 //#define EPUB_OS_ANDROID 1
 
+#include <ePub3/base.h>
+
 #if EPUB_USE(CF)
 # include <CoreFoundation/CoreFoundation.h>
 #elif EPUB_OS(ANDROID)
@@ -48,6 +50,11 @@ struct ALooper;
 
 #if EPUB_USE(CF)
 #include "cf_helpers.h"
+#endif
+
+#if EPUB_PLATFORM(WINRT)
+#include "ThreadEmulation.h"
+using namespace Windows::System::Threading;
 #endif
 
 EPUB3_BEGIN_NAMESPACE
@@ -265,6 +272,9 @@ public:
         int                             _pipeFDs[2];///< The pipe endpoints used with ALooper.
         TimerFn                         _fn;        ///< The function to call when the timer fires.
 #elif EPUB_OS(WINDOWS)
+#if EPUB_PLATFORM(WINRT)
+		ThreadPoolTimer^				_timer;
+#endif
         HANDLE                          _handle;
         Clock::time_point               _fireDate;
         Clock::duration                 _interval;
@@ -538,10 +548,10 @@ private:
 #elif EPUB_OS(WINDOWS)
     ///
     /// Process a firing timer
-    void            ProcessTimer(std::shared_ptr<Timer> timer);
+    void            ProcessTimer(TimerPtr timer);
     ///
     /// Process a firing event source
-    void            ProcessEventSource(std::shared_ptr<EventSource> source);
+    void            ProcessEventSource(EventSourcePtr source);
 #endif
     
 private:

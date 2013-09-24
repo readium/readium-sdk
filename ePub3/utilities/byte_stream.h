@@ -536,7 +536,7 @@ private:
 public:
     ///
     /// Create a new unattached stream.
-                            AsyncFileByteStream() : AsyncByteStream(), FileByteStream() {}
+                            //AsyncFileByteStream() : AsyncByteStream(), FileByteStream() {}
     
     ///
     /// Create a new stream attached to a filesystem resource and no event handler.

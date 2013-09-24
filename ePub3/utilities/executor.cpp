@@ -119,7 +119,7 @@ void loop_executor::loop()
 void loop_executor::run_queued_closures()
 {
     _set_running("loop_executor: closure execution methods called in parallel");
-    typeof(_queue) myQueue = _queue;
+    auto myQueue = _queue;
     while ( !_make_loop_exit && !myQueue.empty() )
     {
         closure_type closure = myQueue.front();

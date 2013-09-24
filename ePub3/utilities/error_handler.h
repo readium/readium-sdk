@@ -25,6 +25,7 @@
 #include <ePub3/utilities/basic.h>
 #include <array>
 #include <system_error>
+#include <functional>
 
 EPUB3_BEGIN_NAMESPACE
 
