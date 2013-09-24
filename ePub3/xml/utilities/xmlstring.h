@@ -19,6 +19,9 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifndef __ePub3_xml_string_h__
+#define __ePub3_xml_string_h__
+
 #include "base.h"
 #include <string>
 #include <codecvt>
@@ -62,7 +65,8 @@ public:
 	string(const Platform::StringReference& sref) : _Base(sref.Data(), sref.Length()) {}
 	~string() { _Base::~_Base(); }
 
-	operator ::Platform::String^() const { return ref new ::Platform::String(data(), length()); }
+	::Platform::String^ win_str() const { return ref new ::Platform::String(data(), length()); }
+	operator ::Platform::String^() const { return win_str(); }
 	operator ::Platform::StringReference() const { return ::Platform::StringReference(data(), length()); }
 
 	const unsigned char* utf8() const {
@@ -73,4 +77,9 @@ public:
 };
 #endif
 
+static const string XMLNamespace("http://www.w3.org/XML/1998/namespace");
+static const string XMLNSNamespace("http://www.w3.org/2000/xmlns/");
+
 EPUB3_XML_END_NAMESPACE
+
+#endif /* __ePub3_xml_string_h__ */
