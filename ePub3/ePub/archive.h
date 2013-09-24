@@ -33,7 +33,7 @@
 
 #include <ePub3/utilities/utfstring.h>
 
-#if EPUB_PLATFORM(WIN)
+#if EPUB_OS(WINDOWS)
 typedef unsigned short mode_t;
 #endif
 

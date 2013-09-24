@@ -28,6 +28,34 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\ePub3\base.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\archive.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\archive_xml.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\cfi.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\container.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\content_handler.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\encryption.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\epub3.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\filter.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\filter_chain.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\filter_manager.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\filter_manager_impl.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\font_obfuscation.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\glossary.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\initialization.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\manifest.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\media_support_info.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\nav_element.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\nav_point.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\nav_table.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\object_preprocessor.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\package.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\property.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\property_extension.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\property_holder.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\signatures.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\spine.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\switch_preprocessor.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\zip_archive.h" />
     <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\base\basictypes.h" />
     <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\base\logging.h" />
     <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\base\scoped_ptr.h" />
@@ -65,12 +93,48 @@
     <ClInclude Include="..\..\..\..\ePub3\utilities\swap_traits.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\utfstring.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\xml_identifiable.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\document.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\element.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\node.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\xpath.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\utilities\base.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\utilities\io.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\utilities\xmlstring.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\validation\c14n.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\validation\dtd.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\validation\ns.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\validation\schema.h" />
     <ClInclude Include="..\..\..\..\ePub3\_compiler.h" />
     <ClInclude Include="..\..\..\..\ePub3\_config.h" />
     <ClInclude Include="..\..\..\..\ePub3\_platform.h" />
     <ClInclude Include="ThreadEmulation.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\archive.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\archive_xml.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\cfi.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\container.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\content_handler.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\encryption.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_chain.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager_impl.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\font_obfuscation.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\glossary.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\initialization.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\manifest.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media_support_info.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\nav_point.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\nav_table.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\object_preprocessor.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\package.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\property.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\property_extension.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\property_holder.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\signatures.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\spine.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\switch_preprocessor.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\zip_archive.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\base\string16.cc" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\gurl.cc" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_cpp11.cc" />
@@ -531,6 +595,10 @@
     <ClCompile Include="..\..\..\..\ePub3\utilities\ring_buffer.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\run_loop_windows.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\utfstring.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\xml\tree\document_win.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\xml\tree\element_win.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\xml\tree\node_win.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\xml\tree\xpath_win.cpp" />
     <ClCompile Include="ThreadEmulation.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -633,7 +701,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>runtimeobject.lib;libxml2.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>runtimeobject.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Prebuilt\Lib\i386</AdditionalLibraryDirectories>
     </Link>
@@ -658,7 +726,7 @@ cscript MakeHeaders.js</Command>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>runtimeobject.lib;libxml2.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>runtimeobject.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Prebuilt\Lib\i386</AdditionalLibraryDirectories>
     </Link>
@@ -683,7 +751,7 @@ cscript MakeHeaders.js</Command>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>runtimeobject.lib;libxml2.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>runtimeobject.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Prebuilt\Lib\ARMv7</AdditionalLibraryDirectories>
     </Link>
@@ -708,7 +776,7 @@ cscript MakeHeaders.js</Command>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>runtimeobject.lib;libxml2.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>runtimeobject.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Prebuilt\Lib\ARMv7</AdditionalLibraryDirectories>
     </Link>
@@ -733,7 +801,7 @@ cscript MakeHeaders.js</Command>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>runtimeobject.lib;libxml2.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>runtimeobject.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Prebuilt\Lib\x86_64</AdditionalLibraryDirectories>
     </Link>
@@ -758,7 +826,7 @@ cscript MakeHeaders.js</Command>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>runtimeobject.lib;libxml2.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>runtimeobject.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Prebuilt\Lib\x86_64</AdditionalLibraryDirectories>
     </Link>

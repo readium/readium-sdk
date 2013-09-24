@@ -22,9 +22,9 @@
 #ifndef __ePub3_xml_node__
 #define __ePub3_xml_node__
 
-#include "../utilities/base.h"
-#include "../validation/ns.h"
-#include "../utilities/xmlstring.h"
+#include <ePub3/xml/base.h>
+#include <ePub3/xml/ns.h>
+#include <ePub3/xml/xmlstring.h>
 
 #include <string>
 #include <list>

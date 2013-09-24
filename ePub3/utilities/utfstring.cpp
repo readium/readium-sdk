@@ -162,7 +162,7 @@ void string::resize(size_type n)
         _base.resize(newByteSize);
     }
 }
-#if EPUB_PLATFORM(WINRT)
+#if 0//EPUB_PLATFORM(WINRT)
 ::Platform::String^ string::winrt_str() const
 {
 	auto wstr = WinRTCharConverter().from_bytes(_base);

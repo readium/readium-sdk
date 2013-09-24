@@ -22,8 +22,8 @@
 #ifndef __ePub3_xml_ns__
 #define __ePub3_xml_ns__
 
-#include "../utilities/base.h"
-#include "../utilities/xmlstring.h"
+#include <ePub3/xml/base.h>
+#include <ePub3/xml/xmlstring.h>
 #include <vector>
 
 #if EPUB_USE(LIBXML2)
@@ -70,13 +70,12 @@ protected:
 
 #elif EPUB_USE(WIN_XML)
 
-// optimization: use Platform::String directly
 class Namespace
 {
 protected:
-	::Platform::String^		_href;
-	::Platform::String^		_prefix;
-	Namespace*				_next;
+	string			_href;
+	string			_prefix;
+	Namespace*		_next;
 
 public:
 	Namespace() : _href(), _prefix() {}
@@ -84,13 +83,13 @@ public:
 	Namespace(Document* doc, ::Platform::String^ prefix, ::Platform::String^ uri) : _href(uri), _prefix(prefix) {}
 	virtual ~Namespace() {}
 
-	bool IsEmpty() const { return _href->IsEmpty(); }
+	bool IsEmpty() const { return _href->empty(); }
 
 	Namespace* Next() const { return _next; }
 	bool IsGlobal() const { return true; }
 
-	::Platform::String^ URI() const { return _href; }
-	::Platform::String^ Prefix() const { return _prefix; }
+	string& URI() const { return _href; }
+	string& Prefix() const { return _prefix; }
 
 };
 

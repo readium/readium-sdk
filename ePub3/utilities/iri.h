@@ -103,7 +103,7 @@ public:
      resource.
      */
     EPUB3_EXPORT
-    IRI(const string& scheme, const string& host, const string& path, const string& query="", const string& fragment="");
+    IRI(const string& scheme, const string& host, const string& path, const string& query=string(), const string& fragment=string());
     
     ///
     /// Create a copy of an existing IRI.
