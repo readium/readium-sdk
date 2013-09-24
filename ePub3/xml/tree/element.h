@@ -22,9 +22,9 @@
 #ifndef __ePub3_xml_element__
 #define __ePub3_xml_element__
 
-#include <ePub3/xml/base.h>
-#include <ePub3/xml/node.h>
-#include <ePub3/xml/ns.h>
+#include "../utilities/base.h"
+#include "node.h"
+#include "../validation/ns.h"
 
 EPUB3_XML_BEGIN_NAMESPACE
 
@@ -34,7 +34,13 @@ EPUB3_XML_BEGIN_NAMESPACE
 class Element : public Node
 {
 public:
-    explicit Element(const xmlNodePtr xml) : Node(xml) {}
+#if EPUB_USE(LIBXML2)
+	typedef xmlNodePtr								NativeElementPtr;
+#elif EPUB_USE(WIN_XML)
+	typedef Windows::Data::Xml::Dom::XmlElement^	NativeElementPtr;
+#endif
+public:
+    explicit Element(const NativeElementPtr xml) : Node(xml) {}
     Element(const string & name, class Document * doc = nullptr, const string & nsUri=string(), const string & nsPrefix=string()) : Node(name, NodeType::Element, "") {
         if ( doc != nullptr && !nsUri.empty() ) {
             class Namespace ns(doc, nsPrefix, nsUri);

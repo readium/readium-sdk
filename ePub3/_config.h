@@ -166,9 +166,17 @@ typedef signed long ssize_t;
 # define __PRETTY_FUNCTION__ __FUNCTION__
 #endif
 
-#if EPUB_PLATFORM(WIN)
+#if EPUB_PLATFORM(WIN) || EPUB_PLATFORM(WINRT)
 # define strncasecmp _strnicmp
 # define snprintf(buf,count,fmt,...) _snprintf_s(buf, count, count, fmt, __VA_ARGS__)
+#endif
+
+#if EPUB_PLATFORM(WINRT)
+# define EPUB_USE_LIBXML2 0
+# define EPUB_USE_WIN_XML 1
+#else
+# define EPUB_USE_LIBXML2 1
+# define EPUB_USE_WIN_XML 0
 #endif
 
 #if EPUB_COMPILER_SUPPORTS(CXX_DELETED_FUNCTIONS)
