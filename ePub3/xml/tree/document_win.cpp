@@ -131,14 +131,14 @@ Document::~Document()
 }
 string Document::Encoding() const
 {
-	return "utf-8";
+	return (const char*)"utf-8";
 }
-DTD * Document::InternalSubset() const
+std::shared_ptr<DTD> Document::InternalSubset() const
 {
 	auto notation = dynamic_cast<DtdNotation^>(xml()->Doctype->Notations->First()->Current);
 	if (notation == nullptr)
 		return nullptr;
-	return new DTD(notation);
+	return std::make_shared<DTD>(notation);
 }
 #if EPUB_ENABLE(XML_BUILDER)
 void Document::SetInternalSubset(const string &name, const string &externalID, const string &systemID)
@@ -148,14 +148,14 @@ void Document::SetInternalSubset(const string &name, const string &externalID, c
 		(void)Wrapped<DTD, _xmlDtd>(dtd);
 }
 #endif
-Element * Document::Root()
+std::shared_ptr<Element> Document::Root()
 {
 	XmlElement^ element = dynamic_cast<XmlElement^>(xml()->FirstChild);
 	if (element == nullptr)
 		return nullptr;
-	return new Element(element);
+	return std::make_shared<Element>(element);
 }
-const Element * Document::Root() const
+std::shared_ptr<const Element> Document::Root() const
 {
 	return const_cast<Document*>(this)->Root();
 }

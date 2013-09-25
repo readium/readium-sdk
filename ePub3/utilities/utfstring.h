@@ -42,6 +42,10 @@ typedef unsigned char xmlChar;
 #define xmlStrlen(s) ::strlen(reinterpret_cast<const char*>(s))
 #endif
 
+#if EPUB_USE(WIN_XML)
+#include <ePub3/xml/xmlstring.h>
+#endif
+
 #if EPUB_OS(WINDOWS)
 # include <codecvt>
 #endif
@@ -131,8 +135,13 @@ public:
     EPUB3_EXPORT string(const wchar_t* s);    // NUL-delimited
     EPUB3_EXPORT string(const wchar_t* s, size_type n);
     EPUB3_EXPORT string(size_type n, wchar_t c);
+	EPUB3_EXPORT string(const std::wstring& s);
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string(std::initializer_list<wchar_t> __il) : string(__il.begin(), __il.end()) {}
+#endif
+
+#if EPUB_USE(WIN_XML)
+	EPUB3_EXPORT string(const xml::string& s);
 #endif
     
     // From std::string
@@ -536,6 +545,9 @@ public:
     
     EPUB3_EXPORT std::u16string utf16string() const;
     inline const char16_t* utf16() const { return utf16string().c_str(); }
+
+	EPUB3_EXPORT std::wstring wchar_string() const;
+	inline const wchar_t* wchar_str() const { return wchar_string().c_str(); }
     
     __base::const_pointer c_str() const _NOEXCEPT { return _base.c_str(); }
     __base::const_pointer data() const _NOEXCEPT { return _base.data(); }

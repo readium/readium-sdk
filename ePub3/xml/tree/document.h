@@ -73,26 +73,26 @@ public:
     virtual ~Document();
     
     string Encoding() const;
-    DTD * InternalSubset() const;
+    std::shared_ptr<DTD> InternalSubset() const;
 #if EPUB_ENABLE(XML_BUILDER)
     void SetInternalSubset(const string & name, const string & externalID,
                            const string & systemID);
     
 #endif
 
-	Element * Root();
-	const Element * Root() const;
+	std::shared_ptr<Element> Root();
+	std::shared_ptr<const Element> Root() const;
 #if EPUB_ENABLE(XML_BUILDER)
-    Element * SetRoot(const string & name, const string & nsUri = string(),
+	std::shared_ptr<Element> SetRoot(const string & name, const string & nsUri = string(),
                       const string & nsPrefix = string());
-    Element * SetRoot(const Node * nodeToCopy, bool recursive = true);
-    Element * SetRoot(Element * root);
+	std::shared_ptr<Element> SetRoot(std::shared_ptr<const Node> nodeToCopy, bool recursive = true);
+	std::shared_ptr<Element> SetRoot(std::shared_ptr<Element> root);
 #endif
 
 #if EPUB_ENABLE(XML_BUILDER)
     // only comments and processing instructions can be outside the root node;
     // this will throw if another type of node is passed in-- it checks the node's Type()
-    Node * AddNode(Node * commentOrPINode, bool beforeRoot = true);
+	Node * AddNode(std::shared_ptr<Node> commentOrPINode, bool beforeRoot = true);
     
     Node * AddComment(const string & comment, bool beforeRoot = true);
     Node * AddProcessingInstruction(const string & name, const string & content, bool beforeRoot = true);

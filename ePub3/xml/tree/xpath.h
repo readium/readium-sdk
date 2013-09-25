@@ -40,10 +40,7 @@ class Element;
 /**
  @ingroup xml-utils
  */
-class XPathEvaluator
-#if EPUB_USE(LIBXML2)
-	: public WrapperBase
-#endif
+class XPathEvaluator : public WrapperBase<XPathEvaluator>
 {
 public:
 #if EPUB_USE(LIBXML2)
@@ -76,19 +73,19 @@ public:
 	typedef std::map<string, string> NamespaceMap;
     
 public:
-    XPathEvaluator(const string & xpath, const Document * document);
+	XPathEvaluator(const string & xpath, std::shared_ptr<const Document> document);
     virtual ~XPathEvaluator();
     
     string XPath() const { return _xpath; }
-    const class Document * Document() const { return _document; }
+	std::shared_ptr<const class Document> Document() const { return _document; }
     
     //////////////////////////////////////////////////////////////////
     // Evaluation
     
-    bool Evaluate(const Node * node, ObjectType * resultType = nullptr);
+	bool Evaluate(std::shared_ptr<const Node> node, ObjectType * resultType = nullptr);
     
     // special optimized entry point when evaluating as a boolean. Returns result directly.
-    bool EvaluateAsBoolean(const Node * node);
+	bool EvaluateAsBoolean(std::shared_ptr<const Node> node);
     
     // these throw if there is no current result
     bool BooleanResult() const;
@@ -101,7 +98,7 @@ public:
     
     bool RegisterNamespace(const string & prefix, const string & uri);
     bool RegisterNamespaces(const NamespaceMap & namespaces);
-    bool RegisterAllNamespacesForElement(const Element * element);
+	bool RegisterAllNamespacesForElement(std::shared_ptr<const Element> element);
 #if EPUB_USE(LIBXML2)
     bool RegisterFunction(const string & name, XPathFunction fn);
     bool RegisterFunction(const string & name, const string & namespaceURI, XPathFunction fn);
@@ -115,8 +112,8 @@ protected:
     static void _XMLFunctionWrapper(xmlXPathParserContextPtr ctx, int nargs);
     void PerformFunction(xmlXPathParserContextPtr ctx, const string & name, const string & uri, int nargs);
 #endif
-    string					_xpath;
-    const class Document *  _document;
+    string									_xpath;
+	std::shared_ptr<const class Document>	_document;
 #if EPUB_USE(LIBXML2)
     _xmlXPathContext *      _ctx;
     _xmlXPathCompExpr *     _compiled;

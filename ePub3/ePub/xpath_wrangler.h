@@ -26,7 +26,7 @@
 
 #include <ePub3/epub3.h>
 #include <ePub3/utilities/utfstring.h>
-#include <libxml/xpath.h>
+#include <ePub3/xml/xpath.h>
 #include <map>
 #include <vector>
 
@@ -56,7 +56,7 @@ public:
      @see RegisterNamespaces(const NamespaceList&)
      */
     EPUB3_EXPORT
-    XPathWrangler(xmlDocPtr doc, const NamespaceList & namespaces = NamespaceList());
+    XPathWrangler(xml::Document* doc, const NamespaceList & namespaces = NamespaceList());
     ///
     /// Copy constructor.
     EPUB3_EXPORT
@@ -79,7 +79,7 @@ public:
      values.
      */
     EPUB3_EXPORT
-    StringList      Strings(const string& xpath, xmlNodePtr node=nullptr);
+    StringList      Strings(const string& xpath, xml::Node* node=nullptr);
     
     /**
      Evaluates an XPath as a boolean expression.
@@ -99,7 +99,7 @@ public:
      Nodes(const string&, xmlNodePtr).
      */
     EPUB3_EXPORT
-    bool            Matches(const string& xpath, xmlNodePtr node=nullptr);
+    bool            Matches(const string& xpath, xml::Node* node=nullptr);
     
     /**
      Evaluates an XPath, returning a set of all matching nodes.
@@ -110,7 +110,7 @@ public:
      specified subtree.
      */
     EPUB3_EXPORT
-    xmlNodeSetPtr   Nodes(const string& xpath, xmlNodePtr node=nullptr);
+    xml::NodeSet	Nodes(const string& xpath, xml::Node* node=nullptr);
     
     /// @}
     
@@ -167,7 +167,8 @@ public:
     /// @}
     
 protected:
-    xmlXPathContextPtr  _ctx;   ///< The libxml2 XPath context object.
+	xml::Document*	_doc;			///< The XML document on which this will operate.
+	NamespaceList	_namespaces;	///< The namespaces to register when running XPath queries.
 };
 
 EPUB3_END_NAMESPACE

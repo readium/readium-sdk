@@ -24,9 +24,13 @@
 #include <ePub3/property_holder.h>
 
 EPUB3_BEGIN_NAMESPACE
-
+#if EPUB_USE(LIBXML2)
 const xmlChar * DCMES_uri = (const xmlChar*)"http://purl.org/dc/elements/1.1/";
 const xmlChar * MetaTagName = (const xmlChar*)"meta";
+#elif EPUB_USE(WIN_XML)
+const TCHAR* DCMES_uri = TEXT("http://purl.org/dc/elements/1.1/");
+const TCHAR* MetaTagName = TEXT("meta");
+#endif
 
 string __lang_from_locale(const std::locale& loc)
 {
@@ -191,32 +195,32 @@ bool Property::ParseMetaElement(xml::Node* node)
         return false;
     
     xml::Namespace* ns = node->Namespace();
-    if ( ns != nullptr && xmlStrcasecmp(ns->href, DCMES_uri) == 0 )
+    if ( ns != nullptr && ns->URI() == DCMES_uri )
     {
-        auto found = NameToIDMap.find(node->name);
+        auto found = NameToIDMap.find(node->Name());
         if ( found == NameToIDMap.end() )
             return false;
         
         _type = found->second;
         
         // special property IRI, not actually in the spec, but useful for comparisons and printouts
-        _identifier = IRI(string(DCMES_uri) + node->name);
-        _value = xmlNodeGetContent(node);
-        _language = xmlNodeGetLang(node);
+        _identifier = IRI(string(DCMES_uri) + node->Name());
+        _value = node->Content();
+        _language = node->Language();
         SetXMLIdentifier(_getProp(node, "id"));
         
         return true;
     }
-    else if ( xmlStrcasecmp(node->name, MetaTagName) == 0 )
+    else if ( node->Name() == MetaTagName )
     {
         _type = DCType::Custom;
         string property = _getProp(node, "property");
         if ( property.empty() )
             return false;
         
-        _identifier = OwnedBy::Owner()->PropertyIRIFromString(property);
-        _value = xmlNodeGetContent(node);
-        _language = xmlNodeGetLang(node);
+		_identifier = OwnedBy::Owner()->PropertyIRIFromString(property);
+		_value = node->Content();
+		_language = node->Language();
         SetXMLIdentifier(_getProp(node, "id"));
         return true;
     }
