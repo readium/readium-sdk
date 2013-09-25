@@ -56,6 +56,7 @@
     <ClInclude Include="..\..\..\..\ePub3\ePub\signatures.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\spine.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\switch_preprocessor.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\xpath_wrangler.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\zip_archive.h" />
     <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\base\basictypes.h" />
     <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\base\logging.h" />
@@ -108,6 +109,8 @@
     <ClInclude Include="..\..\..\..\ePub3\_compiler.h" />
     <ClInclude Include="..\..\..\..\ePub3\_config.h" />
     <ClInclude Include="..\..\..\..\ePub3\_platform.h" />
+    <ClInclude Include="Readium.h" />
+    <ClInclude Include="Streams.h" />
     <ClInclude Include="ThreadEmulation.h" />
   </ItemGroup>
   <ItemGroup>
@@ -136,6 +139,7 @@
     <ClCompile Include="..\..\..\..\ePub3\ePub\signatures.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\spine.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\switch_preprocessor.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\xpath_wrangler.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\zip_archive.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\base\string16.cc" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\gurl.cc" />
@@ -602,6 +606,7 @@
     <ClCompile Include="..\..\..\..\ePub3\xml\tree\node_win.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\xml\tree\xpath_win.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\xml\utilities\io_win.cpp" />
+    <ClCompile Include="Streams.cpp" />
     <ClCompile Include="ThreadEmulation.cpp" />
   </ItemGroup>
   <ItemGroup>

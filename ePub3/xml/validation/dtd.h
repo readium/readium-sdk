@@ -22,6 +22,7 @@
 #ifndef __ePub3_xml_dtd__
 #define __ePub3_xml_dtd__
 
+#include <ePub3/xml/base.h>
 #include <ePub3/xml/document.h>
 
 EPUB3_XML_BEGIN_NAMESPACE

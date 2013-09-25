@@ -39,7 +39,7 @@ class Attribute;
 class Namespace;
 
 class Node;
-typedef std::vector<Node*> NodeSet;
+typedef std::vector<std::shared_ptr<Node>> NodeSet;
 
 typedef std::map<string, string> NamespaceMap;
 
@@ -105,10 +105,7 @@ std::string TypeString(NodeType type);
 /**
  @ingroup tree
  */
-class Node
-#if EPUB_USE(LIBXML2)
-	: public WrapperBase
-#endif
+class Node : public WrapperBase<Node>
 {
 public:
 #if EPUB_USE(LIBXML)
@@ -117,7 +114,7 @@ public:
 	typedef Windows::Data::Xml::Dom::IXmlNode^	NativePtr;
 #endif
 
-    typedef std::list<Node*>					NodeList;
+    typedef std::list<std::shared_ptr<Node>>	NodeList;
     
     class InvalidNodeType : public exception
     {
@@ -144,20 +141,34 @@ public:
     void SetName(const string & name);
 #endif
     
-    string Content() const;
+	string Content() const;
+#if EPUB_ENABLE(XML_BUILDER)
     void SetContent(const string & content);
+#endif
+
+#if EPUB_USE(WIN_XML)
+	string AttributeValue(const string& name, const string& namespaceURI) const;
+#endif
     
-    Namespace * Namespace() const;
+	std::shared_ptr<Namespace> Namespace() const;
+#if EPUB_ENABLE(XML_BUILDER)
     void SetNamespace(const class Namespace * ns);
+#endif
     
     string Language() const;
+#if EPUB_ENABLE(XML_BUILDER)
     void SetLanguage(const string & language);
+#endif
     
-    bool PreserveSpace() const;
+	bool PreserveSpace() const;
+#if EPUB_ENABLE(XML_BUILDER)
     void SetPreserveSpace(bool preserve);
+#endif
     
-    string BaseURL() const;
+	string BaseURL() const;
+#if EPUB_ENABLE(XML_BUILDER)
     void SetBaseURL(const string & baseURL);
+#endif
     
     NamespaceList NamespacesInScope() const;
     NodeType Type() const;
@@ -191,31 +202,31 @@ public:
     ///////////////////////////////////////////////////////
     // Hierarchy
     
-    Document * Document();
-    const class Document * Document() const;
+    std::shared_ptr<Document> Document();
+    std::shared_ptr<const class Document> Document() const;
     
-    Element * Parent();
-    Node * NextSibling();
-    Node * PreviousSibling();
-    Node * FirstChild(const string & filterByName = string());
+    std::shared_ptr<Element> Parent();
+    std::shared_ptr<Node> NextSibling();
+	std::shared_ptr<Node> PreviousSibling();
+	std::shared_ptr<Node> FirstChild(const string & filterByName = string());
     NodeList Children(const string & filterByName = string());
     
-    const Element * Parent() const;
-    const Node * NextSibling() const;
-    const Node * PreviousSibling() const;
-    const Node * FirstChild(const string & filterByName = string()) const;
+	std::shared_ptr<const Element> Parent() const;
+	std::shared_ptr<const Node> NextSibling() const;
+	std::shared_ptr<const Node> PreviousSibling() const;
+	std::shared_ptr<const Node> FirstChild(const string & filterByName = string()) const;
     const NodeList Children(const string & filterByName = string()) const;
 #if EPUB_ENABLE(XML_BUILDER)
     Element * AddChild(const string & name, const string & prefix = string());
-    void AddChild(Node * child);
+	void AddChild(std::shared_ptr<Node> child);
     
     Element * InsertAfter(const string & name, const string & prefix = string());
-    void InsertAfter(Node * child);
+	void InsertAfter(std::shared_ptr<Node> child);
     
     Element * InsertBefore(const string & name, const string & prefix = string());
-    void InsertBefore(Node * child);
+	void InsertBefore(std::shared_ptr<Node> child);
     
-    Node * CopyIn(const Node * nodeToCopy, bool recursive = true);
+	Node * CopyIn(std::shared_ptr<const Node> nodeToCopy, bool recursive = true);
     
     void Detach();
 #endif
@@ -235,7 +246,7 @@ public:
     static WrapperBase * Wrap(_xmlNode * xml);
     static void Unwrap(_xmlNode * xml);
 #elif EPUB_USE(WIN_XML)
-	static Node* NewNode(NativePtr ptr);
+	static std::shared_ptr<Node> NewNode(NativePtr ptr);
 #endif
 protected:
     NativePtr _xml;

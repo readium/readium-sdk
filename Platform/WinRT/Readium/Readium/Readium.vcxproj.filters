@@ -59,6 +59,9 @@
     <Filter Include="ePub3\ThirdParty\libzip">
       <UniqueIdentifier>{2f8add03-0030-4022-a58f-cfae68875819}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Public Interface">
+      <UniqueIdentifier>{75dc7278-0a03-441b-9e58-bead16552580}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\ePub3\_compiler.h">
@@ -304,6 +307,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\ePub3\ePub\library.h">
       <Filter>ePub3\ePub\Library</Filter>
+    </ClInclude>
+    <ClInclude Include="Readium.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Streams.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\xpath_wrangler.h">
+      <Filter>ePub3\ePub</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -646,6 +658,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\xml\utilities\io_win.cpp">
       <Filter>ePub3\xml\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="Streams.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\xpath_wrangler.cpp">
+      <Filter>ePub3\ePub</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

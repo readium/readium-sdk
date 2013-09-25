@@ -83,6 +83,16 @@ string::string(size_type n, wchar_t c)
     if ( n != 0 )
         _base.append(_Convert<wchar_t>::toUTF8(c, n));
 }
+string::string(const std::wstring& s)
+{
+	_base.append(_Convert<wchar_t>::toUTF8(s));
+}
+#if EPUB_USE(WIN_XML)
+string::string(const xml::string& s)
+{
+	_base.append(_Convert<wchar_t>::toUTF8(s.data(), s.size()));
+}
+#endif
 string::string(const __base & s, size_type i, size_type n)
 {
     // ensure we're looking at a valid location in the base string (not in the middle of a multi-byte character)j
@@ -857,6 +867,10 @@ std::u32string string::utf32string() const
 std::u16string string::utf16string() const
 {
     return _Convert<char16_t>::fromUTF8(_base);
+}
+std::wstring string::wchar_string() const
+{
+	return _Convert<wchar_t>::fromUTF8(_base);
 }
 string& string::tolower(const std::locale& loc)
 {

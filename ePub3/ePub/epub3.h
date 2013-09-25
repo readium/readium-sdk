@@ -32,6 +32,8 @@
 
 #if EPUB_USE(LIBXML2)
 #include <libxml/tree.h>
+#elif EPUB_USE(WIN_XML)
+#include <ePub3/xml/node.h>
 #endif
 
 #include <ePub3/Forward.h>
@@ -45,7 +47,6 @@
 #define XMLENCNamespaceURI "http://www.w3.org/2001/04/xmlenc#"
 #define XMLDSigNamespaceURI "http://www.w3.org/2000/09/xmldsig#"
 
-#if EPUB_USE(LIBXML2)
 EPUB3_BEGIN_NAMESPACE
 
 /**
@@ -58,6 +59,7 @@ EPUB3_BEGIN_NAMESPACE
  @result A string containing the property value, or an empty string if none was found.
  @ingroup utilities
  */
+#if EPUB_USE(LIBXML2)
 static inline string _getProp(xmlNodePtr node, const char *name, const char *nsURI = nullptr)
 {
     if ( node == nullptr )
@@ -81,8 +83,13 @@ static inline string _getProp(xmlNodePtr node, const char *name, const char *nsU
     xmlFree(ch);
     return result;
 }
+#elif EPUB_USE(WIN_XML)
+static inline string _getProp(xml::Node* node, const char *name, const char *nsURI = nullptr)
+{
+	return node->AttributeValue(name, nsURI);
+}
+#endif	// EPUB_USE(LIBXML2)
 
 EPUB3_END_NAMESPACE
-#endif	// EPUB_USE(LIBXML2)
 
 #endif

@@ -29,7 +29,7 @@ using namespace ::Windows::Data::Xml::Dom;
 
 EPUB3_XML_BEGIN_NAMESPACE
 
-XPathEvaluator::XPathEvaluator(const string & xpath, const class Document * document)
+XPathEvaluator::XPathEvaluator(const string & xpath, std::shared_ptr<const class Document> document)
 : _xpath(xpath), _document(document), _lastResult(nullptr)
 {
 }
@@ -55,7 +55,7 @@ bool XPathEvaluator::RegisterNamespaces(const NamespaceMap &namespaces)
 	}
 	return true;
 }
-bool XPathEvaluator::RegisterAllNamespacesForElement(const Element *element)
+bool XPathEvaluator::RegisterAllNamespacesForElement(std::shared_ptr<const Element> element)
 {
 	NamespaceList nslist = element->NamespacesInScope();
 	for (Namespace* ns : nslist)
@@ -69,7 +69,7 @@ bool XPathEvaluator::RegisterAllNamespacesForElement(const Element *element)
 #pragma mark - XPath Evaluation
 #endif
 
-bool XPathEvaluator::Evaluate(const Node *node, ObjectType * resultType)
+bool XPathEvaluator::Evaluate(std::shared_ptr<const Node> node, ObjectType * resultType)
 {
 	if (_namespaces.empty())
 	{
@@ -143,7 +143,7 @@ bool XPathEvaluator::Evaluate(const Node *node, ObjectType * resultType)
 
 	return true;
 }
-bool XPathEvaluator::EvaluateAsBoolean(const Node *node)
+bool XPathEvaluator::EvaluateAsBoolean(std::shared_ptr<const Node> node)
 {
 	_lastResult = nullptr;
 
