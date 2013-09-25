@@ -83,13 +83,13 @@ public:
 	Namespace(Document* doc, ::Platform::String^ prefix, ::Platform::String^ uri) : _href(uri), _prefix(prefix) {}
 	virtual ~Namespace() {}
 
-	bool IsEmpty() const { return _href->empty(); }
+	bool IsEmpty() const { return _href.empty(); }
 
 	Namespace* Next() const { return _next; }
 	bool IsGlobal() const { return true; }
 
-	string& URI() const { return _href; }
-	string& Prefix() const { return _prefix; }
+	const string& URI() const { return _href; }
+	const string& Prefix() const { return _prefix; }
 
 };
 

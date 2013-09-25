@@ -22,24 +22,29 @@
 #ifndef __ePub3_xml_io__
 #define __ePub3_xml_io__
 
-#if EPUB_USE(LIBXML2)
 #include <ePub3/xml/base.h>
 #include <iostream>
+#include <cstdint>
+#if EPUB_USE(LIBXML2)
 #include <libxml/xmlIO.h>
 #include <libxml/HTMLtree.h>
+#endif
 
 EPUB3_XML_BEGIN_NAMESPACE
 
 /**
  @ingroup xml-utils
  */
-class InputBuffer : public WrapperBase
+class InputBuffer
+#if EPUB_USE(LIBXML2)
+	: public WrapperBase
+#endif
 {
 public:
     InputBuffer();
-    InputBuffer(InputBuffer && o) : _buf(o._buf) { o._buf = nullptr; }
+	InputBuffer(InputBuffer && o);
     virtual ~InputBuffer();
-    
+#if EPUB_USE(LIBXML2)
     xmlParserInputBuffer * xmlBuffer() { return _buf; }
     const xmlParserInputBuffer * xmlBuffer() const { return _buf; }
     operator xmlParserInputBuffer * () { return xmlBuffer(); }
@@ -47,9 +52,22 @@ public:
     
     xmlDocPtr xmlReadDocument(const char * url, const char * encoding, int options);
     xmlDocPtr htmlReadDocument(const char * url, const char * encoding, int options);
-    
+#elif EPUB_USE(WIN_XML)
+	::Windows::Storage::IStorageFile^ File() { return _store; }
+	operator ::Windows::Storage::IStorageFile^() { return _store; }
+
+	::Windows::Data::Xml::Dom::XmlDocument^ ReadDocument(const char* url, const char* encoding, int options);
+#endif
+
+	virtual size_t size() const = 0;
+	virtual size_t offset() const = 0;
+
 protected:
+#if EPUB_USE(LIBXML2)
     xmlParserInputBufferPtr _buf;
+#elif EPUB_USE(WIN_XML)
+	::Windows::Storage::IStorageFile^ _store;
+#endif
     
     virtual size_t read(uint8_t * buf, size_t len) = 0;
     virtual bool close() { return false; }
@@ -74,7 +92,10 @@ public:
     operator xmlOutputBuffer * () { return xmlBuffer(); }
     operator const xmlOutputBuffer * () const { return xmlBuffer(); }
     
-    int writeDocument(xmlDocPtr doc);
+	int writeDocument(xmlDocPtr doc);
+
+	virtual size_t size() const = 0;
+	virtual size_t offset() const = 0;
     
 protected:
     xmlOutputBufferPtr  _buf;
@@ -124,6 +145,5 @@ protected:
 };
 
 EPUB3_XML_END_NAMESPACE
-#endif	// EPUB_USE(LIBXML2)
 
 #endif /* defined(__ePub3_xml_io__) */

@@ -27,7 +27,7 @@
 #include <vector>
 #include <map>
 #include <list>
-#include <libxml/tree.h>
+#include <ePub3/xml/node.h>
 #include <ePub3/utilities/owned_by.h>
 #include <epub3/encryption.h>
 #include <ePub3/spine.h>
@@ -224,18 +224,18 @@ public:
     uint32_t                SpineCFIIndex()                 const   { return _spineCFIIndex; }
     
 protected:
-    shared_ptr<Archive>     _archive;           ///< The archive from which the package was loaded.
-    xmlDocPtr               _opf;               ///< The XML document representing the package.
-    string                  _pathBase;          ///< The base path of the document within the archive.
-    string                  _type;              ///< The MIME type of the package document.
-    ManifestTable           _manifest;          ///< All manifest items, indexed by unique identifier.
-    NavigationMap           _navigation;        ///< All navigation tables, indexed by type.
-    ContentHandlerMap       _contentHandlers;   ///< All installed content handlers, indexed by media-type.
-    shared_ptr<SpineItem>   _spine;             ///< The first item in the spine (SpineItems are a linked list).
-    XMLIDLookup             _xmlIDLookup;       ///< Lookup table for all items with XML ID values.
+    shared_ptr<Archive>			_archive;           ///< The archive from which the package was loaded.
+    unique_ptr<xml::Document>   _opf;               ///< The XML document representing the package.
+    string						_pathBase;          ///< The base path of the document within the archive.
+    string						_type;              ///< The MIME type of the package document.
+    ManifestTable				_manifest;          ///< All manifest items, indexed by unique identifier.
+    NavigationMap				_navigation;        ///< All navigation tables, indexed by type.
+    ContentHandlerMap			_contentHandlers;   ///< All installed content handlers, indexed by media-type.
+    shared_ptr<SpineItem>		_spine;             ///< The first item in the spine (SpineItems are a linked list).
+    XMLIDLookup					_xmlIDLookup;       ///< Lookup table for all items with XML ID values.
     
     // used to verify/correct CFIs
-    uint32_t                _spineCFIIndex;     ///< The CFI index for the `<spine>` element in the package document.
+    uint32_t					_spineCFIIndex;     ///< The CFI index for the `<spine>` element in the package document.
     
     ///
     /// Unpacks the _opf document. Implemented by the subclass, to make PackageBase pure-virtual.
@@ -318,7 +318,7 @@ public:
     ContainerPtr            GetContainer()          const       { return Owner(); }
     
     virtual bool            Open(const string& path);
-    bool                    _OpenForTest(xmlDocPtr doc, const string& basePath);
+    bool                    _OpenForTest(xml::Document* doc, const string& basePath);
     
     ///
     /// The full Unique Identifier, built from the package unique-id and the modification date.
@@ -420,7 +420,7 @@ public:
      to the empty CFI.
      @result An `xmlDocPtr` for the selected document, or `nullptr` upon failure.
      */
-    xmlDocPtr               DocumentForCFI(CFI& cfi, CFI* pRemainingCFI) const {
+    unique_ptr<xml::Document>	DocumentForCFI(CFI& cfi, CFI* pRemainingCFI) const {
         return ManifestItemForCFI(cfi, pRemainingCFI)->ReferencedDocument();
     }
     
@@ -446,11 +446,11 @@ public:
     /// @name Raw Data Access
     
     unique_ptr<ArchiveReader>   ReaderForRelativePath(const string& path)       const;
-    
+#if 0
     unique_ptr<ArchiveXmlReader>    XmlReaderForRelativePath(const string& path)    const {
         return unique_ptr<ArchiveXmlReader>(new ArchiveXmlReader(ReaderForRelativePath(path)));
     }
-    
+#endif
     EPUB3_EXPORT
     unique_ptr<ByteStream>        ReadStreamForRelativePath(const string& path)   const;
     
