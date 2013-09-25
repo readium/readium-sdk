@@ -311,6 +311,12 @@ enum class EPUBError
     MediaOverlayMismatchDurationMetadata,           ///< A SMIL manifest item has no corresponding media:duration metadata. Medium.
     MediaOverlayInvalidSmilClockValue,           ///< A given SMIL Clock Value (media:duration, clipBegin or clipEnd) has an invalid syntax. Major.
     MediaOverlayCannotParseSMILXML,           ///< A given SMIL XML file fails to parse. Major.
+    MediaOverlayUnknownSMILElement,           ///< A given SMIL file contains an unknown XML element. Major.
+    MediaOverlaySMILTextParallelParent,           ///< A given SMIL file contains a text XML element that does not have a parallel parent time container. Major.
+    MediaOverlaySMILAudioParallelParent,           ///< A given SMIL file contains an audio XML element that does not have a parallel parent time container. Major.
+    MediaOverlaySMILParallelSequenceParent,           ///< A given SMIL file contains a parallel time container XML element that does not have a sequence parent time container. Major.
+    MediaOverlaySMILSequenceSequenceParent,           ///< A given SMIL file contains a sequence time container XML element that does not have a sequence parent time container. Major.
+    MediaOverlayInvalidTextRefSource,          ///< A <body> <seq> or <par> element's 'epub:textref' attribute MUST reference an item in the publication's <manifest>. Medium.
 
 
     MediaOverlayErrorMax,

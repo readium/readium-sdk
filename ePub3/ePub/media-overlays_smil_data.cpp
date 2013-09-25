@@ -28,10 +28,4 @@ EPUB3_BEGIN_NAMESPACE
         const string SMILData::Audio::_Name = string("audio");
         const string SMILData::Text::_Name = string("text");
 
-        SMILData::SMILData(const shared_ptr<MediaOverlaysSmilModel> smilModel, ManifestItemPtr manifestItem, uint32_t duration)
-        : OwnedBy(smilModel), _manifestItem(manifestItem), _duration(duration), _root(nullptr)
-        {
-
-        }
-
         EPUB3_END_NAMESPACE

@@ -22,6 +22,7 @@
 #include "media-overlays_smil_model.h"
 #include "package.h"
 #include <ePub3/media-overlays_smil_utils.h>
+#include <ePub3/media-overlays_smil_data.h>
 #include "error_handler.h"
 #include "xpath_wrangler.h"
 
@@ -111,6 +112,7 @@ EPUB3_BEGIN_NAMESPACE
 
         MediaOverlaysSmilModel::~MediaOverlaysSmilModel()
         {
+            //printf("~MediaOverlaysSmilModel()\n");
         }
 
         MediaOverlaysSmilModel::MediaOverlaysSmilModel(const PackagePtr package) //shared_ptr<Package>
@@ -346,6 +348,30 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
 
                 xmlXPathFreeNodeSet(nodes);
 
+                nodes = xpath.Nodes("./smil:head", smil);
+
+                if (nodes->nodeNr == 0)
+                {
+                    // OKAY
+                }
+                else if (nodes->nodeNr == 1)
+                {
+                    //TODO: check head placement
+                    //HandleError(EPUBError::MediaOverlayHeadIncorrectlyPlaced, _Str("'head' element incorrectly placed: ", item->Href().c_str()));
+                }
+                else if (nodes->nodeNr > 1)
+                {
+                    HandleError(EPUBError::MediaOverlayHeadIncorrectlyPlaced, _Str("multiple 'head' elements found: ", item->Href().c_str()));
+                }
+
+                xmlXPathFreeNodeSet(nodes);
+
+                if (nodes->nodeNr > 1)
+                {
+                    xmlFreeDoc(doc);
+                    return 0;
+                }
+
                 nodes = xpath.Nodes("./smil:body", smil);
 
                 if (nodes->nodeNr == 0)
@@ -546,19 +572,31 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
 
             if (elementName == "body")
             {
-                //const string& str = reinterpret_cast<const char *>(xmlNodeGetContent(linkedChildrenList));
+                if (!textref_file.empty() && textrefManifestItem == nullptr)
+                {
+                    HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
+                }
 
                 smilData->_root = new SMILData::Sequence(nullptr, textref_file, textref_fragmentID, textrefManifestItem, type);
 
-                //parent = std::dynamic_pointer_cast<SMILData::TimeContainer *>(smilData->_root);
-                //parent = std::reinterpret_cast<SMILData::TimeContainer *>(smilData->_root);
-                //parent = smilData->_root;
+                //sequence = smilData->Body();
+                //sequence = smilData->_root; // because of const qualifier
+                sequence = const_cast<ePub3::SMILData::Sequence *>(smilData->Body());
 
-                sequence = smilData->_root;
                 parallel = nullptr;
             }
             else if (elementName == "seq")
             {
+                if (!textref_file.empty() && textrefManifestItem == nullptr)
+                {
+                    HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
+                }
+
+                if (sequence == nullptr)
+                {
+                    HandleError(EPUBError::MediaOverlaySMILSequenceSequenceParent, _Str(item->Href().c_str(), " => parent of sequence time container must be sequence"));
+                }
+
                 SMILData::Sequence *seq = new SMILData::Sequence(sequence, textref_file, textref_fragmentID, textrefManifestItem, type);
 
                 sequence = seq;
@@ -566,6 +604,16 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             }
             else if (elementName == "par")
             {
+                if (!textref_file.empty() && textrefManifestItem == nullptr)
+                {
+                    HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
+                }
+
+                if (sequence == nullptr)
+                {
+                    HandleError(EPUBError::MediaOverlaySMILParallelSequenceParent, _Str(item->Href().c_str(), " => parent of parallel time container must be sequence"));
+                }
+
                 SMILData::Parallel *par = new SMILData::Parallel(sequence, textref_file, textref_fragmentID, textrefManifestItem, type);
 
                 sequence = nullptr;
@@ -573,6 +621,24 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             }
             else if (elementName == "audio")
             {
+                if (parallel == nullptr)
+                {
+                    HandleError(EPUBError::MediaOverlaySMILAudioParallelParent, _Str(item->Href().c_str(), " => parent of audio must be parallel time container"));
+                }
+
+                if (src_file.empty())
+                {
+                    HandleError(EPUBError::MediaOverlayInvalidAudio, _Str(item->Href().c_str(), " => audio source is empty"));
+                }
+                else if (srcManifestItem == nullptr)
+                {
+                    HandleError(EPUBError::MediaOverlayInvalidAudioSource, _Str(item->Href().c_str(), " [", src_file.c_str(), "] => audio source manifest cannot be found"));
+                }
+                else if (srcManifestItem->MediaType() != "audio/mpeg" || srcManifestItem->MediaType() != "audio/mp4") //package->CoreMediaTypes.find(mediaType) == package->CoreMediaTypes.end()
+                {
+                    HandleError(EPUBError::MediaOverlayInvalidAudioType, _Str(item->Href().c_str(), " [", src_file.c_str(), "] => audio source type is invalid"));
+                }
+
                 uint32_t clipBeginMilliseconds = 0;
                 uint32_t clipEndMilliseconds = 0;
 
@@ -628,10 +694,32 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             }
             else if (elementName == "text")
             {
+                if (parallel == nullptr)
+                {
+                    HandleError(EPUBError::MediaOverlaySMILTextParallelParent, _Str(item->Href().c_str(), " => parent of text must be parallel time container"));
+                }
+
+                if (src_file.empty())
+                {
+                    HandleError(EPUBError::MediaOverlayInvalidText, _Str(item->Href().c_str(), " => text source is empty"));
+                }
+                else if (srcManifestItem == nullptr)
+                {
+                    HandleError(EPUBError::MediaOverlayInvalidTextSource, _Str(item->Href().c_str(), " [", src_file.c_str(), "] => text source manifest cannot be found"));
+                }
+                else if (src_fragmentID.empty())
+                {
+                    HandleError(EPUBError::MediaOverlayTextSrcFragmentMissing, _Str(item->Href().c_str(), " [", src_file.c_str(), "] => text source fragment identifier is empty"));
+                }
+
                 SMILData::Text *text = new SMILData::Text(parallel, src_file, src_fragmentID, srcManifestItem);
 
                 sequence = nullptr;
                 parallel = nullptr;
+            }
+            else
+            {
+                HandleError(EPUBError::MediaOverlayUnknownSMILElement, _Str(item->Href().c_str(), "[", elementName.c_str(), "] => unknown SMIL element"));
             }
 
             xmlNodePtr linkedChildrenList = element->children;
@@ -645,6 +733,28 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     }
 
                     accumulatedDurationMilliseconds += parseSMIL(smilData, sequence, parallel, item, linkedChildrenList);
+                }
+            }
+
+            if (elementName == "body")
+            {
+                if (sequence->GetChildrenCount() == 0)
+                {
+                    HandleError(EPUBError::MediaOverlayEmptyBody, _Str(item->Href().c_str(), " => SMIL body has no sequence or parallel time container children"));
+                }
+            }
+            else if (elementName == "seq")
+            {
+                if (sequence->GetChildrenCount() == 0)
+                {
+                    HandleError(EPUBError::MediaOverlayEmptySeq, _Str(item->Href().c_str(), " => SMIL sequence time container has no sequence or parallel time container children"));
+                }
+            }
+            else if (elementName == "par")
+            {
+                if (parallel->Text() == nullptr)
+                {
+                    HandleError(EPUBError::MediaOverlayEmptyPar, _Str(item->Href().c_str(), " => SMIL parallel time container has no text child"));
                 }
             }
 
