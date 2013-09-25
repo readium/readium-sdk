@@ -20,12 +20,14 @@
 //
 
 #include "io.h"
+#include <ePub3/xml/document.h>
 
 #include <ppltasks.h>
 #include <robuffer.h>
 #include <wrl/client.h>
 #include <functional>
 #include <codecvt>
+#include <sstream>
 
 using namespace ::concurrency;
 using namespace ::Windows::Data::Xml::Dom;
@@ -41,8 +43,9 @@ namespace Readium
 {
 	namespace XML
 	{
-		using ReadFn = std::function<ssize_t(void*, uint8_t*, size_t)>;
-		using WriteFn = std::function<ssize_t(void*, const uint8_t*, size_t)>;
+		using ReadFn = std::function<int(void*, char*, size_t)>;
+		using WriteFn = std::function<int(void*, const char*, size_t)>;
+		using CloseFn = std::function<int(void*)>;
 
 		static ::ComPtr<IBufferByteAccess> getByteAccessForBuffer(IBuffer^ buffer)
 		{
@@ -60,7 +63,9 @@ namespace Readium
 
 		internal:
 			InputWrapper(ReadFn cb, void* ctx) : _readCB(cb), _ctx(ctx) {}
-			~InputWrapper() {}
+
+		public:
+			virtual ~InputWrapper() {}
 
 		public:
 			virtual IAsyncOperationWithProgress<IBuffer^, unsigned int>^ ReadAsync(IBuffer^ buffer, unsigned int count, InputStreamOptions options) {
@@ -69,13 +74,13 @@ namespace Readium
 					byte* bytes = nullptr;
 					byteBuffer->Buffer(&bytes);
 
-					unsigned int toRead = (((options & InputStreamOptions::ReadAhead) == InputStreamOptions::ReadAhead) ? max(count, 4096) : count);
+					unsigned int toRead = ((options == InputStreamOptions::ReadAhead) ? max(count, 4096) : count);
 					ssize_t numRead = 0;
 					int total = 0;
 
 					do
 					{
-						numRead = _readCB(_ctx, bytes, toRead);
+						numRead = _readCB(_ctx, reinterpret_cast<char*>(bytes), toRead);
 						if (numRead < 0)
 							break;
 
@@ -85,7 +90,7 @@ namespace Readium
 
 						reporter.report(total);
 
-					} while (numRead > 0 && toRead > 0 && (options & InputStreamOptions::Partial) != InputStreamOptions::Partial);
+					} while (numRead > 0 && toRead > 0 && options != InputStreamOptions::Partial);
 
 					return buffer;
 				});
@@ -102,7 +107,9 @@ namespace Readium
 
 		internal:
 			RandomWrapper(ReadFn reader, WriteFn writer, void* ctx) : _read(reader), _write(writer), _ctx(ctx) {}
-			~RandomWrapper() {}
+
+		public:
+			virtual ~RandomWrapper() {}
 
 		public:
 			property bool CanRead
@@ -174,13 +181,13 @@ namespace Readium
 					byte* bytes = nullptr;
 					byteBuffer->Buffer(&bytes);
 
-					unsigned int toRead = (((options & InputStreamOptions::ReadAhead) == InputStreamOptions::ReadAhead) ? max(count, 4096) : count);
+					unsigned int toRead = ((options == InputStreamOptions::ReadAhead) ? max(count, 4096) : count);
 					ssize_t numRead = 0;
 					unsigned int total = 0;
 
 					do
 					{
-						numRead = _read(_ctx, bytes, toRead);
+						numRead = _read(_ctx, reinterpret_cast<char*>(bytes), toRead);
 						if (numRead < 0)
 							break;
 
@@ -190,7 +197,7 @@ namespace Readium
 
 						reporter.report(total);
 
-					} while (numRead > 0 && toRead > 0 && (options & InputStreamOptions::Partial) != InputStreamOptions::Partial);
+					} while (numRead > 0 && toRead > 0 && options != InputStreamOptions::Partial);
 
 					return buffer;
 				});
@@ -202,13 +209,13 @@ namespace Readium
 					byte* bytes = nullptr;
 					byteBuffer->Buffer(&bytes);
 
-					unsigned int toWrite = buffer->Capacity;
+					unsigned int toWrite = buffer->Length;
 					ssize_t numWritten = 0;
 					unsigned int total = 0;
 
 					do
 					{
-						numWritten = _write(_ctx, bytes, toWrite);
+						numWritten = _write(_ctx, reinterpret_cast<const char*>(bytes), toWrite);
 						if (numWritten < 0)
 							break;
 
@@ -234,12 +241,14 @@ namespace Readium
 		private:
 			ReadFn _readFn;
 			WriteFn _writeFn;
+			CloseFn _closeFn;
 			void* _ctx;
 
 		internal:
-			File(ReadFn fn, void* ctx) : _readFn(fn), _ctx(ctx) {}
-			File(WriteFn fn, void* ctx) : _writeFn(fn), _ctx(ctx) {}
-			~File() {}
+			File(ReadFn rfn, WriteFn wfn, CloseFn cfn, void* ctx) : _readFn(rfn), _writeFn(wfn), _closeFn(cfn), _ctx(ctx) {}
+
+		public:
+			virtual ~File() {}
 
 		public:
 			////////////////////////////////////////////////////////////////
@@ -271,11 +280,13 @@ namespace Readium
 
 			virtual IAsyncOperation<Streams::IRandomAccessStream^>^ OpenAsync(FileAccessMode accessMode) {
 				return create_async([this]() -> IRandomAccessStream^ {
-
+					return ref new RandomWrapper(_readFn, _writeFn, _ctx);
 				});
 			}
 			virtual IAsyncOperation<StorageStreamTransaction^>^ OpenTransactedWriteAsync() {
-
+				return create_async([]() -> StorageStreamTransaction^ {
+					return nullptr;
+				});
 			}
 			property String^ ContentType
 			{
@@ -300,7 +311,7 @@ namespace Readium
 
 			virtual IAsyncOperation<IRandomAccessStreamWithContentType^>^ OpenReadAsync() {
 				return create_async([this]() -> IRandomAccessStreamWithContentType^ {
-
+					return ref new RandomWrapper(_readFn, _writeFn, _ctx);
 				});
 			}
 
@@ -332,7 +343,7 @@ EPUB3_XML_BEGIN_NAMESPACE
 
 InputBuffer::InputBuffer()
 {
-	
+	_store = ref new ::Readium::XML::File(InputBuffer::read_cb, nullptr, InputBuffer::close_cb, (void*)this);
 }
 InputBuffer::InputBuffer(InputBuffer&& o) : _store(o._store)
 {
@@ -353,36 +364,50 @@ int InputBuffer::close_cb(void *context)
 	InputBuffer * p = static_cast<InputBuffer*>(context);
 	return (p->close() ? 0 : -1);
 }
-XmlDocument^ InputBuffer::ReadDocument(const char* url, const char* encoding, int options)
+Document* InputBuffer::ReadDocument(const char* url, const char* encoding, int options)
 {
+#if 0
 	std::wstring wstr(std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(url));
 	String^ uriStr = ref new String(wstr.data(), wstr.length());
 	Uri^ uri = ref new Uri(uriStr);
-	XmlDocument::LoadFromUriAsync(uri);
+	auto task = XmlDocument::LoadFromUriAsync(uri);
+	return new Document(task->GetResults());
+#else
+	using Converter = std::wstring_convert<std::codecvt_utf8<wchar_t>>;
+	static const size_t BUF_SIZE = 4096;
+	std::wstring str;
+	uint8_t buf[BUF_SIZE];
+	Converter converter;
+	int numRead = 0;
+
+	do
+	{
+		numRead = this->read(buf, BUF_SIZE);
+		if (numRead > 0)
+		{
+			str.append(converter.from_bytes(reinterpret_cast<char*>(buf), reinterpret_cast<char*>(buf + numRead)));
+		}
+
+	} while (numRead > 0);
+
+	this->close();
+
+	::Platform::String^ nstr = ref new String(str.data(), str.length());
+	str.clear();		// watch your memory
+	XmlDocument^ native = ref new XmlDocument;
+	native->LoadXml(nstr);
+	return new Document(native);
+#endif
 }
 
 OutputBuffer::OutputBuffer(const std::string & encoding)
 {
-	xmlCharEncodingHandlerPtr encoder = nullptr;
-	if (!encoding.empty())
-	{
-		xmlCharEncoding enc = xmlParseCharEncoding(encoding.c_str());
-		if (enc != XML_CHAR_ENCODING_UTF8)
-		{
-			encoder = xmlFindCharEncodingHandler(encoding.c_str());
-			if (encoder == nullptr)
-				throw InternalError("Unsupported output encoding: " + encoding);
-		}
-	}
-
-	_buf = xmlOutputBufferCreateIO(OutputBuffer::write_cb, OutputBuffer::close_cb, this, encoder);
-	if (_buf == nullptr)
-		throw InternalError("Failed to create xml output buffer");
+	_store = ref new ::Readium::XML::File(nullptr, OutputBuffer::write_cb, OutputBuffer::close_cb, (void*)this);
 }
 OutputBuffer::~OutputBuffer()
 {
-	xmlMemFree(_buf);
-	_buf = nullptr;
+	close();
+	_store = nullptr;
 }
 int OutputBuffer::write_cb(void *context, const char *buffer, int len)
 {
@@ -394,9 +419,36 @@ int OutputBuffer::close_cb(void *context)
 	OutputBuffer * p = reinterpret_cast<OutputBuffer*>(context);
 	return (p->close() ? 0 : -1);
 }
-int OutputBuffer::writeDocument(xmlDocPtr doc)
+int OutputBuffer::WriteDocument(const Document* doc)
 {
-	return xmlSaveFileTo(*this, doc, "utf-8");
+#if 0
+	auto task = doc->xml()->SaveToFileAsync(_store);
+	return 1;	// meh
+#else
+	String^ xmlstr = doc->xml()->GetXml();
+	const wchar_t* wbuf = xmlstr->Data;
+	size_t len = xmlstr->Length;
+
+	using Converter = std::wstring_convert<std::codecvt_utf8<wchar_t>>;
+	std::string utf8(Converter().to_bytes(wbuf, wbuf + len));
+	delete xmlstr;		// watch the memory usage
+
+	const char* buf = utf8.data();
+	size_t toWrite = utf8.length();
+
+	do
+	{
+		int numWritten = this->write(reinterpret_cast<const uint8_t*>(buf), toWrite);
+		if (numWritten < 0)
+			break;
+		buf += numWritten;
+		toWrite -= numWritten;
+
+	} while (toWrite > 0);
+
+	this->close();
+	return toWrite == 0;
+#endif
 }
 
 size_t StreamInputBuffer::read(uint8_t *buf, size_t len)
@@ -413,8 +465,7 @@ bool StreamInputBuffer::close()
 
 bool StreamOutputBuffer::write(const uint8_t *buffer, size_t len)
 {
-	// std::basic_ios::operator bool () is EXPLICIT in C++11/libstdc++
-	if (_output.good())
+	if (bool(_output))
 		_output.write(reinterpret_cast<const std::ostream::char_type*>(buffer), len);
 	return _output.good();
 }

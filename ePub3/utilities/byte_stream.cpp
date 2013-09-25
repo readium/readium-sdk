@@ -28,6 +28,9 @@
 #if EPUB_OS(ANDROID) || EPUB_OS(LINUX) || EPUB_OS(WINDOWS)
 # include <condition_variable>
 #endif
+#if EPUB_OS(WINDOWS)
+# include <io.h>
+#endif
 #include <ePub3/utilities/make_unique.h>
 
 // I'm putting this here because it's the AsyncFileByteStream class that needs it
@@ -506,6 +509,60 @@ RunLoop::EventSourcePtr AsyncPipe::AsyncEventSource()
 #pragma mark -
 #endif
 
+static const char* fmode_from_openmode(std::ios::openmode mode)
+{
+	// switch statement SHAMELESSLY nicked from libc++ std::ios::basic_filebuf
+	const char* __mdstr = nullptr;
+	switch (mode & ~std::ios::ate)
+	{
+	case std::ios::out:
+	case std::ios::out | std::ios::trunc:
+		__mdstr = "w";
+		break;
+	case std::ios::out | std::ios::app:
+	case std::ios::app:
+		__mdstr = "a";
+		break;
+	case std::ios::in:
+		__mdstr = "r";
+		break;
+	case std::ios::in | std::ios::out:
+		__mdstr = "r+";
+		break;
+	case std::ios::in | std::ios::out | std::ios::trunc:
+		__mdstr = "w+";
+		break;
+	case std::ios::in | std::ios::out | std::ios::app:
+	case std::ios::in | std::ios::app:
+		__mdstr = "a+";
+		break;
+	case std::ios::out | std::ios::binary:
+	case std::ios::out | std::ios::trunc | std::ios::binary:
+		__mdstr = "wb";
+		break;
+	case std::ios::out | std::ios::app | std::ios::binary:
+	case std::ios::app | std::ios::binary:
+		__mdstr = "ab";
+		break;
+	case std::ios::in | std::ios::binary:
+		__mdstr = "rb";
+		break;
+	case std::ios::in | std::ios::out | std::ios::binary:
+		__mdstr = "r+b";
+		break;
+	case std::ios::in | std::ios::out | std::ios::trunc | std::ios::binary:
+		__mdstr = "w+b";
+		break;
+	case std::ios::in | std::ios::out | std::ios::app | std::ios::binary:
+	case std::ios::in | std::ios::app | std::ios::binary:
+		__mdstr = "a+b";
+		break;
+	default:
+		break;
+	}
+	return __mdstr;
+}
+
 FileByteStream::FileByteStream(const string& path, std::ios::openmode mode) : ByteStream(), _file(nullptr)
 {
     Open(path, mode);
@@ -544,61 +601,19 @@ bool FileByteStream::IsOpen() const _NOEXCEPT
 }
 bool FileByteStream::Open(const string &path, std::ios::openmode mode)
 {
-    Close();
-    
-    // switch statement SHAMELESSLY nicked from libc++ std::ios::basic_filebuf
-    const char* __mdstr;
-    switch (mode & ~std::ios::ate)
-    {
-        case std::ios::out:
-        case std::ios::out | std::ios::trunc:
-            __mdstr = "w";
-            break;
-        case std::ios::out | std::ios::app:
-        case std::ios::app:
-            __mdstr = "a";
-            break;
-        case std::ios::in:
-            __mdstr = "r";
-            break;
-        case std::ios::in | std::ios::out:
-            __mdstr = "r+";
-            break;
-        case std::ios::in | std::ios::out | std::ios::trunc:
-            __mdstr = "w+";
-            break;
-        case std::ios::in | std::ios::out | std::ios::app:
-        case std::ios::in | std::ios::app:
-            __mdstr = "a+";
-            break;
-        case std::ios::out | std::ios::binary:
-        case std::ios::out | std::ios::trunc | std::ios::binary:
-            __mdstr = "wb";
-            break;
-        case std::ios::out | std::ios::app | std::ios::binary:
-        case std::ios::app | std::ios::binary:
-            __mdstr = "ab";
-            break;
-        case std::ios::in | std::ios::binary:
-            __mdstr = "rb";
-            break;
-        case std::ios::in | std::ios::out | std::ios::binary:
-            __mdstr = "r+b";
-            break;
-        case std::ios::in | std::ios::out | std::ios::trunc | std::ios::binary:
-            __mdstr = "w+b";
-            break;
-        case std::ios::in | std::ios::out | std::ios::app | std::ios::binary:
-        case std::ios::in | std::ios::app | std::ios::binary:
-            __mdstr = "a+b";
-            break;
-        default:
-            return false;
-    }
+	Close();
+
+	// switch statement SHAMELESSLY nicked from libc++ std::ios::basic_filebuf
+	const char* fmode = fmode_from_openmode(mode);
+	if (fmode == nullptr)
+	{
+		fmode = "a+b";
+		mode = std::ios::in | std::ios::out | std::ios::app | std::ios::binary;
+	}
 #if EPUB_OS(WINDOWS)
-	::fopen_s(&_file, path.c_str(), __mdstr);
+	::fopen_s(&_file, path.c_str(), fmode);
 #else
-    _file = ::fopen(path.c_str(), __mdstr);
+    _file = ::fopen(path.c_str(), fmode);
 #endif
     if ( _file == nullptr )
         return false;
@@ -612,6 +627,8 @@ bool FileByteStream::Open(const string &path, std::ios::openmode mode)
         }
     }
     
+	// store the mode so we can Clone() later
+	_mode = mode;
     return true;
 }
 void FileByteStream::Close()
@@ -655,6 +672,51 @@ ByteStream::size_type FileByteStream::Seek(size_type by, std::ios::seekdir dir)
     
     ::fseek(_file, by, whence);
     return ::ftell(_file);
+}
+ByteStream::size_type FileByteStream::Position() const
+{
+	return ::ftell(const_cast<FILE*>(_file));
+}
+void FileByteStream::Flush()
+{
+	::fflush(_file);
+}
+std::shared_ptr<SeekableByteStream> FileByteStream::Clone() const
+{
+	if (_file == nullptr)
+		return nullptr;
+
+#if EPUB_OS(WINDOWS)
+	int fd = _dup(_fileno(_file));
+#else
+	int fd = dup(fileno(_file));
+#endif
+	if (fd == -1)
+		return nullptr;
+
+#if EPUB_OS(WINDOWS)
+	FILE* newFile = _fdopen(fd, fmode_from_openmode(_mode));
+#else
+	FILE* newFile = fdopen(fd, fmode_from_openmode(_mode));
+#endif
+	if (newFile == nullptr)
+	{
+#if EPUB_OS(WINDOWS)
+		_close(fd);
+#else
+		close(fd);
+#endif
+		return nullptr;
+	}
+
+	auto result = std::make_shared<FileByteStream>();
+	if (bool(result))
+	{
+		result->_file = newFile;
+		result->_mode = _mode;
+	}
+
+	return result;
 }
 
 #if 0
@@ -718,12 +780,32 @@ ByteStream::size_type ZipFileByteStream::ReadBytes(void *buf, size_type len)
         return 0;
     }
     
+	_pos += numRead;
     return numRead;
 }
 ByteStream::size_type ZipFileByteStream::WriteBytes(const void *buf, size_type len)
 {
     // no write support at this moment
     return 0;
+}
+std::shared_ptr<SeekableByteStream> ZipFileByteStream::Clone() const
+{
+	if (_file == nullptr)
+		return nullptr;
+
+
+	struct zip_file* newFile = zip_fopen_index(_file->za, _file->file_index, _file->flags);
+	if (newFile == nullptr)
+		return nullptr;
+
+	auto result = std::make_shared<ZipFileByteStream>();
+	if (bool(result))
+	{
+		result->_file = newFile;
+		result->_mode = _mode;
+	}
+
+	return result;
 }
 
 #if 0
@@ -750,6 +832,39 @@ void AsyncFileByteStream::Close()
     __A::Close();
     __F::Close();
 }
+std::shared_ptr<SeekableByteStream> AsyncFileByteStream::Clone() const
+{
+	if (_file == nullptr)
+		return nullptr;
+
+#if EPUB_OS(WINDOWS)
+	int fd = _dup(_fileno(_file));
+#else
+	int fd = dup(fileno(_file));
+#endif
+	if (fd == -1)
+		return nullptr;
+
+#if EPUB_OS(WINDOWS)
+	FILE* newFile = _fdopen(fd, fmode_from_openmode(_mode));
+#else
+	FILE* newFile = fdopen(fd, fmode_from_openmode(_mode));
+#endif
+	if (newFile == nullptr)
+	{
+		close(fd);
+		return nullptr;
+	}
+
+	auto result = std::make_shared<AsyncFileByteStream>();
+	if (bool(result))
+	{
+		result->_file = newFile;
+		result->_mode = _mode;
+	}
+
+	return result;
+}
 
 #if 0
 #pragma mark -
@@ -774,6 +889,25 @@ void AsyncZipFileByteStream::Close()
 {
     __A::Close();
     __F::Close();
+}
+std::shared_ptr<SeekableByteStream> AsyncZipFileByteStream::Clone() const
+{
+	if (_file == nullptr)
+		return nullptr;
+
+
+	struct zip_file* newFile = zip_fopen_index(_file->za, _file->file_index, _file->flags);
+	if (newFile == nullptr)
+		return nullptr;
+
+	auto result = std::make_shared<AsyncZipFileByteStream>();
+	if (bool(result))
+	{
+		result->_file = newFile;
+		result->_mode = _mode;
+	}
+
+	return result;
 }
 
 EPUB3_END_NAMESPACE

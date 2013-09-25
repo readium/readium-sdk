@@ -143,6 +143,9 @@ zip_fopen_index(struct zip *za, int fileno, int flags)
 	    return NULL;
 	}
     }
+
+	// JCD added: store the file index for cloning purposes
+	zf->file_index = fileno;
     
     return zf;
 }

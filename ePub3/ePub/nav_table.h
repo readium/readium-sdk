@@ -25,7 +25,7 @@
 #include <ePub3/epub3.h>
 #include <ePub3/nav_point.h>
 #include <ePub3/utilities/owned_by.h>
-#include <libxml/xpath.h> // for xmlNodeSetPtr
+#include <ePub3/xml/node.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -51,7 +51,7 @@ public:
     virtual                 ~NavigationTable() {}
     
     EPUB3_EXPORT
-    bool                    ParseXML(xmlNodePtr node);
+    bool                    ParseXML(xml::Node* node);
     
     const string&           Type()                      const   { return _type; }
     void                    SetType(const string& str)          { _type = str; }
@@ -70,9 +70,9 @@ protected:
     string      _title;         ///< The table's title. Optional.
     string      _sourceHref;    ///< Href to the nav item representing the table in the package.
     
-    shared_ptr<NavigationElement>   BuildNavigationPoint(xmlNodePtr liNode);
+    shared_ptr<NavigationElement>   BuildNavigationPoint(xml::Node* liNode);
 
-    void                    LoadChildElements(shared_ptr<NavigationElement> pElement, xmlNodePtr pXmlNode);
+    void                    LoadChildElements(shared_ptr<NavigationElement> pElement, xml::Node* pXmlNode);
 };
 
 EPUB3_END_NAMESPACE

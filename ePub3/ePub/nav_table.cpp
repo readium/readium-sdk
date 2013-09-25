@@ -43,12 +43,12 @@ NavigationTable::NavigationTable(shared_ptr<Package>& owner, const string& sourc
     : OwnedBy(owner), _type(), _title(), _sourceHref(sourceHref)
 {
 }
-bool NavigationTable::ParseXML(xmlNodePtr node)
+bool NavigationTable::ParseXML(xml::Node* node)
 {
     if ( node == nullptr )
         return false;
     
-    string name(node->name);
+    string name(node->Name());
     if ( AllowedRootNodeNames.find(name) == AllowedRootNodeNames.end() )
         return false;
     
@@ -57,7 +57,9 @@ bool NavigationTable::ParseXML(xmlNodePtr node)
         return false;
 
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-    XPathWrangler xpath(node->doc, {{"epub", ePub3NamespaceURI}}); // goddamn I love C++11 initializer list constructors
+	xml::Document* tmp = node->Document();
+    XPathWrangler xpath(tmp, {{"epub", ePub3NamespaceURI}}); // goddamn I love C++11 initializer list constructors
+	delete tmp;
 #else
     XPathWrangler::NamespaceList __ns;
     __ns["epub"] = ePub3NamespaceURI;
@@ -70,22 +72,16 @@ bool NavigationTable::ParseXML(xmlNodePtr node)
     auto strings = xpath.Strings("./html:h2[1]/text()", node);
     if ( !strings.empty() )
         _title = std::move(strings[0]);
-
     
     // load List Elements from a single Ordered List
     // first: confirm there's a single list
-    xmlNodeSetPtr nodes = xpath.Nodes("./html:ol", node);
-    if ( nodes == nullptr )
+    xml::NodeSet nodes = xpath.Nodes("./html:ol", node);
+    if ( nodes.empty() )
         return false;
-    if ( nodes->nodeNr != 1 )
-    {
-        xmlXPathFreeNodeSet(nodes);
+    if ( nodes.size() != 1 )
         return false;
-    }
 
-    LoadChildElements(Ptr(), nodes->nodeTab[0]);
-
-    xmlXPathFreeNodeSet(nodes);
+    LoadChildElements(Ptr(), nodes[0]);
     
     return true;
 }

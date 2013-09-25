@@ -121,8 +121,13 @@ EPUB3_EXPORT
 DCType          DCTypeFromIRI(const IRI& iri);
     
 __private_extern__ string __lang_from_locale(const std::locale& loc);
+#if EPUB_USE(LIBXML2)
 __private_extern__ const xmlChar * DCMES_uri;
 __private_extern__ const xmlChar * MetaTagName;
+#else
+__private_extern__ const TCHAR * DCMES_uri;
+__private_extern__ const TCHAR * MetaTagName;
+#endif
 
 /**
  This exception is thrown when a property vocabulary prefix is unknown to a

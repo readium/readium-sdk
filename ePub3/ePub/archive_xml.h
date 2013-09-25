@@ -25,9 +25,7 @@
 #include <ePub3/epub3.h>
 
 #include <ePub3/archive.h>
-#if EPUB_USE(LIBXML2)
 #include <ePub3/xml/io.h>
-#endif
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -44,9 +42,6 @@ public:
     
     operator ArchiveReader* () { return _reader.get(); }
 	operator const ArchiveReader* () const { return _reader.get(); }
-
-	virtual size_t size() const { return _reader->size(); }
-	virtual size_t offset() const { return _reader->offset(); }
     
 protected:
     std::unique_ptr<ArchiveReader>  _reader;
@@ -70,9 +65,6 @@ public:
     
     operator ArchiveWriter* () { return _writer.get(); }
 	operator const ArchiveWriter* () { return _writer.get(); }
-
-	virtual size_t size() const { return _writer->size(); }
-	virtual size_t offset() const { return _writer->offset(); }
     
 protected:
     unique_ptr<ArchiveWriter>   _writer;
@@ -84,7 +76,5 @@ protected:
 };
 
 EPUB3_END_NAMESPACE
-
-#endif // EPUB_USE(LIBXML2)
 
 #endif /* defined(__ePub3__archive_xml__) */

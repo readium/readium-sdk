@@ -56,6 +56,8 @@ public:
 	string() : _Base() {}
 	string(const value_type* s) : _Base(s) {}
 	string(const value_type* s, size_type sz) : _Base(s, sz) {}
+	string(const char* s) : _Base(UTF8Converter().from_bytes(s)) {}
+	string(const char* s, size_type len) : _Base(UTF8Converter().from_bytes(s, s+len)) {}
 	string(const unsigned char* s) : _Base(UTF8Converter().from_bytes(reinterpret_cast<const char*>(s))) {}
 	string(const unsigned char* s, size_type len) : _Base(UTF8Converter().from_bytes(reinterpret_cast<const char*>(s), reinterpret_cast<const char*>(s + len))) {}
 	string(const _Base& s) : _Base(s) {}
@@ -78,8 +80,8 @@ public:
 };
 #endif
 
-static const string XMLNamespace("http://www.w3.org/XML/1998/namespace");
-static const string XMLNSNamespace("http://www.w3.org/2000/xmlns/");
+static const string XMLNamespace((const char*)"http://www.w3.org/XML/1998/namespace");
+static const string XMLNSNamespace((const char*)"http://www.w3.org/2000/xmlns/");
 
 EPUB3_XML_END_NAMESPACE
 

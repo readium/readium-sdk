@@ -79,8 +79,8 @@ protected:
 
 public:
 	Namespace() : _href(), _prefix() {}
-	Namespace(Document* doc, ::Platform::StringReference prefix, ::Platform::StringReference uri) : _href(uri), _prefix(prefix) {}
-	Namespace(Document* doc, ::Platform::String^ prefix, ::Platform::String^ uri) : _href(uri), _prefix(prefix) {}
+	Namespace(std::shared_ptr<Document> doc, ::Platform::StringReference prefix, ::Platform::StringReference uri) : _href(uri), _prefix(prefix) {}
+	Namespace(std::shared_ptr<Document> doc, ::Platform::String^ prefix, ::Platform::String^ uri) : _href(uri), _prefix(prefix) {}
 	virtual ~Namespace() {}
 
 	bool IsEmpty() const { return _href.empty(); }

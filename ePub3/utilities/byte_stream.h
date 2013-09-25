@@ -394,15 +394,56 @@ protected:
 };
 
 /**
+ An abstract ByteStream subclass representing (potentially limited) random-access capability.
+
+ This is largely here for WinRT wrapper assistance.
+ */
+class SeekableByteStream : public ByteStream
+{
+public:
+	SeekableByteStream() : ByteStream() {}
+	virtual ~SeekableByteStream() {}
+
+	/**
+	Seek to a position within the target file.
+	@param by The amount to move the file position.
+	@param dir The starting point for the position calculation: current position,
+	start of file, or end of file.
+	@result The new file position. This may be different from the requested position,
+	if for instance the file was not large enough to accomodate the request.
+	*/
+	virtual size_type       Seek(size_type by, std::ios::seekdir dir) {}
+
+	/**
+	Returns the current position within the target file.
+	@result The current file position.
+	*/
+	virtual size_type		Position() const = 0;
+
+	/**
+	Ensures that all written data is pushed to permanent storage.
+	*/
+	virtual void			Flush() {}
+
+	/**
+	Creates a new independent stream object referring to the same file.
+
+	The returned stream is already open with the same privileges as the receiver.
+	@result A new FileByteStream instance.
+	*/
+	virtual std::shared_ptr<SeekableByteStream> Clone() const = 0;
+};
+
+/**
  A concrete ByteStream providing synchronous access to a resource on a filesystem.
  @ingroup utilities
  */
-class FileByteStream : public ByteStream
+class FileByteStream : public SeekableByteStream
 {
 public:
     ///
     /// Create a new stream unassociated with any file.
-                            FileByteStream()                        : ByteStream(), _file(nullptr) {}
+                            FileByteStream()                        : SeekableByteStream(), _file(nullptr) {}
     /**
      Create a new stream to a given file and open it for reading and/or writing.
      @param pathToOpen The path to the file to open.
@@ -453,23 +494,45 @@ public:
      @param by The amount to move the file position.
      @param dir The starting point for the position calculation: current position,
      start of file, or end of file.
+	 @result The new file position. This may be different from the requested position,
+	 if for instance the file was not large enough to accomodate the request.
      */
-    virtual size_type       Seek(size_type by, std::ios::seekdir dir);
+    virtual size_type       Seek(size_type by, std::ios::seekdir dir) OVERRIDE;
+
+	/**
+	 Returns the current position within the target file.
+	 @result The current file position.
+	 */
+	virtual size_type		Position() const OVERRIDE;
+
+	/**
+	 Ensures that all written data is pushed to permanent storage.
+	 */
+	virtual void			Flush() OVERRIDE;
+
+	/**
+	 Creates a new independent stream object referring to the same file.
+
+	 The returned stream is already open with the same privileges as the receiver.
+	 @result A new FileByteStream instance.
+	 */
+	virtual std::shared_ptr<SeekableByteStream> Clone() const OVERRIDE;
     
 protected:
     FILE*                   _file;  ///< The underlying system file stream.
+	std::ios::openmode		_mode;	///< The mode used to open the file (used by Clone()).
 };
 
 /**
  A concrete ByteStream providing access to a file within a Zip archive.
  @ingroup utilities
  */
-class ZipFileByteStream : public ByteStream
+class ZipFileByteStream : public SeekableByteStream
 {
 public:
     ///
     /// Create a new unattached stream.
-                            ZipFileByteStream() : ByteStream(), _file(nullptr) {}
+                            ZipFileByteStream() : SeekableByteStream(), _file(nullptr) {}
     /**
      Create a new stream to a file within a zip archive.
      @param archive The Zip arrchive containing the target file.
@@ -513,11 +576,28 @@ public:
     virtual size_type       ReadBytes(void* buf, size_type len);
     ///
     /// @copydoc ByteStream::WriteBytes()
-    virtual size_type       WriteBytes(const void* buf, size_type len);
+	virtual size_type       WriteBytes(const void* buf, size_type len);
+
+	/**
+	Returns the current position within the target file.
+	@result The current file position.
+	*/
+	virtual size_type		Position() const OVERRIDE { return _pos; }
+
+	/**
+	Creates a new independent stream object referring to the same file.
+
+	The returned stream is already open with the same privileges as the receiver.
+	@result A new FileByteStream instance.
+	*/
+	virtual std::shared_ptr<SeekableByteStream> Clone() const OVERRIDE;
     
 protected:
     struct zip_file*        _file;      ///< The underlying Zip file stream.
 
+	std::ios::openmode		_mode;		///< The mode used to open the file (used by Clone()).
+	size_type				_pos;		///< The current position (basically, the number of bytes read so far);
+    
     ///
     /// Sanitizes a path string, since `libzip` can be finnicky about them.
     string Sanitized(const string& path) const;
@@ -586,7 +666,15 @@ public:
     virtual bool            Open(const string& path, std::ios::openmode mode = std::ios::in | std::ios::out);
     ///
     /// @copydoc FileByteStream::Close()
-    virtual void            Close();
+	virtual void            Close();
+
+	/**
+	Creates a new independent stream object referring to the same file.
+
+	The returned stream is already open with the same privileges as the receiver.
+	@result A new FileByteStream instance.
+	*/
+	virtual std::shared_ptr<SeekableByteStream> Clone() const OVERRIDE;
     
 private:
     // seeking disabled on async streams, because I value my sanity
@@ -658,7 +746,15 @@ public:
     virtual bool            Open(struct zip* archive, const string& path, int zipFlags=0) OVERRIDE;
     ///
     /// @copydoc ByteStream::Close()
-    virtual void            Close();
+	virtual void            Close();
+
+	/**
+	Creates a new independent stream object referring to the same file.
+
+	The returned stream is already open with the same privileges as the receiver.
+	@result A new FileByteStream instance.
+	*/
+	virtual std::shared_ptr<SeekableByteStream> Clone() const OVERRIDE;
     
 protected:
     virtual size_type       read_for_async(void* buf, size_type len)        { return __F::ReadBytes(buf, len); }

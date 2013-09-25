@@ -143,6 +143,9 @@ struct zip_file {
     
     char *buffer;
     z_stream *zstr;
+
+	// JCD added
+	int file_index;		/* index of this file in the zip archive */
 };
 
 /* zip archive directory entry (central or local) */

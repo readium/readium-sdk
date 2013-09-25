@@ -30,6 +30,7 @@
 #include <exception>
 #include <string>
 #include <map>
+#include <memory>
 
 #if EPUB_USE(LIBXML2)
 #include <libxml/xmlerror.h>
@@ -126,12 +127,13 @@ public:
     InternalError(const char * s, xmlErrorPtr err = NULL) throw () : exception(s, err) {}
     virtual ~InternalError() throw () {}
 };
-#if !EPUB_PLATFORM(WINRT)
+
 // note that MOVE is allowed, just not COPY
 /**
  @ingroup xml-utils
  */
-class WrapperBase
+template <class _Tp>
+class WrapperBase : public std::enable_shared_from_this<_Tp>
 {
 public:
     WrapperBase() {}
@@ -139,12 +141,16 @@ public:
     virtual ~WrapperBase() {}
     
     WrapperBase & operator = (WrapperBase && moveRef) { return *this; }
+
+	template <class... _Args>
+	static std::shared_ptr<_Tp> New(_Args&& ...__args) {
+		return std::make_shared<_Tp>(std::forward<_Args>(__args)...);
+	}
     
 private:
     WrapperBase(WrapperBase & o);
     WrapperBase & operator = (WrapperBase & o);
 };
-#endif
 
 #if EPUB_PLATFORM(WINRT)
 static inline ::Platform::String^ GetAttributeValueRecursiveNS(::Windows::Data::Xml::Dom::IXmlNode^ node, ::Platform::String^ uri, ::Platform::String^ name)

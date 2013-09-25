@@ -158,7 +158,21 @@ void Node::SetContent(const string &content)
 	xmlNodeSetContent(_xml, content.utf8());
 }
 #endif
-Namespace * Node::Namespace() const
+string Node::AttributeValue(const string& name, const string& namespaceURI) const
+{
+	if (IsElementNode() == false)
+		return string();
+
+	IXmlElement^ element = dynamic_cast<IXmlElement^>(_xml);
+	if (element == nullptr)
+		return string();
+
+	if (namespaceURI.empty())
+		return element->GetAttribute(name);
+
+	return element->GetAttributeNS(namespaceURI, name);
+}
+std::shared_ptr<Namespace> Node::Namespace() const
 {
 	switch (Type())
 	{
@@ -179,7 +193,7 @@ Namespace * Node::Namespace() const
 		break;
 	}
 
-	return new class Namespace(const_cast<class Document*>(Document()), __winstr(_xml->Prefix), __winstr(_xml->NamespaceUri));
+	return std::make_shared<class Namespace>(std::const_pointer_cast<class Document>(Document()), __winstr(_xml->Prefix), __winstr(_xml->NamespaceUri));
 }
 #if EPUB_ENABLE(XML_BUILDER)
 void Node::SetNamespace(const class Namespace *ns)
@@ -304,7 +318,7 @@ NamespaceList Node::NamespacesInScope() const
 		if (prefix->IsEmpty() == false)
 		{
 			auto uri = __winstr(element->NamespaceUri);
-			nsmap[uri] = new class Namespace(const_cast<class Document*>(Document()), prefix, uri);
+			nsmap[uri] = new class Namespace(std::const_pointer_cast<class Document>(Document()), prefix, uri);
 		}
 
 		element = dynamic_cast<IXmlElement^>(element->ParentNode);
@@ -374,35 +388,35 @@ bool Node::BoolValue() const
 #pragma mark - Hierarchy
 #endif
 
-Document * Node::Document()
+std::shared_ptr<Document> Node::Document()
 {
-	return new class Document(_xml->OwnerDocument);
+	return std::make_shared<class Document>(_xml->OwnerDocument);
 }
-const Document * Node::Document() const
+std::shared_ptr<const Document> Node::Document() const
 {
 	return const_cast<Node*>(this)->Document();
 }
-Node * Node::NextSibling()
+std::shared_ptr<Node> Node::NextSibling()
 {
 	if (_xml->NextSibling == nullptr)
 		return nullptr;
 	return NewNode(_xml->NextSibling);
 }
-const Node * Node::NextSibling() const
+std::shared_ptr<const Node> Node::NextSibling() const
 {
 	return const_cast<Node*>(this)->NextSibling();
 }
-Node * Node::PreviousSibling()
+std::shared_ptr<Node> Node::PreviousSibling()
 {
 	if (_xml->PreviousSibling == nullptr)
 		return nullptr;
 	return NewNode(_xml->PreviousSibling);
 }
-const Node * Node::PreviousSibling() const
+std::shared_ptr<const Node> Node::PreviousSibling() const
 {
 	return const_cast<Node*>(this)->PreviousSibling();
 }
-Node * Node::FirstChild(const string & filterByName)
+std::shared_ptr<Node> Node::FirstChild(const string & filterByName)
 {
 	if (_xml->HasChildNodes() == false)
 		return nullptr;
@@ -420,7 +434,7 @@ Node * Node::FirstChild(const string & filterByName)
 
 	return nullptr;
 }
-const Node * Node::FirstChild(const string & filterByName) const
+std::shared_ptr<const Node> Node::FirstChild(const string & filterByName) const
 {
 	return const_cast<Node*>(this)->FirstChild(filterByName);
 }
@@ -579,31 +593,31 @@ NodeSet Node::FindByXPath(const string &xpath, const NamespaceMap &namespaces) c
 	eval.RegisterNamespaces(namespaces);
 
 	XPathEvaluator::ObjectType type = XPathEvaluator::ObjectType::Undefined;
-	if (eval.Evaluate(this, &type) && type == XPathEvaluator::ObjectType::NodeSet)
+	if (eval.Evaluate(shared_from_this(), &type) && type == XPathEvaluator::ObjectType::NodeSet)
 		return eval.NodeSetResult();
 
 	return NodeSet();
 }
-Node* Node::NewNode(NativePtr newNode)
+std::shared_ptr<Node> Node::NewNode(NativePtr newNode)
 {
 	using ::Windows::Data::Xml::Dom::NodeType;
 
 	switch (newNode->NodeType)
 	{
 	case NodeType::ElementNode:
-		return new Element(dynamic_cast<XmlElement^>(newNode));
+		return std::make_shared<Element>(dynamic_cast<XmlElement^>(newNode));
 	
 	case NodeType::DocumentNode:
-		return new class Document(dynamic_cast<XmlDocument^>(newNode));
+		return std::make_shared<class Document>(dynamic_cast<XmlDocument^>(newNode));
 
 	case NodeType::NotationNode:
-		return new DTD(dynamic_cast<DtdNotation^>(newNode));
+		return std::make_shared<DTD>(dynamic_cast<DtdNotation^>(newNode));
 
 	default:
 		break;
 	}
 
-	return new Node(newNode);
+	return std::make_shared<Node>(newNode);
 }
 
 EPUB3_XML_END_NAMESPACE
