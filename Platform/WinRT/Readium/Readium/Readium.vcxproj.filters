@@ -302,6 +302,9 @@
     <ClInclude Include="..\..\..\..\ePub3\ePub\spine.h">
       <Filter>ePub3\ePub\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\library.h">
+      <Filter>ePub3\ePub\Library</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\ePub3\utilities\byte_buffer.cpp">
@@ -637,6 +640,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ePub\spine.cpp">
       <Filter>ePub3\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\library.cpp">
+      <Filter>ePub3\ePub\Library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\xml\utilities\io_win.cpp">
+      <Filter>ePub3\xml\utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
