@@ -42,6 +42,7 @@
     <ClInclude Include="..\..\..\..\ePub3\ePub\font_obfuscation.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\glossary.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\initialization.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\library.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\manifest.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\media_support_info.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\nav_element.h" />
@@ -122,6 +123,7 @@
     <ClCompile Include="..\..\..\..\ePub3\ePub\font_obfuscation.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\glossary.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\initialization.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\library.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\manifest.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\media_support_info.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\nav_point.cpp" />
@@ -599,6 +601,7 @@
     <ClCompile Include="..\..\..\..\ePub3\xml\tree\element_win.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\xml\tree\node_win.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\xml\tree\xpath_win.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\xml\utilities\io_win.cpp" />
     <ClCompile Include="ThreadEmulation.cpp" />
   </ItemGroup>
   <ItemGroup>
