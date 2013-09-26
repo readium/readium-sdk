@@ -22,7 +22,53 @@
 #ifndef __Readium_h__
 #define __Readium_h__
 
+#include <ePub3/utilities/NativeBridge.h>
+#include <ePub3/utilities/iri.h>
+
 #define BEGIN_READIUM_API	namespace Readium {
 #define END_READIUM_API		};
+
+BEGIN_READIUM_API
+
+#define DeclareFastPassString(native, var) \
+	std::wstring __ ## var = native.wchar_string(); \
+	::Platform::StringReference var(__##var.data(), __##var.length())
+
+static inline
+::Platform::String^ StringFromNative(const ::ePub3::string& native)
+{
+	std::wstring wstr(native.wchar_string());
+	return ref new ::Platform::String(wstr.data(), (unsigned int)wstr.length());
+}
+
+static inline
+::ePub3::string StringToNative(::Platform::String^ str)
+{
+	return ::ePub3::string(str->Data(), str->Length());
+}
+
+static inline ::Windows::Foundation::Uri^ IRIToURI(::ePub3::IRI& iri)
+{
+	::ePub3::string nstr = iri.IRIString();
+	if (nstr.empty())
+		nstr = iri.URIString();
+
+	DeclareFastPassString(nstr, uristr);
+	return ref new ::Windows::Foundation::Uri(uristr);
+}
+
+static inline ::ePub3::IRI URIToIRI(::Windows::Foundation::Uri^ uri)
+{
+	return ::ePub3::IRI(StringToNative(uri->AbsoluteCanonicalUri));
+}
+
+#define _DECLARE_BRIDGE_API_(_Native, _Wrapped) \
+	private: \
+	std::remove_reference_t<_Native> _native; \
+	internal: \
+	property _Native NativeObject { _Native get() { return _native; } } \
+	static _Wrapped Wrapper(_Native native)
+
+END_READIUM_API
 
 #endif	/* __Readium_h__ */
