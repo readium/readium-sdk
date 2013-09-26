@@ -164,7 +164,7 @@ _zip_readcdir(FILE *fp, unsigned char *buf, unsigned char *eocd, int buflen,
     ssize_t comlen;
     unsigned int left;
 
-    comlen = buf + buflen - eocd - EOCDLEN;
+    comlen = (ssize_t)(buf + (size_t)buflen - eocd - (size_t)EOCDLEN);
     if (comlen < 0) {
 	/* not enough bytes left for comment */
 	_zip_error_set(error, ZIP_ER_NOZIP, 0);

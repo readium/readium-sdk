@@ -43,8 +43,8 @@ namespace Readium
 {
 	namespace XML
 	{
-		using ReadFn = std::function<int(void*, char*, size_t)>;
-		using WriteFn = std::function<int(void*, const char*, size_t)>;
+		using ReadFn = std::function<int(void*, char*, int)>;
+		using WriteFn = std::function<int(void*, const char*, int)>;
 		using CloseFn = std::function<int(void*)>;
 
 		static ::ComPtr<IBufferByteAccess> getByteAccessForBuffer(IBuffer^ buffer)
@@ -382,7 +382,7 @@ std::shared_ptr<Document> InputBuffer::ReadDocument(const char* url, const char*
 
 	do
 	{
-		numRead = this->read(buf, BUF_SIZE);
+		numRead = static_cast<int>(this->read(buf, BUF_SIZE));
 		if (numRead > 0)
 		{
 			str.append(converter.from_bytes(reinterpret_cast<char*>(buf), reinterpret_cast<char*>(buf + numRead)));
@@ -392,7 +392,7 @@ std::shared_ptr<Document> InputBuffer::ReadDocument(const char* url, const char*
 
 	this->close();
 
-	::Platform::String^ nstr = ref new String(str.data(), str.length());
+	::Platform::String^ nstr = ref new String(str.data(), static_cast<unsigned int>(str.length()));
 	str.clear();		// watch your memory
 	XmlDocument^ native = ref new XmlDocument;
 	native->LoadXml(nstr);

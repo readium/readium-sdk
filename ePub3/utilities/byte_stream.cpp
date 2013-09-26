@@ -669,8 +669,11 @@ ByteStream::size_type FileByteStream::Seek(size_type by, std::ios::seekdir dir)
             whence = SEEK_END;
             break;
     }
-    
+#if EPUB_OS(WINDOWS)
+	::fseek(_file, static_cast<long>(by), whence);
+#else
     ::fseek(_file, by, whence);
+#endif
     return ::ftell(_file);
 }
 ByteStream::size_type FileByteStream::Position() const

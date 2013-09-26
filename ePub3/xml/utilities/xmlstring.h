@@ -68,7 +68,7 @@ public:
 	string(const Platform::StringReference& sref) : _Base(sref.Data(), sref.Length()) {}
 	~string() { _Base::~_Base(); }
 
-	::Platform::String^ win_str() const { return ref new ::Platform::String(data(), length()); }
+	::Platform::String^ win_str() const { return ref new ::Platform::String(data(), static_cast<unsigned int>(length())); }
 	operator ::Platform::String^() const { return win_str(); }
 	operator ::Platform::StringReference() const { return ::Platform::StringReference(data(), length()); }
 

@@ -100,8 +100,8 @@ zip_fread(struct zip_file *zf, void *outbuf, size_t toread)
 	    if (len >= zf->bytes_left || len >= toread) {
 		if (zf->flags & ZIP_ZF_CRC)
 		    zf->crc = crc32(zf->crc, (Bytef *)outbuf, (unsigned int)len);
-		zf->bytes_left -= len;
-	        return len;
+		zf->bytes_left -= (unsigned long)len;
+	        return (ssize_t)len;
 	    }
 	    break;
 

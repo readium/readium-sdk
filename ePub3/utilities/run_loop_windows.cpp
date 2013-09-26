@@ -194,7 +194,7 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
         return ExitReason::RunStopped;
 
     _resetHandles = false;
-    DWORD handleCount = _timers.size()+_sources.size()+1;
+    DWORD handleCount = static_cast<DWORD>(_timers.size()+_sources.size()+1);
     if ( handleCount == 1 )
         return ExitReason::RunFinished;
     
@@ -219,7 +219,7 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
         if ( _resetHandles.exchange(false) )
         {
             delete [] pHandles;
-            handleCount = _timers.size()+_sources.size()+1;
+            handleCount = static_cast<DWORD>(_timers.size()+_sources.size()+1);
             if ( handleCount == 1 )
             {
                 reason = ExitReason::RunFinished;
