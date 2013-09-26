@@ -28,7 +28,7 @@
 #include <ePub3/property_holder.h>
 #include <ePub3/utilities/xml_identifiable.h>
 #include <map>
-#include <libxml/tree.h>
+#include <ePub3/xml/node.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -268,7 +268,7 @@ public:
     FORCE_INLINE
     PackagePtr                  GetPackage()                        const   { return Owner(); }
     
-    virtual bool                ParseXML(xmlNodePtr node);
+	virtual bool                ParseXML(shared_ptr<xml::Node> node);
 
     EPUB3_EXPORT
     string                      AbsolutePath()                      const;
@@ -297,7 +297,7 @@ public:
     
     // one-shot XML document loader
     EPUB3_EXPORT
-    xmlDocPtr                   ReferencedDocument()                const;
+	shared_ptr<xml::Document>	ReferencedDocument()                const;
     
     // stream the data
     EPUB3_EXPORT

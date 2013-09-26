@@ -42,6 +42,9 @@ public:
     
     operator ArchiveReader* () { return _reader.get(); }
 	operator const ArchiveReader* () const { return _reader.get(); }
+
+	virtual size_t size() const { return _reader->total_size(); }
+	virtual size_t offset() const { return _reader->position(); }
     
 protected:
     std::unique_ptr<ArchiveReader>  _reader;
@@ -65,6 +68,9 @@ public:
     
     operator ArchiveWriter* () { return _writer.get(); }
 	operator const ArchiveWriter* () { return _writer.get(); }
+
+	virtual size_t size() const { return _writer->total_size(); }
+	virtual size_t offset() const { return _writer->position(); }
     
 protected:
     unique_ptr<ArchiveWriter>   _writer;

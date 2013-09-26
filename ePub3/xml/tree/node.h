@@ -206,15 +206,19 @@ public:
     std::shared_ptr<const class Document> Document() const;
     
     std::shared_ptr<Element> Parent();
-    std::shared_ptr<Node> NextSibling();
+	std::shared_ptr<Node> NextSibling();
+	std::shared_ptr<Node> NextElementSibling();
 	std::shared_ptr<Node> PreviousSibling();
 	std::shared_ptr<Node> FirstChild(const string & filterByName = string());
+	std::shared_ptr<Node> FirstElementChild();
     NodeList Children(const string & filterByName = string());
     
 	std::shared_ptr<const Element> Parent() const;
 	std::shared_ptr<const Node> NextSibling() const;
+	std::shared_ptr<const Node> NextElementSibling() const;
 	std::shared_ptr<const Node> PreviousSibling() const;
 	std::shared_ptr<const Node> FirstChild(const string & filterByName = string()) const;
+	std::shared_ptr<const Node> FirstElementChild() const;
     const NodeList Children(const string & filterByName = string()) const;
 #if EPUB_ENABLE(XML_BUILDER)
     Element * AddChild(const string & name, const string & prefix = string());

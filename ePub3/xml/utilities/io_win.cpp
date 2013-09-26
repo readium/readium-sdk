@@ -364,7 +364,7 @@ int InputBuffer::close_cb(void *context)
 	InputBuffer * p = static_cast<InputBuffer*>(context);
 	return (p->close() ? 0 : -1);
 }
-Document* InputBuffer::ReadDocument(const char* url, const char* encoding, int options)
+std::shared_ptr<Document> InputBuffer::ReadDocument(const char* url, const char* encoding, int options)
 {
 #if 0
 	std::wstring wstr(std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(url));
@@ -396,7 +396,7 @@ Document* InputBuffer::ReadDocument(const char* url, const char* encoding, int o
 	str.clear();		// watch your memory
 	XmlDocument^ native = ref new XmlDocument;
 	native->LoadXml(nstr);
-	return new Document(native);
+	return std::make_shared<Document>(native);
 #endif
 }
 
@@ -406,7 +406,7 @@ OutputBuffer::OutputBuffer(const std::string & encoding)
 }
 OutputBuffer::~OutputBuffer()
 {
-	close();
+	this->close();
 	_store = nullptr;
 }
 int OutputBuffer::write_cb(void *context, const char *buffer, int len)
@@ -419,15 +419,15 @@ int OutputBuffer::close_cb(void *context)
 	OutputBuffer * p = reinterpret_cast<OutputBuffer*>(context);
 	return (p->close() ? 0 : -1);
 }
-int OutputBuffer::WriteDocument(const Document* doc)
+int OutputBuffer::WriteDocument(std::shared_ptr<const Document> doc)
 {
 #if 0
 	auto task = doc->xml()->SaveToFileAsync(_store);
 	return 1;	// meh
 #else
 	String^ xmlstr = doc->xml()->GetXml();
-	const wchar_t* wbuf = xmlstr->Data;
-	size_t len = xmlstr->Length;
+	const wchar_t* wbuf = xmlstr->Data();
+	size_t len = xmlstr->Length();
 
 	using Converter = std::wstring_convert<std::codecvt_utf8<wchar_t>>;
 	std::string utf8(Converter().to_bytes(wbuf, wbuf + len));
