@@ -63,7 +63,7 @@ public:
     virtual         ~PropertyExtension() {}
     
     EPUB3_EXPORT
-    bool            ParseMetaElement(xml::Node* node);
+    bool            ParseMetaElement(shared_ptr<xml::Node> node);
     
     ///
     /// Retrieves the extension's property IRI, declaring its type.

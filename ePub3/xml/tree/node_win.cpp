@@ -406,6 +406,19 @@ std::shared_ptr<const Node> Node::NextSibling() const
 {
 	return const_cast<Node*>(this)->NextSibling();
 }
+std::shared_ptr<Node> Node::NextElementSibling()
+{
+	auto next = _xml->NextSibling;
+	while (next != nullptr && next->NodeType != ::Windows::Data::Xml::Dom::NodeType::ElementNode)
+		next = next->NextSibling;
+	if (next == nullptr)
+		return nullptr;
+	return NewNode(next);
+}
+std::shared_ptr<const Node> Node::NextElementSibling() const
+{
+	return const_cast<Node*>(this)->NextElementSibling();
+}
 std::shared_ptr<Node> Node::PreviousSibling()
 {
 	if (_xml->PreviousSibling == nullptr)
@@ -437,6 +450,19 @@ std::shared_ptr<Node> Node::FirstChild(const string & filterByName)
 std::shared_ptr<const Node> Node::FirstChild(const string & filterByName) const
 {
 	return const_cast<Node*>(this)->FirstChild(filterByName);
+}
+std::shared_ptr<Node> Node::FirstElementChild()
+{
+	auto child = _xml->FirstChild;
+	while (child != nullptr && child->NodeType != ::Windows::Data::Xml::Dom::NodeType::ElementNode)
+		child = child->NextSibling;
+	if (child == nullptr)
+		return nullptr;
+	return NewNode(child);
+}
+std::shared_ptr<const Node> Node::FirstElementChild() const
+{
+	return const_cast<Node*>(this)->FirstElementChild();
 }
 Node::NodeList Node::Children(const string & filterByName)
 {

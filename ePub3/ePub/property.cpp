@@ -186,15 +186,15 @@ DCType DCTypeFromIRI(const IRI& iri)
     return found->second;
 }
 
-bool Property::ParseMetaElement(xml::Node* node)
+bool Property::ParseMetaElement(shared_ptr<xml::Node> node)
 {
-    if ( node == nullptr )
+    if ( !bool(node) )
         return false;
     
-    if ( node->Type() != xml::NodeType::Element )
+    if ( !node->IsElementNode() )
         return false;
     
-    xml::Namespace* ns = node->Namespace();
+    auto ns = node->Namespace();
     if ( ns != nullptr && ns->URI() == DCMES_uri )
     {
         auto found = NameToIDMap.find(node->Name());

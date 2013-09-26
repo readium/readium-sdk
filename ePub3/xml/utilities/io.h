@@ -55,7 +55,7 @@ public:
 	::Windows::Storage::IStorageFile^ File() { return _store; }
 	operator ::Windows::Storage::IStorageFile^() { return _store; }
 
-	Document* ReadDocument(const char* url, const char* encoding, int options);
+	std::shared_ptr<Document> ReadDocument(const char* url, const char* encoding, int options);
 #endif
 
 	virtual size_t size() const = 0;
@@ -100,7 +100,7 @@ public:
 	::Windows::Storage::IStorageFile^ File() { return _store; }
 	operator ::Windows::Storage::IStorageFile^() { return _store; }
 
-	int WriteDocument(const Document* doc);
+	int WriteDocument(std::shared_ptr<const Document> doc);
 #endif
 	virtual size_t size() const = 0;
 	virtual size_t offset() const = 0;
@@ -113,7 +113,7 @@ protected:
 #endif
     
     virtual bool write(const uint8_t * buf, size_t len) = 0;
-    virtual bool close() = 0;
+	virtual bool close() { return false; }
     
     static int write_cb(void * context, const char * buffer, int len);
     static int close_cb(void * context);

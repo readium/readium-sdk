@@ -377,7 +377,7 @@ bool CFI::CompileComponentsToList(const StringList &strings, ComponentList *list
             list->emplace_back(str);
         }
     }
-    catch (const epub_spec_error& exc)
+    catch (const epub_spec_error&)
     {
         // re-throw any ePub spec errors
         throw;

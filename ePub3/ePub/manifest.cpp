@@ -156,7 +156,7 @@ ManifestItem::ManifestItem(ManifestItem&& o) : OwnedBy(std::move(o)), PropertyHo
 ManifestItem::~ManifestItem()
 {
 }
-bool ManifestItem::ParseXML(xmlNodePtr node)
+bool ManifestItem::ParseXML(shared_ptr<xml::Node> node)
 {
     SetXMLIdentifier(_getProp(node, "id"));
     if ( XMLIdentifier().empty() )
@@ -220,7 +220,7 @@ EncryptionInfoPtr ManifestItem::GetEncryptionInfo() const
     ContainerPtr container = GetPackage()->GetContainer();
     return container->EncryptionInfoForPath(AbsolutePath());
 }
-xmlDocPtr ManifestItem::ReferencedDocument() const
+shared_ptr<xml::Document> ManifestItem::ReferencedDocument() const
 {
     // TODO: handle remote URLs
     string path(BaseHref());
@@ -233,13 +233,16 @@ xmlDocPtr ManifestItem::ReferencedDocument() const
     if ( !reader )
         return nullptr;
     
-    xmlDocPtr result = nullptr;
+    shared_ptr<xml::Document> result(nullptr);
+#if EPUB_USE(LIBXML2)
     int flags = XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR;
     if ( _mediaType == "text/html" )
         result = reader->htmlReadDocument(path.c_str(), "utf-8", flags);
     else
         result = reader->xmlReadDocument(path.c_str(), "utf-8", flags);
-    
+#elif EPUB_USE(WIN_XML)
+	result = reader->ReadDocument(path.c_str(), "utf-8", 0);
+#endif
     return result;
 }
 unique_ptr<ByteStream> ManifestItem::Reader() const

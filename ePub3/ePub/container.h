@@ -27,8 +27,7 @@
 #include <ePub3/package.h>
 #include <ePub3/utilities/utfstring.h>
 #include <ePub3/utilities/owned_by.h>
-#include <libxml/tree.h>
-#include <libxml/xpath.h>
+#include <ePub3/xml/node.h>
 #include <vector>
 
 EPUB3_BEGIN_NAMESPACE
@@ -135,14 +134,14 @@ public:
     
     
 protected:
-    ArchivePtr          _archive;
-    xmlDocPtr           _ocf;
-    PackageList         _packages;
-    EncryptionList      _encryption;
+    ArchivePtr						_archive;
+    shared_ptr<xml::Document>		_ocf;
+    PackageList						_packages;
+    EncryptionList					_encryption;
     
     ///
     /// Parses the file META-INF/encryption.xml into an EncryptionList.
-    void            LoadEncryption();
+    void							LoadEncryption();
 };
 
 EPUB3_END_NAMESPACE

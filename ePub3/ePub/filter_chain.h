@@ -32,9 +32,12 @@ public:
 public:
     FilterChain(FilterList filters) : _filters(filters) {}
 #if EPUB_COMPILER_SUPPORTS(CXX_DEFAULTED_FUNCTIONS)
-    FilterChain(FilterChain&& o)            = default;
+	FilterChain(FilterChain&& o) : _filters(std::move(o._filters)) {}
     virtual ~FilterChain()                  = default;
-    FilterChain& operator=(FilterChain&& o) = default;
+	FilterChain& operator=(FilterChain&& o) {
+		_filters = std::move(o._filters);
+		return *this;
+	}
 #else
     FilterChain(FilterChain&& o) : _filters(std::move(o._filters)) {}
     virtual ~FilterChain() {}

@@ -70,7 +70,7 @@ public:
      @see http://www.w3.org/TR/xmlenc-core1/#sec-EncryptedData
      */
     EPUB3_EXPORT
-    bool            ParseXML(xmlNodePtr node);
+    bool            ParseXML(shared_ptr<xml::Node> node);
     
     ///
     /// Returns an algorithm URI as defined in XML-ENC or OCF.

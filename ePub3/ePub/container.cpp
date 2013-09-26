@@ -26,6 +26,7 @@
 #include "xpath_wrangler.h"
 #include "byte_stream.h"
 #include "filter_manager.h"
+#include <ePub3/xml/document.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -44,8 +45,6 @@ Container::Container(Container&& o) : _archive(std::move(o._archive)), _ocf(o._o
 }
 Container::~Container()
 {
-    if ( _ocf != nullptr )
-        xmlFreeDoc(_ocf);
 }
 bool Container::Open(const string& path)
 {
@@ -56,8 +55,12 @@ bool Container::Open(const string& path)
     // TODO: Initialize lazily? Doing so would make initialization faster, but require
     // PackageLocations() to become non-const, like Packages().
     ArchiveXmlReader reader(_archive->ReaderAtPath(gContainerFilePath));
+#if EPUB_USE(LIBXML2)
     _ocf = reader.xmlReadDocument(gContainerFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
-    if ( _ocf == nullptr )
+#else
+	_ocf = reader.ReadDocument(gContainerFilePath, nullptr, 0);
+#endif
+    if ( !bool(_ocf) )
         return false;
 
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
@@ -67,26 +70,23 @@ bool Container::Open(const string& path)
     __ns["ocf"] = OCFNamespaceURI;
     XPathWrangler xpath(_ocf, __ns);
 #endif
-    xmlNodeSetPtr nodes = xpath.Nodes(reinterpret_cast<const xmlChar*>(gRootfilesXPath));
+    xml::NodeSet nodes = xpath.Nodes(gRootfilesXPath);
     
-    if ( nodes == nullptr || nodes->nodeNr == 0 )
+    if ( nodes.empty() )
         return false;
     
     LoadEncryption();
     
-    for ( int i = 0; i < nodes->nodeNr; i++ )
+    for ( auto n : nodes )
     {
-        xmlNodePtr n = nodes->nodeTab[i];
+        string type = _getProp(n, "media-type");
         
-        const xmlChar * _type = xmlGetProp(n, reinterpret_cast<const xmlChar*>("media-type"));
-        std::string type((_type == nullptr ? "" : reinterpret_cast<const char*>(_type)));
-        
-        const xmlChar * _path = xmlGetProp(n, reinterpret_cast<const xmlChar*>("full-path"));
-        if ( _path == nullptr )
+        string path = _getProp(n, "full-path");
+        if ( path.empty() )
             continue;
         
         auto pkg = Package::New(Ptr(), type);
-        if ( pkg->Open(_path) )
+        if ( pkg->Open(path) )
             _packages.push_back(pkg);
     }
     
@@ -151,8 +151,12 @@ void Container::LoadEncryption()
         return;
     
     ArchiveXmlReader reader(std::move(pZipReader));
-    xmlDocPtr enc = reader.xmlReadDocument(gEncryptionFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
-    if ( enc == nullptr )
+#if EPUB_USE(LIBXML2)
+    xml::Document enc = std::make_shared<xml::Document>(reader.xmlReadDocument(gEncryptionFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR));
+#elif EPUB_USE(WIN_XML)
+	auto enc = reader.ReadDocument(gEncryptionFilePath, nullptr, 0);
+#endif
+    if ( !bool(enc) )
         return;
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     XPathWrangler xpath(enc, {{"enc", XMLENCNamespaceURI}, {"ocf", OCFNamespaceURI}});
@@ -162,25 +166,20 @@ void Container::LoadEncryption()
     __ns["enc"] = XMLENCNamespaceURI;
     XPathWrangler xpath(enc, __ns);
 #endif
-    xmlNodeSetPtr nodes = xpath.Nodes("/ocf:encryption/enc:EncryptedData");
-    if ( nodes == nullptr || nodes->nodeNr == 0 )
+    xml::NodeSet nodes = xpath.Nodes("/ocf:encryption/enc:EncryptedData");
+    if ( nodes.empty() )
     {
-        xmlChar* mem = nullptr;
-        int size = 0;
-        xmlDocDumpMemory(enc, &mem, &size);
-        printf("%s\n", reinterpret_cast<char*>(mem));
-        xmlFree(mem);
+		xml::string str(enc->XMLString());
+		printf("%s\n", enc->XMLString().utf8());
         return;     // should be a hard error?
     }
     
-    for ( int i = 0; i < nodes->nodeNr; i++ )
+    for ( auto node : nodes )
     {
         auto encPtr = EncryptionInfo::New(Ptr());
-        if ( encPtr->ParseXML(nodes->nodeTab[i]) )
+        if ( encPtr->ParseXML(node) )
             _encryption.push_back(encPtr);
     }
-    
-    xmlXPathFreeNodeSet(nodes);
 }
 shared_ptr<EncryptionInfo> Container::EncryptionInfoForPath(const string &path) const
 {

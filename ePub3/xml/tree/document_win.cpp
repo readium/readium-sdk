@@ -233,5 +233,9 @@ string Document::ContentOfNamedEntity(const string &name) const
 		return string();
 	return string(entity->NodeValue->ToString());
 }
+void Document::WriteXML(string& str) const
+{
+	str = string(_xml->GetXml());
+}
 
 EPUB3_XML_END_NAMESPACE
