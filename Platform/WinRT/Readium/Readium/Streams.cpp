@@ -58,7 +58,7 @@ IAsyncOperationWithProgress<IBuffer^, unsigned int>^ Stream::ReadAsync(IBuffer^ 
 
 		do
 		{
-			numRead = _native->ReadBytes(bytes, toRead);
+			numRead = static_cast<ssize_t>(_native->ReadBytes(bytes, toRead));
 			if (numRead < 0)
 				break;
 
@@ -98,7 +98,7 @@ IAsyncOperationWithProgress<unsigned int, unsigned int>^ Stream::WriteAsync(IBuf
 
 		do
 		{
-			numWritten = _native->WriteBytes(bytes, toWrite);
+			numWritten = static_cast<ssize_t>(_native->WriteBytes(bytes, toWrite));
 			if (numWritten < 0)
 				break;
 
@@ -135,7 +135,7 @@ IAsyncOperationWithProgress<IBuffer^, unsigned int>^ RandomAccessStream::ReadAsy
 
 		do
 		{
-			numRead = _native->ReadBytes(bytes, toRead);
+			numRead = static_cast<ssize_t>(_native->ReadBytes(bytes, toRead));
 			if (numRead < 0)
 				break;
 
@@ -175,7 +175,7 @@ IAsyncOperationWithProgress<unsigned int, unsigned int>^ RandomAccessStream::Wri
 
 		do
 		{
-			numWritten = _native->WriteBytes(bytes, toWrite);
+			numWritten = static_cast<ssize_t>(_native->WriteBytes(bytes, toWrite));
 			if (numWritten < 0)
 				break;
 

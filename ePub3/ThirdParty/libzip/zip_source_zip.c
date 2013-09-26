@@ -139,12 +139,12 @@ read_zip(void *state, void *data, size_t len, enum zip_source_cmd cmd)
 	
     case ZIP_SOURCE_READ:
 	if (z->len != -1)
-	    n = len > z->len ? (size_t)z->len : len;
+	    n = len > (size_t)(z->len) ? (ssize_t)z->len : (ssize_t)len;
 	else
-	    n = len;
+	    n = (ssize_t)len;
 	
 
-	if ((i=zip_fread(z->zf, buf, n)) < 0)
+	if ((i=(ssize_t)zip_fread(z->zf, buf, n)) < 0)
 	    return -1;
 
 	if (z->len != -1)
@@ -161,7 +161,7 @@ read_zip(void *state, void *data, size_t len, enum zip_source_cmd cmd)
 	len = sizeof(z->st);
 
 	memcpy(data, &z->st, len);
-	return len;
+	return (ssize_t)len;
 
     case ZIP_SOURCE_ERROR:
 	{

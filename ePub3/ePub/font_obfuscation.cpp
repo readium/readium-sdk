@@ -193,7 +193,7 @@ bool FontObfuscator::BuildKey(ConstContainerPtr container)
     if ( winerr != NO_ERROR )
         _THROW_WIN_ERROR_(winerr);
 #elif EPUB_PLATFORM(WINRT)
-	auto inBuf = _Internal::CreateNativeBuffer(const_cast<char*>(str.data()), str.length());
+	auto inBuf = _Internal::CreateNativeBuffer(const_cast<char*>(str.data()), static_cast<DWORD>(str.length()));
 	auto keyBuf = HashAlgorithmProvider::OpenAlgorithm(HashAlgorithmNames::Sha1)->HashData(inBuf);
 
 	auto rawKeyBuf = _Internal::AccessBuffer(keyBuf);

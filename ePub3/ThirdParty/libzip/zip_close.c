@@ -90,7 +90,9 @@ zip_close(struct zip *za)
     int i, j, error;
     char *temp;
     FILE *out;
+#ifndef _MSC_VER
     mode_t mask;
+#endif
     struct zip_cdir *cd;
     struct zip_dirent de;
     struct filelist *filelist;
@@ -200,7 +202,7 @@ zip_close(struct zip *za)
                 }
                 else {
                     de.filename = strdup(za->cdir->entry[i].filename);
-                    de.filename_len = strlen(de.filename);
+                    de.filename_len = (unsigned short)strlen(de.filename);
                     cd->entry[j].filename = za->cdir->entry[i].filename;
                     cd->entry[j].filename_len = de.filename_len;
                 }
@@ -234,7 +236,7 @@ zip_close(struct zip *za)
                 error = 1;
                 break;
             }
-            de.filename_len = strlen(de.filename);
+            de.filename_len = (unsigned short)strlen(de.filename);
             cd->entry[j].filename = za->entry[i].ch_filename;
             cd->entry[j].filename_len = de.filename_len;
         }
@@ -506,7 +508,7 @@ add_data_uncomp(struct zip *za, zip_source_callback cb, void *ud,
 	
 	    zstr.next_out = (Bytef *)b2;
 	    zstr.avail_out = sizeof(b2);
-	    st->comp_size += n2;
+	    st->comp_size += (off_t)n2;
 	}
 
 	if (ret == Z_STREAM_END) {
@@ -549,7 +551,7 @@ copy_data(FILE *fs, off_t len, FILE *ft, struct zip_error *error)
 
     while (len > 0) {
 	nn = len > sizeof(buf) ? sizeof(buf) : (size_t)len;
-	if ((n=fread(buf, 1, nn, fs)) < 0) {
+	if ((n=(ssize_t)fread(buf, 1, nn, fs)) < 0) {
 	    _zip_error_set(error, ZIP_ER_READ, errno);
 	    return -1;
 	}

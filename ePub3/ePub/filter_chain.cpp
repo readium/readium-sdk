@@ -193,11 +193,11 @@ void FilterChain::ChainLinkProcessor::ScheduleProcessor(RunLoopPtr runLoop)
 ssize_t FilterChain::ChainLinkProcessor::FunnelBytes()
 {
     uint8_t buf[ASYNC_BUF_SIZE];
-    ssize_t bytesToMove = std::min(_input->BytesAvailable(), _output->SpaceAvailable());
+    size_t bytesToMove = std::min(_input->BytesAvailable(), _output->SpaceAvailable());
     
     while ( bytesToMove > 0 )
     {
-        ssize_t thisChunk = std::min(ssize_t(ASYNC_BUF_SIZE), bytesToMove);
+        size_t thisChunk = std::min(size_t(ASYNC_BUF_SIZE), bytesToMove);
         thisChunk = _input->ReadBytes(buf, thisChunk);      // consumes read bytes from the buffer
         
         if ( _filter->RequiresCompleteData() )
@@ -218,7 +218,7 @@ ssize_t FilterChain::ChainLinkProcessor::FunnelBytes()
         bytesToMove -= thisChunk;
     }
     
-    return bytesToMove;
+    return (ssize_t)bytesToMove;
 }
 
 EPUB3_END_NAMESPACE

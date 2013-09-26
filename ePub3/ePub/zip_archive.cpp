@@ -312,7 +312,7 @@ ssize_t ZipWriter::_source_callback(void *state, void *data, size_t len, enum zi
             struct zip_stat *st = reinterpret_cast<struct zip_stat*>(data);
             zip_stat_init(st);
             st->mtime = ::time(NULL);
-            st->size = writer->_data.Size();
+            st->size = static_cast<off_t>(writer->_data.Size());
             st->comp_method = (writer->_compressed ? ZIP_CM_DEFLATE : ZIP_CM_STORE);
             r = sizeof(struct zip_stat);
             break;
@@ -329,7 +329,7 @@ ssize_t ZipWriter::_source_callback(void *state, void *data, size_t len, enum zi
         }
         case ZIP_SOURCE_READ:
         {
-            r = writer->_data.Read(data, len);
+            r = static_cast<ssize_t>(writer->_data.Read(data, len));
             break;
         }
         case ZIP_SOURCE_FREE:
