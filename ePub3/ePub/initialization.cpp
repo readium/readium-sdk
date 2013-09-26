@@ -7,6 +7,7 @@
 //
 
 #include "initialization.h"
+#include <mutex>
 #include <ePub3/archive.h>
 #include <ePub3/filter_manager_impl.h>
 #include <ePub3/font_obfuscation.h>

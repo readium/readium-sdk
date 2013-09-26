@@ -563,7 +563,7 @@ static const char* fmode_from_openmode(std::ios::openmode mode)
 	return __mdstr;
 }
 
-FileByteStream::FileByteStream(const string& path, std::ios::openmode mode) : ByteStream(), _file(nullptr)
+FileByteStream::FileByteStream(const string& path, std::ios::openmode mode) : SeekableByteStream(), _file(nullptr)
 {
     Open(path, mode);
 }
@@ -723,7 +723,7 @@ std::shared_ptr<SeekableByteStream> FileByteStream::Clone() const
 #pragma mark -
 #endif
 
-ZipFileByteStream::ZipFileByteStream(struct zip* archive, const string& path, int flags) : ByteStream(), _file(nullptr)
+ZipFileByteStream::ZipFileByteStream(struct zip* archive, const string& path, int flags) : SeekableByteStream(), _file(nullptr)
 {
     Open(archive, path, flags);
 }
@@ -852,7 +852,11 @@ std::shared_ptr<SeekableByteStream> AsyncFileByteStream::Clone() const
 #endif
 	if (newFile == nullptr)
 	{
+#if EPUB_OS(WINDOWS)
+		_close(fd);
+#else
 		close(fd);
+#endif
 		return nullptr;
 	}
 

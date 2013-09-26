@@ -37,7 +37,7 @@ SpineItem::SpineItem(SpineItem&& o) : OwnedBy(std::move(o)), PropertyHolder(std:
 SpineItem::~SpineItem()
 {
 }
-bool SpineItem::ParseXML(xmlNodePtr node)
+bool SpineItem::ParseXML(shared_ptr<xml::Node> node)
 {
     SetXMLIdentifier(_getProp(node, "id"));
     _idref = _getProp(node, "idref");

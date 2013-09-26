@@ -92,7 +92,7 @@ void FilterChain::ChainLinkProcessor::ScheduleProcessor(RunLoopPtr runLoop)
     if ( _filter->RequiresCompleteData() )
         _collectionBuffer.SetUsesSecureErasure();
     
-    std::weak_ptr<typeof(*this)> weakSelf(Ptr());
+    std::weak_ptr<ChainLinkProcessor> weakSelf(Ptr());
     _input->SetEventHandler([this, weakSelf](AsyncEvent evt, AsyncByteStream* stream) {
         // we use this variable ONLY to ensure that the 'this' ptr is still valid
         auto strongSelf = weakSelf.lock();

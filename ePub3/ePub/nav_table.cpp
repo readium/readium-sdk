@@ -43,7 +43,7 @@ NavigationTable::NavigationTable(shared_ptr<Package>& owner, const string& sourc
     : OwnedBy(owner), _type(), _title(), _sourceHref(sourceHref)
 {
 }
-bool NavigationTable::ParseXML(xml::Node* node)
+bool NavigationTable::ParseXML(shared_ptr<xml::Node> node)
 {
     if ( node == nullptr )
         return false;
@@ -57,9 +57,7 @@ bool NavigationTable::ParseXML(xml::Node* node)
         return false;
 
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-	xml::Document* tmp = node->Document();
-    XPathWrangler xpath(tmp, {{"epub", ePub3NamespaceURI}}); // goddamn I love C++11 initializer list constructors
-	delete tmp;
+    XPathWrangler xpath(node->Document(), {{"epub", ePub3NamespaceURI}}); // goddamn I love C++11 initializer list constructors
 #else
     XPathWrangler::NamespaceList __ns;
     __ns["epub"] = ePub3NamespaceURI;
@@ -86,10 +84,10 @@ bool NavigationTable::ParseXML(xml::Node* node)
     return true;
 }
 
-void NavigationTable::LoadChildElements(shared_ptr<NavigationElement> pElement, xmlNodePtr olNode)
+void NavigationTable::LoadChildElements(shared_ptr<NavigationElement> pElement, shared_ptr<xml::Node> olNode)
 {
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-    XPathWrangler xpath(olNode->doc, {{"epub", ePub3NamespaceURI}});
+    XPathWrangler xpath(olNode->Document(), {{"epub", ePub3NamespaceURI}});
 #else
     XPathWrangler::NamespaceList __ns;
     __ns["ePub3"] = ePub3NamespaceURI;
@@ -97,47 +95,43 @@ void NavigationTable::LoadChildElements(shared_ptr<NavigationElement> pElement, 
 #endif
     xpath.NameDefaultNamespace("html");
 
-    xmlNodeSetPtr liNodes = xpath.Nodes("./html:li", olNode);
+    xml::NodeSet liNodes = xpath.Nodes("./html:li", olNode);
 
-    for ( int i = 0; i < liNodes->nodeNr; i++ )
+    for ( auto liNode : liNodes )
     {
-        auto childElement = BuildNavigationPoint(liNodes->nodeTab[i]);
+        auto childElement = BuildNavigationPoint(liNode);
         if ( childElement )
         {
             pElement->AppendChild(childElement);
         }
     }
-
-    xmlXPathFreeNodeSet(liNodes);
 }
 
-shared_ptr<NavigationElement> NavigationTable::BuildNavigationPoint(xmlNodePtr liNode)
+shared_ptr<NavigationElement> NavigationTable::BuildNavigationPoint(shared_ptr<xml::Node> liNode)
 {
     auto elementPtr = CastPtr<NavigationElement>();
-    xmlNodePtr liChild = liNode->children;
+    auto liChild = liNode->FirstChild();
 
-    if(liChild == nullptr)
-    {
-        return nullptr;
-    }
+	if ( !bool(liChild) )
+		return nullptr;
 
     auto point = NavigationPoint::New(elementPtr);
 
-    for ( ; liChild != nullptr; liChild = liChild->next )
+    for ( ; bool(liChild); liChild = liChild->NextSibling() )
     {
-        if ( liChild->type != XML_ELEMENT_NODE )
+        if ( !liChild->IsElementNode() )
             continue;
 
-        std::string cName(reinterpret_cast<const char*>(liChild->name));
+        string cName(liChild->Name());
 
         if ( cName == "a" )
         {
-            point->SetTitle(reinterpret_cast<const char*>(xmlNodeGetContent(liChild)));
+            point->SetTitle(liChild->StringValue());
             point->SetContent(_getProp(liChild, "href"));
         }
         else if( cName == "span" )
         {
-            point->SetTitle(xmlNodeGetContent(liChild));
+            point->SetTitle(liChild->StringValue());
         }
         else if( cName == "ol" )
         {

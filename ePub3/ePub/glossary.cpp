@@ -25,7 +25,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-Glossary::Glossary(xmlNodePtr node) : _ident("Glossary")
+Glossary::Glossary(shared_ptr<xml::Node> node, PackagePtr pkg) : OwnedBy(pkg), _ident("Glossary")
 {
     Parse(node);
 }
@@ -46,16 +46,16 @@ bool Glossary::AddDefinition(const Term &term, Definition &&definition)
     _lookup[term.tolower()] = std::make_pair(term, definition);
     return true;
 }
-bool Glossary::Parse(xmlNodePtr node)
+bool Glossary::Parse(shared_ptr<xml::Node> node)
 {
     // node names
-    static const xmlChar* dlName = (const xmlChar*)"dl";
-    static const xmlChar* dtName = (const xmlChar*)"dt";
-    static const xmlChar* ddName = (const xmlChar*)"dd";
+    static const xml::string dlName((const char*)"dl");
+	static const xml::string dtName((const char*)"dt");
+	static const xml::string ddName((const char*)"dd");
     
     if ( node == nullptr )
         return false;
-    if ( xmlStrcasecmp(node->name, dlName) != 0 )
+    if ( node->Name() == dlName )
         HandleError(EPUBError::GlossaryInvalidRootNode);
     if ( _getProp(node, "type", ePub3NamespaceURI) != "glossary" )
         HandleError(EPUBError::NavElementUnexpectedType);
@@ -64,19 +64,19 @@ bool Glossary::Parse(xmlNodePtr node)
     // NB: there can be multiple terms for a single definition
     std::list<Term> terms;
     
-    for ( xmlNodePtr child = node->children; child != nullptr; child = child->next )
+	for (shared_ptr<xml::Node> child = node->FirstChild(); bool(child); child = child->NextSibling())
     {
-        if ( child->type != XML_ELEMENT_NODE )
+        if ( !child->IsElementNode() )
             continue;
         
-        if ( xmlStrEqual(child->name, dtName) )
+        if ( child->Name() == dtName )
         {
-            terms.push_back(reinterpret_cast<const char*>(xmlNodeGetContent(child)));
+            terms.push_back(child->StringValue());
         }
-        else if ( xmlStrEqual(child->name, ddName) )
+        else if ( child->Name() == ddName )
         {
             // a definition: associates with all terms in the list
-            Definition def(reinterpret_cast<const char*>(xmlNodeGetContent(child)));
+            Definition def(child->StringValue());
             for ( auto term : terms )
             {
                 _lookup[term.tolower()] = std::make_pair(term, def);

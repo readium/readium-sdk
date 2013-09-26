@@ -35,36 +35,30 @@
 #include <sstream>
 #include <list>
 #include REGEX_INCLUDE
-#include <libxml/xpathInternals.h>
-//#include "media-overlays_smil_utils.h"
-#include "media-overlays_smil_model.h"
-
-void PrintNodeSet(xmlNodeSetPtr nodeSet)
-{
-    xmlBufferPtr buf = xmlBufferCreate();
-    for ( int i = 0; i < nodeSet->nodeNr; i++ )
-    {
-        xmlNodePtr node = nodeSet->nodeTab[i];
-        fprintf(stderr, "Node %02d: ", i);
-        
-        if ( node == nullptr )
-        {
-            fprintf(stderr, "[nullptr]");
-        }
-        else
-        {
-            xmlNodeDump(buf, node->doc, node, 0, 0);
-            fprintf(stderr, "%s", reinterpret_cast<const char*>(xmlBufferContent(buf)));
-            xmlBufferEmpty(buf);
-        }
-        
-        fprintf(stderr, "\n");
-    }
-    
-    xmlBufferFree(buf);
-}
+#include <ePub3/xml/document.h>
+#include <ePub3/xml/element.h>
 
 EPUB3_BEGIN_NAMESPACE
+
+void PrintNodeSet(xml::NodeSet& nodeSet)
+{
+	for (decltype(nodeSet.size()) i = 0; i < nodeSet.size(); i++)
+	{
+		auto node = nodeSet[i];
+		fprintf(stderr, "Node %02d: ", i);
+
+		if ( !bool(node) )
+		{
+			fprintf(stderr, "[nullptr]");
+		}
+		else
+		{
+			fprintf(stderr, "%s", node->XMLString().utf8());
+		}
+
+		fprintf(stderr, "\n");
+	}
+}
 
 #if EPUB_COMPILER_SUPPORTS(CXX_USER_LITERALS)
 static const xmlChar * OPFNamespace = "http://www.idpf.org/2007/opf"_xml;
@@ -83,22 +77,23 @@ PackageBase::PackageBase(const shared_ptr<Container>& owner, const string& type)
     if ( !_archive )
         throw std::invalid_argument("Owner doesn't have an archive!");
 }
-PackageBase::PackageBase(PackageBase&& o) : _archive(o._archive), _opf(o._opf), _pathBase(std::move(o._pathBase)), _type(std::move(o._type)), _manifest(std::move(o._manifest)), _spine(std::move(o._spine))
+PackageBase::PackageBase(PackageBase&& o) : _archive(o._archive), _opf(std::move(o._opf)), _pathBase(std::move(o._pathBase)), _type(std::move(o._type)), _manifest(std::move(o._manifest)), _spine(std::move(o._spine))
 {
     o._archive = nullptr;
-    o._opf = nullptr;
 }
 PackageBase::~PackageBase()
 {
     // our Container owns the archive
-    if ( _opf != nullptr )
-        xmlFreeDoc(_opf);
 }
 bool PackageBase::Open(const string& path)
 {
     ArchiveXmlReader reader(_archive->ReaderAtPath(path.stl_str()));
-    _opf = reader.xmlReadDocument(path.c_str(), nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
-    if ( _opf == nullptr )
+#if EPUB_USE(LIBXML2)
+    _opf = std::make_shared<xml::Document>(reader.xmlReadDocument(path.c_str(), nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR));
+#elif EPUB_USE(WIN_XML)
+	_opf = reader.ReadDocument(path.c_str(), nullptr, 0);
+#endif
+    if ( !bool(_opf) )
     {
         HandleError(EPUBError::OCFInvalidRootfileURL, _Str(__PRETTY_FUNCTION__, ": No OPF file at ", path.stl_str()));
         return false;
@@ -210,8 +205,8 @@ NavigationList PackageBase::NavTablesFromManifestItem(shared_ptr<PackageBase> ow
     if ( pItem == nullptr )
         return NavigationList();
     
-    xmlDocPtr doc = pItem->ReferencedDocument();
-    if ( doc == nullptr )
+    auto doc = pItem->ReferencedDocument();
+    if ( !bool(doc) )
         return NavigationList();
     
     // find each <nav> node
@@ -224,21 +219,23 @@ NavigationList PackageBase::NavTablesFromManifestItem(shared_ptr<PackageBase> ow
 #endif
     xpath.NameDefaultNamespace("html");
     
-    xmlNodeSetPtr nodes = xpath.Nodes("//html:nav");
+    xml::NodeSet nodes = xpath.Nodes("//html:nav");
     
     NavigationList tables;
-    for ( int i = 0; i < nodes->nodeNr; i++ )
+    for ( auto navNode : nodes )
     {
-        xmlNodePtr navNode = nodes->nodeTab[i];
         auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
         if ( navTablePtr->ParseXML(navNode) )
             tables.push_back(navTablePtr);
     }
     
-    xmlXPathFreeNodeSet(nodes);
-    
     // now look for any <dl> nodes with an epub:type of "glossary"
     nodes = xpath.Nodes("//html:dl[epub:type='glossary']");
+	for (auto node : nodes)
+	{
+		auto glosPtr = Glossary::New(node, sharedPkg);
+		tables.push_back(glosPtr);
+	}
     
     return tables;
 }
@@ -254,7 +251,7 @@ bool Package::Open(const string& path)
 {
     return PackageBase::Open(path) && Unpack();
 }
-bool Package::_OpenForTest(xmlDocPtr doc, const string& basePath)
+bool Package::_OpenForTest(shared_ptr<xml::Document> doc, const string& basePath)
 {
     _opf = doc;
     _pathBase = basePath;
@@ -271,8 +268,8 @@ bool Package::Unpack()
     PackagePtr sharedMe = shared_from_this();
     
     // very basic sanity check
-    xmlNodePtr root = xmlDocGetRootElement(_opf);
-    string rootName(reinterpret_cast<const char*>(root->name));
+    auto root = _opf->Root();
+    string rootName(root->Name());
     rootName.tolower();
     
     if ( rootName != "package" )
@@ -288,31 +285,32 @@ bool Package::Unpack()
     InstallPrefixesFromAttributeValue(_getProp(root, "prefix", ePub3NamespaceURI));
     
     // go through children to determine the CFI index of the <spine> tag
-    static const xmlChar* kSpineName = BAD_CAST "spine";
-    static const xmlChar* kManifestName = BAD_CAST "manifest";
-    static const xmlChar* kMetadataName = BAD_CAST "metadata";
+    static xml::string kSpineName((const char*)"spine");
+    static xml::string kManifestName((const char*)"manifest");
+    static xml::string kMetadataName((const char*)"metadata");
+
     _spineCFIIndex = 0;
     uint32_t idx = 0;
-    xmlNodePtr child = xmlFirstElementChild(root);
-    while ( child != nullptr )
+    auto child = root->FirstChild();
+    while ( bool(child) )
     {
         idx += 2;
-        if ( xmlStrEqual(child->name, kSpineName) )
+        if ( child->Name() == kSpineName )
         {
             _spineCFIIndex = idx;
             if ( _spineCFIIndex != 6 )
                 HandleError(EPUBError::OPFSpineOutOfOrder);
         }
-        else if ( xmlStrEqual(child->name, kManifestName) && idx != 4 )
+        else if ( child->Name() == kManifestName && idx != 4 )
         {
             HandleError(EPUBError::OPFManifestOutOfOrder);
         }
-        else if ( xmlStrEqual(child->name, kMetadataName) && idx != 2 )
+        else if ( child->Name() == kMetadataName && idx != 2 )
         {
             HandleError(EPUBError::OPFMetadataOutOfOrder);
         }
         
-        child = xmlNextElementSibling(child);
+		child = child->NextSibling();
     }
     
     if ( _spineCFIIndex == 0 )
@@ -331,28 +329,28 @@ bool Package::Unpack()
 #endif
     
     // simple things: manifest and spine items
-    xmlNodeSetPtr manifestNodes = nullptr;
-    xmlNodeSetPtr spineNodes = nullptr;
+    xml::NodeSet manifestNodes;
+    xml::NodeSet spineNodes;
     
     try
     {
         manifestNodes = xpath.Nodes("/opf:package/opf:manifest/opf:item");
         spineNodes = xpath.Nodes("/opf:package/opf:spine/opf:itemref");
         
-        if ( manifestNodes == nullptr )
+        if ( manifestNodes.empty() )
         {
             HandleError(EPUBError::OPFNoManifestItems);
         }
         
-        if ( spineNodes == nullptr )
+        if ( spineNodes.empty() )
         {
             HandleError(EPUBError::OPFNoSpineItems);
         }
         
-        for ( int i = 0; i < manifestNodes->nodeNr; i++ )
+        for ( auto node : manifestNodes )
         {
             auto p = ManifestItem::New(sharedMe);
-            if ( p->ParseXML(manifestNodes->nodeTab[i]) )
+            if ( p->ParseXML(node) )
             {
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
                 _manifest.emplace(p->Identifier(), p);
@@ -392,10 +390,10 @@ bool Package::Unpack()
         }
         
         SpineItemPtr cur;
-        for ( int i = 0; i < spineNodes->nodeNr; i++ )
+        for ( auto node : spineNodes )
         {
             auto next = SpineItem::New(sharedMe);
-            if ( next->ParseXML(spineNodes->nodeTab[i]) == false )
+            if ( next->ParseXML(node) == false )
             {
                 // TODO: need an error code here
                 continue;
@@ -442,13 +440,6 @@ bool Package::Unpack()
     }
     catch (const std::system_error& exc)
     {
-        std::cerr << "Exception processing OPF file: " << exc.what() << std::endl;
-        
-        if ( manifestNodes != nullptr )
-            xmlXPathFreeNodeSet(manifestNodes);
-        if ( spineNodes != nullptr )
-            xmlXPathFreeNodeSet(spineNodes);
-        
         if ( exc.code().category() == epub_spec_category() )
             throw;
         
@@ -456,39 +447,25 @@ bool Package::Unpack()
     }
     catch(const std::exception &ex)
     {
-        std::cerr << "Exception processing OPF file: " << ex.what() << std::endl;
-        
-        if ( manifestNodes != nullptr )
-            xmlXPathFreeNodeSet(manifestNodes);
-        if ( spineNodes != nullptr )
-            xmlXPathFreeNodeSet(spineNodes);
-        
         return false;
     }
     catch (...)
     {
-        std::cerr << "Exception processing OPF file!" << std::endl;
-        
-        if ( manifestNodes != nullptr )
-            xmlXPathFreeNodeSet(manifestNodes);
-        if ( spineNodes != nullptr )
-            xmlXPathFreeNodeSet(spineNodes);
-        
         return false;
     }
     
-    xmlXPathFreeNodeSet(manifestNodes);
-    xmlXPathFreeNodeSet(spineNodes);
+    manifestNodes.clear();
+    spineNodes.clear();
     
     // now the metadata, which is slightly more involved due to extensions
-    xmlNodeSetPtr metadataNodes = nullptr;
-    xmlNodeSetPtr refineNodes = xmlXPathNodeSetCreate(nullptr);
+    xml::NodeSet metadataNodes;
+    xml::NodeSet refineNodes;
     
     try
     {
         PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
         metadataNodes = xpath.Nodes("/opf:package/opf:metadata/*");
-        if ( metadataNodes == nullptr )
+        if ( metadataNodes.empty() )
             HandleError(EPUBError::OPFNoMetadata);
         
         bool foundIdentifier = false, foundTitle = false, foundLanguage = false, foundModDate = false;
@@ -498,12 +475,12 @@ bool Package::Unpack()
         
         std::vector<string> uidRefIds = std::vector<string>();
         
-        for ( int i = 0; i < metadataNodes->nodeNr; i++ )
+        for ( auto node : metadataNodes )
         {
-            xmlNodePtr node = metadataNodes->nodeTab[i];
             PropertyPtr p;
             
-            if ( node->ns != nullptr && xmlStrcmp(node->ns->href, BAD_CAST DCNamespace) == 0 )
+			auto ns = node->Namespace();
+            if ( bool(ns) && ns->URI() == xml::string(DCNamespace) )
             {
                 // definitely a main node
                 p = Property::New(holderPtr);
@@ -521,7 +498,7 @@ bool Package::Unpack()
             else
             {
                 // by elimination it's refining something-- we'll process it later when we know we've got all the main nodes in there
-                xmlXPathNodeSetAdd(refineNodes, node);
+				refineNodes.push_back(node);
             }
             
             if ( p && p->ParseMetaElement(node) )
@@ -587,9 +564,8 @@ bool Package::Unpack()
         if ( !foundModDate )
             HandleError(EPUBError::OPFMissingModificationDateMetadata);
         
-        for ( int i = 0; i < refineNodes->nodeNr; i++ )
+        for ( auto node : refineNodes )
         {
-            xmlNodePtr node = refineNodes->nodeTab[i];
             string ident = _getProp(node, "refines");
             if ( ident.empty() )
             {
@@ -645,9 +621,9 @@ bool Package::Unpack()
         }
         
         // now look at the <spine> element for properties
-        xmlNodePtr spineNode = xmlFirstElementChild(root);
+		auto spineNode = root->FirstElementChild();
         for ( uint32_t i = 2; i < _spineCFIIndex; i += 2 )
-            spineNode = xmlNextElementSibling(spineNode);
+            spineNode = spineNode->NextElementSibling();
         
         string value = _getProp(spineNode, "page-progression-direction");
         if ( !value.empty() )
@@ -660,55 +636,27 @@ bool Package::Unpack()
     }
     catch (std::system_error& exc)
     {
-        std::cerr << "Exception processing OPF file: " << exc.what() << std::endl;
-        
-        if ( metadataNodes != nullptr )
-            xmlXPathFreeNodeSet(metadataNodes);
-        if ( refineNodes != nullptr )
-            xmlXPathFreeNodeSet(refineNodes);
-        
         if ( exc.code().category() == epub_spec_category() )
             throw;
         return false;
     }
-    catch(const std::exception &ex)
-    {
-        std::cerr << "Exception processing OPF file: " << ex.what() << std::endl;
-        
-        if ( metadataNodes != nullptr )
-            xmlXPathFreeNodeSet(metadataNodes);
-        if ( refineNodes != nullptr )
-            xmlXPathFreeNodeSet(refineNodes);
-        
-        return false;
-    }
     catch (...)
     {
-        std::cerr << "Exception processing OPF file!" << std::endl;
-        
-        if ( metadataNodes != nullptr )
-            xmlXPathFreeNodeSet(metadataNodes);
-        if ( refineNodes != nullptr )
-            xmlXPathFreeNodeSet(refineNodes);
-        
         return false;
     }
     
-    xmlXPathFreeNodeSet(metadataNodes);
-    xmlXPathFreeNodeSet(refineNodes);
-    
     // now any content type bindings
-    xmlNodeSetPtr bindingNodes = nullptr;
+    xml::NodeSet bindingNodes;
     
     try
     {
         bindingNodes = xpath.Nodes("/opf:package/opf:bindings/*");
-        if ( bindingNodes != nullptr )
+        if ( !bindingNodes.empty() )
         {
-            for ( int i = 0; i < bindingNodes->nodeNr; i++ )
+			xml::string mediaTypeElementName(MediaTypeElementName);
+            for ( auto node : bindingNodes )
             {
-                xmlNodePtr node = bindingNodes->nodeTab[i];
-                if ( xmlStrcasecmp(node->name, MediaTypeElementName) != 0 )
+                if ( node->Name() != mediaTypeElementName )
                     continue;
                 
                 ////////////////////////////////////////////////////////////
@@ -778,23 +726,12 @@ bool Package::Unpack()
     catch (std::exception& exc)
     {
         std::cerr << "Exception processing OPF file: " << exc.what() << std::endl;
-        
-        if ( bindingNodes != nullptr )
-            xmlXPathFreeNodeSet(bindingNodes);
-        
         throw;
     }
     catch (...)
     {
-        std::cerr << "Exception processing OPF file!" << std::endl;
-        
-        if ( bindingNodes != nullptr )
-            xmlXPathFreeNodeSet(bindingNodes);
-        
         return false;
     }
-    
-    xmlXPathFreeNodeSet(bindingNodes);
     
     // now the navigation tables
     for ( auto item : _manifest )
@@ -911,7 +848,7 @@ string Package::PackageID() const
 }
 string Package::Version() const
 {
-    return _getProp(xmlDocGetRootElement(_opf), "version");
+    return _getProp(_opf->Root(), "version");
 }
 void Package::FireLoadEvent(const IRI &url) const
 {

@@ -23,7 +23,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-DigitalSignature::DigitalSignature(xmlNodePtr signatureNode)
+DigitalSignature::DigitalSignature(shared_ptr<xml::Node> signatureNode)
 {
     
 }

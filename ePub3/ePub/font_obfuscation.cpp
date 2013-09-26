@@ -29,7 +29,86 @@
 #include <windows.h>
 #include <Wincrypt.h>
 #elif EPUB_PLATFORM(WINRT)
+#include <robuffer.h>
+#include <wrl.h>
+#include <wrl/implements.h>
+#include <windows.storage.streams.h>
+
 using namespace ::Windows::Security::Cryptography::Core;
+using namespace ::Windows::Storage::Streams;
+using namespace ::Microsoft::WRL;
+
+namespace _Internal
+{
+	// thanks be to: http://stackoverflow.com/questions/10520335/how-to-wrap-a-char-buffer-in-a-winrt-ibuffer-in-c
+	class NativeBuffer :
+		public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::RuntimeClassType::WinRtClassicComMix>,
+		ABI::Windows::Storage::Streams::IBuffer,
+		Windows::Storage::Streams::IBufferByteAccess>
+	{
+	public:
+		virtual ~NativeBuffer()
+		{
+		}
+
+		STDMETHODIMP RuntimeClassInitialize(byte *buffer, UINT totalSize)
+		{
+			m_length = totalSize;
+			m_buffer = buffer;
+
+			return S_OK;
+		}
+
+		STDMETHODIMP Buffer(byte **value)
+		{
+			*value = m_buffer;
+
+			return S_OK;
+		}
+
+		STDMETHODIMP get_Capacity(UINT32 *value)
+		{
+			*value = m_length;
+
+			return S_OK;
+		}
+
+		STDMETHODIMP get_Length(UINT32 *value)
+		{
+			*value = m_length;
+
+			return S_OK;
+		}
+
+		STDMETHODIMP put_Length(UINT32 value)
+		{
+			m_length = value;
+
+			return S_OK;
+		}
+
+	private:
+		UINT32 m_length;
+		byte *m_buffer;
+	};
+
+	IBuffer^ CreateNativeBuffer(LPVOID lpBuffer, DWORD nNumberOfBytes)
+	{
+		ComPtr<NativeBuffer> nativeBuffer;
+		Details::MakeAndInitialize<NativeBuffer>(&nativeBuffer, (byte *)lpBuffer, nNumberOfBytes);
+		auto iinspectable = (IInspectable *)reinterpret_cast<IInspectable *>(nativeBuffer.Get());
+		IBuffer ^buffer = reinterpret_cast<IBuffer ^>(iinspectable);
+		return buffer;
+	}
+
+	ComPtr<IBufferByteAccess> AccessBuffer(IBuffer^ buffer)
+	{
+		ComPtr<IUnknown> comBuffer(reinterpret_cast<IUnknown*>(buffer));
+		ComPtr<IBufferByteAccess> byteBuffer;
+		comBuffer.As(&byteBuffer);
+		return byteBuffer;
+	}
+}
 #else
 #include <openssl/sha.h>
 #endif
@@ -41,7 +120,7 @@ using namespace ::Windows::Security::Cryptography::Core;
 
 EPUB3_BEGIN_NAMESPACE
 
-#if !EPUB_COMPILER_SUPPORTS(CXX_NONSTATIC_MEMBER_INIT)
+#if !EPUB_COMPILER_SUPPORTS(CXX_NONSTATIC_MEMBER_INIT) || EPUB_COMPILER(MSVC)
 const char * const FontObfuscator::FontObfuscationAlgorithmID = "http://www.idpf.org/2008/embedding";
 #endif
 
@@ -114,7 +193,14 @@ bool FontObfuscator::BuildKey(ConstContainerPtr container)
     if ( winerr != NO_ERROR )
         _THROW_WIN_ERROR_(winerr);
 #elif EPUB_PLATFORM(WINRT)
+	auto inBuf = _Internal::CreateNativeBuffer(const_cast<char*>(str.data()), str.length());
+	auto keyBuf = HashAlgorithmProvider::OpenAlgorithm(HashAlgorithmNames::Sha1)->HashData(inBuf);
 
+	auto rawKeyBuf = _Internal::AccessBuffer(keyBuf);
+	byte* keyBytes = nullptr;
+	rawKeyBuf->Buffer(&keyBytes);
+	
+	memcpy(_key, keyBytes, KeySize);
 #else
     // hash the accumulated string (using OpenSSL syntax for portability)
     SHA_CTX ctx;

@@ -24,10 +24,10 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-bool EncryptionInfo::ParseXML(xmlNodePtr node)
+bool EncryptionInfo::ParseXML(shared_ptr<xml::Node> node)
 {
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-    XPathWrangler xpath(node->doc, {{"enc", XMLENCNamespaceURI}, {"dsig", XMLDSigNamespaceURI}});
+    XPathWrangler xpath(node->Document(), {{"enc", XMLENCNamespaceURI}, {"dsig", XMLDSigNamespaceURI}});
 #else
     XPathWrangler::NamespaceList nsList;
     nsList["enc"] = XMLENCNamespaceURI;

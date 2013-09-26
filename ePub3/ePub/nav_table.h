@@ -51,7 +51,7 @@ public:
     virtual                 ~NavigationTable() {}
     
     EPUB3_EXPORT
-    bool                    ParseXML(xml::Node* node);
+		bool                    ParseXML(shared_ptr<xml::Node> node);
     
     const string&           Type()                      const   { return _type; }
     void                    SetType(const string& str)          { _type = str; }
@@ -70,9 +70,9 @@ protected:
     string      _title;         ///< The table's title. Optional.
     string      _sourceHref;    ///< Href to the nav item representing the table in the package.
     
-    shared_ptr<NavigationElement>   BuildNavigationPoint(xml::Node* liNode);
+	shared_ptr<NavigationElement>   BuildNavigationPoint(shared_ptr<xml::Node> liNode);
 
-    void                    LoadChildElements(shared_ptr<NavigationElement> pElement, xml::Node* pXmlNode);
+	void                    LoadChildElements(shared_ptr<NavigationElement> pElement, shared_ptr<xml::Node> pXmlNode);
 };
 
 EPUB3_END_NAMESPACE

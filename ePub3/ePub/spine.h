@@ -27,7 +27,7 @@
 #include <ePub3/utilities/xml_identifiable.h>
 #include <ePub3/property_holder.h>
 #include <vector>
-#include <libxml/tree.h>
+#include <ePub3/xml/node.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -107,7 +107,7 @@ public:
     PackagePtr          GetPackage()        const       { return Owner(); }
     
     EPUB3_EXPORT
-    bool                ParseXML(xmlNodePtr node);
+    bool                ParseXML(shared_ptr<xml::Node> node);
     
     /// @{
     /// @name Metadata

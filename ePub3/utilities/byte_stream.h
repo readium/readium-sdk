@@ -412,7 +412,7 @@ public:
 	@result The new file position. This may be different from the requested position,
 	if for instance the file was not large enough to accomodate the request.
 	*/
-	virtual size_type       Seek(size_type by, std::ios::seekdir dir) {}
+	virtual size_type       Seek(size_type by, std::ios::seekdir dir) { return 0; }
 
 	/**
 	Returns the current position within the target file.

@@ -25,7 +25,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-bool PropertyExtension::ParseMetaElement(xml::Node* node)
+bool PropertyExtension::ParseMetaElement(shared_ptr<xml::Node> node)
 {
     if ( node == nullptr )
         return false;

@@ -227,7 +227,7 @@ public:
     
 protected:
     shared_ptr<Archive>			_archive;           ///< The archive from which the package was loaded.
-    unique_ptr<xml::Document>   _opf;               ///< The XML document representing the package.
+    shared_ptr<xml::Document>   _opf;               ///< The XML document representing the package.
     string						_pathBase;          ///< The base path of the document within the archive.
     string						_type;              ///< The MIME type of the package document.
     ManifestTable				_manifest;          ///< All manifest items, indexed by unique identifier.
@@ -329,7 +329,7 @@ public:
     ContainerPtr            GetContainer()          const       { return Owner(); }
     
     virtual bool            Open(const string& path);
-    bool                    _OpenForTest(xml::Document* doc, const string& basePath);
+    bool                    _OpenForTest(shared_ptr<xml::Document> doc, const string& basePath);
     
     ///
     /// The full Unique Identifier, built from the package unique-id and the modification date.
@@ -431,7 +431,7 @@ public:
      to the empty CFI.
      @result An `xmlDocPtr` for the selected document, or `nullptr` upon failure.
      */
-    unique_ptr<xml::Document>	DocumentForCFI(CFI& cfi, CFI* pRemainingCFI) const {
+    shared_ptr<xml::Document>	DocumentForCFI(CFI& cfi, CFI* pRemainingCFI) const {
         return ManifestItemForCFI(cfi, pRemainingCFI)->ReferencedDocument();
     }
     
@@ -457,11 +457,11 @@ public:
     /// @name Raw Data Access
     
     unique_ptr<ArchiveReader>   ReaderForRelativePath(const string& path)       const;
-#if 0
+
     unique_ptr<ArchiveXmlReader>    XmlReaderForRelativePath(const string& path)    const {
         return unique_ptr<ArchiveXmlReader>(new ArchiveXmlReader(ReaderForRelativePath(path)));
     }
-#endif
+
     EPUB3_EXPORT
     unique_ptr<ByteStream>        ReadStreamForRelativePath(const string& path)   const;
     

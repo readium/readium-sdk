@@ -25,29 +25,26 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-XPathWrangler::XPathWrangler(xml::Document* doc, const NamespaceList& namespaces) : _doc(new xml::Document(doc->xml())), _namespaces(namespaces)
+XPathWrangler::XPathWrangler(shared_ptr<xml::Document> doc, const NamespaceList& namespaces) : _doc(doc), _namespaces(namespaces)
 {
 }
-XPathWrangler::XPathWrangler(const XPathWrangler& o) : _doc(new xml::Document(o._doc->xml())), _namespaces(o._namespaces)
+XPathWrangler::XPathWrangler(const XPathWrangler& o) : _doc(o._doc), _namespaces(o._namespaces)
 {
 }
-XPathWrangler::XPathWrangler(XPathWrangler&& o) : _doc(o._doc)
+XPathWrangler::XPathWrangler(XPathWrangler&& o) : _doc(std::move(o._doc))
 {
-    o._doc = nullptr;
 }
 XPathWrangler::~XPathWrangler()
 {
-	if (_doc != nullptr)
-		delete _doc;
 }
-XPathWrangler::StringList XPathWrangler::Strings(const string& xpath, xml::Node* node)
+XPathWrangler::StringList XPathWrangler::Strings(const string& xpath, shared_ptr<xml::Node> node)
 {
     StringList strings;
     
 	xml::XPathEvaluator eval(xml::string(xpath.c_str()), _doc);
 	xml::XPathEvaluator::ObjectType type;
 
-	if ( eval.Evaluate((node ? node : _doc), &type) )
+	if ( eval.Evaluate((bool(node) ? node : _doc), &type) )
     {
         switch ( type )
         {
@@ -60,7 +57,7 @@ XPathWrangler::StringList XPathWrangler::Strings(const string& xpath, xml::Node*
 				xml::NodeSet nodes(eval.NodeSetResult());
 
 				// a list of strings (I hope)
-				for (xml::Node* node : nodes)
+				for (shared_ptr<xml::Node> node : nodes)
 				{
 					strings.emplace_back(node->StringValue());
 				}
@@ -73,13 +70,13 @@ XPathWrangler::StringList XPathWrangler::Strings(const string& xpath, xml::Node*
     
     return strings;
 }
-xml::NodeSet XPathWrangler::Nodes(const string& xpath, xml::Node* node)
+xml::NodeSet XPathWrangler::Nodes(const string& xpath, shared_ptr<xml::Node> node)
 {
 	xml::NodeSet result;
 
     xml::XPathEvaluator eval(xml::string(xpath.c_str()), _doc);
 	xml::XPathEvaluator::ObjectType type;
-    if ( eval.Evaluate((node ? node : _doc), &type) )
+    if ( eval.Evaluate((bool(node) ? node : _doc), &type) )
     {
         if ( type == xml::XPathEvaluator::ObjectType::NodeSet )
         {
