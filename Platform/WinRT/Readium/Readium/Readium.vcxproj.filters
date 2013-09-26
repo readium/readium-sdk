@@ -317,6 +317,27 @@
     <ClInclude Include="..\..\..\..\ePub3\ePub\xpath_wrangler.h">
       <Filter>ePub3\ePub</Filter>
     </ClInclude>
+    <ClInclude Include="WinLibrary.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinContainer.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinPackage.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinManifest.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinCFI.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\NativeBridge.h">
+      <Filter>ePub3\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="WinEncryptionInfo.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\ePub3\utilities\byte_buffer.cpp">
@@ -664,6 +685,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ePub\xpath_wrangler.cpp">
       <Filter>ePub3\ePub</Filter>
+    </ClCompile>
+    <ClCompile Include="WinLibrary.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinContainer.cpp">
+      <Filter>Public Interface</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
