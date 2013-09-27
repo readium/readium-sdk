@@ -23,12 +23,10 @@
 #define __Readium_IPropertyHolder_h__
 
 #include "Readium.h"
+#include "WinProperty.h"
 #include <collection.h>
 
 BEGIN_READIUM_API
-
-ref class Property;
-ref class PropertyExtension;
 
 using namespace ::Platform;
 using namespace ::Platform::Collections;
@@ -36,7 +34,7 @@ using namespace ::Windows::Foundation;
 using namespace ::Windows::Foundation::Collections;
 
 /// Enumerated constants for the DCMES metadata attributes used by EPUB 3.
-enum class DCType
+public enum class DCType
 {
 	Invalid,        ///< An invalid value.
 
@@ -80,90 +78,69 @@ enum class DCType
 	Custom = UCHAR_MAX
 };
 
-interface class IPropertyHolder : IIterable<Property^>
+/// Enumeration for page spreads.
+public enum class PageSpread
 {
-	property IPropertyHolder^ Parent { IPropertyHolder^ get(); }
+	/// No value specified by the author.
+	Automatic,
+	/// This is the left page of a spread.
+	Left,
+	/// This is the right page of a spread.
+	Right,
+	/// This is a double-width page, spread across both left & right.
+	Center,
+};
+
+/// Enumeration for page progression directions.
+public enum class PageProgression
+{
+	/// Assume based on language, etc.
+	Default,
+	/// Pages flow from left to right, as in English.
+	LeftToRight,
+	/// Pages flow from right to left, as in Japanese comics & vertical text.
+	RightToLeft,
+};
+
+public interface class IPropertyHolder : IIterable<Property^>
+{
 	property unsigned int Count { unsigned int get(); }
 
+	[::Windows::Foundation::Metadata::DefaultOverload]
 	void Append(Property^ prop);
 	void Append(IPropertyHolder^ allProps);
 
+	[::Windows::Foundation::Metadata::DefaultOverload]
 	void Remove(Uri^ propertyIRI);
 	void Remove(String^ reference);
-	void Remove(String^ reference, String^ prefix);
+	void Remove(String^ prefix, String^ reference);
 
 	Property^ At(unsigned int idx);
 	void EraseAt(unsigned int idx);
 
 	bool Contains(DCType type);
+	[::Windows::Foundation::Metadata::DefaultOverload]
 	bool Contains(Uri^ propertyIRI);
 	bool Contains(String^ reference);
 	bool Contains(String^ prefix, String^ reference);
 
 	Property^ PropertyMatching(DCType type);
+	[::Windows::Foundation::Metadata::DefaultOverload]
 	Property^ PropertyMatching(Uri^ propertyIRI);
 	Property^ PropertyMatching(String^ reference);
 	Property^ PropertyMatching(String^ prefix, String^ reference);
 
-	IVector<Property^>^ PropertiesMatching(DCType type);
-	IVector<Property^>^ PropertiesMatching(Uri^ propertyIRI);
-	IVector<Property^>^ PropertiesMatching(String^ reference);
-	IVector<Property^>^ PropertiesMatching(String^ prefix, String^ reference);
+	IVectorView<Property^>^ PropertiesMatching(DCType type);
+	[::Windows::Foundation::Metadata::DefaultOverload]
+	IVectorView<Property^>^ PropertiesMatching(Uri^ propertyIRI);
+	IVectorView<Property^>^ PropertiesMatching(String^ reference);
+	IVectorView<Property^>^ PropertiesMatching(String^ prefix, String^ reference);
 
 	void RegisterPrefixIRIStem(String^ prefix, String^ iriStem);
 	
 	Uri^ MakePropertyIRI(String^ reference);
 	Uri^ MakePropertyIRI(String^ prefix, String^ reference);
 	Uri^ PropertyIRIFromString(String^ str);
-
-};
-
-ref class PropertyIteratorImpl : public IIterator<Property^>
-{
-private:
-	IPropertyHolder^	_holder;
-	unsigned int		_idx;
-
-internal:
-	PropertyIteratorImpl(IPropertyHolder^ holder) : _holder(holder), _idx(0) {}
-
-public:
-	virtual ~PropertyIteratorImpl() {}
-
-	// IIterator
-
-	virtual unsigned int GetMany(::Platform::WriteOnlyArray<Property^>^ items) {
-		if (HasCurrent)
-		{
-			unsigned int max = items->Length;
-			unsigned int i = 0;
-			do
-			{
-				items[i++] = Current;
-
-			} while (i < max && MoveNext());
-		}
-	}
-	virtual bool MoveNext() {
-		if (!HasCurrent)
-			return false;
-		return (++_idx < _holder->Count);
-	}
-
-	property Property^ Current
-	{
-		virtual Property^ get() {
-			if (!HasCurrent)
-				return nullptr;
-			return _holder->At(_idx);
-		}
-	}
-	property bool HasCurrent
-	{
-		virtual bool get() {
-			return _idx < _holder->Count;
-		}
-	}
 
 };
 

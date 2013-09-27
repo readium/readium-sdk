@@ -44,6 +44,9 @@ class Container;
  @see http://www.w3.org/TR/xmlenc-core1/
  */
 class EncryptionInfo : public PointerType<EncryptionInfo>, public OwnedBy<Container>
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 public:
     ///

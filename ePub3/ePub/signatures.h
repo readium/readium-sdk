@@ -40,6 +40,9 @@ class SignatureReference {};
  @ingroup epub-model
  */
 class DigitalSignature
+#if EPUB_PLATFORM(WINRT)
+	: public NativeBridge
+#endif
 {
 public:
     ///

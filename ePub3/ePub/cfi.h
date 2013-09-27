@@ -37,6 +37,9 @@ EPUB3_BEGIN_NAMESPACE
  @ingroup epub-model
  */
 class CFI
+#if EPUB_PLATFORM(WINRT)
+	: public NativeBridge
+#endif
 {
 public:
     ///

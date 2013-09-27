@@ -57,6 +57,9 @@ class Package;
  @see operator()(const string&, const ParameterList&)
  */
 class ContentHandler : public PointerType<ContentHandler>, public OwnedBy<Package>
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 public:
     ///

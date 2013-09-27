@@ -23,8 +23,10 @@
 #define __Readium_Package_h__
 
 #include "Readium.h"
-#include "IPropertyHolder.h"
+#include "PropertyHolderImpl.h"
 #include "Streams.h"
+#include "WinNavTable.h"
+#include "WinMediaSupport.h"
 #include <ePub3/package.h>
 
 BEGIN_READIUM_API
@@ -33,17 +35,22 @@ ref class Container;
 ref class ManifestItem;
 ref class SpineItem;
 ref class CFI;
-ref class NavigationTable;
-ref class ContentHandler;
+interface class IContentHandler;
+ref class MediaHandler;
+ref class FilterChain;
 
 using namespace ::Windows::Foundation::Collections;
 
-public ref class Package sealed : public IPropertyHolder
+public ref class Package sealed : public PropertyHolder
 {
+private:
+	bool _returnLocalized;
 	_DECLARE_BRIDGE_API_(::ePub3::PackagePtr, Package^);
 
 private:
 	Package(::ePub3::PackagePtr native);
+
+	_PROPERTY_HOLDER_NATIVE_IMPL()
 
 public:
 	virtual ~Package() {}
@@ -52,8 +59,8 @@ public:
 
 	String^ BasePath();
 
-	property IMap<String^, ManifestItem^>^ Manifest { IMap<String^, ManifestItem^>^ get(); }
-	property IMap<String^, NavigationTable^>^ NavigationTables { IMap<String^, NavigationTable^>^ get(); }
+	property IMapView<String^, ManifestItem^>^ Manifest { IMapView<String^, ManifestItem^>^ get(); }
+	property IMapView<String^, NavigationTable^>^ NavigationTables { IMapView<String^, NavigationTable^>^ get(); }
 	property SpineItem^ FirstSpineItem { SpineItem^ get(); }
 
 	SpineItem^ SpineItemAt(unsigned int idx);
@@ -63,7 +70,7 @@ public:
 
 	String^ CFISubpathForManifestItemWithID(String^ id);
 
-	IVector<ManifestItem^>^ ManifestItemsWithProperties(IVectorView<Uri^>^ iriList);
+	IVectorView<ManifestItem^>^ ManifestItemsWithProperties(IVectorView<Uri^>^ iriList);
 
 	NavigationTable^ GetNavigationTable(String^ type);
 
@@ -81,7 +88,7 @@ public:
 	property String^ Type { String^ get(); }
 	property String^ Version { String^ get(); }
 
-	void AddMediaHandler(ContentHandler^ handler);
+	void AddMediaHandler(IContentHandler^ handler);
 
 	SpineItem^ SpineItemWithIDRef(String^ idref);
 
@@ -93,6 +100,7 @@ public:
 	IClosableStream^ ReadStreamForRelativePath(String^ relativePath);
 
 	IClosableStream^ ContentStreamFor(SpineItem^ item);
+	[::Windows::Foundation::Metadata::DefaultOverload]
 	IClosableStream^ ContentStreamFor(ManifestItem^ item);
 
 	property NavigationTable^ TableOfContents { NavigationTable^ get(); }
@@ -101,7 +109,53 @@ public:
 	property NavigationTable^ ListOfTables { NavigationTable^ get(); }
 	property NavigationTable^ PageList { NavigationTable^ get(); }
 
+	////////////////////////////////////////////////////////////////
+	// OPF metadata (property) access
 
+	property bool ReturnsLocalizedProperties {
+		bool get()			{ return _returnLocalized; }
+		void set(bool arg)	{ _returnLocalized = arg; }
+	}
+
+	property String^ Title { String^ get(); }
+	property String^ Subtitle { String^ get(); }
+	property String^ ShortTitle { String^ get(); }
+	property String^ CollectionTitle { String^ get(); }
+	property String^ EditionTitle { String^ get(); }
+	property String^ ExpandedTitle { String^ get(); }
+	property String^ FullTitle { String^ get(); }
+
+	property IVectorView<String^>^ AuthorNames { IVectorView<String^>^ get(); }
+	property IVectorView<String^>^ AttributionNames { IVectorView<String^>^ get(); }
+	property String^ Authors { String^ get(); }
+	property IVectorView<String^>^ ContributorNames { IVectorView<String^>^ get(); }
+	property String^ Contributors { String^ get(); }
+
+	property String^ Language { String^ get(); }
+	property String^ Source { String^ get(); }
+	property String^ CopyrightOwner { String^ get(); }
+
+	property DateTime ModificationDate { DateTime get(); }
+
+	property String^ ISBN { String^ get(); }
+
+	property IVectorView<String^>^ Subjects { IVectorView<String^>^ get(); }
+
+	property PageProgression PageProgressionDirection { PageProgression get(); }
+
+	////////////////////////////////////////////////////////////////
+	// Media Handling
+
+	IVectorView<String^>^ MediaTypesWithDHTMLHandlers();
+	IVectorView<IContentHandler^>^ HandlersForMediaType(String^ mediaType);
+	MediaHandler^ OPFHandlerForMediaType(String^ mediaType);
+
+	property IVectorView<String^>^ AllMediaTypes { IVectorView<String^>^ get(); }
+	property IVectorView<String^>^ UnsupportedMediaTypes { IVectorView<String^>^ get(); }
+	
+	property IVectorView<MediaSupportInfo^>^ MediaSupport { IVectorView<MediaSupportInfo^>^ get(); void set(IVectorView<MediaSupportInfo^>^); }
+
+	void SetFilterChain(FilterChain^ chain);
 
 };
 

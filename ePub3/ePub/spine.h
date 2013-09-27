@@ -73,6 +73,9 @@ EPUB3_BEGIN_NAMESPACE
  @ingroup epub-model
  */
 class SpineItem : public PointerType<SpineItem>, public OwnedBy<Package>, public PropertyHolder, public XMLIdentifiable
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 public:
     typedef std::vector<IRI>        PropertyList;
