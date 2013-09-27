@@ -1,5 +1,5 @@
 //
-//  WinManifest.h
+//  WinProperty.h
 //  Readium
 //
 //  Created by Jim Dovey on 2013-09-26.
@@ -19,24 +19,20 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef __Readium_Manifest_h__
-#define __Readium_Manifest_h__
+#ifndef __Readium_Property_h__
+#define __Readium_Property_h__
 
 #include "Readium.h"
-#include "PropertyHolderImpl.h"
-#include <ePub3/manifest.h>
+#include <ePub3/property.h>
 
 BEGIN_READIUM_API
 
-ref class Container;
-ref class Package;
-ref class SpineItem;
 ref class CFI;
+ref class PropertyExtension;
 
-public ref class ManifestItem sealed : public PropertyHolder
+public ref class Property sealed
 {
-	_DECLARE_BRIDGE_API_(::ePub3::ManifestItemPtr, ManifestItem^);
-	_PROPERTY_HOLDER_NATIVE_IMPL()
+	_DECLARE_BRIDGE_API_(::ePub3::PropertyPtr, Property^);
 
 public:
 
@@ -44,4 +40,4 @@ public:
 
 END_READIUM_API
 
-#endif	/* __Readium_Manifest_h__ */
+#endif	/* __Readium_Property_h__ */

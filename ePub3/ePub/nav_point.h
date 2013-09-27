@@ -39,6 +39,9 @@ typedef shared_ptr<NavigationPoint> NavigationPointPtr;
  @ingroup navigation
  */
 class NavigationPoint : public NavigationElement, public PointerType<NavigationPoint>, public OwnedBy<NavigationElement>
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 private:
                             NavigationPoint(const NavigationPoint&)     _DELETED_;

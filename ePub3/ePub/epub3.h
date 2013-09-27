@@ -38,6 +38,10 @@
 
 #include <ePub3/Forward.h>
 
+#if EPUB_PLATFORM(WINRT)
+#include <ePub3/utilities/NativeBridge.h>
+#endif
+
 #define ePub3NamespaceURI "http://www.idpf.org/2007/ops"
 #define MathMLNamespaceURI "http://www.w3.org/1998/Math/MathML"
 #define SMILNamespaceURI "http://www.w3.org/ns/SMIL"

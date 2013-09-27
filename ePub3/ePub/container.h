@@ -51,6 +51,9 @@ class ByteStream;
  @ingroup epub-model
  */
 class Container : public PointerType<Container>
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 public:
     ///
