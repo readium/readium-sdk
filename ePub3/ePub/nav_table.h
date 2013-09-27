@@ -38,6 +38,9 @@ typedef shared_ptr<NavigationTable> NavigationTablePtr;
  @ingroup navigation
  */
 class NavigationTable : public NavigationElement, public PointerType<NavigationTable>, public OwnedBy<Package>
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 private:
                             NavigationTable()                               _DELETED_;

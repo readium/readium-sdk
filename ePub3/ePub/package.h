@@ -287,6 +287,9 @@ protected:
  @ingroup epub-model
  */
 class Package : public PackageBase, public PointerType<Package>, public PropertyHolder, public OwnedBy<Container>
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 public:
     /**
@@ -696,8 +699,8 @@ public:
      @param mediaType The media-type whose handler list to retrieve.
      @result A list of installed handlers for this media type.
      */
-    EPUB3_EXPORT
-    const ContentHandlerList    HandlersForMediaType(const string& mediaType)   const;
+	EPUB3_EXPORT
+	const ContentHandlerList    HandlersForMediaType(const string& mediaType)   const;
     
     /**
      Retrieves the handler that will be used for a certain media type.

@@ -54,7 +54,7 @@ typedef std::map<string, shared_ptr<ManifestItem>>  ManifestTable;
  properties for a ManifestItem, as of EPUB 3.
  
  This should ideally be an `enum class`, but it seems the compiler doesn't like
- performing arithmetic or bitwose operations on those, nor does it like me defining
+ performing arithmetic or bitwise operations on those, nor does it like me defining
  those arithmetic operations as methods on an `enum class`. Therefore it's all DIY.
  
  @see http://www.idpf.org/epub/30/spec/epub30-publications.html#sec-item-property-values
@@ -62,6 +62,9 @@ typedef std::map<string, shared_ptr<ManifestItem>>  ManifestTable;
  @ingroup epub-model
  */
 class ItemProperties
+#if EPUB_PLATFORM(WINRT)
+	: public NativeBridge
+#endif
 {
 public:
     ///
@@ -252,6 +255,9 @@ private:
  @ingroup epub-model
  */
 class ManifestItem : public PointerType<ManifestItem>, public OwnedBy<Package>, public PropertyHolder, public XMLIdentifiable
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 public:
     typedef string              MimeType;

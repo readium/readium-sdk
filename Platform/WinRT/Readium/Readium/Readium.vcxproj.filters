@@ -338,6 +338,27 @@
     <ClInclude Include="WinEncryptionInfo.h">
       <Filter>Public Interface</Filter>
     </ClInclude>
+    <ClInclude Include="IPropertyHolder.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertyHolderImpl.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinSpine.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinProperty.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CollectionBridges.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinNavTable.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinMediaSupport.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\ePub3\utilities\byte_buffer.cpp">
@@ -690,6 +711,12 @@
       <Filter>Public Interface</Filter>
     </ClCompile>
     <ClCompile Include="WinContainer.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinPackage.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="PropertyHolderImpl.cpp">
       <Filter>Public Interface</Filter>
     </ClCompile>
   </ItemGroup>
