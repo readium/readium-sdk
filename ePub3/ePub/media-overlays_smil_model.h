@@ -117,8 +117,48 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
                     return nullptr;
                 }
 
-                shared_ptr<SMILData> smilData = _smilDatas.at(i);
+                SMILDataPtr smilData = _smilDatas.at(i);
                 return smilData;
+            }
+
+            EPUB3_EXPORT
+
+            std::vector<string>::size_type GetSkippablesCount() const
+            {
+                return _Skippables.size();
+            }
+
+            EPUB3_EXPORT
+
+            string GetSkippable(std::vector<string>::size_type i) const
+            {
+                if (i < 0 || i >= _Skippables.size())
+                {
+                    return "";
+                }
+
+                string str = _Skippables.at(i);
+                return str;
+            }
+
+            EPUB3_EXPORT
+
+            std::vector<string>::size_type GetEscapablesCount() const
+            {
+                return _Escapables.size();
+            }
+
+            EPUB3_EXPORT
+
+            string GetEscapable(std::vector<string>::size_type i) const
+            {
+                if (i < 0 || i >= _Escapables.size())
+                {
+                    return "";
+                }
+
+                string str = _Escapables.at(i);
+                return str;
             }
 
             /*
@@ -137,6 +177,8 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
             */
 
         private:
+            static const std::vector<string> _Skippables;
+            static const std::vector<string> _Escapables;
 
             SMILDataPtr getDataForSMILManifestItem(const string id) const
             {
