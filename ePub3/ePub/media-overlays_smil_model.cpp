@@ -778,7 +778,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
         }
 
 
-        //http://www.idpf.org/epub/vocab/structure
+        // http://www.idpf.org/epub/vocab/structure
         // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-skippability
         const std::vector<string> MediaOverlaysSmilModel::_Skippables = std::vector<string>({
                 "sidebar",
@@ -797,7 +797,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 "pagebreak"
         });
 
-        //http://www.idpf.org/epub/vocab/structure
+        // http://www.idpf.org/epub/vocab/structure
         // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-escabaility
         const std::vector<string> MediaOverlaysSmilModel::_Escapables = std::vector<string>({
                 "sidebar",

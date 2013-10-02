@@ -121,16 +121,16 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
                 return smilData;
             }
 
-            EPUB3_EXPORT
+            //EPUB3_EXPORT
 
-            std::vector<string>::size_type GetSkippablesCount() const
+            static std::vector<string>::size_type GetSkippablesCount()
             {
                 return _Skippables.size();
             }
 
-            EPUB3_EXPORT
+            //EPUB3_EXPORT
 
-            string GetSkippable(std::vector<string>::size_type i) const
+            static string GetSkippable(std::vector<string>::size_type i)
             {
                 if (i < 0 || i >= _Skippables.size())
                 {
@@ -141,16 +141,16 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
                 return str;
             }
 
-            EPUB3_EXPORT
+            //EPUB3_EXPORT
 
-            std::vector<string>::size_type GetEscapablesCount() const
+            static std::vector<string>::size_type GetEscapablesCount()
             {
                 return _Escapables.size();
             }
 
-            EPUB3_EXPORT
+            //EPUB3_EXPORT
 
-            string GetEscapable(std::vector<string>::size_type i) const
+            static string GetEscapable(std::vector<string>::size_type i)
             {
                 if (i < 0 || i >= _Escapables.size())
                 {
