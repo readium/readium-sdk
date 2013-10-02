@@ -180,21 +180,6 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
             static const std::vector<string> _Skippables;
             static const std::vector<string> _Escapables;
 
-            SMILDataPtr getDataForSMILManifestItem(const string id) const
-            {
-                for (int i = 0; i < _smilDatas.size(); i++)
-                {
-                    shared_ptr<SMILData> smilData = _smilDatas.at(i);
-                    if (smilData->ManifestItem()->Identifier() == id)
-                    {
-                        return smilData;
-                    }
-                }
-
-                return nullptr;
-            }
-
-
             void resetData();
 
             void populateData();
