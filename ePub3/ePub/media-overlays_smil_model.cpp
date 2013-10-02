@@ -390,16 +390,30 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     return 0;
                 }
 
-                SMILDataPtr smilData = getDataForSMILManifestItem(item->Identifier());
+                shared_ptr<SMILData> smilData = nullptr;
+                string id = item->Identifier();
+                for (int i = 0; i < _smilDatas.size(); i++)
+                {
+                    shared_ptr<SMILData> data = _smilDatas.at(i);
+                    if (data->ManifestItem()->Identifier() == id)
+                    {
+                        auto seq = data->Body();
+                        if (seq != nullptr)
+                        {
+                            continue;
+                        }
 
+                        smilData = data;
+                        break;
+                    }
+                }
 
-                //printf("Media Overlays ITEM DUR: %ld\n", (long) smilData->DurationMilliseconds());
+                uint32_t smilDur = smilData->DurationMilliseconds();
+                //printf("Media Overlays ITEM DUR: %ld\n", (long) smilDur);
 
                 const xmlNodePtr body = nodes->nodeTab[0];
 
-                uint32_t smilDur = parseSMIL(smilData, nullptr, nullptr, item, body);
-
-
+                smilDur = parseSMIL(smilData, nullptr, nullptr, item, body);
                 //printf("Media Overlays SMIL DURATION (milliseconds): %ld\n", (long) smilDur);
 
                 accumulatedDurationMilliseconds += smilDur;
@@ -508,14 +522,14 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 ManifestItemPtr manItem = iter->second; //shared_ptr<ManifestItem>
 
                 const string abs = manItem->AbsolutePath();
-                if (abs == refOPFPath)
+                if (abs.compare(refOPFPath) == 0)
                 {
                     //printf("------> manifest item path: %s\n", abs.c_str());
                     return manItem;
                 }
             }
 
-            printf("------> manifest item path NOT FOUND??!: %s\n", filepathInSmil.c_str());
+            printf("------> manifest item path NOT FOUND??!: [%s] %s\n", smilOPFPath.c_str(), filepathInSmil.c_str());
             return nullptr;
         }
 
@@ -574,7 +588,8 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             {
                 if (!textref_file.empty() && textrefManifestItem == nullptr)
                 {
-                    HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
+                    // REMOVED, because breaks execution flow unnecessarily
+                    // HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
                 }
 
                 smilData->_root = new SMILData::Sequence(nullptr, textref_file, textref_fragmentID, textrefManifestItem, type);
@@ -589,7 +604,8 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             {
                 if (!textref_file.empty() && textrefManifestItem == nullptr)
                 {
-                    HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
+                    // REMOVED, because breaks execution flow unnecessarily
+                    // HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
                 }
 
                 if (sequence == nullptr)
@@ -606,7 +622,8 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             {
                 if (!textref_file.empty() && textrefManifestItem == nullptr)
                 {
-                    HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
+                    // REMOVED, because breaks execution flow unnecessarily
+                    // HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
                 }
 
                 if (sequence == nullptr)
