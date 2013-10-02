@@ -464,7 +464,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                Parallel(Sequence *parent, string textref_file, string textref_fragmentID, ManifestItemPtr textrefManifestItem, string type):TimeContainer(parent, textref_file, textref_fragmentID, textrefManifestItem, type)
+                Parallel(Sequence *parent, string textref_file, string textref_fragmentID, ManifestItemPtr textrefManifestItem, string type):TimeContainer(parent, textref_file, textref_fragmentID, textrefManifestItem, type),_audio(nullptr),_text(nullptr)
                 {
                 }
 
