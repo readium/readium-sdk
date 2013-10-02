@@ -693,11 +693,16 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     //}
                 }
 
-                uint32_t clipDuration = clipEndMilliseconds - clipBeginMilliseconds;
+                if (clipEndStr.empty() || clipEndMilliseconds <= clipBeginMilliseconds)
+                {
+                    clipEndMilliseconds = 0;
+                }
+
+                int32_t clipDuration = clipEndMilliseconds - clipBeginMilliseconds;
 
                 if (clipDuration <= 0)
                 {
-                    HandleError(EPUBError::MediaOverlayInvalidAudio, _Str(item->Href().c_str(), " -- clipBegin=", clipBeginStr, ", clipEnd=", clipEndStr, " => invalid time values"));
+                    //HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str(item->Href().c_str(), " -- clipBegin=", clipBeginStr, ", clipEnd=", clipEndStr, " => invalid time values"));
                 }
                 else
                 {
