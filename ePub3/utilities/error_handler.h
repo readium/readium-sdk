@@ -308,7 +308,7 @@ enum class EPUBError
     MediaOverlayInvalidAudioType,           ///< An <audio> element's 'src' attribute MUST reference an item which is a member of the EPUB 3 Core Media Types. Medium.
 
     MediaOverlayMissingDurationMetadata,           ///< A SMIL manifest item has no corresponding media:duration metadata. Medium.
-    MediaOverlayMismatchDurationMetadata,           ///< A SMIL manifest item has no corresponding media:duration metadata. Medium.
+    MediaOverlayMismatchDurationMetadata,           ///< A SMIL / metadata duration mismatch. Medium.
     MediaOverlayInvalidSmilClockValue,           ///< A given SMIL Clock Value (media:duration, clipBegin or clipEnd) has an invalid syntax. Major.
     MediaOverlayCannotParseSMILXML,           ///< A given SMIL XML file fails to parse. Major.
     MediaOverlayUnknownSMILElement,           ///< A given SMIL file contains an unknown XML element. Major.

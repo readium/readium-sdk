@@ -180,6 +180,8 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
             static const std::vector<string> _Skippables;
             static const std::vector<string> _Escapables;
 
+            bool _excludeAudioDuration;
+
             void resetData();
 
             void populateData();
