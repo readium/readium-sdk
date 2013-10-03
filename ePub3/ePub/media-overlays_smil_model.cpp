@@ -149,8 +149,13 @@ EPUB3_BEGIN_NAMESPACE
             if (_totalDuration != totalDurationFromSMILs)
             {
                 std::stringstream s;
-                s << "Media Overlays duration mismatch (milliseconds): METADATA " << (long) _totalDuration << " != SMILs " << (long) totalDurationFromSMILs;
-                HandleError(EPUBError::MediaOverlayMismatchDurationMetadata, _Str(s.str()));
+                s << "Media Overlays total duration mismatch (milliseconds): METADATA " << (long) _totalDuration << " != SMILs " << (long) totalDurationFromSMILs;
+                const std::string & str = _Str(s.str());
+                printf("%s\n", str.c_str());
+
+                _totalDuration = totalDurationFromSMILs;
+
+                HandleError(EPUBError::MediaOverlayMismatchDurationMetadata, str);
             }
             else
             {
@@ -262,8 +267,10 @@ EPUB3_BEGIN_NAMESPACE
                 else
                 {
                     std::stringstream s;
-                    s << "Media Overlays duration mismatch (milliseconds): TOTAL " << (long) _totalDuration << " != ACCUMULATED " << (long) accumulatedDurationMilliseconds;
-                    HandleError(EPUBError::MediaOverlayMismatchDurationMetadata, _Str(s.str()));
+                    s << "Media Overlays metadata duration mismatch (milliseconds): TOTAL " << (long) _totalDuration << " != ACCUMULATED " << (long) accumulatedDurationMilliseconds;
+                    const std::string & str = _Str(s.str());
+                    printf("%s\n", str.c_str());
+                    HandleError(EPUBError::MediaOverlayMismatchDurationMetadata, str);
                 }
             }
             else
@@ -415,6 +422,19 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
 
                 smilDur = parseSMIL(smilData, nullptr, nullptr, item, body);
                 //printf("Media Overlays SMIL DURATION (milliseconds): %ld\n", (long) smilDur);
+
+                uint32_t metaDur = smilData->DurationMilliseconds();
+                if (metaDur != smilDur)
+                {
+                    std::stringstream s;
+                    s << "Media Overlays SMIL duration mismatch (milliseconds): METADATA " << (long) metaDur << " != SMIL " << (long) smilDur << " (" << item->Href().c_str() << ")";
+                    const std::string & str = _Str(s.str());
+                    printf("%s\n", str.c_str());
+
+                    smilData->_duration = smilDur;
+
+                    HandleError(EPUBError::MediaOverlayMismatchDurationMetadata, str);
+                }
 
                 accumulatedDurationMilliseconds += smilDur;
 
@@ -588,6 +608,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             {
                 if (!textref_file.empty() && textrefManifestItem == nullptr)
                 {
+                    printf("Media Overlays TEXT REF error: %s [%s]\n", textref_file.c_str(), item->Href().c_str());
                     // REMOVED, because breaks execution flow unnecessarily
                     // HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
                 }
@@ -604,6 +625,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             {
                 if (!textref_file.empty() && textrefManifestItem == nullptr)
                 {
+                    printf("Media Overlays TEXT REF error: %s\n", textref_file.c_str());
                     // REMOVED, because breaks execution flow unnecessarily
                     // HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
                 }
@@ -622,6 +644,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             {
                 if (!textref_file.empty() && textrefManifestItem == nullptr)
                 {
+                    printf("Media Overlays TEXT REF error: %s\n", textref_file.c_str());
                     // REMOVED, because breaks execution flow unnecessarily
                     // HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
                 }
@@ -695,7 +718,8 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
 
                 if (clipEndStr.empty() || clipEndMilliseconds <= clipBeginMilliseconds)
                 {
-                    clipEndMilliseconds = 0;
+                    //TODO: get intrinsic audio file duration
+                    clipEndMilliseconds = 0; // means NULL
                 }
 
                 int32_t clipDuration = clipEndMilliseconds - clipBeginMilliseconds;
@@ -734,6 +758,13 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     HandleError(EPUBError::MediaOverlayTextSrcFragmentMissing, _Str(item->Href().c_str(), " [", src_file.c_str(), "] => text source fragment identifier is empty"));
                 }
 
+                ManifestItemPtr spineManifestItem = smilData->_spineItem->ManifestItem();
+                if (srcManifestItem != spineManifestItem)
+                {
+                    printf("Media Overlays TEXT SRC mismatch (SMIL[1] with XHTML[1+]): %s (%s) [%s]\n", srcManifestItem->Href().c_str(), spineManifestItem->Href().c_str(), item->Href().c_str());
+                    _excludeAudioDuration = true;
+                }
+
                 SMILData::Text *text = new SMILData::Text(parallel, src_file, src_fragmentID, srcManifestItem);
 
                 sequence = nullptr;
@@ -747,6 +778,8 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             xmlNodePtr linkedChildrenList = element->children;
             if (linkedChildrenList != nullptr)
             {
+                _excludeAudioDuration = false;
+
                 for (; linkedChildrenList != nullptr; linkedChildrenList = linkedChildrenList->next)
                 {
                     if (linkedChildrenList->type != XML_ELEMENT_NODE)
@@ -754,7 +787,12 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                         continue;
                     }
 
-                    accumulatedDurationMilliseconds += parseSMIL(smilData, sequence, parallel, item, linkedChildrenList);
+                    uint32_t time = parseSMIL(smilData, sequence, parallel, item, linkedChildrenList);
+
+                    if (elementName != "par" || !_excludeAudioDuration)
+                    {
+                        accumulatedDurationMilliseconds += time;
+                    }
                 }
             }
 
