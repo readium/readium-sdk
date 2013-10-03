@@ -236,7 +236,7 @@ EPUB3_BEGIN_NAMESPACE
                         durationWholeMilliseconds = ePub3::SmilClockValuesParser::ToWholeMilliseconds(itemDurationStr);
                         //printf("Media Overlays SMIL DURATION (milliseconds): %ld\n", (long) durationWholeMilliseconds);
 
-                        SMILDataPtr smilData = std::make_shared<class SMILData>(sharedMe, item, durationWholeMilliseconds);
+                        SMILDataPtr smilData = std::make_shared<class SMILData>(sharedMe, item, spineItem, durationWholeMilliseconds);
                         _smilDatas.push_back(smilData);
 
                         accumulatedDurationMilliseconds += durationWholeMilliseconds;

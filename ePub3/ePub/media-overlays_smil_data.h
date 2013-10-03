@@ -25,6 +25,7 @@
 #include <ePub3/epub3.h>
 #include <ePub3/utilities/owned_by.h>
 #import <ePub3/manifest.h>
+#import <ePub3/spine.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -509,12 +510,14 @@ EPUB3_BEGIN_NAMESPACE
 
             ManifestItemPtr _manifestItem;
 
+            SpineItemPtr _spineItem;
+
             Sequence *_root;
 
         public:
             EPUB3_EXPORT
 
-            SMILData(const shared_ptr<MediaOverlaysSmilModel> smilModel, ManifestItemPtr manifestItem, uint32_t duration): OwnedBy(smilModel), _manifestItem(manifestItem), _duration(duration), _root(nullptr)
+            SMILData(const shared_ptr<MediaOverlaysSmilModel> smilModel, ManifestItemPtr manifestItem, SpineItemPtr spineItem, uint32_t duration): OwnedBy(smilModel), _manifestItem(manifestItem), _spineItem(spineItem), _duration(duration), _root(nullptr)
             {
                 //printf("SMILData(%s)\n", manifestItem->Href().c_str());
             }
@@ -528,6 +531,13 @@ EPUB3_BEGIN_NAMESPACE
                 {
                     delete _root;
                 }
+            }
+
+            EPUB3_EXPORT
+
+            const string& SpineItemIdentifier() const
+            {
+                return _spineItem->Idref();
             }
 
             EPUB3_EXPORT
