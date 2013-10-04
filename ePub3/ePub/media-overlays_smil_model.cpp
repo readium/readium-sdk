@@ -153,7 +153,7 @@ EPUB3_BEGIN_NAMESPACE
                 const std::string & str = _Str(s.str());
                 printf("%s\n", str.c_str());
 
-                _totalDuration = totalDurationFromSMILs;
+                //_totalDuration = totalDurationFromSMILs;
 
                 HandleError(EPUBError::MediaOverlayMismatchDurationMetadata, str);
             }
@@ -431,7 +431,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     const std::string & str = _Str(s.str());
                     printf("%s\n", str.c_str());
 
-                    smilData->_duration = smilDur;
+                    //smilData->_duration = smilDur;
 
                     HandleError(EPUBError::MediaOverlayMismatchDurationMetadata, str);
                 }
@@ -613,7 +613,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     // HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
                 }
 
-                smilData->_root = new SMILData::Sequence(nullptr, textref_file, textref_fragmentID, textrefManifestItem, type);
+                smilData->_root = new SMILData::Sequence(nullptr, textref_file, textref_fragmentID, textrefManifestItem, type, smilData);
 
                 //sequence = smilData->Body();
                 //sequence = smilData->_root; // because of const qualifier
@@ -635,7 +635,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     HandleError(EPUBError::MediaOverlaySMILSequenceSequenceParent, _Str(item->Href().c_str(), " => parent of sequence time container must be sequence"));
                 }
 
-                SMILData::Sequence *seq = new SMILData::Sequence(sequence, textref_file, textref_fragmentID, textrefManifestItem, type);
+                SMILData::Sequence *seq = new SMILData::Sequence(sequence, textref_file, textref_fragmentID, textrefManifestItem, type, smilData);
 
                 sequence = seq;
                 parallel = nullptr;
@@ -654,7 +654,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     HandleError(EPUBError::MediaOverlaySMILParallelSequenceParent, _Str(item->Href().c_str(), " => parent of parallel time container must be sequence"));
                 }
 
-                SMILData::Parallel *par = new SMILData::Parallel(sequence, textref_file, textref_fragmentID, textrefManifestItem, type);
+                SMILData::Parallel *par = new SMILData::Parallel(sequence, textref_file, textref_fragmentID, textrefManifestItem, type, smilData);
 
                 sequence = nullptr;
                 parallel = par;
@@ -733,7 +733,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     accumulatedDurationMilliseconds += clipDuration;
                 }
 
-                SMILData::Audio *audio = new SMILData::Audio(parallel, src_file, srcManifestItem, clipBeginMilliseconds, clipEndMilliseconds);
+                SMILData::Audio *audio = new SMILData::Audio(parallel, src_file, srcManifestItem, clipBeginMilliseconds, clipEndMilliseconds, smilData);
 
                 sequence = nullptr;
                 parallel = nullptr;
@@ -765,7 +765,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     _excludeAudioDuration = true;
                 }
 
-                SMILData::Text *text = new SMILData::Text(parallel, src_file, src_fragmentID, srcManifestItem);
+                SMILData::Text *text = new SMILData::Text(parallel, src_file, src_fragmentID, srcManifestItem, smilData);
 
                 sequence = nullptr;
                 parallel = nullptr;
@@ -837,6 +837,40 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             return Owner()->MediaOverlays_PlaybackActiveClass();
         }
 
+        const SMILData::Parallel *MediaOverlaysSmilModel::ParallelAt(uint32_t timeMilliseconds) const
+        {
+            uint32_t offset = 0;
+
+            for (int i = 0; i < _smilDatas.size(); i++)
+            {
+                shared_ptr<SMILData> data = _smilDatas.at(i);
+
+                uint32_t timeAdjusted = timeMilliseconds - offset;
+
+                const SMILData::Parallel *para = data->ParallelAt(timeAdjusted);
+                if (para != nullptr)
+                {
+                    return para;
+                }
+
+                offset += data->TotalClipDurationMilliseconds();
+            }
+
+            return nullptr;
+        }
+
+        const uint32_t MediaOverlaysSmilModel::TotalClipDurationMilliseconds() const
+        {
+            uint32_t total = 0;
+
+            for (int i = 0; i < _smilDatas.size(); i++)
+            {
+                shared_ptr<SMILData> data = _smilDatas.at(i);
+                total += data->TotalClipDurationMilliseconds();
+            }
+
+            return total;
+        }
 
         // http://www.idpf.org/epub/vocab/structure
         // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-skippability
