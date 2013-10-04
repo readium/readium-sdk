@@ -103,6 +103,14 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             EPUB3_EXPORT
 
+            const SMILData::Parallel *ParallelAt(uint32_t timeMilliseconds) const;
+
+            EPUB3_EXPORT
+
+            const uint32_t TotalClipDurationMilliseconds() const;
+
+            EPUB3_EXPORT
+
             std::vector<SMILDataPtr>::size_type GetSmilCount() const
             {
                 return _smilDatas.size();

@@ -51,7 +51,6 @@ EPUB3_BEGIN_NAMESPACE
 
             class Text;
 
-
             class TimeNode
             {
             private:
@@ -63,6 +62,7 @@ EPUB3_BEGIN_NAMESPACE
 
             protected:
                 TimeContainer *_parent;
+                SMILDataPtr _smilData;
 
             public:
                 virtual const string& Name() const
@@ -78,7 +78,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                TimeNode(TimeContainer *parent):_parent(parent)
+                TimeNode(TimeContainer *parent, SMILDataPtr smilData):_parent(parent), _smilData(smilData)
                 {
                 }
 
@@ -87,6 +87,13 @@ EPUB3_BEGIN_NAMESPACE
                 const TimeContainer *Parent() const
                 {
                     return _parent;
+                }
+
+                EPUB3_EXPORT
+
+                const SMILDataPtr SmilData() const
+                {
+                    return _smilData;
                 }
             };
 
@@ -115,12 +122,19 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                TimeContainer(Sequence *parent, string textref_file, string textref_fragmentID, ManifestItemPtr textrefManifestItem, string type):TimeNode(parent), _textref_file(textref_file), _textref_fragmentID(textref_fragmentID), _textrefManifestItem(textrefManifestItem), _type(type)
+                TimeContainer(Sequence *parent, string textref_file, string textref_fragmentID, ManifestItemPtr textrefManifestItem, string type, SMILDataPtr smilData):TimeNode(parent, smilData), _textref_file(textref_file), _textref_fragmentID(textref_fragmentID), _textrefManifestItem(textrefManifestItem), _type(type)
                 {
                     if (parent != nullptr)
                     {
                         parent->_children.push_back(this);
                     }
+                }
+
+                EPUB3_EXPORT
+
+                const Sequence *ParentSequence() const
+                {
+                    return dynamic_cast<const Sequence *>(_parent);
                 }
 
                 EPUB3_EXPORT
@@ -208,7 +222,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                Sequence(Sequence *parent, string textref_file, string textref_fragmentID, ManifestItemPtr textrefManifestItem, string type):TimeContainer(parent, textref_file, textref_fragmentID, textrefManifestItem, type)
+                Sequence(Sequence *parent, string textref_file, string textref_fragmentID, ManifestItemPtr textrefManifestItem, string type, SMILDataPtr smilData):TimeContainer(parent, textref_file, textref_fragmentID, textrefManifestItem, type, smilData)
                 {
                     _children = std::vector<const TimeContainer *>();
                 }
@@ -245,6 +259,99 @@ EPUB3_BEGIN_NAMESPACE
                 {
                     return true;
                 }
+
+                EPUB3_EXPORT
+
+                const uint32_t TotalClipDurationMilliseconds() const
+                {
+                    uint32_t total = 0;
+
+                    for (int i = 0; i < _children.size(); i++)
+                    {
+                        const TimeContainer *container = _children[i];
+                        if (container->IsParallel())
+                        {
+                            const Parallel *para = dynamic_cast<const Parallel *>(container);
+
+                            if (para->Audio() == nullptr)
+                            {
+                                continue;
+                            }
+
+                            if (para->Text() != nullptr && para->Text()->SrcManifestItem() != nullptr && para->Text()->SrcManifestItem() != SmilData()->SpineItem()->ManifestItem())
+                            {
+                                continue;
+                            }
+
+                            uint32_t clipDur = para->Audio()->ClipDurationMilliseconds();
+                            total += clipDur;
+                        }
+                        else if (container->IsSequence())
+                        {
+                            const Sequence *sequence = dynamic_cast<const Sequence *>(container);
+
+                            total += sequence->TotalClipDurationMilliseconds();
+                        }
+                    }
+
+                    return total;
+                }
+
+                EPUB3_EXPORT
+
+                const Parallel *ParallelAt(uint32_t timeMilliseconds) const
+                {
+                    if (timeMilliseconds < 0)
+                    {
+                        return nullptr;
+                    }
+
+                    uint32_t offset = 0;
+
+                    for (int i = 0; i < _children.size(); i++)
+                    {
+                        uint32_t timeAdjusted = timeMilliseconds - offset;
+
+                        const TimeContainer *container = _children[i];
+                        if (container->IsParallel())
+                        {
+                            const Parallel *para = dynamic_cast<const Parallel *>(container);
+
+                            if (para->Audio() == nullptr)
+                            {
+                                continue;
+                            }
+
+                            if (para->Text() != nullptr && para->Text()->SrcManifestItem() != nullptr && para->Text()->SrcManifestItem() != SmilData()->SpineItem()->ManifestItem())
+                            {
+                                continue;
+                            }
+
+                            uint32_t clipDur = para->Audio()->ClipDurationMilliseconds();
+
+                            if (clipDur > 0 && timeAdjusted <= clipDur)
+                            {
+                                return para;
+                            }
+
+                            offset += clipDur;
+                        }
+                        else if (container->IsSequence())
+                        {
+                            const Sequence *sequence = dynamic_cast<const Sequence *>(container);
+
+                            const Parallel *para = sequence->ParallelAt(timeAdjusted);
+                            if (para != nullptr)
+                            {
+                                return para;
+                            }
+
+                            offset += sequence->TotalClipDurationMilliseconds();
+                        }
+                    }
+
+                    return nullptr;
+                }
             };
 
             class Media : public TimeNode
@@ -269,8 +376,15 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                Media(Parallel *parent, string src_file, string src_fragmentID, ManifestItemPtr srcManifestItem):TimeNode(parent), _src_file(src_file), _src_fragmentID(src_fragmentID), _srcManifestItem(srcManifestItem)
+                Media(Parallel *parent, string src_file, string src_fragmentID, ManifestItemPtr srcManifestItem, SMILDataPtr smilData):TimeNode(parent, smilData), _src_file(src_file), _src_fragmentID(src_fragmentID), _srcManifestItem(srcManifestItem)
                 {
+                }
+
+                EPUB3_EXPORT
+
+                const Parallel *ParentParallel() const
+                {
+                    return dynamic_cast<const Parallel *>(_parent);
                 }
 
                 EPUB3_EXPORT
@@ -341,7 +455,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                Audio(Parallel *parent, string src, ManifestItemPtr srcManifestItem, uint32_t clipBeginMilliseconds, uint32_t clipEndMilliseconds):Media(parent, src, "", srcManifestItem), _clipBeginMilliseconds(clipBeginMilliseconds), _clipEndMilliseconds(clipEndMilliseconds)
+                Audio(Parallel *parent, string src, ManifestItemPtr srcManifestItem, uint32_t clipBeginMilliseconds, uint32_t clipEndMilliseconds, SMILDataPtr smilData):Media(parent, src, "", srcManifestItem, smilData), _clipBeginMilliseconds(clipBeginMilliseconds), _clipEndMilliseconds(clipEndMilliseconds)
                 {
                     parent->_audio = this;
                 }
@@ -358,6 +472,18 @@ EPUB3_BEGIN_NAMESPACE
                 const uint32_t ClipEndMilliseconds() const
                 {
                     return _clipEndMilliseconds;
+                }
+
+                EPUB3_EXPORT
+
+                const uint32_t ClipDurationMilliseconds() const
+                {
+                    if (_clipEndMilliseconds <= 0 || _clipEndMilliseconds <= _clipBeginMilliseconds)
+                    {
+                        return 0;
+                    }
+
+                    return _clipEndMilliseconds - _clipBeginMilliseconds;
                 }
 
                 EPUB3_EXPORT
@@ -401,7 +527,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                Text(Parallel *parent, string src_file, string src_fragmentID, ManifestItemPtr srcManifestItem):Media(parent, src_file, src_fragmentID, srcManifestItem)
+                Text(Parallel *parent, string src_file, string src_fragmentID, ManifestItemPtr srcManifestItem, SMILDataPtr smilData):Media(parent, src_file, src_fragmentID, srcManifestItem, smilData)
                 {
                     parent->_text = this;
                 }
@@ -465,7 +591,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                Parallel(Sequence *parent, string textref_file, string textref_fragmentID, ManifestItemPtr textrefManifestItem, string type):TimeContainer(parent, textref_file, textref_fragmentID, textrefManifestItem, type),_audio(nullptr),_text(nullptr)
+                Parallel(Sequence *parent, string textref_file, string textref_fragmentID, ManifestItemPtr textrefManifestItem, string type, SMILDataPtr smilData):TimeContainer(parent, textref_file, textref_fragmentID, textrefManifestItem, type, smilData), _audio(nullptr), _text(nullptr)
                 {
                 }
 
@@ -535,6 +661,15 @@ EPUB3_BEGIN_NAMESPACE
 
             EPUB3_EXPORT
 
+            // XHTML
+            const SpineItemPtr SpineItem() const
+            {
+                return _spineItem;
+            }
+
+            EPUB3_EXPORT
+
+            // XHTML
             const string& SpineItemIdentifier() const
             {
                 return _spineItem->Idref();
@@ -549,6 +684,7 @@ EPUB3_BEGIN_NAMESPACE
 
             EPUB3_EXPORT
 
+            // SMIL
             const ManifestItemPtr ManifestItem() const
             {
                 return _manifestItem;
@@ -560,6 +696,31 @@ EPUB3_BEGIN_NAMESPACE
             {
                 return _root;
             }
+
+            EPUB3_EXPORT
+
+            const Parallel *ParallelAt(uint32_t timeMilliseconds) const
+            {
+                if (_root == nullptr)
+                {
+                    return nullptr;
+                }
+
+                return _root->ParallelAt(timeMilliseconds);
+            }
+
+            EPUB3_EXPORT
+
+            const uint32_t TotalClipDurationMilliseconds() const
+            {
+                if (_root == nullptr)
+                {
+                    return 0;
+                }
+
+                return _root->TotalClipDurationMilliseconds();
+            }
+
         };
 
         EPUB3_END_NAMESPACE
