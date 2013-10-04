@@ -355,6 +355,38 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
+                const Parallel *NthParallel(uint32_t index, uint32_t & count) const
+                {
+                    for (int i = 0; i < _children.size(); i++)
+                    {
+                        const TimeContainer *container = _children[i];
+                        if (container->IsParallel())
+                        {
+                            count++;
+
+                            if (count == index)
+                            {
+                                const Parallel *para = dynamic_cast<const Parallel *>(container);
+                                return para;
+                            }
+                        }
+                        else if (container->IsSequence())
+                        {
+                            const Sequence *sequence = dynamic_cast<const Sequence *>(container);
+
+                            const Parallel *para = sequence->NthParallel(index, count);
+                            if (para != nullptr)
+                            {
+                                return para;
+                            }
+                        }
+                    }
+
+                    return nullptr;
+                }
+
+                EPUB3_EXPORT
+
                 const bool ClipOffset(uint32_t & offset, const Parallel *par) const
                 {
                     for (int i = 0; i < _children.size(); i++)
@@ -761,6 +793,19 @@ EPUB3_BEGIN_NAMESPACE
                 }
 
                 return _root->ParallelAt(timeMilliseconds);
+            }
+
+            EPUB3_EXPORT
+
+            const Parallel *NthParallel(uint32_t index) const
+            {
+                if (_root == nullptr)
+                {
+                    return nullptr;
+                }
+
+                uint32_t count = -1;
+                return _root->NthParallel(index, count);
             }
 
             EPUB3_EXPORT
