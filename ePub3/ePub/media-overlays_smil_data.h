@@ -352,6 +352,49 @@ EPUB3_BEGIN_NAMESPACE
 
                     return nullptr;
                 }
+
+                EPUB3_EXPORT
+
+                const bool ClipOffset(uint32_t & offset, const Parallel *par) const
+                {
+                    for (int i = 0; i < _children.size(); i++)
+                    {
+                        const TimeContainer *container = _children[i];
+                        if (container->IsParallel())
+                        {
+                            const Parallel *para = dynamic_cast<const Parallel *>(container);
+                            if (para == par)
+                            {
+                                return true;
+                            }
+
+                            if (para->Audio() == nullptr)
+                            {
+                                continue;
+                            }
+
+                            if (para->Text() != nullptr && para->Text()->SrcManifestItem() != nullptr && para->Text()->SrcManifestItem() != SmilData()->SpineItem()->ManifestItem())
+                            {
+                                continue;
+                            }
+
+                            uint32_t clipDur = para->Audio()->ClipDurationMilliseconds();
+                            offset += clipDur;
+                        }
+                        else if (container->IsSequence())
+                        {
+                            const Sequence *sequence = dynamic_cast<const Sequence *>(container);
+
+                            bool found = sequence->ClipOffset(offset, par);
+                            if (found)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+
+                    return false;
+                }
             };
 
             class Media : public TimeNode
@@ -621,6 +664,17 @@ EPUB3_BEGIN_NAMESPACE
                 const bool IsSequence() const
                 {
                     return false;
+                }
+
+                EPUB3_EXPORT
+
+                const bool ClipOffset(uint32_t & offset) const
+                {
+                    if (SmilData() == nullptr || SmilData()->Body() == nullptr)
+                    {
+                        return false;
+                    }
+                    return SmilData()->Body()->ClipOffset(offset, this);
                 }
             };
 
