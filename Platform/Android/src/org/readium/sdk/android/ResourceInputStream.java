@@ -1,4 +1,4 @@
-package org.readium.sdk.android.util;
+package org.readium.sdk.android;
 
 import java.io.IOException;
 import java.io.InputStream;
