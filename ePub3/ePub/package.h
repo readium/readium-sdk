@@ -40,7 +40,7 @@
 #include <ePub3/media_support_info.h>
 #include <ePub3/property_holder.h>
 #include <ePub3/utilities/xml_identifiable.h>
-#include <ePub3/media-overlays_smil_model.h>
+//#include "media-overlays_smil_model.h"
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -278,10 +278,10 @@ protected:
         }
     }
 
-protected:
-    shared_ptr<MediaOverlaysSmilModel> _mediaOverlays;      ///< The Media Overlays SMIL model
-public:
-    shared_ptr<MediaOverlaysSmilModel>    MediaOverlaysSmilModel()      const       { return _mediaOverlays; }
+// protected:
+//     shared_ptr<MediaOverlaysSmilModel> _mediaOverlays;      ///< The Media Overlays SMIL model
+// public:
+//     shared_ptr<MediaOverlaysSmilModel>    MediaOverlaysSmilModel()      const       { return _mediaOverlays; }
 };
 
 /**
