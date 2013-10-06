@@ -51,7 +51,7 @@ class ByteStream;
 class Container;
 class PackageBase;
 class Package;
-//class MediaOverlaysSmilModel;
+class MediaOverlaysSmilModel;
 
 typedef shared_ptr<Package>     PackagePtr;
 
@@ -278,10 +278,10 @@ protected:
         }
     }
 
-// protected:
-//     shared_ptr<MediaOverlaysSmilModel> _mediaOverlays;      ///< The Media Overlays SMIL model
-// public:
-//     shared_ptr<MediaOverlaysSmilModel>    MediaOverlaysSmilModel()      const       { return _mediaOverlays; }
+protected:
+    shared_ptr<MediaOverlaysSmilModel> _mediaOverlays;      ///< The Media Overlays SMIL model
+public:
+    shared_ptr<MediaOverlaysSmilModel>    MediaOverlaysSmilModel()      const       { return _mediaOverlays; }
 };
 
 /**
