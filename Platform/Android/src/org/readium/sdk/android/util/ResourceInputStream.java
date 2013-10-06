@@ -1,4 +1,4 @@
-package org.readium.sdk.android;
+package org.readium.sdk.android.util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,14 +13,26 @@ public class ResourceInputStream extends InputStream {
 	private final long __nativePtr;
 	private final int mLength;
 	private int mPos;
+	private boolean mClosed = false;
 	
-	private ResourceInputStream(int nativePtr, int length) {
+	private ResourceInputStream(long nativePtr, int length) {
 		__nativePtr = nativePtr;
 		mLength = length;
 	}
 	
-	private static ResourceInputStream createResourceInputStream(int nativePtr, int length) {
+	private static ResourceInputStream createResourceInputStream(long nativePtr, int length) {
 		return new ResourceInputStream(nativePtr, length);
+	}
+	
+	@Override
+	protected void finalize() {
+		// If we are not closed yet?
+		if(!mClosed) {
+			try {
+				close();
+			}
+			catch(Exception e) { }
+		}
 	}
 	
 	@Override
