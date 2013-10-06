@@ -24,8 +24,8 @@
 
 #include <ePub3/epub3.h>
 #include <ePub3/utilities/owned_by.h>
-#import <ePub3/manifest.h>
-#import <ePub3/spine.h>
+#include <ePub3/manifest.h>
+#include <ePub3/spine.h>
 
 EPUB3_BEGIN_NAMESPACE
 

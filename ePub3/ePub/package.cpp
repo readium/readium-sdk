@@ -34,7 +34,8 @@
 #include <list>
 #include REGEX_INCLUDE
 #include <libxml/xpathInternals.h>
-#include "media-overlays_smil_utils.h"
+// #include "media-overlays_smil_utils.h"
+// #include "media-overlays_smil_model.h"
 
 void PrintNodeSet(xmlNodeSetPtr nodeSet)
 {
@@ -746,8 +747,8 @@ bool Package::Unpack()
         }
     }
 
-    _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
-    _mediaOverlays->Initialize();
+    // _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
+    // _mediaOverlays->Initialize();
 
     // lastly, let's set the media support information
     InitMediaSupport();
@@ -1212,91 +1213,91 @@ const string Package::Contributors(bool localized) const
     ss << "and " << *last;
     return string(ss.str());
 }
-const string& Package::MediaOverlays_ActiveClass() const
-{
-    // See:
-    // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
-
-    PropertyPtr prop = PropertyMatching("active-class", "media");
-    if (prop != nullptr)
-    {
-        return prop->Value();
-    }
-    else
-    {
-        return string::EmptyString;
-    }
-}
-const string& Package::MediaOverlays_PlaybackActiveClass() const
-{
-    // introduced in the EPUB 3.0.1 revision,
-    // see:
-    // https://epub-revision.googlecode.com/svn/trunk/build/301/spec/epub30-mediaoverlays.html#sec-package-metadata
-
-    PropertyPtr prop = PropertyMatching("playback-active-class", "media");
-    if (prop != nullptr)
-    {
-        return prop->Value();
-    }
-    else
-    {
-        return string::EmptyString;
-    }
-}
-const string& Package::MediaOverlays_DurationTotal() const
-{
-    // See:
-    // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
-
-    PropertyPtr prop = PropertyMatching("duration", "media", false);
-    if (prop != nullptr)
-    {
-        return prop->Value();
-    }
-    else
-    {
-        return string::EmptyString;
-    }
-}
-const string& Package::MediaOverlays_DurationItem(const std::shared_ptr<ManifestItem> manifestItem)
-{
-    // See:
-    // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
-
-    auto iri = MakePropertyIRI("duration", "media");
-
-    PropertyPtr prop = manifestItem->PropertyMatching(iri, false);
-    if (prop == nullptr)
-    {
-        std::shared_ptr<ManifestItem> mediaOverlay = manifestItem->MediaOverlay();
-        if (mediaOverlay != nullptr)
-        {
-            prop = mediaOverlay->PropertyMatching(iri, false);
-        }
-    }
-
-    if (prop == nullptr)
-    {
-        return string::EmptyString;
-    }
-
-    return prop->Value();
-}
-const string& Package::MediaOverlays_Narrator(bool localized) const
-{
-    // See:
-    // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
-
-    PropertyPtr prop = PropertyMatching("narrator", "media");
-    if (prop != nullptr)
-    {
-        return localized ? prop->LocalizedValue() : prop->Value();
-    }
-    else
-    {
-        return string::EmptyString;
-    }
-}
+// const string& Package::MediaOverlays_ActiveClass() const
+// {
+//     // See:
+//     // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
+// 
+//     PropertyPtr prop = PropertyMatching("active-class", "media");
+//     if (prop != nullptr)
+//     {
+//         return prop->Value();
+//     }
+//     else
+//     {
+//         return string::EmptyString;
+//     }
+// }
+// const string& Package::MediaOverlays_PlaybackActiveClass() const
+// {
+//     // introduced in the EPUB 3.0.1 revision,
+//     // see:
+//     // https://epub-revision.googlecode.com/svn/trunk/build/301/spec/epub30-mediaoverlays.html#sec-package-metadata
+// 
+//     PropertyPtr prop = PropertyMatching("playback-active-class", "media");
+//     if (prop != nullptr)
+//     {
+//         return prop->Value();
+//     }
+//     else
+//     {
+//         return string::EmptyString;
+//     }
+// }
+// const string& Package::MediaOverlays_DurationTotal() const
+// {
+//     // See:
+//     // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
+// 
+//     PropertyPtr prop = PropertyMatching("duration", "media", false);
+//     if (prop != nullptr)
+//     {
+//         return prop->Value();
+//     }
+//     else
+//     {
+//         return string::EmptyString;
+//     }
+// }
+// const string& Package::MediaOverlays_DurationItem(const std::shared_ptr<ManifestItem> manifestItem)
+// {
+//     // See:
+//     // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
+// 
+//     auto iri = MakePropertyIRI("duration", "media");
+// 
+//     PropertyPtr prop = manifestItem->PropertyMatching(iri, false);
+//     if (prop == nullptr)
+//     {
+//         std::shared_ptr<ManifestItem> mediaOverlay = manifestItem->MediaOverlay();
+//         if (mediaOverlay != nullptr)
+//         {
+//             prop = mediaOverlay->PropertyMatching(iri, false);
+//         }
+//     }
+// 
+//     if (prop == nullptr)
+//     {
+//         return string::EmptyString;
+//     }
+// 
+//     return prop->Value();
+// }
+// const string& Package::MediaOverlays_Narrator(bool localized) const
+// {
+//     // See:
+//     // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
+// 
+//     PropertyPtr prop = PropertyMatching("narrator", "media");
+//     if (prop != nullptr)
+//     {
+//         return localized ? prop->LocalizedValue() : prop->Value();
+//     }
+//     else
+//     {
+//         return string::EmptyString;
+//     }
+// }
 const string& Package::Language() const
 {
     auto items = PropertiesMatching(DCType::Language);

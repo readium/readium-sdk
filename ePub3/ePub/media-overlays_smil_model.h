@@ -24,7 +24,7 @@
 
 #include <ePub3/epub3.h>
 #include <ePub3/utilities/owned_by.h>
-#import <ePub3/manifest.h>
+#include <ePub3/manifest.h>
 #include <libxml/xpath.h> // xmlNodePtr
 #include "media-overlays_smil_data.h"
 #include "package.h"

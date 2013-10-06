@@ -181,6 +181,21 @@ bool PropertyHolder::ContainsProperty(const string& reference, const string& pre
         return false;
     return ContainsProperty(iri, lookupParents);
 }
+bool PropertyHolder::ContainsProperty(DCType type) const
+{
+	return ContainsProperty(type, true);
+}
+
+bool PropertyHolder::ContainsProperty(const IRI& iri) const
+{
+	return ContainsProperty(iri, true);
+}
+
+bool PropertyHolder::ContainsProperty(const string& reference, const string& prefix) const
+{
+	return ContainsProperty(reference, prefix, true);
+}
+
 const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(DCType type, bool lookupParents) const
 {
     IRI iri = IRIForDCType(type);
@@ -212,6 +227,23 @@ const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(const stri
         return PropertyList();
     return PropertiesMatching(iri, lookupParents);
 }
+
+
+const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(DCType type) const
+{
+	return PropertiesMatching(type, true);
+}
+
+const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(const IRI& iri) const
+{
+	return PropertiesMatching(iri, true);
+}
+
+const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(const string& reference, const string& prefix) const
+{
+	return PropertiesMatching(reference, prefix, true);
+}
+
 PropertyPtr PropertyHolder::PropertyMatching(DCType type, bool lookupParents) const
 {
     IRI iri = IRIForDCType(type);
@@ -241,6 +273,23 @@ PropertyPtr PropertyHolder::PropertyMatching(const string& reference, const stri
         return false;
     return PropertyMatching(iri, lookupParents);
 }
+
+
+PropertyPtr PropertyHolder::PropertyMatching(DCType type) const
+{
+	return PropertyMatching(type, true);
+}
+
+PropertyPtr PropertyHolder::PropertyMatching(const IRI& iri) const
+{
+	return PropertyMatching(iri, true);
+}
+
+PropertyPtr PropertyHolder::PropertyMatching(const string& reference, const string& prefix) const
+{
+	return PropertyMatching(reference, prefix, true);
+}
+
 void PropertyHolder::RegisterPrefixIRIStem(const string &prefix, const string &iriStem)
 {
     _vocabularyLookup[prefix] = iriStem;
