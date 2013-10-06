@@ -282,6 +282,7 @@ LOCAL_SRC_FILES := \
 		Platform/Android/jni/epub3.cpp \
 		Platform/Android/jni/container.cpp \
 		Platform/Android/jni/package.cpp \
-		Platform/Android/jni/iri.cpp
+		Platform/Android/jni/iri.cpp \
+		Platform/Android/jni/resource_stream.cpp
 
 include $(BUILD_SHARED_LIBRARY)

@@ -55,7 +55,7 @@ static const int BUFFER_SIZE = 32768;
 static const char *java_class_ResourceInputStream_name = "org/readium/sdk/android/ResourceInputStream";
 
 static const char *java_method_ResourceInputStream_createResourceInputStream_name = "createResourceInputStream";
-static const char *java_method_ResourceInputStream_createResourceInputStream_sign = "(II)Lorg/readium/sdk/android/ResourceInputStream;";
+static const char *java_method_ResourceInputStream_createResourceInputStream_sign = "(JI)Lorg/readium/sdk/android/ResourceInputStream;";
 
 /*
  * Internal variables
@@ -86,6 +86,7 @@ int onLoad_cacheJavaElements_ResourceInputStream(JNIEnv *env) {
 	// Return JNI_VERSION for OK, if not one of the lines above already returned ONLOAD_ERROR
 	return JNI_VERSION;
 }
+
 /**
  * Calls the java createResourceInputStream method of ResourceInputStream class
  */
@@ -93,6 +94,16 @@ jobject javaResourceInputStream_createResourceInputStream(JNIEnv *env, long read
 
 	return java_method_ResourceInputStream_createResourceInputStream(env, readerPtr, length);
 }
+
+
+/*
+ * JNI functions
+ **************************************************/
+
+/*
+ * Package: org.readium.sdk.android
+ * Class: ResourceInputStream
+ */
 
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_ResourceInputStream_nativeSkip
 		(JNIEnv* env, jobject thiz, jlong nativePtr, jint byteCount) {
@@ -150,16 +161,6 @@ JNIEXPORT  JNICALL void Java_org_readium_sdk_android_ResourceInputStream_nativeR
 	ResourceStream* stream = (ResourceStream*) nativePtr;
 	delete stream;
 }
-
-
-/*
- * JNI functions
- **************************************************/
-
-/*
- * Package: org.readium.sdk.android
- * Class: ResourceInputStream
- */
 
 
 

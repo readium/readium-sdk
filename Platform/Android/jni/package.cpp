@@ -114,7 +114,7 @@ jobject javaPackage_createPackage(JNIEnv *env, jlong nativePtr) {
  * Internal functions
  **************************************************/
 
-static char* getProperty(ePub3::Package* package, char* name, char* pref, ePub3::PropertyHolder* forObject)
+static ePub3::string getProperty(ePub3::Package* package, char* name, char* pref, ePub3::PropertyHolder* forObject)
 {
 	LOGD("getProperty(): called for name='%s' pref='%s'", name, pref);
     auto propertyName = ePub3::string(name);
@@ -125,11 +125,12 @@ static char* getProperty(ePub3::Package* package, char* name, char* pref, ePub3:
 
     if (propertyList.size() > 0) {
         auto prop = propertyList[0];
-    	LOGD("getProperty(): returning '%s'", prop->Value().c_str());
-        return (char *) prop->Value().c_str();
+        ePub3::string value(prop->Value());
+    	LOGD("getProperty(): returning '%s'", value.c_str());
+        return value;
     }
 	LOGD("getProperty(): returning EMPTY");
-    return (char *) "";
+    return "";
 }
 
 static void loadChildren(JNIEnv* env, jobject jparent, shared_ptr<ePub3::NavigationElement> parent)
@@ -139,12 +140,14 @@ static void loadChildren(JNIEnv* env, jobject jparent, shared_ptr<ePub3::Navigat
 		auto instance = &*childIt;
 		auto navigationElement = instance->get();
 		if (ePub3::NavigationPoint *navigationPoint = dynamic_cast<ePub3::NavigationPoint*>(navigationElement)) {
-			jstring title = toJstring(env, navigationPoint->Title().c_str(), false);
-			jstring content = toJstring(env, navigationPoint->Content().c_str(), false);
+			jni::StringUTF title(env, (std::string&) navigationPoint->Title().stl_str());
+			jstring jtitle = (jstring) title;
+			jni::StringUTF content(env, (std::string&) navigationPoint->Content().stl_str());
+			jstring jcontent = (jstring) content;
 			jobject jchild = env->CallStaticObjectMethod(javaJavaObjectsFactoryClass, createNavigationPoint_ID,
-					title, content);
-			env->DeleteLocalRef(title);
-			env->DeleteLocalRef(content);
+					jtitle, jcontent);
+			env->DeleteLocalRef(jtitle);
+			env->DeleteLocalRef(jcontent);
 			env->CallStaticVoidMethod(javaJavaObjectsFactoryClass, addElementToParent_ID,
 					jparent, jchild);
 			loadChildren(env, jchild, *instance);
@@ -156,16 +159,19 @@ static void loadChildren(JNIEnv* env, jobject jparent, shared_ptr<ePub3::Navigat
 static jobject loadNavigationTable(JNIEnv* env, shared_ptr<class ePub3::NavigationTable> navigationTable)
 {
     if (navigationTable != nullptr) {
-		jstring type = toJstring(env, navigationTable->Type().c_str(), false);
-		jstring title = toJstring(env, navigationTable->Title().c_str(), false);
-		jstring sourceHref = toJstring(env, navigationTable->SourceHref().c_str(), false);
+		jni::StringUTF type(env, (std::string&) navigationTable->Type().stl_str());
+		jstring jtype = (jstring) type;
+		jni::StringUTF title(env, (std::string&) navigationTable->Title().stl_str());
+		jstring jtitle = (jstring) title;
+		jni::StringUTF sourceHref(env, (std::string&) navigationTable->SourceHref().stl_str());
+		jstring jsourceHref = (jstring) sourceHref;
 
 		jobject jnavigationTable = env->CallStaticObjectMethod(javaJavaObjectsFactoryClass, createNavigationTable_ID,
-				type, title, sourceHref);
+				jtype, jtitle, jsourceHref);
 
-		env->DeleteLocalRef(type);
-		env->DeleteLocalRef(title);
-		env->DeleteLocalRef(sourceHref);
+		env->DeleteLocalRef(jtype);
+		env->DeleteLocalRef(jtitle);
+		env->DeleteLocalRef(jsourceHref);
 
 		loadChildren(env, jnavigationTable, navigationTable);
 
@@ -188,116 +194,116 @@ static jobject loadNavigationTable(JNIEnv* env, shared_ptr<class ePub3::Navigati
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetTitle
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->Title().c_str();
-	return toJstring(env, data, false);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->Title().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetSubtitle
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->Subtitle().c_str();
-	return toJstring(env, data);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->Subtitle().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetShortTitle
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->ShortTitle().c_str();
-	return toJstring(env, data);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->ShortTitle().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetCollectionTitle
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->CollectionTitle().c_str();
-	return toJstring(env, data);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->CollectionTitle().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetEditionTitle
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->EditionTitle().c_str();
-	return toJstring(env, data);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->EditionTitle().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetExpandedTitle
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->ExpandedTitle().c_str();
-	return toJstring(env, data);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->ExpandedTitle().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetFullTitle
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->FullTitle().c_str();
-	return toJstring(env, data, false);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->FullTitle().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetUniqueID
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->UniqueID().c_str();
-	return toJstring(env, data, false);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->UniqueID().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetURLSafeUniqueID
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->URLSafeUniqueID().c_str();
-	return toJstring(env, data, false);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->URLSafeUniqueID().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetPackageID
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->PackageID().c_str();
-	return toJstring(env, data, false);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->PackageID().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetBasePath
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->BasePath().c_str();
-	return toJstring(env, data, false);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->BasePath().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetType
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->Type().c_str();
-	return toJstring(env, data);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->Type().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetVersion
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->Version().c_str();
-	return toJstring(env, data, false);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->Version().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetISBN
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->ISBN().c_str();
-	return toJstring(env, data, false);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->ISBN().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetLanguage
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->Language().c_str();
-	return toJstring(env, data);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->Language().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetCopyrightOwner
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->CopyrightOwner().c_str();
-	return toJstring(env, data, false);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->CopyrightOwner().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetSource
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->Source().c_str();
-	return toJstring(env, data);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->Source().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetAuthors
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->Authors().c_str();
-	return toJstring(env, data, false);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->Authors().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetModificationDate
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-	char *data = (char *) PCKG(pckgPtr)->ModificationDate().c_str();
-	return toJstring(env, data, false);
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->ModificationDate().stl_str());
+	return (jstring) str;
 }
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetPageProgressionDirection
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
@@ -323,8 +329,8 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetAuthorLi
 	jobject stringList = javaEPub3_createStringList(env);
 	auto authorNames = PCKG(pckgPtr)->AuthorNames();
     for (auto author = authorNames.begin(); author != authorNames.end(); ++author) {
-		char *data = (char *) author->c_str();
-		jstring jauthor = toJstring(env, data, false);
+    	jni::StringUTF str(env, (std::string&) author->stl_str());
+		jstring jauthor = (jstring) str;
 		javaEPub3_addStringToList(env, stringList, jauthor);
 		env->DeleteLocalRef(jauthor);
     }
@@ -336,8 +342,8 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetSubjects
 	jobject stringList = javaEPub3_createStringList(env);
 	auto subjects = PCKG(pckgPtr)->Subjects();
     for (auto subject = subjects.begin(); subject != subjects.end(); ++subject) {
-		char *data = (char *) subject->c_str();
-		jstring jsubject = toJstring(env, data, false);
+    	jni::StringUTF str(env, (std::string&) subject->stl_str());
+		jstring jsubject = (jstring) str;
 		javaEPub3_addStringToList(env, stringList, jsubject);
 		env->DeleteLocalRef(jsubject);
     }
@@ -351,9 +357,11 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetSpineIte
 
     auto spine = PCKG(pckgPtr)->FirstSpineItem();
     do {
-    	jstring idRef = toJstring(env, spine->Idref().c_str());
+    	jni::StringUTF idr(env, (std::string&) spine->Idref().stl_str());
+    	jstring idRef =  (jstring) idr;
         auto manifestItem = spine->ManifestItem();
-    	jstring href = toJstring(env, manifestItem->BaseHref().c_str(), false);
+    	jni::StringUTF hr(env, (std::string&) manifestItem->BaseHref().stl_str());
+    	jstring href = (jstring) hr;
     	const char* _page_spread;
     	ePub3::PageSpread spread = spine->Spread();
     	switch (spread) {
@@ -370,8 +378,8 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetSpineIte
     		_page_spread = "";
     	}
     	jstring pageSpread = toJstring(env, _page_spread);
-    	const char *_renditionLayout = getProperty((&*PCKG(pckgPtr)), (char *) "layout", (char *) "rendition", (&*spine));
-    	jstring renditionLayout = env->NewStringUTF(_renditionLayout);
+    	ePub3::string _renditionLayout = getProperty((&*PCKG(pckgPtr)), (char *) "layout", (char *) "rendition", (&*spine));
+    	jstring renditionLayout = env->NewStringUTF(_renditionLayout.c_str());
 
     	jobject spineItem = env->CallStaticObjectMethod(javaJavaObjectsFactoryClass, createSpineItem_ID,
     			idRef, href, pageSpread, renditionLayout);
@@ -429,9 +437,13 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetManifest
 	for (auto i = manifest.begin(); i != manifest.end(); i++) {
 		std::shared_ptr<ePub3::ManifestItem> item = i->second;
 
-//    	LOGD("ManifestItem: href:%s, mediatype:%s", item->Href().c_str(), item->MediaType().c_str());
-    	jstring href = toJstring(env, item->Href().c_str());
-    	jstring mediaType = toJstring(env, item->MediaType().c_str());
+    	jni::StringUTF hr(env, (std::string&) item->Href().stl_str());
+    	jstring href = (jstring) hr;
+    	jni::StringUTF mt(env, (std::string&) item->MediaType().stl_str());
+    	jstring mediaType = (jstring) mt;
+
+//    	LOGD("ManifestItem: href:%s, mediatype:%s", hr.c_str(), mt.c_str());
+
     	jobject manifestItem = env->CallStaticObjectMethod(javaJavaObjectsFactoryClass, createManifestItem_ID,
     			href, mediaType);
 
@@ -533,12 +545,13 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetProperty
     char* propertyName = (char *) env->GetStringUTFChars(jpropertyName, NULL);
     char* prefix = (char *) env->GetStringUTFChars(jprefix, NULL);
 
-    jstring prop = toJstring(env, getProperty((&*PCKG(pckgPtr)), propertyName, prefix, (&*PCKG(pckgPtr))));
+    ePub3::string property = getProperty((&*PCKG(pckgPtr)), propertyName, prefix, (&*PCKG(pckgPtr)));
+    jstring jprop = toJstring(env, property.c_str());
 
     RELEASE_UTF8(jpropertyName, propertyName);
     RELEASE_UTF8(jprefix, prefix);
 
-    return prop;
+    return jprop;
 }
 
 
