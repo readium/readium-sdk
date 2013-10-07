@@ -500,8 +500,6 @@ bool Package::Unpack()
                     case DCType::Identifier:
                     {
                         foundIdentifier = true;
-                        if ( !uniqueIDRef.empty() && uniqueIDRef != p->XMLIdentifier() )
-                            HandleError(EPUBError::OPFPackageUniqueIDInvalid);
                         break;
                     }
                     case DCType::Title:
@@ -536,7 +534,8 @@ bool Package::Unpack()
             HandleError(EPUBError::OPFMissingTitleMetadata);
         if ( !foundLanguage )
             HandleError(EPUBError::OPFMissingLanguageMetadata);
-        if ( !foundModDate )
+        //Modification date requirement was added in ePub 3 spec. ePub 2 doesn't require it.
+        if ( !foundModDate && atof(Version().c_str()) >= 3 )
             HandleError(EPUBError::OPFMissingModificationDateMetadata);
         
         for ( int i = 0; i < refineNodes->nodeNr; i++ )
