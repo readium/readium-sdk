@@ -186,7 +186,7 @@ EPUB3_BEGIN_NAMESPACE
             {
                 try
                 {
-                    _totalDuration = ePub3::SmilClockValuesParser::ToWholeMilliseconds(durationStr);
+                    _totalDuration = SmilClockValuesParser::ToWholeMilliseconds(durationStr);
                     //printf("Media Overlays TOTAL DURATION (milliseconds): %ld\n", (long) _totalDuration);
                 }
                 catch (const std::invalid_argument& exc)
@@ -238,7 +238,7 @@ EPUB3_BEGIN_NAMESPACE
                     uint32_t durationWholeMilliseconds = 0;
                     try
                     {
-                        durationWholeMilliseconds = ePub3::SmilClockValuesParser::ToWholeMilliseconds(itemDurationStr);
+                        durationWholeMilliseconds = SmilClockValuesParser::ToWholeMilliseconds(itemDurationStr);
                         //printf("Media Overlays SMIL DURATION (milliseconds): %ld\n", (long) durationWholeMilliseconds);
 
                         SMILDataPtr smilData = std::make_shared<class SMILData>(sharedMe, item, spineItem, durationWholeMilliseconds);
@@ -402,7 +402,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 for (int i = 0; i < _smilDatas.size(); i++)
                 {
                     shared_ptr<SMILData> data = _smilDatas.at(i);
-                    if (data->ManifestItem()->Identifier() == id)
+                    if (data->SmilManifestItem()->Identifier() == id)
                     {
                         auto seq = data->Body();
                         if (seq != nullptr)
@@ -415,15 +415,12 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     }
                 }
 
-                uint32_t smilDur = smilData->DurationMilliseconds();
-                //printf("Media Overlays ITEM DUR: %ld\n", (long) smilDur);
-
                 const xmlNodePtr body = nodes->nodeTab[0];
 
-                smilDur = parseSMIL(smilData, nullptr, nullptr, item, body);
+                uint32_t smilDur = parseSMIL(smilData, nullptr, nullptr, item, body);
                 //printf("Media Overlays SMIL DURATION (milliseconds): %ld\n", (long) smilDur);
 
-                uint32_t metaDur = smilData->DurationMilliseconds();
+                uint32_t metaDur = smilData->DurationMilliseconds_Metadata();
                 if (metaDur != smilDur)
                 {
                     std::stringstream s;
@@ -617,7 +614,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
 
                 //sequence = smilData->Body();
                 //sequence = smilData->_root; // because of const qualifier
-                sequence = const_cast<ePub3::SMILData::Sequence *>(smilData->Body());
+                sequence = const_cast<SMILData::Sequence *>(smilData->Body());
 
                 parallel = nullptr;
             }
@@ -688,7 +685,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 {
                     try
                     {
-                        clipBeginMilliseconds = ePub3::SmilClockValuesParser::ToWholeMilliseconds(clipBeginStr);
+                        clipBeginMilliseconds = SmilClockValuesParser::ToWholeMilliseconds(clipBeginStr);
                     }
                     catch (const std::invalid_argument& exc)
                     {
@@ -705,7 +702,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 {
                     try
                     {
-                        clipEndMilliseconds = ePub3::SmilClockValuesParser::ToWholeMilliseconds(clipEndStr);
+                        clipEndMilliseconds = SmilClockValuesParser::ToWholeMilliseconds(clipEndStr);
                     }
                     catch (const std::invalid_argument& exc)
                     {
@@ -837,6 +834,19 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             return Owner()->MediaOverlays_PlaybackActiveClass();
         }
 
+        const uint32_t MediaOverlaysSmilModel::DurationMilliseconds_Calculated() const
+        {
+            uint32_t total = 0;
+
+            for (int i = 0; i < _smilDatas.size(); i++)
+            {
+                shared_ptr<SMILData> data = _smilDatas.at(i);
+                total += data->DurationMilliseconds_Calculated();
+            }
+
+            return total;
+        }
+
         const SMILData::Parallel *MediaOverlaysSmilModel::ParallelAt(uint32_t timeMilliseconds) const
         {
             uint32_t offset = 0;
@@ -853,23 +863,81 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     return para;
                 }
 
-                offset += data->TotalClipDurationMilliseconds();
+                offset += data->DurationMilliseconds_Calculated();
             }
 
             return nullptr;
         }
 
-        const uint32_t MediaOverlaysSmilModel::TotalClipDurationMilliseconds() const
+        const void MediaOverlaysSmilModel::PercentToPosition(double percent, SMILDataPtr & smilData, uint32_t & smilIndex, const SMILData::Parallel *& par, uint32_t & parIndex, uint32_t & milliseconds) const
         {
-            uint32_t total = 0;
-
-            for (int i = 0; i < _smilDatas.size(); i++)
+            if (percent < 0.0 || percent > 100.0)
             {
-                shared_ptr<SMILData> data = _smilDatas.at(i);
-                total += data->TotalClipDurationMilliseconds();
+                percent = 0.0;
             }
 
-            return total;
+            uint32_t total = DurationMilliseconds_Calculated();
+
+            uint32_t timeMs = (uint32_t) (total * (percent / 100.0));
+
+            //printf("=== TIME SCRUB: %ldms / %ldms (==%ldms)", (long) timeMs, (long) total, (long) mo->DurationMillisecondsTotal());
+
+            par = ParallelAt(timeMs);
+            if (par == nullptr)
+            {
+                return;
+            }
+
+            uint32_t smilDataOffset = 0;
+            for (std::vector<SMILDataPtr>::size_type i = 0; i < GetSmilCount(); i++)
+            {
+                smilData = GetSmil(i);
+                if (smilData == par->SmilData())
+                {
+                    break;
+                }
+                smilDataOffset += smilData->DurationMilliseconds_Calculated();
+            }
+
+            milliseconds = timeMs - (smilDataOffset + smilData->ClipOffset(par));
+        }
+
+        const double MediaOverlaysSmilModel::PositionToPercent(std::vector<SMILDataPtr>::size_type smilIndex, uint32_t parIndex, uint32_t milliseconds) const
+        {
+            if (parIndex < 0)
+            {
+                return -1.0;
+            }
+
+            if (smilIndex < 0 && smilIndex >= GetSmilCount())
+            {
+                return -1.0;
+            }
+
+            uint32_t smilDataOffset = 0;
+            for (std::vector<SMILDataPtr>::size_type i = 0; i < smilIndex; i++)
+            {
+                SMILDataPtr sd = GetSmil(i);
+                smilDataOffset += sd->DurationMilliseconds_Calculated();
+            }
+
+            SMILDataPtr smilData = GetSmil(smilIndex);
+
+            const SMILData::Parallel *par = smilData->NthParallel(parIndex);
+            if (par == nullptr)
+            {
+                return -1.0;
+            }
+
+            uint32_t offset = smilDataOffset + smilData->ClipOffset(par) + milliseconds;
+
+            uint32_t total = DurationMilliseconds_Calculated();
+
+            double percent = ((double) offset / (double) total) * 100.0;
+
+            return percent;
+
+            //printf("=== TIME SCRUB [%f%] %ldms / %ldms (==%ldms)", percent, (long) offset, (long) total, (long) mo->DurationMillisecondsTotal());
         }
 
         // http://www.idpf.org/epub/vocab/structure

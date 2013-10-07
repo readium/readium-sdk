@@ -37,7 +37,7 @@ EPUB3_BEGIN_NAMESPACE
 
         class SMILData : public std::enable_shared_from_this<SMILData>, public OwnedBy<MediaOverlaysSmilModel>
         {
-            friend class MediaOverlaysSmilModel; // _root assignment
+            friend class MediaOverlaysSmilModel; // _root
 
         public:
 
@@ -153,7 +153,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                const ManifestItemPtr TextManifestItem() const
+                const ManifestItemPtr TextRefManifestItem() const
                 {
                     return _textrefManifestItem;
                 }
@@ -184,7 +184,9 @@ EPUB3_BEGIN_NAMESPACE
 
             class Sequence : public TimeContainer
             {
-                friend class TimeContainer;
+                friend class TimeContainer; // _children
+
+                friend class SMILData; // ParallelAt, NthParallel, ClipOffset
 
             private:
                 Sequence() _DELETED_;
@@ -197,6 +199,131 @@ EPUB3_BEGIN_NAMESPACE
 
             protected:
                 std::vector<const TimeContainer *> _children;
+
+                const bool ClipOffset(uint32_t & offset, const Parallel *par) const
+                {
+                    for (int i = 0; i < _children.size(); i++)
+                    {
+                        const TimeContainer *container = _children[i];
+                        if (container->IsParallel())
+                        {
+                            const Parallel *para = dynamic_cast<const Parallel *>(container);
+                            if (para == par)
+                            {
+                                return true;
+                            }
+
+                            if (para->Audio() == nullptr)
+                            {
+                                continue;
+                            }
+
+                            if (para->Text() != nullptr && para->Text()->SrcManifestItem() != nullptr && para->Text()->SrcManifestItem() != SmilData()->XhtmlSpineItem()->ManifestItem())
+                            {
+                                continue;
+                            }
+
+                            uint32_t clipDur = para->Audio()->ClipDurationMilliseconds();
+                            offset += clipDur;
+                        }
+                        else if (container->IsSequence())
+                        {
+                            const Sequence *sequence = dynamic_cast<const Sequence *>(container);
+
+                            bool found = sequence->ClipOffset(offset, par);
+                            if (found)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+
+                    return false;
+                }
+
+                const Parallel *ParallelAt(uint32_t timeMilliseconds) const
+                {
+                    if (timeMilliseconds < 0)
+                    {
+                        return nullptr;
+                    }
+
+                    uint32_t offset = 0;
+
+                    for (int i = 0; i < _children.size(); i++)
+                    {
+                        uint32_t timeAdjusted = timeMilliseconds - offset;
+
+                        const TimeContainer *container = _children[i];
+                        if (container->IsParallel())
+                        {
+                            const Parallel *para = dynamic_cast<const Parallel *>(container);
+
+                            if (para->Audio() == nullptr)
+                            {
+                                continue;
+                            }
+
+                            if (para->Text() != nullptr && para->Text()->SrcManifestItem() != nullptr && para->Text()->SrcManifestItem() != SmilData()->XhtmlSpineItem()->ManifestItem())
+                            {
+                                continue;
+                            }
+
+                            uint32_t clipDur = para->Audio()->ClipDurationMilliseconds();
+
+                            if (clipDur > 0 && timeAdjusted <= clipDur)
+                            {
+                                return para;
+                            }
+
+                            offset += clipDur;
+                        }
+                        else if (container->IsSequence())
+                        {
+                            const Sequence *sequence = dynamic_cast<const Sequence *>(container);
+
+                            const Parallel *para = sequence->ParallelAt(timeAdjusted);
+                            if (para != nullptr)
+                            {
+                                return para;
+                            }
+
+                            offset += sequence->DurationMilliseconds();
+                        }
+                    }
+
+                    return nullptr;
+                }
+
+                const Parallel *NthParallel(uint32_t index, uint32_t & count) const
+                {
+                    for (int i = 0; i < _children.size(); i++)
+                    {
+                        const TimeContainer *container = _children[i];
+                        if (container->IsParallel())
+                        {
+                            count++;
+
+                            if (count == index)
+                            {
+                                const Parallel *para = dynamic_cast<const Parallel *>(container);
+                                return para;
+                            }
+                        }
+                        else if (container->IsSequence())
+                        {
+                            const Sequence *sequence = dynamic_cast<const Sequence *>(container);
+
+                            const Parallel *para = sequence->NthParallel(index, count);
+                            if (para != nullptr)
+                            {
+                                return para;
+                            }
+                        }
+                    }
+
+                    return nullptr;
+                }
 
             public:
                 EPUB3_EXPORT
@@ -262,7 +389,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                const uint32_t TotalClipDurationMilliseconds() const
+                const uint32_t DurationMilliseconds() const
                 {
                     uint32_t total = 0;
 
@@ -278,7 +405,7 @@ EPUB3_BEGIN_NAMESPACE
                                 continue;
                             }
 
-                            if (para->Text() != nullptr && para->Text()->SrcManifestItem() != nullptr && para->Text()->SrcManifestItem() != SmilData()->SpineItem()->ManifestItem())
+                            if (para->Text() != nullptr && para->Text()->SrcManifestItem() != nullptr && para->Text()->SrcManifestItem() != SmilData()->XhtmlSpineItem()->ManifestItem())
                             {
                                 continue;
                             }
@@ -290,142 +417,11 @@ EPUB3_BEGIN_NAMESPACE
                         {
                             const Sequence *sequence = dynamic_cast<const Sequence *>(container);
 
-                            total += sequence->TotalClipDurationMilliseconds();
+                            total += sequence->DurationMilliseconds();
                         }
                     }
 
                     return total;
-                }
-
-                EPUB3_EXPORT
-
-                const Parallel *ParallelAt(uint32_t timeMilliseconds) const
-                {
-                    if (timeMilliseconds < 0)
-                    {
-                        return nullptr;
-                    }
-
-                    uint32_t offset = 0;
-
-                    for (int i = 0; i < _children.size(); i++)
-                    {
-                        uint32_t timeAdjusted = timeMilliseconds - offset;
-
-                        const TimeContainer *container = _children[i];
-                        if (container->IsParallel())
-                        {
-                            const Parallel *para = dynamic_cast<const Parallel *>(container);
-
-                            if (para->Audio() == nullptr)
-                            {
-                                continue;
-                            }
-
-                            if (para->Text() != nullptr && para->Text()->SrcManifestItem() != nullptr && para->Text()->SrcManifestItem() != SmilData()->SpineItem()->ManifestItem())
-                            {
-                                continue;
-                            }
-
-                            uint32_t clipDur = para->Audio()->ClipDurationMilliseconds();
-
-                            if (clipDur > 0 && timeAdjusted <= clipDur)
-                            {
-                                return para;
-                            }
-
-                            offset += clipDur;
-                        }
-                        else if (container->IsSequence())
-                        {
-                            const Sequence *sequence = dynamic_cast<const Sequence *>(container);
-
-                            const Parallel *para = sequence->ParallelAt(timeAdjusted);
-                            if (para != nullptr)
-                            {
-                                return para;
-                            }
-
-                            offset += sequence->TotalClipDurationMilliseconds();
-                        }
-                    }
-
-                    return nullptr;
-                }
-
-                EPUB3_EXPORT
-
-                const Parallel *NthParallel(uint32_t index, uint32_t & count) const
-                {
-                    for (int i = 0; i < _children.size(); i++)
-                    {
-                        const TimeContainer *container = _children[i];
-                        if (container->IsParallel())
-                        {
-                            count++;
-
-                            if (count == index)
-                            {
-                                const Parallel *para = dynamic_cast<const Parallel *>(container);
-                                return para;
-                            }
-                        }
-                        else if (container->IsSequence())
-                        {
-                            const Sequence *sequence = dynamic_cast<const Sequence *>(container);
-
-                            const Parallel *para = sequence->NthParallel(index, count);
-                            if (para != nullptr)
-                            {
-                                return para;
-                            }
-                        }
-                    }
-
-                    return nullptr;
-                }
-
-                EPUB3_EXPORT
-
-                const bool ClipOffset(uint32_t & offset, const Parallel *par) const
-                {
-                    for (int i = 0; i < _children.size(); i++)
-                    {
-                        const TimeContainer *container = _children[i];
-                        if (container->IsParallel())
-                        {
-                            const Parallel *para = dynamic_cast<const Parallel *>(container);
-                            if (para == par)
-                            {
-                                return true;
-                            }
-
-                            if (para->Audio() == nullptr)
-                            {
-                                continue;
-                            }
-
-                            if (para->Text() != nullptr && para->Text()->SrcManifestItem() != nullptr && para->Text()->SrcManifestItem() != SmilData()->SpineItem()->ManifestItem())
-                            {
-                                continue;
-                            }
-
-                            uint32_t clipDur = para->Audio()->ClipDurationMilliseconds();
-                            offset += clipDur;
-                        }
-                        else if (container->IsSequence())
-                        {
-                            const Sequence *sequence = dynamic_cast<const Sequence *>(container);
-
-                            bool found = sequence->ClipOffset(offset, par);
-                            if (found)
-                            {
-                                return true;
-                            }
-                        }
-                    }
-
-                    return false;
                 }
             };
 
@@ -624,9 +620,9 @@ EPUB3_BEGIN_NAMESPACE
 
             class Parallel : public TimeContainer
             {
-                friend class Text;
+                friend class Text; // _text
 
-                friend class Audio;
+                friend class Audio; // _audio
 
             private:
                 Parallel() _DELETED_;
@@ -697,17 +693,6 @@ EPUB3_BEGIN_NAMESPACE
                 {
                     return false;
                 }
-
-                EPUB3_EXPORT
-
-                const bool ClipOffset(uint32_t & offset) const
-                {
-                    if (SmilData() == nullptr || SmilData()->Body() == nullptr)
-                    {
-                        return false;
-                    }
-                    return SmilData()->Body()->ClipOffset(offset, this);
-                }
             };
 
         private :
@@ -725,6 +710,43 @@ EPUB3_BEGIN_NAMESPACE
             SpineItemPtr _spineItem;
 
             Sequence *_root;
+
+            const Parallel *ParallelAt(uint32_t timeMilliseconds) const
+            {
+                if (_root == nullptr)
+                {
+                    return nullptr;
+                }
+
+                return _root->ParallelAt(timeMilliseconds);
+            }
+
+            const Parallel *NthParallel(uint32_t index) const
+            {
+                if (_root == nullptr)
+                {
+                    return nullptr;
+                }
+
+                uint32_t count = -1;
+                return _root->NthParallel(index, count);
+            }
+
+            const uint32_t ClipOffset(const Parallel * par) const
+            {
+                if (_root == nullptr)
+                {
+                    return 0;
+                }
+
+                uint32_t offset = 0;
+                if (_root->ClipOffset(offset, par))
+                {
+                    return offset;
+                }
+
+                return 0;
+            }
 
         public:
             EPUB3_EXPORT
@@ -747,31 +769,14 @@ EPUB3_BEGIN_NAMESPACE
 
             EPUB3_EXPORT
 
-            // XHTML
-            const SpineItemPtr SpineItem() const
+            const SpineItemPtr XhtmlSpineItem() const
             {
                 return _spineItem;
             }
 
             EPUB3_EXPORT
 
-            // XHTML
-            const string& SpineItemIdentifier() const
-            {
-                return _spineItem->Idref();
-            }
-
-            EPUB3_EXPORT
-
-            const uint32_t DurationMilliseconds() const
-            {
-                return _duration;
-            }
-
-            EPUB3_EXPORT
-
-            // SMIL
-            const ManifestItemPtr ManifestItem() const
+            const ManifestItemPtr SmilManifestItem() const
             {
                 return _manifestItem;
             }
@@ -785,41 +790,22 @@ EPUB3_BEGIN_NAMESPACE
 
             EPUB3_EXPORT
 
-            const Parallel *ParallelAt(uint32_t timeMilliseconds) const
+            const uint32_t DurationMilliseconds_Metadata() const
             {
-                if (_root == nullptr)
-                {
-                    return nullptr;
-                }
-
-                return _root->ParallelAt(timeMilliseconds);
+                return _duration;
             }
 
             EPUB3_EXPORT
 
-            const Parallel *NthParallel(uint32_t index) const
-            {
-                if (_root == nullptr)
-                {
-                    return nullptr;
-                }
-
-                uint32_t count = -1;
-                return _root->NthParallel(index, count);
-            }
-
-            EPUB3_EXPORT
-
-            const uint32_t TotalClipDurationMilliseconds() const
+            const uint32_t DurationMilliseconds_Calculated() const
             {
                 if (_root == nullptr)
                 {
                     return 0;
                 }
 
-                return _root->TotalClipDurationMilliseconds();
+                return _root->DurationMilliseconds();
             }
-
         };
 
         EPUB3_END_NAMESPACE

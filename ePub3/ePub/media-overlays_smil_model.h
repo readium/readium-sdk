@@ -59,16 +59,6 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             uint32_t _totalDuration; //whole milliseconds (resolution = 1ms)
 
-            //typedef std::map<string, shared_ptr<SMILData>> ManifestItemSMILMap;
-            //ManifestItemSMILMap _smilMap; // indexed by SMIL *manifest item* ID (_not_ spine item)
-            //for (auto iterator = _smilData.begin(); iterator != _smilData.end(); iterator++)
-            //{
-            //    string id = iterator->first;
-            //    SMILDataPtr smilData = iterator->second;
-            //}
-            //_smilMap.insert(std::make_pair(key, value));
-            //SMILDataPtr smilData = _smilMap[item->Identifier()];
-
             std::vector<shared_ptr<SMILData>> _smilDatas;
         public:
             EPUB3_EXPORT
@@ -76,7 +66,6 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
             MediaOverlaysSmilModel(const shared_ptr<Package> package); //PackagePtr
 
             virtual ~MediaOverlaysSmilModel();
-
 
             EPUB3_EXPORT
 
@@ -96,18 +85,14 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             EPUB3_EXPORT
 
-            uint32_t DurationMillisecondsTotal() const
+            uint32_t DurationMilliseconds_Metadata() const
             {
                 return _totalDuration;
             }
 
             EPUB3_EXPORT
 
-            const SMILData::Parallel *ParallelAt(uint32_t timeMilliseconds) const;
-
-            EPUB3_EXPORT
-
-            const uint32_t TotalClipDurationMilliseconds() const;
+            const uint32_t DurationMilliseconds_Calculated() const;
 
             EPUB3_EXPORT
 
@@ -128,6 +113,14 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
                 SMILDataPtr smilData = _smilDatas.at(i);
                 return smilData;
             }
+
+            EPUB3_EXPORT
+
+            const double PositionToPercent(std::vector<SMILDataPtr>::size_type  smilIndex, uint32_t parIndex, uint32_t milliseconds) const;
+
+            EPUB3_EXPORT
+
+            const void PercentToPosition(double percent, SMILDataPtr & smilData, uint32_t & smilIndex, const SMILData::Parallel* & par, uint32_t & parIndex, uint32_t & milliseconds) const;
 
             //EPUB3_EXPORT
 
@@ -169,21 +162,6 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
                 return str;
             }
 
-            /*
-            EPUB3_EXPORT
-
-            uint32_t DurationMilliseconds(const string manifestItemID)
-            {
-                SMILDataPtr smilData = getDataForSMILManifestItem(manifestItemID);
-                if (smilData == nullptr)
-                {
-                    return 0;
-                }
-
-                return smilData->Duration();
-            }
-            */
-
         private:
             static const std::vector<string> _Skippables;
             static const std::vector<string> _Escapables;
@@ -199,6 +177,9 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
             uint32_t parseSMILs();
 
             uint32_t parseSMIL(SMILDataPtr smilData, SMILData::Sequence *sequence, SMILData::Parallel *parallel, const ManifestItemPtr item, const xmlNodePtr element); // recursive
+
+        protected:
+            const SMILData::Parallel *ParallelAt(uint32_t timeMilliseconds) const;
         };
 
         EPUB3_END_NAMESPACE
