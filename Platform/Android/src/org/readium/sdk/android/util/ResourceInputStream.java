@@ -6,7 +6,8 @@ import java.nio.ByteBuffer;
 
 public class ResourceInputStream extends InputStream {
 	
-    /**
+    private static final String TAG = "ResourceInputStream";
+	/**
      * Native Package Pointer.
      * DO NOT USE FROM JAVA SIDE!
      */
@@ -20,25 +21,17 @@ public class ResourceInputStream extends InputStream {
 		mLength = length;
 	}
 	
-	private static ResourceInputStream createResourceInputStream(long nativePtr, int length) {
-		return new ResourceInputStream(nativePtr, length);
-	}
-	
-	@Override
-	protected void finalize() {
-		// If we are not closed yet?
-		if(!mClosed) {
-			try {
-				close();
-			}
-			catch(Exception e) { }
-		}
+	private static ResourceInputStream createResourceInputStream(long nativePtr, long length) {
+		return new ResourceInputStream(nativePtr, (int) length);
 	}
 	
 	@Override
 	public void close() throws IOException {
-		super.close();
-		nativeReleasePtr(__nativePtr);
+		if (!mClosed) {
+			super.close();
+			nativeReleasePtr(__nativePtr);
+			mClosed = true;
+		}
 	}
 
 	@Override
