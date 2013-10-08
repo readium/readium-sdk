@@ -158,11 +158,6 @@ public class Package {
 		authorList = nativeGetAuthorList(__nativePtr);
 		subjects = nativeGetSubjects(__nativePtr);
 		spineItems = nativeGetSpineItems(__nativePtr);
-		tableOfContents = nativeGetTableOfContents(__nativePtr);
-		listOfFigures = nativeGetListOfFigures(__nativePtr);
-		listOfIllustrations = nativeGetListOfIllustrations(__nativePtr);
-		listOfTables = nativeGetListOfTables(__nativePtr);
-		pageList = nativeGetPageList(__nativePtr);
 		manifestTable = nativeGetManifestTable(__nativePtr);
 		Log.i(TAG, "package nativePtr: " + __nativePtr);
 		Log.i(TAG, "title: "+title);
@@ -188,11 +183,6 @@ public class Package {
 		Log.i(TAG, "pageProgressionDirection: "+pageProgressionDirection);
 		Log.i(TAG, "subjects: "+subjects);
 		Log.i(TAG, "spineItems: "+spineItems.size());
-		Log.i(TAG, "tableOfContents: "+tableOfContents);
-		Log.i(TAG, "listOfFigures: "+listOfFigures);
-		Log.i(TAG, "listOfIllustrations: "+listOfIllustrations);
-		Log.i(TAG, "listOfTables: "+listOfTables);
-		Log.i(TAG, "pageList: "+pageList);
 		Log.i(TAG, "manifestTable: "+manifestTable.size());
 	}
 
@@ -291,24 +281,53 @@ public class Package {
 	public List<SpineItem> getSpineItems() {
 		return spineItems;
 	}
+	
+	public SpineItem getSpineItem(String idref) {
+		for (SpineItem si : spineItems) {
+			if (si.getIdRef().equals(idref)) {
+				return si;
+			}
+		}
+		return null;
+	}
 
 	public NavigationTable getTableOfContents() {
+		if (tableOfContents == null) {
+			tableOfContents = nativeGetTableOfContents(__nativePtr);
+			Log.i(TAG, "tableOfContents: "+tableOfContents);
+		}
 		return tableOfContents;
 	}
 
 	public NavigationTable getListOfFigures() {
+		if (listOfFigures == null) {
+			listOfFigures = nativeGetListOfFigures(__nativePtr);
+			Log.i(TAG, "listOfFigures: "+listOfFigures);
+		}
 		return listOfFigures;
 	}
 
 	public NavigationTable getListOfIllustrations() {
+		if (listOfIllustrations == null) {
+			listOfIllustrations = nativeGetListOfIllustrations(__nativePtr);
+			Log.i(TAG, "listOfIllustrations: "+listOfIllustrations);
+		}
 		return listOfIllustrations;
 	}
 
 	public NavigationTable getListOfTables() {
+		if (listOfTables == null) {
+			listOfTables = nativeGetListOfTables(__nativePtr);
+			Log.i(TAG, "listOfTables: "+listOfTables);
+		}
 		return listOfTables;
 	}
 
 	public NavigationTable getPageList() {
+		if (pageList == null) {
+			pageList = nativeGetPageList(__nativePtr);
+			Log.i(TAG, "pageList: "+pageList);
+		}
 		return pageList;
 	}
 
