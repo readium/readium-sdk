@@ -651,7 +651,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     HandleError(EPUBError::MediaOverlaySMILParallelSequenceParent, _Str(item->Href().c_str(), " => parent of parallel time container must be sequence"));
                 }
 
-                SMILData::Parallel *par = new SMILData::Parallel(sequence, textref_file, textref_fragmentID, textrefManifestItem, type, smilData);
+                SMILData::Parallel *par = new SMILData::Parallel(sequence, type, smilData);
 
                 sequence = nullptr;
                 parallel = par;

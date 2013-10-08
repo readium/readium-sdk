@@ -107,11 +107,6 @@ EPUB3_BEGIN_NAMESPACE
                 TimeContainer(TimeContainer&&) _DELETED_;
 
             protected:
-                string _textref_file;
-                string _textref_fragmentID;
-
-                ManifestItemPtr _textrefManifestItem;
-
                 string _type; // space-separated
 
             public:
@@ -122,7 +117,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                TimeContainer(Sequence *parent, string textref_file, string textref_fragmentID, ManifestItemPtr textrefManifestItem, string type, SMILDataPtr smilData):TimeNode(parent, smilData), _textref_file(textref_file), _textref_fragmentID(textref_fragmentID), _textrefManifestItem(textrefManifestItem), _type(type)
+                TimeContainer(Sequence *parent, string type, SMILDataPtr smilData):TimeNode(parent, smilData), _type(type)
                 {
                     if (parent != nullptr)
                     {
@@ -135,27 +130,6 @@ EPUB3_BEGIN_NAMESPACE
                 const Sequence *ParentSequence() const
                 {
                     return dynamic_cast<const Sequence *>(_parent);
-                }
-
-                EPUB3_EXPORT
-
-                const string TextRefFile() const
-                {
-                    return _textref_file;
-                }
-
-                EPUB3_EXPORT
-
-                const string TextRefFragmentId() const
-                {
-                    return _textref_fragmentID;
-                }
-
-                EPUB3_EXPORT
-
-                const ManifestItemPtr TextRefManifestItem() const
-                {
-                    return _textrefManifestItem;
                 }
 
                 EPUB3_EXPORT
@@ -198,6 +172,11 @@ EPUB3_BEGIN_NAMESPACE
                 static const string _Name;
 
             protected:
+                string _textref_file;
+                string _textref_fragmentID;
+
+                ManifestItemPtr _textrefManifestItem;
+
                 std::vector<const TimeContainer *> _children;
 
                 const bool ClipOffset(uint32_t & offset, const Parallel *par) const
@@ -349,9 +328,30 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                Sequence(Sequence *parent, string textref_file, string textref_fragmentID, ManifestItemPtr textrefManifestItem, string type, SMILDataPtr smilData):TimeContainer(parent, textref_file, textref_fragmentID, textrefManifestItem, type, smilData)
+                Sequence(Sequence *parent, string textref_file, string textref_fragmentID, ManifestItemPtr textrefManifestItem, string type, SMILDataPtr smilData):TimeContainer(parent, type, smilData), _textref_file(textref_file), _textref_fragmentID(textref_fragmentID), _textrefManifestItem(textrefManifestItem)
                 {
                     _children = std::vector<const TimeContainer *>();
+                }
+
+                EPUB3_EXPORT
+
+                const string TextRefFile() const
+                {
+                    return _textref_file;
+                }
+
+                EPUB3_EXPORT
+
+                const string TextRefFragmentId() const
+                {
+                    return _textref_fragmentID;
+                }
+
+                EPUB3_EXPORT
+
+                const ManifestItemPtr TextRefManifestItem() const
+                {
+                    return _textrefManifestItem;
                 }
 
                 EPUB3_EXPORT
@@ -662,7 +662,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                Parallel(Sequence *parent, string textref_file, string textref_fragmentID, ManifestItemPtr textrefManifestItem, string type, SMILDataPtr smilData):TimeContainer(parent, textref_file, textref_fragmentID, textrefManifestItem, type, smilData), _audio(nullptr), _text(nullptr)
+                Parallel(Sequence *parent, string type, SMILDataPtr smilData):TimeContainer(parent, type, smilData), _audio(nullptr), _text(nullptr)
                 {
                 }
 
