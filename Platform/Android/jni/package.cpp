@@ -156,7 +156,7 @@ static void loadChildren(JNIEnv* env, jobject jparent, shared_ptr<ePub3::Navigat
 	}
 }
 
-static jobject loadNavigationTable(JNIEnv* env, shared_ptr<class ePub3::NavigationTable> navigationTable)
+static jobject loadNavigationTable(JNIEnv* env, shared_ptr<class ePub3::NavigationTable> navigationTable, char* defaultName)
 {
     if (navigationTable != nullptr) {
 		jni::StringUTF type(env, (std::string&) navigationTable->Type().stl_str());
@@ -177,7 +177,9 @@ static jobject loadNavigationTable(JNIEnv* env, shared_ptr<class ePub3::Navigati
 
 		return jnavigationTable;
     }
-	return NULL;
+	jstring name = toJstring(env, defaultName, false);
+	return env->CallStaticObjectMethod(javaJavaObjectsFactoryClass, createNavigationTable_ID,
+			name, name, NULL);
 }
 
 
@@ -376,6 +378,7 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetSpineIte
     		break;
     	default:
     		_page_spread = "";
+    		break;
     	}
     	jstring pageSpread = toJstring(env, _page_spread);
     	ePub3::string _renditionLayout = getProperty((&*PCKG(pckgPtr)), (char *) "layout", (char *) "rendition", (&*spine));
@@ -400,31 +403,31 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetTableOfC
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
     auto navigationTable = PCKG(pckgPtr)->TableOfContents();
-	return loadNavigationTable(env, navigationTable);
+	return loadNavigationTable(env, navigationTable, "toc");
 }
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetListOfFigures
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
     auto navigationTable = PCKG(pckgPtr)->ListOfFigures();
-	return loadNavigationTable(env, navigationTable);
+	return loadNavigationTable(env, navigationTable, "lof");
 }
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetListOfIllustrations
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
     auto navigationTable = PCKG(pckgPtr)->ListOfIllustrations();
-	return loadNavigationTable(env, navigationTable);
+	return loadNavigationTable(env, navigationTable, "loi");
 }
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetListOfTables
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
     auto navigationTable = PCKG(pckgPtr)->ListOfTables();
-	return loadNavigationTable(env, navigationTable);
+	return loadNavigationTable(env, navigationTable, "lot");
 }
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetPageList
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
     auto navigationTable = PCKG(pckgPtr)->PageList();
-	return loadNavigationTable(env, navigationTable);
+	return loadNavigationTable(env, navigationTable, "page-list");
 }
 
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetManifestTable
@@ -487,7 +490,7 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeInputStream
     auto byteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
     ResourceStream *stream = new ResourceStream(byteStream);
 
-    jobject inputStream = javaResourceInputStream_createResourceInputStream(env, stream, (jint) archiveInfo.UncompressedSize());
+    jobject inputStream = javaResourceInputStream_createResourceInputStream(env, stream, (int) archiveInfo.UncompressedSize());
 
 	return inputStream;
 }

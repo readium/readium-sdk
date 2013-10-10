@@ -33,6 +33,10 @@ public class SpineItem {
 	public String getRenditionLayout() {
 		return renditionLayout;
 	}
+	
+	public boolean isFixedLayout() {
+		return "pre-paginated".equals(renditionLayout);
+	}
 
 	public JSONObject toJSON() throws JSONException {
 		return new JSONObject().put("href", href).put("page_spread", pageSpread).

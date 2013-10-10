@@ -74,13 +74,13 @@ jobject javaResourceInputStream_createResourceInputStream(JNIEnv *env, long read
  * JNI functions
  **************************************************/
 
-JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_ResourceInputStream_nativeSkip
+JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeSkip
 		(JNIEnv* env, jobject thiz, jlong nativePtr, jint byteCount);
 
-JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_ResourceInputStream_nativeGetBytes
+JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeGetBytes
 		(JNIEnv* env, jobject thiz, jlong nativePtr, jint dataLength);
 
-JNIEXPORT  JNICALL void Java_org_readium_sdk_android_ResourceInputStream_nativeReleasePtr
+JNIEXPORT  JNICALL void Java_org_readium_sdk_android_util_ResourceInputStream_nativeReleasePtr
 		(JNIEnv* env, jobject thiz, jlong nativePtr);
 /*
  * Package: org.readium.sdk.android
