@@ -47,7 +47,7 @@ static inline
 	return ::ePub3::string(str->Data(), str->Length());
 }
 
-static inline ::Windows::Foundation::Uri^ IRIToURI(::ePub3::IRI& iri)
+static inline ::Windows::Foundation::Uri^ IRIToURI(const ::ePub3::IRI& iri)
 {
 	::ePub3::string nstr = iri.IRIString();
 	if (nstr.empty())
@@ -68,6 +68,17 @@ static inline ::ePub3::IRI URIToIRI(::Windows::Foundation::Uri^ uri)
 	internal: \
 	property _Native NativeObject { _Native get() { return _native; } } \
 	static _Wrapped Wrapper(_Native native)
+
+#define _BRIDGE_API_IMPL_(_Native, _Wrapped) \
+	_Wrapped^ _Wrapped::Wrapper(_Native native) \
+	{ \
+		if (!bool(native)) \
+			return nullptr; \
+		_Wrapped^ result = native->GetBridge<_Wrapped>(); \
+		if (result == nullptr) \
+			result = ref new _Wrapped(native); \
+		return result; \
+	}
 
 END_READIUM_API
 

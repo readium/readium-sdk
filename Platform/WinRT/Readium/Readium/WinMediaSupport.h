@@ -28,11 +28,41 @@
 
 BEGIN_READIUM_API
 
+ref class Package;
+ref class ManifestItem;
+
+/// Possible types of support provided.
+public enum class MediaSupportType
+{
+	/// The media type is not supported.
+	Unsupported = 0,
+	/// The rendering engine understands this media type with no outside help.
+	IntrinsicSupport = 1,
+	/// The publication provides a DHTML handler for this media type.
+	SupportedWithHandler = 2
+};
+
 public ref class MediaSupportInfo sealed
 {
-	_DECLARE_BRIDGE_API_(::std::shared_ptr<::ePub3::MediaSupportInfo>, MediaSupportInfo^);
+	_DECLARE_BRIDGE_API_(::ePub3::MediaSupportInfoPtr, MediaSupportInfo^);
+
+internal:
+	MediaSupportInfo(::ePub3::MediaSupportInfoPtr native) : _native(native) {}
 
 public:
+	MediaSupportInfo(Package^ owner);
+	MediaSupportInfo(Package^ owner, ::Platform::String^ mediaType);
+	MediaSupportInfo(Package^ owner, ::Platform::String^ mediaType, MediaSupportType supportType);
+
+	virtual ~MediaSupportInfo() {}
+
+	property String^ MediaType { ::Platform::String^ get(); void set(::Platform::String^ newValue); }
+	property MediaSupportType Support { MediaSupportType get(); void set(MediaSupportType value); }
+
+	property bool HasIntrinsicSupport { bool get(); }
+	property bool RequiresMediaHandler { bool get(); }
+
+	IVectorView<ManifestItem^>^ MatchingManifestItems(Package^ pkg);
 
 };
 

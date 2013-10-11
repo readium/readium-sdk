@@ -25,9 +25,11 @@
 #include "Readium.h"
 #include <ePub3/library.h>
 
-using namespace ::Platform;
-using namespace ::Windows::Storage;
-using namespace ::Windows::Foundation;
+using ::Platform::String;
+using ::Windows::Storage::IStorageFile;
+using ::Windows::Foundation::IAsyncOperation;
+using ::Windows::Foundation::IAsyncAction;
+using ::Windows::Foundation::Uri;
 
 BEGIN_READIUM_API
 

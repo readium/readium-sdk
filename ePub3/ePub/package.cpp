@@ -1431,7 +1431,7 @@ const Package::StringList Package::UnsupportedMediaTypes() const
     StringList types;
     for ( auto& pair : _mediaSupport )
     {
-        if ( pair.second.Support() == MediaSupportInfo::SupportType::Unsupported )
+        if ( pair.second->Support() == MediaSupportInfo::SupportType::Unsupported )
         {
             types.push_back(pair.first);
         }
@@ -1453,7 +1453,11 @@ void Package::InitMediaSupport()
         if ( CoreMediaTypes.find(mediaType) != CoreMediaTypes.end() )
         {
             // support for core types is required
-            _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo(Ptr(), mediaType)));
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+			_mediaSupport.emplace(mediaType, MediaSupportInfo::New(Ptr(), mediaType));
+#else
+            _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo::New(Ptr(), mediaType)));
+#endif
         }
         else
         {
@@ -1461,12 +1465,20 @@ void Package::InitMediaSupport()
             if ( pHandler )
             {
                 // supported through a handler
-                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo(Ptr(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler)));
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+				_mediaSupport.emplace(mediaType, MediaSupportInfo::New(Ptr(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler));
+#else
+                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo::New(Ptr(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler)));
+#endif
             }
             else
             {
                 // unsupported
-                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo(Ptr(), mediaType, false)));
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+				_mediaSupport.emplace(mediaType, MediaSupportInfo::New(Ptr(), mediaType, false));
+#else
+                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo::New(Ptr(), mediaType, false)));
+#endif
             }
         }
     }

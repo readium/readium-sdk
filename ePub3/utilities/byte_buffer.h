@@ -11,6 +11,10 @@
 
 #include <ePub3/epub3.h>
 
+#if EPUB_PLATFORM(WINRT)
+namespace Readium { class BridgedByteBuffer; };
+#endif
+
 EPUB3_BEGIN_NAMESPACE
 
 /**
@@ -114,6 +118,8 @@ private:
     size_t m_bufferCapacity;
     // whether to zero unused bytes
     bool m_secure;
+
+	friend class ::Readium::BridgedByteBuffer;
 };
 
 EPUB3_END_NAMESPACE

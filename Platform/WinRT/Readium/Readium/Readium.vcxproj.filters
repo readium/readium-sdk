@@ -359,6 +359,27 @@
     <ClInclude Include="WinMediaSupport.h">
       <Filter>Public Interface</Filter>
     </ClInclude>
+    <ClInclude Include="PluginMaps.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="IContentHandler.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="IContentFilter.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="BufferBridge.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinMediaHandler.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\Forward.h">
+      <Filter>ePub3\ePub</Filter>
+    </ClInclude>
+    <ClInclude Include="WinFilterChain.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\ePub3\utilities\byte_buffer.cpp">
@@ -717,6 +738,24 @@
       <Filter>Public Interface</Filter>
     </ClCompile>
     <ClCompile Include="PropertyHolderImpl.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="PluginMaps.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinFilterChain.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinMediaSupport.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinMediaHandler.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinSpine.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinManifest.cpp">
       <Filter>Public Interface</Filter>
     </ClCompile>
   </ItemGroup>

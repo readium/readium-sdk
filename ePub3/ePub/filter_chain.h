@@ -25,6 +25,9 @@ EPUB3_BEGIN_NAMESPACE
 class FilterContext;
 
 class FilterChain : public PointerType<FilterChain>
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 public:
     typedef shared_vector<ContentFilter>    FilterList;
