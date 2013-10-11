@@ -52,14 +52,14 @@ class MediaSupportInfo : public PointerType<MediaSupportInfo>, public OwnedBy<Pa
 public:
     ///
     /// A list of manifest items.
-    typedef shared_list<ManifestItem>   ManifestItemList;
+    typedef shared_vector<ManifestItem>   ManifestItemList;
     
     ///
     /// Possible types of support provided.
     enum class EPUB3_EXPORT SupportType : uint8_t
     {
         Unsupported             = 0,    ///< The media type is not supported.
-        IntrinsicSupport        = 1,    ///< The rendering engine undersands this media type with no outside help.
+        IntrinsicSupport        = 1,    ///< The rendering engine understands this media type with no outside help.
         SupportedWithHandler    = 2     ///< The publication provides a DHTML handler for this media type.
     };
     

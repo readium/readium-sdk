@@ -38,7 +38,16 @@ BEGIN_READIUM_API
 
 namespace Details = ::Platform::Collections::Details;
 namespace WUXI = ::Windows::UI::Xaml::Interop;
-using namespace Details;
+namespace WFC = ::Windows::Foundation::Collections;
+
+using ::Platform::String;
+using ::Platform::Object;
+using ::Platform::WriteOnlyArray;
+using ::Platform::Collections::Vector;
+using ::Platform::Collections::VectorView;
+using ::Platform::Collections::MapView;
+using Details::Wrap;
+using Details::Unwrap;
 
 template <typename K, typename V, typename NK, typename NV, typename KIn, typename KOut, typename VIn, typename VOut, typename C = ::std::less<NK>>
 ref class BridgedMap;
@@ -84,7 +93,7 @@ struct ToNativeString : public ::std::unary_function<::Platform::String^, ::ePub
 template <typename K, typename V, typename NK, typename NV, typename KIn, typename KOut, typename VIn, typename VOut>
 ref class BridgedKeyValuePair sealed : public _COLLECTION_ATTRIBUTES WFC::IKeyValuePair<K, V>{
 internal:
-	BridgedKeyValuePair(const typename Wrap<NK>::type& key, const typename Wrap<NV>::type& value)
+	BridgedKeyValuePair(const typename Details::Wrap<NK>::type& key, const typename Details::Wrap<NV>::type& value)
 		: m_key(key), m_value(value) { }
 
 public:
@@ -115,9 +124,9 @@ internal:
 public:
 	virtual property WFC::IKeyValuePair<K, V>^ Current {
 		virtual WFC::IKeyValuePair<K, V>^ get() {
-			ValidateCounter(m_ctr, m_good_ctr);
+			Details::ValidateCounter(m_ctr, m_good_ctr);
 
-			ValidateBounds(m_iter != m_map->end());
+			Details::ValidateBounds(m_iter != m_map->end());
 
 			return ref new BridgedKeyValuePair<K, V, NK, NV, KIn, KOut, VIn, VOut>(m_iter->first, m_iter->second);
 		}
@@ -125,23 +134,23 @@ public:
 
 	virtual property bool HasCurrent {
 		virtual bool get() {
-			ValidateCounter(m_ctr, m_good_ctr);
+			Details::ValidateCounter(m_ctr, m_good_ctr);
 
 			return m_iter != m_map->end();
 		}
 	}
 
 	virtual bool MoveNext() {
-		ValidateCounter(m_ctr, m_good_ctr);
+		Details::ValidateCounter(m_ctr, m_good_ctr);
 
-		ValidateBounds(m_iter != m_map->end());
+		Details::ValidateBounds(m_iter != m_map->end());
 
 		++m_iter;
 		return m_iter != m_map->end();
 	}
 
 	virtual unsigned int GetMany(WriteOnlyArray<WFC::IKeyValuePair<K, V>^>^ dest) {
-		ValidateCounter(m_ctr, m_good_ctr);
+		Details::ValidateCounter(m_ctr, m_good_ctr);
 
 		unsigned int capacity = dest->Length;
 
@@ -168,7 +177,7 @@ template <
 	typename K, typename V,
 	typename NK, typename NV,
 	typename KIn = ToNativeString, typename KOut = ToBridgedString,
-	typename VIn = ToNative<V, NV>, typename VOut = ToBridged<NV, V>,
+	typename VIn = ToNative<V, NV>, typename VOut = ToBridged<V, NV>,
 	typename C = ::std::less<NK>
 >
 ref class BridgedMapView sealed : public _COLLECTION_ATTRIBUTES Details::WFC::IMapView<K, V>{
@@ -223,11 +232,11 @@ public:
 	virtual V Lookup(K key) {
 		Details::ValidateCounter(m_ctr, m_good_ctr);
 
-		auto i = m_map->find(Details::MakeWrap(KIn()()(key)));
+		auto i = m_map->find(Details::MakeWrap(KIn()(key)));
 
 		Details::ValidateBounds(i != m_map->end());
 
-		return Details::Unwrap(KOut()(i->second));
+		return Details::Unwrap(VOut()(i->second));
 	}
 
 	virtual property unsigned int Size {
@@ -299,9 +308,9 @@ internal:
 public:
 	virtual property T Current {
 		virtual T get() = WFC_Base::Current::get {
-			ValidateCounter(m_ctr, m_good_ctr);
+			Details::ValidateCounter(m_ctr, m_good_ctr);
 
-			ValidateBounds(m_index < m_vec->size());
+			Details::ValidateBounds(m_index < m_vec->size());
 
 			return Unwrap(TOut()((*m_vec)[m_index]));
 		}
@@ -309,23 +318,23 @@ public:
 
 	virtual property bool HasCurrent {
 		virtual bool get() {
-			ValidateCounter(m_ctr, m_good_ctr);
+			Details::ValidateCounter(m_ctr, m_good_ctr);
 
 			return m_index < m_vec->size();
 		}
 	}
 
 	virtual bool MoveNext() {
-		ValidateCounter(m_ctr, m_good_ctr);
+		Details::ValidateCounter(m_ctr, m_good_ctr);
 
-		ValidateBounds(m_index < m_vec->size());
+		Details::ValidateBounds(m_index < m_vec->size());
 
 		++m_index;
 		return m_index < m_vec->size();
 	}
 
 	virtual unsigned int GetMany(WriteOnlyArray<T>^ dest) {
-		ValidateCounter(m_ctr, m_good_ctr);
+		Details::ValidateCounter(m_ctr, m_good_ctr);
 
 		unsigned int actual = BridgedVectorGetMany<T, NT, TOut>(*m_vec, m_index, dest);
 
@@ -474,7 +483,7 @@ public:
 
 		Details::ValidateCounter(m_ctr, m_good_ctr);
 
-		return VectorIndexOf<NT, E>(*m_vec, TIn()(value), index);
+		return Details::VectorIndexOf<NT, E>(*m_vec, TIn()(value), index);
 	}
 
 	virtual unsigned int GetMany(unsigned int startIndex, WriteOnlyArray<T>^ dest) {
@@ -527,5 +536,9 @@ template <typename BKey, typename NKey, typename BValue, typename NValue>
 using BridgedObjectKeyedObjectMapView = BridgedMapView<BKey, BValue, NKey, NValue, ToNative<BKey, NKey>, ToBridged<BKey, NKey>>;
 
 END_READIUM_API
+
+#undef _COLLECTION_ATTRIBUTES
+#undef _COLLECTION_WUXI
+#undef _COLLECTION_TRANSLATE
 
 #endif	/* __Readium_CollectionBridges_h__ */

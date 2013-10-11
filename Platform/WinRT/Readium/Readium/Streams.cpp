@@ -26,6 +26,7 @@
 
 using namespace ::concurrency;
 using namespace ::Microsoft::WRL;
+using namespace ::Windows::Storage::Streams;
 
 static ComPtr<IBufferByteAccess> getByteAccessForBuffer(IBuffer^ buffer)
 {

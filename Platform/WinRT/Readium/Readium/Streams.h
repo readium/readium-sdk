@@ -24,11 +24,18 @@
 
 #include "Readium.h"
 #include <ePub3/utilities/byte_stream.h>
+#include <robuffer.h>
 
-using namespace ::Platform;
-using namespace ::Windows::Storage;
-using namespace ::Windows::Storage::Streams;
-using namespace ::Windows::Foundation;
+using ::Platform::String;
+//using ::Windows::Storage;
+using ::Windows::Storage::Streams::IInputStream;
+using ::Windows::Storage::Streams::IOutputStream;
+using ::Windows::Storage::Streams::IRandomAccessStream;
+using ::Windows::Storage::Streams::IBuffer;
+using ::Windows::Storage::Streams::IBufferByteAccess;
+using ::Windows::Foundation::IAsyncAction;
+using ::Windows::Foundation::IAsyncOperation;
+using ::Windows::Foundation::IAsyncOperationWithProgress;
 
 BEGIN_READIUM_API
 
@@ -75,7 +82,7 @@ public:
 
 	// IInputStream
 
-	virtual IAsyncOperationWithProgress<IBuffer^, unsigned int>^ ReadAsync(IBuffer^ buffer, unsigned int count, InputStreamOptions options);
+	virtual IAsyncOperationWithProgress<IBuffer^, unsigned int>^ ReadAsync(IBuffer^ buffer, unsigned int count, ::Windows::Storage::Streams::InputStreamOptions options);
 
 	// IOutputStream
 
@@ -115,7 +122,7 @@ public:
 
 	// IInputStream
 
-	virtual IAsyncOperationWithProgress<IBuffer^, unsigned int>^ ReadAsync(IBuffer^ buffer, unsigned int count, InputStreamOptions options);
+	virtual IAsyncOperationWithProgress<IBuffer^, unsigned int>^ ReadAsync(IBuffer^ buffer, unsigned int count, ::Windows::Storage::Streams::InputStreamOptions options);
 
 	// IOutputStream
 

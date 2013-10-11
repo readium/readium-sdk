@@ -23,18 +23,18 @@
 #include "WinPackage.h"
 #include "WinEncryptionInfo.h"
 #include "Streams.h"
+#include "WinManifest.h"
+#include "CollectionBridges.h"
 
-#include <collection.h>
 #include <ppltasks.h>
 
 using namespace ::concurrency;
 
 BEGIN_READIUM_API
 
-Container::Container(::ePub3::ContainerPtr native)
+Container::Container(::ePub3::ContainerPtr native) : _native(native)
 {
-	_native = native;
-	_native->SetBridge<Container>(this);
+	_native->SetBridge(this);
 }
 IAsyncOperation<Container^>^ Container::OpenContainer(IStorageFile^ file)
 {
@@ -47,30 +47,14 @@ IAsyncOperation<Container^>^ Container::OpenContainer(IStorageFile^ file)
 	});
 }
 
-IVector<String^>^ Container::PackageLocations()
+IVectorView<String^>^ Container::PackageLocations()
 {
-	auto result = ref new Vector<String^>;
-
-	auto nativeList = _native->PackageLocations();
-	for (auto str : nativeList)
-	{
-		result->Append(StringFromNative(str));
-	}
-
-	return result;
+	return ref new BridgedStringVectorView(_native->PackageLocations());
 }
 
-IVector<Package^>^ Container::Packages()
+IVectorView<Package^>^ Container::Packages()
 {
-	auto result = ref new Vector<Package^>;
-
-	auto nativeList = _native->Packages();
-	for (auto pkg : nativeList)
-	{
-		result->Append(Package::Wrapper(pkg));
-	}
-
-	return result;
+	return ref new BridgedObjectVectorView<Package^, ::ePub3::PackagePtr>(_native->Packages());
 }
 
 Package^ Container::DefaultPackage()
@@ -83,17 +67,9 @@ String^ Container::Version()
 	return StringFromNative(_native->Version());
 }
 
-IVector<EncryptionInfo^>^ Container::EncryptionData()
+IVectorView<EncryptionInfo^>^ Container::EncryptionData()
 {
-	auto result = ref new Vector<EncryptionInfo^>;
-
-	auto nativeList = _native->EncryptionData();
-	for (auto enc : nativeList)
-	{
-		result->Append(EncryptionInfo::Wrapper(enc));
-	}
-
-	return result;
+	return ref new BridgedObjectVectorView<EncryptionInfo^, ::ePub3::EncryptionInfoPtr>(_native->EncryptionData());
 }
 
 EncryptionInfo^ Container::EncryptionInfoForPath(String^ path)

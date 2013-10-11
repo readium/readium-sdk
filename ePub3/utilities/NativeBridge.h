@@ -39,7 +39,7 @@ EPUB3_BEGIN_NAMESPACE
 class NativeBridge
 {
 private:
-	WeakRef			_weakRef;
+	mutable WeakRef			_weakRef;
 
 public:
 	NativeBridge() : _weakRef(nullptr) {}
@@ -51,7 +51,7 @@ public:
 	NativeBridge& operator=(NativeBridge&& o) { _weakRef = std::move(o._weakRef); }
 
 	template <typename _Tp>
-	_Tp^ GetBridge() {
+	_Tp^ GetBridge() const {
 		ComPtr<IInspectable> raw(nullptr);
 		_weakRef.As(&raw);
 		return reinterpret_cast<_Tp^>(raw.Get());

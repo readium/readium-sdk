@@ -35,9 +35,10 @@ ref class SpineItem;
 ref class CFI;
 ref class EncryptionInfo;
 
-using namespace ::Platform;
-using namespace ::Platform::Collections;
-using namespace ::Windows::Foundation::Collections;
+using ::Platform::String;
+using ::Windows::Foundation::Collections::IVectorView;
+using ::Windows::Foundation::IAsyncOperation;
+using ::Windows::Storage::IStorageFile;
 
 
 public ref class Container sealed
@@ -53,10 +54,10 @@ public:
 	static IAsyncOperation<Container^>^ OpenContainer(IStorageFile^ file);
 
 	/// ePub-relative paths for all packages
-	IVector<String^>^ PackageLocations();
+	IVectorView<String^>^ PackageLocations();
 
 	/// All instantiated packages
-	IVector<Package^>^ Packages();
+	IVectorView<Package^>^ Packages();
 
 	/// The default (first in the list) package instance
 	Package^ DefaultPackage();
@@ -65,7 +66,7 @@ public:
 	String^ Version();
 
 	/// All information from META-INF/encryption.xml
-	IVector<EncryptionInfo^>^ EncryptionData();
+	IVectorView<EncryptionInfo^>^ EncryptionData();
 
 	/**
 	<summary>
