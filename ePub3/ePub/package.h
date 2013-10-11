@@ -307,7 +307,7 @@ public:
      Each type is paired with an instance of MediaSupportInfo which describes the
      support for that media type.
      */
-    typedef std::map<string, MediaSupportInfo>      MediaSupportList;
+    typedef std::map<string, MediaSupportInfoPtr>	MediaSupportList;
     
 private:
                             Package()                                   _DELETED_;

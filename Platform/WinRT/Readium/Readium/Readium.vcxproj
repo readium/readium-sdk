@@ -40,6 +40,7 @@
     <ClInclude Include="..\..\..\..\ePub3\ePub\filter_manager.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\filter_manager_impl.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\font_obfuscation.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\Forward.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\glossary.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\initialization.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\library.h" />
@@ -110,17 +111,23 @@
     <ClInclude Include="..\..\..\..\ePub3\_compiler.h" />
     <ClInclude Include="..\..\..\..\ePub3\_config.h" />
     <ClInclude Include="..\..\..\..\ePub3\_platform.h" />
+    <ClInclude Include="BufferBridge.h" />
     <ClInclude Include="CollectionBridges.h" />
+    <ClInclude Include="IContentFilter.h" />
+    <ClInclude Include="IContentHandler.h" />
     <ClInclude Include="IPropertyHolder.h" />
+    <ClInclude Include="PluginMaps.h" />
     <ClInclude Include="PropertyHolderImpl.h" />
     <ClInclude Include="WinCFI.h" />
     <ClInclude Include="WinContainer.h" />
     <ClInclude Include="WinEncryptionInfo.h" />
+    <ClInclude Include="WinFilterChain.h" />
     <ClInclude Include="WinLibrary.h" />
     <ClInclude Include="Readium.h" />
     <ClInclude Include="Streams.h" />
     <ClInclude Include="ThreadEmulation.h" />
     <ClInclude Include="WinManifest.h" />
+    <ClInclude Include="WinMediaHandler.h" />
     <ClInclude Include="WinMediaSupport.h" />
     <ClInclude Include="WinNavTable.h" />
     <ClInclude Include="WinPackage.h" />
@@ -620,12 +627,18 @@
     <ClCompile Include="..\..\..\..\ePub3\xml\tree\node_win.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\xml\tree\xpath_win.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\xml\utilities\io_win.cpp" />
+    <ClCompile Include="PluginMaps.cpp" />
     <ClCompile Include="PropertyHolderImpl.cpp" />
     <ClCompile Include="Streams.cpp" />
     <ClCompile Include="ThreadEmulation.cpp" />
     <ClCompile Include="WinContainer.cpp" />
+    <ClCompile Include="WinFilterChain.cpp" />
     <ClCompile Include="WinLibrary.cpp" />
+    <ClCompile Include="WinManifest.cpp" />
+    <ClCompile Include="WinMediaHandler.cpp" />
+    <ClCompile Include="WinMediaSupport.cpp" />
     <ClCompile Include="WinPackage.cpp" />
+    <ClCompile Include="WinSpine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\ePub3\utilities\utfstringspec.inl" />

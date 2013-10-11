@@ -39,7 +39,9 @@ interface class IContentHandler;
 ref class MediaHandler;
 ref class FilterChain;
 
-using namespace ::Windows::Foundation::Collections;
+using ::Platform::String;
+using ::Windows::Foundation::Collections::IVectorView;
+using ::Windows::Foundation::Collections::IMapView;
 
 public ref class Package sealed : public PropertyHolder
 {
@@ -153,7 +155,7 @@ public:
 	property IVectorView<String^>^ AllMediaTypes { IVectorView<String^>^ get(); }
 	property IVectorView<String^>^ UnsupportedMediaTypes { IVectorView<String^>^ get(); }
 	
-	property IVectorView<MediaSupportInfo^>^ MediaSupport { IVectorView<MediaSupportInfo^>^ get(); void set(IVectorView<MediaSupportInfo^>^); }
+	property IMapView<String^, MediaSupportInfo^>^ MediaSupport { IMapView<String^, MediaSupportInfo^>^ get(); void set(IMapView<String^, MediaSupportInfo^>^); }
 
 	void SetFilterChain(FilterChain^ chain);
 

@@ -34,6 +34,9 @@
 #include <ppltasks.h>
 
 using namespace ::concurrency;
+using namespace ::Platform;
+using namespace ::Windows::Foundation;
+using namespace ::Windows::Storage;
 
 BEGIN_READIUM_API
 

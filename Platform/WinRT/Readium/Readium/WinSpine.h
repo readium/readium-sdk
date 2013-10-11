@@ -28,12 +28,42 @@
 
 BEGIN_READIUM_API
 
+ref class Package;
+ref class ManifestItem;
+
 public ref class SpineItem sealed : PropertyHolder
 {
 	_DECLARE_BRIDGE_API_(::ePub3::SpineItemPtr, SpineItem^);
 	_PROPERTY_HOLDER_NATIVE_IMPL()
 
+internal:
+	SpineItem(::ePub3::SpineItemPtr native);
+
 public:
+	virtual ~SpineItem() {}
+
+	static property ::Windows::Foundation::Uri^ PageSpreadRightPropertyIRI { ::Windows::Foundation::Uri^ get(); }
+	static property ::Windows::Foundation::Uri^ PageSpreadLeftPropertyIRI  { ::Windows::Foundation::Uri^ get(); }
+
+	property Package^ ParentPackage { Package^ get(); }
+
+	property UINT ItemCount { UINT get(); }
+	property UINT Index { UINT get(); }
+
+	property String^ Identifier { String^ get(); }
+	property String^ Idref { String^ get(); }
+
+	property ManifestItem^ ManifestItemRef { ManifestItem^ get(); }
+	property bool Linear { bool get(); }
+
+	property PageSpread Spread { PageSpread get(); }
+
+	property SpineItem^ Next { SpineItem^ get(); }
+	property SpineItem^ Previous { SpineItem^ get(); }
+	property SpineItem^ NextStep { SpineItem^ get(); }
+	property SpineItem^ PriorStep { SpineItem^ get(); }
+
+	SpineItem^ SpineItemAt(UINT idx);
 
 };
 
