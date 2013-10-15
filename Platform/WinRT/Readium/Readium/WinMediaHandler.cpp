@@ -48,9 +48,11 @@ String^ MediaHandler::MediaType::get()
 void MediaHandler::Invoke(String^ packageRelativeSourcePath, IMapView<String^, String^>^ parameters)
 {
 	std::map<::ePub3::string, ::ePub3::string> nativeParams;
-	for (auto pair : parameters)
+	auto pos = parameters->First();
+	while (pos->HasCurrent)
 	{
-		nativeParams[StringToNative(pair->Key)] = StringToNative(pair->Value);
+		nativeParams[StringToNative(pos->Current->Key)] = StringToNative(pos->Current->Value);
+		pos->MoveNext();
 	}
 
 	(*_native)(StringToNative(packageRelativeSourcePath), nativeParams);
@@ -59,9 +61,11 @@ void MediaHandler::Invoke(String^ packageRelativeSourcePath, IMapView<String^, S
 Uri^ MediaHandler::Target(String^ packageRelativeSourcePath, IMapView<String^, String^>^ parameters)
 {
 	std::map<::ePub3::string, ::ePub3::string> nativeParams;
-	for (auto pair : parameters)
+	auto pos = parameters->First();
+	while (pos->HasCurrent)
 	{
-		nativeParams[StringToNative(pair->Key)] = StringToNative(pair->Value);
+		nativeParams[StringToNative(pos->Current->Key)] = StringToNative(pos->Current->Value);
+		pos->MoveNext();
 	}
 
 	return IRIToURI(_native->Target(StringToNative(packageRelativeSourcePath), nativeParams));

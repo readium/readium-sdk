@@ -115,9 +115,12 @@
     <ClInclude Include="CollectionBridges.h" />
     <ClInclude Include="IContentFilter.h" />
     <ClInclude Include="IContentHandler.h" />
+    <ClInclude Include="INavigationElement.h" />
     <ClInclude Include="IPropertyHolder.h" />
+    <ClInclude Include="NavElementList.h" />
     <ClInclude Include="PluginMaps.h" />
     <ClInclude Include="PropertyHolderImpl.h" />
+    <ClInclude Include="PropertyTypes.h" />
     <ClInclude Include="WinCFI.h" />
     <ClInclude Include="WinContainer.h" />
     <ClInclude Include="WinEncryptionInfo.h" />
@@ -129,9 +132,11 @@
     <ClInclude Include="WinManifest.h" />
     <ClInclude Include="WinMediaHandler.h" />
     <ClInclude Include="WinMediaSupport.h" />
+    <ClInclude Include="WinNavPoint.h" />
     <ClInclude Include="WinNavTable.h" />
     <ClInclude Include="WinPackage.h" />
     <ClInclude Include="WinProperty.h" />
+    <ClInclude Include="WinPropertyExtension.h" />
     <ClInclude Include="WinSpine.h" />
   </ItemGroup>
   <ItemGroup>
@@ -631,13 +636,19 @@
     <ClCompile Include="PropertyHolderImpl.cpp" />
     <ClCompile Include="Streams.cpp" />
     <ClCompile Include="ThreadEmulation.cpp" />
+    <ClCompile Include="WinCFI.cpp" />
     <ClCompile Include="WinContainer.cpp" />
+    <ClCompile Include="WinEncryptionInfo.cpp" />
     <ClCompile Include="WinFilterChain.cpp" />
     <ClCompile Include="WinLibrary.cpp" />
     <ClCompile Include="WinManifest.cpp" />
     <ClCompile Include="WinMediaHandler.cpp" />
     <ClCompile Include="WinMediaSupport.cpp" />
+    <ClCompile Include="WinNavPoint.cpp" />
+    <ClCompile Include="WinNavTable.cpp" />
     <ClCompile Include="WinPackage.cpp" />
+    <ClCompile Include="WinProperty.cpp" />
+    <ClCompile Include="WinPropertyExtension.cpp" />
     <ClCompile Include="WinSpine.cpp" />
   </ItemGroup>
   <ItemGroup>

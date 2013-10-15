@@ -1,8 +1,8 @@
 //
-//  WinEncryptionInfo.h
+//  WinPropertyExtension.h
 //  Readium
 //
-//  Created by Jim Dovey on 2013-09-26.
+//  Created by Jim Dovey on 2013-10-11.
 //  Copyright (c) 2012-2013 The Readium Foundation and contributors.
 //  
 //  The Readium SDK is free software: you can redistribute it and/or modify
@@ -19,37 +19,37 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef __Readium_EncryptionInfo_h__
-#define __Readium_EncryptionInfo_h__
+#ifndef __Readium_PropertyExtension_h__
+#define __Readium_PropertyExtension_h__
 
 #include "Readium.h"
-#include <ePub3/encryption.h>
+#include <ePub3/property_extension.h>
+
+using ::Platform::String;
+using ::Windows::Foundation::Uri;
 
 BEGIN_READIUM_API
 
-ref class Container;
+ref class Property;
 
-using ::Platform::String;
-
-public ref class EncryptionInfo sealed
+public ref class PropertyExtension sealed
 {
-	_DECLARE_BRIDGE_API_(::ePub3::EncryptionInfoPtr, EncryptionInfo^);
+	_DECLARE_BRIDGE_API_(::ePub3::PropertyExtensionPtr, PropertyExtension^);
 
 internal:
-	EncryptionInfo(::ePub3::EncryptionInfoPtr native);
+	PropertyExtension(::ePub3::PropertyExtensionPtr native);
 
 public:
-	virtual ~EncryptionInfo() {}
+	PropertyExtension(Property^ owner);
+	virtual ~PropertyExtension() {}
 
-	property Container^ ParentContainer { Container^ get(); }
-
-	property String^ Algorithm { String^ get(); void set(String^); }
-	property String^ Path { String^ get(); void set(String^); }
-	
-	// more to come, eventually...
+	property Uri^ PropertyIdentifier { Uri^ get(); void set(Uri^); }
+	property String^ Scheme { String^ get(); void set(String^); }
+	property String^ Value { String^ get(); void set(String^); }
+	property String^ Language { String^ get(); void set(String^); }
 
 };
 
 END_READIUM_API
 
-#endif	/* __Readium_Manifest_h__ */
+#endif	/* __Readium_PropertyExtension_h__ */
