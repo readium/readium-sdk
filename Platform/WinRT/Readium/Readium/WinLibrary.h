@@ -76,7 +76,7 @@ public:
 	/// <returns>The single Library instance for this application.</returns>
 	static IAsyncOperation<Library^>^ LoadLibrary(IStorageFile^ savedLibrary);
 
-	virtual ~Library();
+	virtual ~Library() {}
 
 	/// Returns the location of a known ePub file corresponding to a Unique ID.
 	/// <param name="uniqueID">The unique ID of a Package object.</param>

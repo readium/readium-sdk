@@ -25,6 +25,8 @@
 #include "IPropertyHolder.h"
 #include <ePub3/property_holder.h>
 
+using ::Windows::Foundation::Collections::IIterator;
+
 BEGIN_READIUM_API
 
 #define _PROPERTY_HOLDER_NATIVE_IMPL() \

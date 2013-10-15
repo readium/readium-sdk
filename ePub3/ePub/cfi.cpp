@@ -33,6 +33,10 @@ CFI::CFI(const string& str) : _components(), _rangeStart(), _rangeEnd(), _option
     if ( CompileCFI(str) == false )
         HandleError(EPUBError::CFIParseFailed, _Str("Invalid CFI string: ", str.stl_str()));
 }
+CFI::CFI(const CFI& base, size_t fromIndex) : _components(), _rangeStart(), _rangeEnd(), _options(0)
+{
+	Assign(base, fromIndex);
+}
 bool CFI::operator==(const ePub3::CFI &o) const
 {
     if ( _options != o._options )

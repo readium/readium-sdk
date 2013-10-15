@@ -380,6 +380,21 @@
     <ClInclude Include="WinFilterChain.h">
       <Filter>Public Interface</Filter>
     </ClInclude>
+    <ClInclude Include="WinPropertyExtension.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="INavigationElement.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinNavPoint.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertyTypes.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="NavElementList.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\ePub3\utilities\byte_buffer.cpp">
@@ -756,6 +771,24 @@
       <Filter>Public Interface</Filter>
     </ClCompile>
     <ClCompile Include="WinManifest.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinEncryptionInfo.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinProperty.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinPropertyExtension.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinNavPoint.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinNavTable.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinCFI.cpp">
       <Filter>Public Interface</Filter>
     </ClCompile>
   </ItemGroup>
