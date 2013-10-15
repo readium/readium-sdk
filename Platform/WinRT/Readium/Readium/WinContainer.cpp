@@ -32,6 +32,8 @@ using namespace ::concurrency;
 
 BEGIN_READIUM_API
 
+_BRIDGE_API_IMPL_(::ePub3::ContainerPtr, Container)
+
 Container::Container(::ePub3::ContainerPtr native) : _native(native)
 {
 	_native->SetBridge(this);

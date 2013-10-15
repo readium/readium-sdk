@@ -40,6 +40,7 @@ ref class MediaHandler;
 ref class FilterChain;
 
 using ::Platform::String;
+using ::Windows::Foundation::DateTime;
 using ::Windows::Foundation::Collections::IVectorView;
 using ::Windows::Foundation::Collections::IMapView;
 

@@ -27,11 +27,56 @@
 
 BEGIN_READIUM_API
 
-public ref class CFI sealed
+using ::Platform::String;
+
+public enum class CFISideBias
 {
+	Unspecified = ::ePub3::CFI::SideBias::Unspecified,
+	Before		= ::ePub3::CFI::SideBias::Before,
+	After		= ::ePub3::CFI::SideBias::After
+};
+
+public ref class CFI sealed
+{ 
 	_DECLARE_BRIDGE_API_(::ePub3::CFI&, CFI^);
 
+internal:
+	static CFI^ Wrapper(::ePub3::CFI&& native);
+
+internal:
+	CFI(const ::ePub3::CFI& native);
+	CFI(::ePub3::CFI&& native);
+
 public:
+	CFI();
+	CFI(CFI^ base, CFI^ start, CFI^ end);
+	CFI(String^ stringRepresentation);
+	CFI(CFI^ otherCFI, UINT fromIndex);
+	virtual ~CFI() {}
+
+	virtual String^ ToString() override;
+
+	property bool IsRangeTriplet { bool get(); }
+	property bool IsEmpty { bool get(); }
+
+	void Clear();
+
+	[::Windows::Foundation::Metadata::DefaultOverloadAttribute]
+	bool Equals(::Platform::Object^ obj);
+	bool Equals(CFI^ otherCFI);
+	bool Equals(String^ stringRepresentation);
+	static bool ReferenceEquals(CFI^ a, CFI^ b) { return a->Equals(b); }
+
+	[::Windows::Foundation::Metadata::DefaultOverloadAttribute]
+	CFI^ Assign(CFI^ newValue);
+	CFI^ Assign(String^ stringRepresentation);
+	CFI^ Assign(CFI^ baseCFI, UINT fromIndex);
+
+	[::Windows::Foundation::Metadata::DefaultOverloadAttribute]
+	CFI^ Append(CFI^ otherCFI);
+	CFI^ Append(String^ stringRepresentation);
+
+	property CFISideBias CharacterSideBias { CFISideBias get(); }
 
 };
 

@@ -120,7 +120,7 @@ Uri^ Library::EPubURLForPublication(Package^ pkg)
 	DeclareFastPassString(nstr, uristr);
 	return ref new Uri(uristr);
 }
-Uri^ EPubURLForPackageID(String^ packageID)
+Uri^ Library::EPubURLForPackageID(String^ packageID)
 {
 	return IRIToURI(::ePub3::Library::MainLibrary()->EPubURLForPublicationID(StringToNative(packageID)));
 }

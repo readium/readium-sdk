@@ -23,18 +23,43 @@
 #define __Readium_Property_h__
 
 #include "Readium.h"
+#include "PropertyTypes.h"
+#include "WinPropertyExtension.h"
 #include <ePub3/property.h>
 
 BEGIN_READIUM_API
 
-ref class CFI;
-ref class PropertyExtension;
+using ::Platform::String;
+using ::Windows::Foundation::Uri;
+using ::Windows::Foundation::Collections::IVectorView;
 
 public ref class Property sealed
 {
 	_DECLARE_BRIDGE_API_(::ePub3::PropertyPtr, Property^);
 
+internal:
+	Property(::ePub3::PropertyPtr native);
+
 public:
+	virtual ~Property() {}
+
+	static Uri^ IRIForDCType(Readium::DCType type);
+	static DCType DCTypeFromIRI(Uri^ iri);
+
+	property DCType Type { DCType get(); void set(DCType); }
+	property Uri^ PropertyIdentifier { Uri^ get(); void set(Uri^); }
+	property String^ Value { String^ get(); void set(String^); }
+	property String^ Language { String^ get(); void set(String^); }
+
+	property String^ LocalizedValue { String^ get(); }
+
+	property IVectorView<PropertyExtension^>^ Extensions { IVectorView<PropertyExtension^>^ get(); }
+
+	PropertyExtension^ ExtensionWithIdentifier(Uri^ identifier);
+	IVectorView<PropertyExtension^>^ AllExtensionsWithIdentifier(Uri^ identifier);
+
+	void AddExtension(PropertyExtension^ extension);
+	bool HasExtensionWithIdentifier(Uri^ identifier);
 
 };
 
