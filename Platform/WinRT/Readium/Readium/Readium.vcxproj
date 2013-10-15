@@ -125,6 +125,7 @@
     <ClInclude Include="WinContainer.h" />
     <ClInclude Include="WinEncryptionInfo.h" />
     <ClInclude Include="WinFilterChain.h" />
+    <ClInclude Include="WinInitialization.h" />
     <ClInclude Include="WinLibrary.h" />
     <ClInclude Include="Readium.h" />
     <ClInclude Include="Streams.h" />
@@ -640,6 +641,7 @@
     <ClCompile Include="WinContainer.cpp" />
     <ClCompile Include="WinEncryptionInfo.cpp" />
     <ClCompile Include="WinFilterChain.cpp" />
+    <ClCompile Include="WinInitialization.cpp" />
     <ClCompile Include="WinLibrary.cpp" />
     <ClCompile Include="WinManifest.cpp" />
     <ClCompile Include="WinMediaHandler.cpp" />
