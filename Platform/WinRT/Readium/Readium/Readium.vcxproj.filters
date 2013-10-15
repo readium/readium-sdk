@@ -395,6 +395,9 @@
     <ClInclude Include="NavElementList.h">
       <Filter>Public Interface</Filter>
     </ClInclude>
+    <ClInclude Include="WinInitialization.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\ePub3\utilities\byte_buffer.cpp">
@@ -789,6 +792,9 @@
       <Filter>Public Interface</Filter>
     </ClCompile>
     <ClCompile Include="WinCFI.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinInitialization.cpp">
       <Filter>Public Interface</Filter>
     </ClCompile>
   </ItemGroup>
