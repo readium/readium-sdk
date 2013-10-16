@@ -83,6 +83,11 @@ public:
     static
     double ToSeconds(const string& str)
     {
+        if (str.length() == 0)
+        {
+            return 0;
+        }
+
         //printf("SMIL CLOCK VALUE STRING: %s\n", str.c_str());
 
         size_t index = 0; // left to right scan
