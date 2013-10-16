@@ -35,9 +35,6 @@
 */
 
 #include "../_config.h"
-#if EPUB_PLATFORM(WINRT)
-#define ZIP_EXTERN
-#endif
 #ifndef ZIP_EXTERN
 #ifdef _MSC_VER
 #define ZIP_EXTERN __declspec(dllexport)
