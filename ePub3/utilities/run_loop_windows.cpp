@@ -794,4 +794,26 @@ void RunLoop::Timer::SetNextFireDateDuration(Clock::duration& when)
 #endif
 }
 
+#if EPUB_PLATFORM(WINRT)
+
+DWORD RunLoop::RunLoopTLSKey = TLS_OUT_OF_INDEXES;
+
+void RunLoop::KillRunLoopTLSKey() {
+	if (RunLoop::RunLoopTLSKey != TLS_OUT_OF_INDEXES) {
+		TlsFree(RunLoop::RunLoopTLSKey);
+	}
+}
+
+void RunLoop::InitRunLoopTLSKey() {
+	RunLoopTLSKey = TlsAlloc();
+	if (RunLoopTLSKey == TLS_OUT_OF_INDEXES)
+	{
+		OutputDebugString(L"No TLS Indexes for RunLoop!\n");
+		std::terminate();
+	}
+	atexit(RunLoop::KillRunLoopTLSKey);
+}
+
+#endif
+
 EPUB3_END_NAMESPACE
