@@ -507,17 +507,21 @@ public:
     EPUB3_EXPORT
     void            WakeUp();
     
+# if EPUB_OS(WINDOWS) && EPUB_PLATFORM(WINRT)
+	static void InitRunLoopTLSKey();
+	static void KillRunLoopTLSKey();
+# endif
+
 protected:
     ///
     /// Internal Run function which takes an explicit timeout duration type.
     EPUB3_EXPORT
     ExitReason      RunInternal(bool returnAfterSourceHandled, std::chrono::nanoseconds& timeout);
     
-    
     ///
     /// Obtains the run loop for the current thread.
     EPUB3_EXPORT    RunLoop();
-    
+
 private:
     ///
     /// No copy constructor
@@ -579,6 +583,11 @@ private:
     std::atomic<bool>                   _stop;
     std::atomic<bool>                   _resetHandles;
     Observer::Activity                  _observerMask;
+
+
+# if EPUB_PLATFORM(WINRT)
+	static DWORD RunLoopTLSKey;
+# endif
 #else
     shared_list<Timer>                  _timers;
     shared_list<Observer>               _observers;
