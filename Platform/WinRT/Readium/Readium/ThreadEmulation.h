@@ -34,6 +34,10 @@
 
 namespace ThreadEmulation
 {
+	#ifndef TLS_OUT_OF_INDEXES
+	# define TLS_OUT_OF_INDEXES ((DWORD)0xffffffff)
+	#endif
+
     #ifndef CREATE_SUSPENDED
     #define CREATE_SUSPENDED 0x00000004
     #endif
