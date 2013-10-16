@@ -105,7 +105,7 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             SMILDataPtr GetSmil(std::vector<SMILDataPtr>::size_type i) const
             {
-                if (i < 0 || i >= _smilDatas.size())
+                if (i >= _smilDatas.size())
                 {
                     return nullptr;
                 }
@@ -133,7 +133,7 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             static string GetSkippable(std::vector<string>::size_type i)
             {
-                if (i < 0 || i >= _Skippables.size())
+                if (i >= _Skippables.size())
                 {
                     return "";
                 }
@@ -153,7 +153,7 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             static string GetEscapable(std::vector<string>::size_type i)
             {
-                if (i < 0 || i >= _Escapables.size())
+                if (i >= _Escapables.size())
                 {
                     return "";
                 }

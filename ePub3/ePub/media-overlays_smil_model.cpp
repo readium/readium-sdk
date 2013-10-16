@@ -167,13 +167,13 @@ EPUB3_BEGIN_NAMESPACE
 
         void MediaOverlaysSmilModel::parseMetadata()
         {
-            const string& _narrator = Narrator();
+            //const string& _narrator = Narrator();
             //printf("Media Overlays NARRATOR: %s\n", _narrator.c_str());
 
-            const string& _activeClass = ActiveClass();
+            //const string& _activeClass = ActiveClass();
             //printf("Media Overlays ACTIVE CLASS: %s\n", _activeClass.c_str());
 
-            const string& _playbackActiveClass = PlaybackActiveClass();
+            //const string& _playbackActiveClass = PlaybackActiveClass();
             //printf("Media Overlays PLAYBACK ACTIVE CLASS: %s\n", _playbackActiveClass.c_str());
 
             PackagePtr package = Owner();
@@ -463,7 +463,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             }
 
             // FRAGMENT ID
-            if (i != string::npos && i >= 0 && i < (iri.length() - 1))
+            if (i != string::npos && i < (iri.length() - 1))
             {
                 string::size_type n = iri.length() - i - 1;
                 split.push_back(iri.substr(i + 1, n));
@@ -731,6 +731,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 }
 
                 SMILData::Audio *audio = new SMILData::Audio(parallel, src_file, srcManifestItem, clipBeginMilliseconds, clipEndMilliseconds, smilData);
+                audio = nullptr;
 
                 sequence = nullptr;
                 parallel = nullptr;
@@ -763,6 +764,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 }
 
                 SMILData::Text *text = new SMILData::Text(parallel, src_file, src_fragmentID, srcManifestItem, smilData);
+                text = nullptr;
 
                 sequence = nullptr;
                 parallel = nullptr;
@@ -904,12 +906,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
 
         const double MediaOverlaysSmilModel::PositionToPercent(std::vector<SMILDataPtr>::size_type smilIndex, uint32_t parIndex, uint32_t milliseconds) const
         {
-            if (parIndex < 0)
-            {
-                return -1.0;
-            }
-
-            if (smilIndex < 0 && smilIndex >= GetSmilCount())
+            if (smilIndex >= GetSmilCount())
             {
                 return -1.0;
             }

@@ -222,11 +222,6 @@ EPUB3_BEGIN_NAMESPACE
 
                 const Parallel *ParallelAt(uint32_t timeMilliseconds) const
                 {
-                    if (timeMilliseconds < 0)
-                    {
-                        return nullptr;
-                    }
-
                     uint32_t offset = 0;
 
                     for (int i = 0; i < _children.size(); i++)
@@ -365,7 +360,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 const TimeContainer *GetChild(std::vector<const TimeContainer *>::size_type i) const
                 {
-                    if (i < 0 || i >= _children.size())
+                    if (i >= _children.size())
                     {
                         return nullptr;
                     }
