@@ -41,12 +41,13 @@ using namespace ThreadEmulation;
 #endif
 
 EPUB3_BEGIN_NAMESPACE
-
-#if EPUB_OS(WINDOWS)
-#ifndef TLS_OUT_OF_INDEXES
+#if EPUB_OS(WINDOWS) 
+# if !EPUB_PLATFORM(WINRT)
+# ifndef TLS_OUT_OF_INDEXES
 # define TLS_OUT_OF_INDEXES ((DWORD)0xffffffff)
-#endif
+# endif
 DWORD RunLoopTLSKey = TLS_OUT_OF_INDEXES;
+# endif
 #else
 static pthread_key_t RunLoopTLSKey;
 #endif
@@ -58,6 +59,8 @@ static void _DestroyTLSRunLoop(void* data)
     delete p;
 }
 #endif
+
+# if !EPUB_PLATFORM(WINRT)
 static void KillRunLoopTLSKey()
 {
 #if EPUB_OS(WINDOWS)
@@ -67,6 +70,7 @@ static void KillRunLoopTLSKey()
     pthread_key_delete(RunLoopTLSKey);
 #endif
 }
+
 INITIALIZER(InitRunLoopTLSKey)
 {
 #if EPUB_OS(WINDOWS)
@@ -81,6 +85,7 @@ INITIALIZER(InitRunLoopTLSKey)
     pthread_key_create(&RunLoopTLSKey, _DestroyTLSRunLoop);
 #endif
 }
+#endif
 
 RunLoopPtr RunLoop::CurrentRunLoop()
 {

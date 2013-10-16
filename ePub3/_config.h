@@ -152,6 +152,7 @@ typedef signed long ssize_t;
 # endif
 #endif
 
+#if !EPUB_PLATFORM(WINRT)
 #if EPUB_COMPILER(MSVC)
 # pragma section(".CRT$XCU",read)
 # define INITIALIZER(f) \
@@ -163,7 +164,7 @@ typedef signed long ssize_t;
     static void f(void) __attribute__((constructor)); \
     static void f(void)
 #endif
-
+#endif
 // MSVC doesn't have this macro
 #ifndef __PRETTY_FUNCTION__
 # define __PRETTY_FUNCTION__ __FUNCTION__

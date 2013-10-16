@@ -10,14 +10,8 @@ public ref class Initialization sealed
 {
 
 public:
-
-	static void InitializeSdk();
-
-	static void PopulateFilterManager();
-
-private:
-	Initialization() {}
-
+	void InitializeSdk();
+	void PopulateFilterManager();
 };
 
 
