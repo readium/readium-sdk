@@ -43,7 +43,7 @@ private:
 
 public:
 	NativeBridge() : _weakRef(nullptr) {}
-	NativeBridge(const NativeBridge&) = default;
+	NativeBridge(const NativeBridge&) : _weakRef(nullptr) {}
 	NativeBridge(NativeBridge&& o) : _weakRef(std::move(o._weakRef)) {}
 	virtual ~NativeBridge() {}
 
@@ -53,7 +53,14 @@ public:
 	template <typename _Tp>
 	_Tp^ GetBridge() const {
 		ComPtr<IInspectable> raw(nullptr);
-		_weakRef.As(&raw);
+		try {
+			_weakRef.As(&raw);
+		}
+		catch (...) {
+			return nullptr;
+		}
+		if (raw == nullptr)
+			return nullptr;
 		return reinterpret_cast<_Tp^>(raw.Get());
 	}
 

@@ -29,6 +29,8 @@
 #include <codecvt>
 #include <sstream>
 
+#include <MsXml6.h>
+
 using namespace ::concurrency;
 using namespace ::Windows::Data::Xml::Dom;
 using namespace ::Windows::Storage;
@@ -364,7 +366,7 @@ int InputBuffer::close_cb(void *context)
 	InputBuffer * p = static_cast<InputBuffer*>(context);
 	return (p->close() ? 0 : -1);
 }
-std::shared_ptr<Document> InputBuffer::ReadDocument(const char* url, const char* encoding, int options)
+std::shared_ptr<Document> InputBuffer::ReadDocument(const char* url, const char* encoding, XmlOptions options)
 {
 #if 0
 	std::wstring wstr(std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(url));
@@ -395,8 +397,32 @@ std::shared_ptr<Document> InputBuffer::ReadDocument(const char* url, const char*
 	::Platform::String^ nstr = ref new String(str.data(), static_cast<unsigned int>(str.length()));
 	str.clear();		// watch your memory
 	XmlDocument^ native = ref new XmlDocument;
-	native->LoadXml(nstr);
-	return std::make_shared<Document>(native);
+	XmlLoadSettings^ settings = ref new XmlLoadSettings;
+	settings->ElementContentWhiteSpace = false;
+	settings->MaxElementDepth = 100;
+	settings->ProhibitDtd = ((options & PROHIBIT_DTD) == PROHIBIT_DTD);
+	settings->ResolveExternals = ((options & RESOLVE_EXTERNALS) == RESOLVE_EXTERNALS);
+	settings->ValidateOnParse = ((options & VALIDATE_ON_PARSE) == VALIDATE_ON_PARSE);
+	
+	try
+	{
+		native->LoadXml(nstr, settings);
+		return std::make_shared<Document>(native);
+	}
+	catch (::Platform::Exception^ exc)
+	{
+		std::cerr << "WinRT Exception encountered: HRESULT=" << exc->HResult << ", Message=\"" << exc->Message->Data() << "\"" << std::endl;
+	}
+	catch (std::exception& exc)
+	{
+		std::cerr << "STL Exception encountered: what=\"" << exc.what() << "\"" << std::endl;
+	}
+	catch (...)
+	{
+		std::cerr << "Unknown exception encountered." << std::endl;
+	}
+	
+	return nullptr;
 #endif
 }
 

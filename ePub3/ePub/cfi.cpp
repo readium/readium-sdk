@@ -25,15 +25,27 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-CFI::CFI(const CFI& base, const CFI& start, const CFI& end) : _components(base._components), _rangeStart(start._components), _rangeEnd(end._components), _options(RangeTriplet)
+CFI::CFI(const CFI& base, const CFI& start, const CFI& end) :
+#if EPUB_PLATFORM(WINRT)
+NativeBridge(),
+#endif
+_components(base._components), _rangeStart(start._components), _rangeEnd(end._components), _options(RangeTriplet)
 {
 }
-CFI::CFI(const string& str) : _components(), _rangeStart(), _rangeEnd(), _options(0)
+CFI::CFI(const string& str) :
+#if EPUB_PLATFORM(WINRT)
+NativeBridge(),
+#endif
+_components(), _rangeStart(), _rangeEnd(), _options(0)
 {
     if ( CompileCFI(str) == false )
         HandleError(EPUBError::CFIParseFailed, _Str("Invalid CFI string: ", str.stl_str()));
 }
-CFI::CFI(const CFI& base, size_t fromIndex) : _components(), _rangeStart(), _rangeEnd(), _options(0)
+CFI::CFI(const CFI& base, size_t fromIndex) :
+#if EPUB_PLATFORM(WINRT)
+NativeBridge(),
+#endif
+_components(), _rangeStart(), _rangeEnd(), _options(0)
 {
 	Assign(base, fromIndex);
 }

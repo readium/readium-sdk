@@ -8,6 +8,7 @@
 
 #include "executor.h"
 #include <iostream>
+#include <future>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -32,11 +33,15 @@ public:
 #pragma mark -
 #endif
 
-static thread_pool InitialDefaultExecutor;
-static scheduled_executor* DefaultExecutor = &InitialDefaultExecutor;
+//static thread_pool InitialDefaultExecutor;
+static scheduled_executor* DefaultExecutor = nullptr;
 
 scheduled_executor* default_executor()
 {
+	static std::once_flag __once;
+	std::call_once(__once, [=](){
+		DefaultExecutor = new thread_pool;
+	});
     return DefaultExecutor;
 }
 
@@ -44,6 +49,9 @@ void set_default_executor(scheduled_executor* executor)
 {
     if ( executor == nullptr )
         throw std::invalid_argument("set_default_executor: null executor argument");
+
+	if (DefaultExecutor != nullptr)
+		std::async([](){delete DefaultExecutor;});
     DefaultExecutor = executor;
 }
 

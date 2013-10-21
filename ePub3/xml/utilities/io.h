@@ -34,6 +34,15 @@ EPUB3_XML_BEGIN_NAMESPACE
 
 class Document;
 
+#if EPUB_USE(WIN_XML)
+enum {
+	PROHIBIT_DTD = 1 << 0,
+	RESOLVE_EXTERNALS = 1 << 1,
+	VALIDATE_ON_PARSE = 1 << 2
+};
+typedef unsigned int XmlOptions;
+#endif
+
 /**
  @ingroup xml-utils
  */
@@ -55,7 +64,7 @@ public:
 	::Windows::Storage::IStorageFile^ File() { return _store; }
 	operator ::Windows::Storage::IStorageFile^() { return _store; }
 
-	std::shared_ptr<Document> ReadDocument(const char* url, const char* encoding, int options);
+	std::shared_ptr<Document> ReadDocument(const char* url, const char* encoding, XmlOptions options);
 #endif
 
 	virtual size_t size() const = 0;

@@ -42,10 +42,7 @@ IAsyncOperation<Container^>^ Container::OpenContainer(IStorageFile^ file)
 {
 	return create_async([file]() -> Container^ {
 		auto native = ::ePub3::Container::OpenContainer(StringToNative(file->Path));
-		Container^ result = native->GetBridge<Container>();
-		if (result == nullptr)
-			result = ref new Container(native);
-		return result;
+		return Wrapper(native);
 	});
 }
 
