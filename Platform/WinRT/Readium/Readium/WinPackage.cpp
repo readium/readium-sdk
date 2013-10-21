@@ -58,11 +58,13 @@ private:
 #if EPUB_COMPILER_SUPPORTS(CXX_CONSTEXPR)
 	static const time_point	unix_epoch = time_point(duration(116444736000000000LL));
 #else
-	static const time_point unix_epoch;
+	static const time_point unix_epoch() {
+		return time_point(duration(116444736000000000LL));
+	}
 #endif
 };
 
-const winrt_clock::time_point winrt_clock::unix_epoch = time_point(duration(116444736000000000LL));
+//const winrt_clock::time_point winrt_clock::unix_epoch = time_point(duration(116444736000000000LL));
 
 winrt_clock::time_point winrt_clock::now() _NOEXCEPT
 {
@@ -72,11 +74,11 @@ winrt_clock::time_point winrt_clock::now() _NOEXCEPT
 }
 time_t winrt_clock::to_time_t(const time_point &__t) _NOEXCEPT
 {
-	return time_t(std::chrono::duration_cast<std::chrono::seconds>(__t.time_since_epoch() - unix_epoch.time_since_epoch()).count());
+	return time_t(std::chrono::duration_cast<std::chrono::seconds>(__t.time_since_epoch() - unix_epoch().time_since_epoch()).count());
 }
 winrt_clock::time_point winrt_clock::from_time_t(const time_t &__t) _NOEXCEPT
 {
-	return time_point(duration(__t * std::milli::den - unix_epoch.time_since_epoch().count()));
+	return time_point(duration(__t * std::milli::den - unix_epoch().time_since_epoch().count()));
 }
 
 _BRIDGE_API_IMPL_(::ePub3::PackagePtr, Package)

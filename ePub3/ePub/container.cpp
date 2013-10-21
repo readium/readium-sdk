@@ -27,6 +27,7 @@
 #include "byte_stream.h"
 #include "filter_manager.h"
 #include <ePub3/xml/document.h>
+#include <ePub3/xml/io.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -36,10 +37,18 @@ static const char * gRootfilesXPath = "/ocf:container/ocf:rootfiles/ocf:rootfile
 static const char * gRootfilePathsXPath = "/ocf:container/ocf:rootfiles/ocf:rootfile/@full-path";
 static const char * gVersionXPath = "/ocf:container/@version";
 
-Container::Container() : _archive(nullptr), _ocf(nullptr), _packages(), _encryption()
+Container::Container() :
+#if EPUB_PLATFORM(WINRT)
+	NativeBridge(),
+#endif
+	_archive(nullptr), _ocf(nullptr), _packages(), _encryption()
 {
 }
-Container::Container(Container&& o) : _archive(std::move(o._archive)), _ocf(o._ocf), _packages(std::move(o._packages))
+Container::Container(Container&& o) :
+#if EPUB_PLATFORM(WINRT)
+NativeBridge(),
+#endif
+_archive(std::move(o._archive)), _ocf(o._ocf), _packages(std::move(o._packages))
 {
     o._ocf = nullptr;
 }
@@ -58,7 +67,7 @@ bool Container::Open(const string& path)
 #if EPUB_USE(LIBXML2)
     _ocf = reader.xmlReadDocument(gContainerFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
 #else
-	_ocf = reader.ReadDocument(gContainerFilePath, nullptr, 0);
+	_ocf = reader.ReadDocument(gContainerFilePath, nullptr, /*RESOLVE_EXTERNALS*/ 1);
 #endif
     if ( !bool(_ocf) )
         return false;

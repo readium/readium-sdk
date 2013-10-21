@@ -77,8 +77,9 @@ protected:
         ssize_t FunnelBytes();
         
     };
-    
-    static thread_pool      _filterThreadPool;
+
+	static
+	std::unique_ptr<thread_pool>		_filterThreadPool;
     
 private:
     FilterList              _filters;
