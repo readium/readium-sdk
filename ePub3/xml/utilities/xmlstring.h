@@ -62,6 +62,7 @@ public:
 	string(const unsigned char* s, size_type len) : _Base(UTF8Converter().from_bytes(reinterpret_cast<const char*>(s), reinterpret_cast<const char*>(s + len))) {}
 	string(const _Base& s) : _Base(s) {}
 	string(_Base&& s) : _Base(std::move(s)) {}
+	string(const std::string& s) : _Base(UTF8Converter().from_bytes(s)) {}
 	string(size_type sz, value_type c) : _Base(sz, c) {}
 
 	string(Platform::String^ pstr) : _Base(pstr->Data(), pstr->Length()) {}

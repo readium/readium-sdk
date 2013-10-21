@@ -89,7 +89,7 @@ static inline string _getProp(xmlNodePtr node, const char *name, const char *nsU
     return result;
 }
 #elif EPUB_USE(WIN_XML)
- static inline string _getProp(std::shared_ptr<xml::Node> node, const char *name, const char *nsURI = nullptr)
+ static inline string _getProp(std::shared_ptr<xml::Node> node, const char *name, const char *nsURI = "")
 {
 	return node->AttributeValue(name, nsURI);
 }

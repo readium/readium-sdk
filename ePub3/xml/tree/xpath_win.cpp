@@ -71,110 +71,131 @@ bool XPathEvaluator::RegisterAllNamespacesForElement(std::shared_ptr<const Eleme
 
 bool XPathEvaluator::Evaluate(std::shared_ptr<const Node> node, ObjectType * resultType)
 {
-	if (_namespaces.empty())
+	try
 	{
-		_lastResult = node->xml()->SelectNodes(_xpath);
-	}
-	else
-	{
-		std::wstringstream s;
-		for (auto& pair : _namespaces)
+		if (_namespaces.empty())
 		{
-			if (pair.second.empty())
-				continue;
-
-			if (s.tellp() > 0)
-				s << TEXT(' ');
-			s << TEXT("xmlns");
-			if (!pair.first.empty())
-			{
-				s << TEXT(':');
-				s << pair.first;
-			}
-			s << TEXT("=\"");
-			s << pair.second;
-			s << TEXT('"');
-		}
-
-		string ns(s.str());
-		_lastResult = node->xml()->SelectNodesNS(_xpath, ns);
-	}
-
-	if (_lastResult == nullptr)
-		return false;
-
-	if (resultType != nullptr)
-	{
-		if (_lastResult->Size > 1)
-		{
-			*resultType = ObjectType::NodeSet;
+			_lastResult = node->xml()->SelectNodes(_xpath);
 		}
 		else
 		{
-			IXmlNode^ inode = _lastResult->Item(0);
-			using ::Windows::Data::Xml::Dom::NodeType;
-			if (inode->NodeType == NodeType::TextNode)
+			std::wstringstream s;
+			for (auto& pair : _namespaces)
 			{
-				XmlText^ txt = dynamic_cast<XmlText^>(inode);
-				string str(txt->Data);
-				if (_wtoi(str.c_str()) != 0)
+				if (pair.second.empty())
+					continue;
+
+				if (s.tellp() > 0)
+					s << TEXT(' ');
+				s << TEXT("xmlns");
+				if (!pair.first.empty())
 				{
-					*resultType = ObjectType::Number;
+					s << TEXT(':');
+					s << pair.first;
 				}
-				else if (::_wcsnicmp(str.c_str(), __TEXT("true"), min((string::size_type)4, str.length())) == 0)
-				{
-					*resultType = ObjectType::Boolean;
-				}
-				else if (::_wcsnicmp(str.c_str(), __TEXT("yes"), min((string::size_type)3, str.length())) == 0)
-				{
-					*resultType = ObjectType::Boolean;
-				}
-				else
-				{
-					*resultType = ObjectType::String;
-				}
+				s << TEXT("=\"");
+				s << pair.second;
+				s << TEXT('"');
 			}
-			else
+
+			string ns(s.str());
+			try
+			{
+				_lastResult = node->xml()->SelectNodesNS(_xpath, ns);
+			}
+			catch (...)
+			{
+				_lastResult = nullptr;
+			}
+		}
+
+		if (_lastResult == nullptr)
+			return false;
+
+		if (resultType != nullptr)
+		{
+			if (_lastResult->Size > 1)
 			{
 				*resultType = ObjectType::NodeSet;
 			}
+			else
+			{
+				IXmlNode^ inode = _lastResult->Item(0);
+				using ::Windows::Data::Xml::Dom::NodeType;
+				if (inode->NodeType == NodeType::TextNode)
+				{
+					XmlText^ txt = dynamic_cast<XmlText^>(inode);
+					string str(txt->Data);
+					if (_wtoi(str.c_str()) != 0)
+					{
+						*resultType = ObjectType::Number;
+					}
+					else if (::_wcsnicmp(str.c_str(), __TEXT("true"), min((string::size_type)4, str.length())) == 0)
+					{
+						*resultType = ObjectType::Boolean;
+					}
+					else if (::_wcsnicmp(str.c_str(), __TEXT("yes"), min((string::size_type)3, str.length())) == 0)
+					{
+						*resultType = ObjectType::Boolean;
+					}
+					else
+					{
+						*resultType = ObjectType::String;
+					}
+				}
+				else
+				{
+					*resultType = ObjectType::NodeSet;
+				}
+			}
 		}
+
+		return true;
+	}
+	catch (...)
+	{
 	}
 
-	return true;
+	return false;
 }
 bool XPathEvaluator::EvaluateAsBoolean(std::shared_ptr<const Node> node)
 {
 	_lastResult = nullptr;
 
 	IXmlNode^ value = nullptr;
-	if (_namespaces.empty())
+	try
 	{
-		value = node->xml()->SelectSingleNode(_xpath);
-	}
-	else
-	{
-		std::wstringstream s;
-		for (auto& pair : _namespaces)
+		if (_namespaces.empty())
 		{
-			if (pair.second.empty())
-				continue;
-
-			if (s.tellp() > 0)
-				s << TEXT(' ');
-			s << TEXT("xmlns");
-			if (!pair.first.empty())
-			{
-				s << TEXT(':');
-				s << pair.first;
-			}
-			s << TEXT("=\"");
-			s << pair.second;
-			s << TEXT('"');
+			value = node->xml()->SelectSingleNode(_xpath);
 		}
+		else
+		{
+			std::wstringstream s;
+			for (auto& pair : _namespaces)
+			{
+				if (pair.second.empty())
+					continue;
 
-		string ns(s.str());
-		value = node->xml()->SelectSingleNodeNS(_xpath, ns);
+				if (s.tellp() > 0)
+					s << TEXT(' ');
+				s << TEXT("xmlns");
+				if (!pair.first.empty())
+				{
+					s << TEXT(':');
+					s << pair.first;
+				}
+				s << TEXT("=\"");
+				s << pair.second;
+				s << TEXT('"');
+			}
+
+			string ns(s.str());
+			value = node->xml()->SelectSingleNodeNS(_xpath, ns);
+		}
+	}
+	catch (...)
+	{
 	}
 
 	if (value == nullptr)
