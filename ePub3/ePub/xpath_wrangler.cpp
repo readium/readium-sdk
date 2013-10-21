@@ -75,6 +75,10 @@ xml::NodeSet XPathWrangler::Nodes(const string& xpath, shared_ptr<xml::Node> nod
 	xml::NodeSet result;
 
     xml::XPathEvaluator eval(xml::string(xpath.c_str()), _doc);
+	for (auto& item : _namespaces)
+	{
+		eval.RegisterNamespace(item.first.stl_str(), item.second.stl_str());
+	}
 	xml::XPathEvaluator::ObjectType type;
     if ( eval.Evaluate((bool(node) ? node : _doc), &type) )
     {
