@@ -57,7 +57,7 @@ Container::~Container()
 }
 bool Container::Open(const string& path)
 {
-    _archive = std::move(Archive::Open(path.stl_str()));
+    _archive = Archive::Open(path.stl_str());
     if ( _archive == nullptr )
         throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
     
@@ -67,9 +67,10 @@ bool Container::Open(const string& path)
 #if EPUB_USE(LIBXML2)
     _ocf = reader.xmlReadDocument(gContainerFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
 #else
-	_ocf = reader.ReadDocument(gContainerFilePath, nullptr, /*RESOLVE_EXTERNALS*/ 1);
+	decltype(_ocf) __tmp(reader.ReadDocument(gContainerFilePath, nullptr, /*RESOLVE_EXTERNALS*/ 1));
+	_ocf = __tmp;
 #endif
-    if ( !bool(_ocf) )
+    if ( !((bool)_ocf) )
         return false;
 
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
