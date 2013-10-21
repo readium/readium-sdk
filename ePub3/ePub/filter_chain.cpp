@@ -17,7 +17,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-thread_pool FilterChain::_filterThreadPool(thread_pool::Automatic);
+std::unique_ptr<thread_pool> FilterChain::_filterThreadPool(nullptr);
 
 std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const
 {
@@ -48,9 +48,14 @@ std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifest
     
     // otherwise, attach the output pipe
     thisChain.back()->SetOutputLink(linkPipe.first);
+
+	static std::once_flag __once;
+	std::call_once(__once, [](){
+		_filterThreadPool.reset(new thread_pool(thread_pool::Automatic));
+	});
     
     // set it to run on a runloop somewhere...
-    _filterThreadPool.add([thisChain]() mutable {
+    _filterThreadPool->add([thisChain]() mutable {
         RunLoopPtr myRunLoop = RunLoop::CurrentRunLoop();
         
         auto pos = thisChain.rbegin();

@@ -37,8 +37,16 @@ BEGIN_READIUM_API
 typedef std::map<::Microsoft::WRL::WeakRef, std::weak_ptr<::ePub3::ContentHandler>>	ContentHandlerMap;
 typedef std::map<::Microsoft::WRL::WeakRef, std::weak_ptr<::ePub3::ContentFilter>>	ContentFilterMap;
 
-static ContentHandlerMap	gContentHandlers;
-static ContentFilterMap		gContentFilters;
+static ContentHandlerMap*	gContentHandlers;
+static ContentFilterMap*	gContentFilters;
+
+static void InitMapStorage()
+{
+	if (gContentHandlers == nullptr)
+		gContentHandlers = new ContentHandlerMap;
+	if (gContentFilters == nullptr)
+		gContentFilters = new ContentFilterMap;
+}
 
 template <class _Tp>
 static inline
@@ -61,46 +69,50 @@ WeakRef MakeWeak(_Tp^ obj)
 ::ePub3::ContentHandlerPtr GetNativeContentHandler(IContentHandler^ bridge)
 {
 	WeakRef ref = MakeWeak(bridge);
-	auto pos = gContentHandlers.find(ref);
-	if (pos == gContentHandlers.end())
+	InitMapStorage();
+	auto pos = gContentHandlers->find(ref);
+	if (pos == gContentHandlers->end())
 		return nullptr;
 	return pos->second.lock();
 }
 void SetNativeContentHandler(IContentHandler^ bridge, ::ePub3::ContentHandlerPtr native)
 {
+	InitMapStorage();
 	WeakRef ref = MakeWeak(bridge);
 	if (bool(native))
 	{
-		gContentHandlers[ref] = native;
+		(*gContentHandlers)[ref] = native;
 	}
 	else
 	{
-		auto pos = gContentHandlers.find(ref);
-		if (pos != gContentHandlers.end())
-			gContentHandlers.erase(pos);
+		auto pos = gContentHandlers->find(ref);
+		if (pos != gContentHandlers->end())
+			gContentHandlers->erase(pos);
 	}
 }
 
 ::ePub3::ContentFilterPtr GetNativeContentFilter(IContentFilter^ bridge)
 {
 	WeakRef ref = MakeWeak(bridge);
-	auto pos = gContentFilters.find(ref);
-	if (pos == gContentFilters.end())
+	InitMapStorage();
+	auto pos = gContentFilters->find(ref);
+	if (pos == gContentFilters->end())
 		return nullptr;
 	return pos->second.lock();
 }
 void SetNativeContentFilter(IContentFilter^ bridge, ::ePub3::ContentFilterPtr native)
 {
+	InitMapStorage();
 	WeakRef ref = MakeWeak(bridge);
 	if (bool(native))
 	{
-		gContentFilters[ref] = native;
+		(*gContentFilters)[ref] = native;
 	}
 	else
 	{
-		auto pos = gContentFilters.find(ref);
-		if (pos != gContentFilters.end())
-			gContentFilters.erase(pos);
+		auto pos = gContentFilters->find(ref);
+		if (pos != gContentFilters->end())
+			gContentFilters->erase(pos);
 	}
 }
 

@@ -12,12 +12,15 @@
 #include <set>
 #include <map>
 #include <mutex>
+#include <thread>
+#include <future>
 
 using namespace std;
+/*
 using namespace Platform;
 using namespace Windows::Foundation;
 using namespace Windows::System::Threading;
-
+*/
 namespace ThreadEmulation
 {
     // Stored data for CREATE_SUSPENDED and ResumeThread.
@@ -42,7 +45,7 @@ namespace ThreadEmulation
     static vector<DWORD> freeTlsIndices;
     static mutex tlsAllocationLock;
 
-
+	/*
     // Converts a Win32 thread priority to WinRT format.
     static WorkItemPriority GetWorkItemPriority(int nPriority)
     {
@@ -53,11 +56,12 @@ namespace ThreadEmulation
         else
             return WorkItemPriority::Normal;
     }
-
+	*/
 
     // Helper shared between CreateThread and ResumeThread.
     static void StartThread(LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, HANDLE completionEvent, int nPriority)
     {
+		/*
         auto workItemHandler = ref new WorkItemHandler([=](IAsyncAction^)
         {
             // Run the user callback.
@@ -77,6 +81,23 @@ namespace ThreadEmulation
         }, CallbackContext::Any);
 
         ThreadPool::RunAsync(workItemHandler, GetWorkItemPriority(nPriority), WorkItemOptions::TimeSliced);
+		*/
+
+		std::async(launch::async, [=](){
+			// Run the user callback
+			try
+			{
+				lpStartAddress(lpParameter);
+			}
+			catch (...) { }
+
+			// Clean up any TLS allocations made by this thread.
+			TlsShutdown();
+
+			// Signal that the thread has completed
+			SetEvent(completionEvent);
+			CloseHandle(completionEvent);
+		});
     }
 
 
