@@ -90,7 +90,7 @@ string::string(const std::wstring& s)
 #if EPUB_USE(WIN_XML)
 string::string(const xml::string& s)
 {
-	_base.append(_Convert<wchar_t>::toUTF8(s.data(), s.size()));
+	_base.append(_Convert<wchar_t>::toUTF8(s));
 }
 #endif
 string::string(const __base & s, size_type i, size_type n)
