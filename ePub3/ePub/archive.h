@@ -265,7 +265,11 @@ class ArchiveItemInfo
 public:
     ///
     /// Default constructor
-    ArchiveItemInfo() : _path(""), _isCompressed(false), _compressedSize(0), _uncompressedSize(0), _posix(0) {}
+    ArchiveItemInfo() : _path(""), _isCompressed(false), _compressedSize(0), _uncompressedSize(0), _posix(0)
+#if EPUB_HAVE(ACL)
+    , _acl(nullptr)
+#endif
+    {}
     ///
     /// Copy constructor
     ArchiveItemInfo(const ArchiveItemInfo & o) : _path(o._path), _isCompressed(o._isCompressed), _compressedSize(o._compressedSize), _uncompressedSize(o._uncompressedSize), _posix(o._posix) {
