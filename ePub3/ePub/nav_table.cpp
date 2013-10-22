@@ -57,7 +57,7 @@ bool NavigationTable::ParseXML(shared_ptr<xml::Node> node)
         return false;
 
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-    XPathWrangler xpath(node->Document(), {{"epub", ePub3NamespaceURI}}); // goddamn I love C++11 initializer list constructors
+	XPathWrangler xpath(node->Document(), {{ "epub", ePub3NamespaceURI }, { "html", XHTMLNamespaceURI }}); // goddamn I love C++11 initializer list constructors
 #else
     XPathWrangler::NamespaceList __ns;
     __ns["epub"] = ePub3NamespaceURI;
@@ -67,9 +67,17 @@ bool NavigationTable::ParseXML(shared_ptr<xml::Node> node)
     
     // look for optional <h2> title
     // Q: Should we fail on finding multiple <h2> tags here?
+#if EPUB_USE(WIN_XML)
+	xml::NodeSet h2nodes = xpath.Nodes("./html:h2", node);
+	if (!h2nodes.empty()){
+		_title = std::move(h2nodes[0]->FirstChild()->StringValue());
+	}
+#else
     auto strings = xpath.Strings("./html:h2[1]/text()", node);
-    if ( !strings.empty() )
+
+	if ( !strings.empty() )
         _title = std::move(strings[0]);
+#endif
     
     // load List Elements from a single Ordered List
     // first: confirm there's a single list
@@ -87,7 +95,7 @@ bool NavigationTable::ParseXML(shared_ptr<xml::Node> node)
 void NavigationTable::LoadChildElements(shared_ptr<NavigationElement> pElement, shared_ptr<xml::Node> olNode)
 {
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-    XPathWrangler xpath(olNode->Document(), {{"epub", ePub3NamespaceURI}});
+	XPathWrangler xpath(olNode->Document(), {{"epub", ePub3NamespaceURI},{"html", XHTMLNamespaceURI}});
 #else
     XPathWrangler::NamespaceList __ns;
     __ns["ePub3"] = ePub3NamespaceURI;
