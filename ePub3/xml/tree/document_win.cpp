@@ -150,7 +150,7 @@ void Document::SetInternalSubset(const string &name, const string &externalID, c
 #endif
 std::shared_ptr<Element> Document::Root()
 {
-	XmlElement^ element = dynamic_cast<XmlElement^>(xml()->FirstChild);
+	XmlElement^ element = xml()->DocumentElement;
 	if (element == nullptr)
 		return nullptr;
 	return std::make_shared<Element>(element);
