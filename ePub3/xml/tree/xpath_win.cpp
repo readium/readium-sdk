@@ -122,7 +122,7 @@ bool XPathEvaluator::Evaluate(std::shared_ptr<const Node> node, ObjectType * res
 			{
 				IXmlNode^ inode = _lastResult->Item(0);
 				using ::Windows::Data::Xml::Dom::NodeType;
-				if (inode->NodeType == NodeType::TextNode)
+				if ((inode != nullptr) && (inode->NodeType == NodeType::TextNode))
 				{
 					XmlText^ txt = dynamic_cast<XmlText^>(inode);
 					string str(txt->Data);

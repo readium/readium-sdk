@@ -51,6 +51,7 @@
 #define OCFNamespaceURI "urn:oasis:names:tc:opendocument:xmlns:container"
 #define XMLENCNamespaceURI "http://www.w3.org/2001/04/xmlenc#"
 #define XMLDSigNamespaceURI "http://www.w3.org/2000/09/xmldsig#"
+#define XHTMLNamespaceURI "http://www.w3.org/1999/xhtml"
 
 EPUB3_BEGIN_NAMESPACE
 
