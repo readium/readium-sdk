@@ -147,7 +147,7 @@ protected:
     
 };
 
-ZipArchive::ZipItemInfo::ZipItemInfo(struct zip_stat & info)
+ZipArchive::ZipItemInfo::ZipItemInfo(struct zip_stat & info) : ArchiveItemInfo()
 {
     SetPath(info.name);
     SetIsCompressed(info.comp_method == ZIP_CM_STORE);

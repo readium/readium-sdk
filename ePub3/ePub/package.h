@@ -282,6 +282,8 @@ protected:
     shared_ptr<MediaOverlaysSmilModel> _mediaOverlays;      ///< The Media Overlays SMIL model
 public:
     shared_ptr<MediaOverlaysSmilModel>    MediaOverlaysSmilModel()      const       { return _mediaOverlays; }
+
+    shared_ptr<Archive> Archive() const { return _archive; }
 };
 
 /**
