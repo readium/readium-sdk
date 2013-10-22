@@ -875,7 +875,7 @@ std::wstring string::wchar_string() const
 string& string::tolower(const std::locale& loc)
 {
     auto& facet = std::use_facet<std::ctype<char>>(loc);
-    facet.tolower(&(*_base.begin()), &(*_base.end()));
+    facet.tolower(const_cast<char*>(_base.data()), const_cast<char*>(_base.data()) + _base.size());
     return *this;
 }
 const string string::tolower(const std::locale& loc) const
@@ -885,7 +885,7 @@ const string string::tolower(const std::locale& loc) const
 string& string::toupper(const std::locale& loc)
 {
     auto& facet = std::use_facet<std::ctype<char>>(loc);
-    facet.toupper(&(*_base.begin()), &(*_base.end()));
+	facet.toupper(const_cast<char*>(_base.data()), const_cast<char*>(_base.data()) + _base.size());
     return *this;
 }
 const string string::toupper(const std::locale& loc) const
