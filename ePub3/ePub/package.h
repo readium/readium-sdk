@@ -274,6 +274,8 @@ protected:
 #endif
         }
     }
+
+    shared_ptr<Archive> Archive() const { return _archive; }
 };
 
 /**
