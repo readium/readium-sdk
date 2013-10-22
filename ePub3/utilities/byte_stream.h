@@ -407,6 +407,10 @@ public:
     
 protected:
     struct zip_file*        _file;      ///< The underlying Zip file stream.
+
+    ///
+    /// Sanitizes a path string, since `libzip` can be finnicky about them.
+    string Sanitized(const string& path) const;
 };
 
 /**
