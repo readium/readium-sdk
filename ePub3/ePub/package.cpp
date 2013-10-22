@@ -211,7 +211,7 @@ NavigationList PackageBase::NavTablesFromManifestItem(shared_ptr<PackageBase> ow
     
     // find each <nav> node
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-    XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}}); // goddamn I love C++11 initializer list constructors
+	XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"html", XHTMLNamespaceURI}}); // goddamn I love C++11 initializer list constructors
 #else
     XPathWrangler::NamespaceList __m;
     __m["epub"] = ePub3NamespaceURI;
