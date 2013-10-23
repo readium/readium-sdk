@@ -150,7 +150,10 @@ void Node::SetName(const string &name)
 #endif
 string Node::Content() const
 {
-	return __winstr(_xml->NodeValue);
+	auto str = __winstr(_xml->InnerText);
+	if (str == nullptr)
+		return string();
+	return str;
 }
 #if EPUB_ENABLE(XML_BUILDER)
 void Node::SetContent(const string &content)
@@ -363,7 +366,7 @@ string Node::XMLString() const
 }
 string Node::StringValue() const
 {
-	return _xml->NodeValue->ToString();
+	return _xml->InnerText;
 }
 int Node::IntValue() const
 {
