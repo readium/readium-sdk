@@ -27,11 +27,13 @@
 #include <ePub3/archive.h>
 #include <ePub3/container.h>
 
+#include "jni/jni.h"
+
 #include "epub3.h"
-#include "log.h"
 #include "helpers.h"
 #include "container.h"
 #include "package.h"
+#include "iri.h"
 
 
 using namespace std;
@@ -100,14 +102,25 @@ static jmethodID addStringToList_ID;
 static jmethodID createBuffer_ID;
 static jmethodID appendBytesToBuffer_ID;
 
-//TODO: Why is this needed? Just to make the refcounting count a copy?
-static shared_ptr<ePub3::Package> currentPckgPtr;
-static shared_ptr<ePub3::Container> currentContainer;
-
 
 /*
  * Exported functions
  **************************************************/
+
+/**
+ * Helper function to get the __nativePtr from the Java object
+ * and translate it to a smart pointer on result.
+ */
+std::shared_ptr<void> getNativePtr(JNIEnv *env, jobject thiz) {
+	// Get the native pointer id
+	jlong id = jni::Field<jlong>(env, thiz, "__nativePtr");
+
+	// Get the smart pointer
+	std::shared_ptr<void> res(jni::Pointer(id).getPtr());
+
+	// Return result
+	return res;
+}
 
 /**
  * Helper function to create a jstring from a native string.
@@ -234,6 +247,12 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
     	return ONLOAD_ERROR;
     }
 
+    // Initialize the cached java elements from package
+    if(onLoad_cacheJavaElements_iri(env) == ONLOAD_ERROR) {
+    	LOGE("JNI_OnLoad(): failed to cache IRI java elements");
+    	return ONLOAD_ERROR;
+    }
+
     // Initialize the rest of the cached java elements that are still in JavaObjectsFactory class
     // TODO: Move all these elements to each respective class and remove these lines
 
@@ -263,7 +282,6 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved) {
 	//TODO: Fill when needed
 }
-
 
 /*
  * Class:     org_readium_sdk_android_EPub3
@@ -298,24 +316,41 @@ Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring p
 	std::string spath = std::string(nativePath);
 	shared_ptr<ePub3::Container> _container = ePub3::Container::OpenContainer(spath);
 	LOGD("EPub3.openBook(): _container OK, version: %s\n", _container->Version().c_str());
-	currentContainer = _container;	//TODO: Why is this?
 
-	jobject jContainer = javaContainer_createContainer(env, (jlong) &currentContainer, path);
+	// Save container before sending it to Java
+	jni::Pointer container(_container, POINTER_GPS("container"));
+
+	jobject jContainer = javaContainer_createContainer(env, container.getId(), path);
 
     auto packages = _container->Packages();
 
     for (auto packageIt = packages.begin(); packageIt != packages.end(); ++packageIt) {
-    	auto package = &*(&*packageIt);
-        LOGD("EPub3.openBook(): package type: %p %s\n", package, typeid(package).name());
-        currentPckgPtr = *package;	//TODO: Why is this?
+    	auto _package = &*(&*packageIt);
+        LOGD("EPub3.openBook(): package type: %p %s\n", _package, typeid(_package).name());
 
-        javaContainer_addPackageToContainer(env, jContainer, (jint) &currentPckgPtr);
+    	// Save package before sending it to Java
+    	jni::Pointer package(*_package, POINTER_GPS("package"));
+
+        javaContainer_addPackageToContainer(env, jContainer, package.getId());
         LOGD("EPub3.openBook(): package added");
     }
+
+	//TODO: Just for testing dump
+	//std::string dump = jni::PointerPool::dump();
+	//LOGD("openBook(): pointer pool dump: %s", dump.c_str());
 
     RELEASE_UTF8(path, nativePath);
 
 	return jContainer;
+}
+
+/*
+ * Class:     org_readium_sdk_android_EPub3
+ * Method:    releaseNativePointer
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_org_readium_sdk_android_EPub3_releaseNativePointer(JNIEnv* env, jobject thiz, jlong ptr) {
+	jni::PointerPool::del(ptr);
 }
 
 

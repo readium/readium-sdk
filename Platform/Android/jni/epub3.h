@@ -20,6 +20,8 @@
 //
 
 
+#include <memory>
+
 #include <jni.h>
 
 
@@ -71,6 +73,12 @@ extern jmethodID addElementToParent_ID;
 /*
  * Exported functions
  **************************************************/
+
+/**
+ * Helper function to get the __nativePtr from the Java object
+ * and translate it to a smart pointer on result.
+ */
+std::shared_ptr<void> getNativePtr(JNIEnv *env, jobject thiz);
 
 /**
  * Helper function to create a jstring from a native string.
@@ -133,6 +141,12 @@ JNIEXPORT void JNICALL Java_org_readium_sdk_android_EPub3_setCachePath(JNIEnv* e
  */
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring path);
 
+/*
+ * Class:     org_readium_sdk_android_EPub3
+ * Method:    releaseNativePointer
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_org_readium_sdk_android_EPub3_releaseNativePointer(JNIEnv* env, jobject thiz, jlong ptr);
 
 #ifdef __cplusplus
 }
