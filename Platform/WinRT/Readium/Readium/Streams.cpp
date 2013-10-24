@@ -53,7 +53,7 @@ IAsyncOperationWithProgress<IBuffer^, unsigned int>^ Stream::ReadAsync(IBuffer^ 
 		byte* bytes = nullptr;
 		byteBuffer->Buffer(&bytes);
 
-		unsigned int toRead = ((options == InputStreamOptions::ReadAhead) ? std::max(count, (unsigned int)4096) : count);
+		unsigned int toRead = ((options == InputStreamOptions::ReadAhead) ? std::max(count, buffer->Capacity) : std::min(count, buffer->Capacity));
 		ssize_t numRead = 0;
 		int total = 0;
 
@@ -71,6 +71,7 @@ IAsyncOperationWithProgress<IBuffer^, unsigned int>^ Stream::ReadAsync(IBuffer^ 
 
 		} while (numRead > 0 && toRead > 0 && options != InputStreamOptions::Partial);
 
+		buffer->Length = total;
 		return buffer;
 	});
 }
@@ -130,7 +131,7 @@ IAsyncOperationWithProgress<IBuffer^, unsigned int>^ RandomAccessStream::ReadAsy
 		byte* bytes = nullptr;
 		byteBuffer->Buffer(&bytes);
 
-		unsigned int toRead = ((options == InputStreamOptions::ReadAhead) ? std::max(count, (unsigned int)4096) : count);
+		unsigned int toRead = ((options == InputStreamOptions::ReadAhead) ? std::max(count, buffer->Capacity) : std::min(count, buffer->Capacity));
 		ssize_t numRead = 0;
 		int total = 0;
 
@@ -148,6 +149,7 @@ IAsyncOperationWithProgress<IBuffer^, unsigned int>^ RandomAccessStream::ReadAsy
 
 		} while (numRead > 0 && toRead > 0 && options != InputStreamOptions::Partial);
 
+		buffer->Length = total;
 		return buffer;
 	});
 }
