@@ -184,7 +184,7 @@ typedef signed long ssize_t;
 # define EPUB_USE_LIBXML2 1
 # define EPUB_USE_WIN_XML 0
 # define EPUB_ENABLE_XML_BUILDER 1
-# define EPUB_ENABLE_XML_C14N 1
+# define EPUB_ENABLE_XML_C14N 0
 #endif
 
 #if EPUB_COMPILER_SUPPORTS(CXX_DELETED_FUNCTIONS)

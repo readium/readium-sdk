@@ -58,8 +58,8 @@ public:
     operator xmlParserInputBuffer * () { return xmlBuffer(); }
     operator const xmlParserInputBuffer * () const { return xmlBuffer(); }
     
-    xmlDocPtr xmlReadDocument(const char * url, const char * encoding, int options);
-    xmlDocPtr htmlReadDocument(const char * url, const char * encoding, int options);
+    std::shared_ptr<Document> xmlReadDocument(const char * url, const char * encoding, int options);
+    std::shared_ptr<Document> htmlReadDocument(const char * url, const char * encoding, int options);
 #elif EPUB_USE(WIN_XML)
 	::Windows::Storage::IStorageFile^ File() { return _store; }
 	operator ::Windows::Storage::IStorageFile^() { return _store; }
@@ -104,6 +104,8 @@ public:
     operator xmlOutputBuffer * () { return xmlBuffer(); }
     operator const xmlOutputBuffer * () const { return xmlBuffer(); }
     
+    void flush() { xmlOutputBufferFlush(_buf); }
+    
 	int writeDocument(xmlDocPtr doc);
 #elif EPUB_USE(WIN_XML)
 	::Windows::Storage::IStorageFile^ File() { return _store; }
@@ -139,6 +141,9 @@ public:
     StreamInputBuffer(StreamInputBuffer && o) : InputBuffer(std::move(o)), _input(o._input) {}
     virtual ~StreamInputBuffer() {}
     
+    virtual size_t size() const OVERRIDE;
+    virtual size_t offset() const OVERRIDE { return _input.tellg(); }
+    
 protected:
     virtual size_t read(uint8_t * buf, size_t len);
     virtual bool close();
@@ -156,6 +161,9 @@ public:
     StreamOutputBuffer(std::ostream & output, const std::string & encoding = std::string()) : OutputBuffer(), _output(output) {}
     StreamOutputBuffer(StreamOutputBuffer && o) : OutputBuffer(std::move(o)), _output(o._output) {}
     virtual ~StreamOutputBuffer() {}
+    
+    virtual size_t size() const OVERRIDE;
+    virtual size_t offset() const OVERRIDE { return _output.tellp(); }
     
 protected:
     virtual bool write(const uint8_t * buffer, size_t len);

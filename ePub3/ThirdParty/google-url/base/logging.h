@@ -4,7 +4,7 @@
 #ifndef BASE_LOGGING_H__
 #define BASE_LOGGING_H__
 
-#include "../_config.h"
+#include <ePub3/_config.h>
 
 #include <string>
 #include <cstring>

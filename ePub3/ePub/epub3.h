@@ -30,12 +30,7 @@
 #include <string>
 #include <sstream>
 
-#if EPUB_USE(LIBXML2)
-#include <libxml/tree.h>
-#elif EPUB_USE(WIN_XML)
 #include <ePub3/xml/node.h>
-#endif
-
 #include <ePub3/Forward.h>
 
 #if EPUB_PLATFORM(WINRT)
@@ -64,36 +59,10 @@ EPUB3_BEGIN_NAMESPACE
  @result A string containing the property value, or an empty string if none was found.
  @ingroup utilities
  */
-#if EPUB_USE(LIBXML2)
-static inline string _getProp(xmlNodePtr node, const char *name, const char *nsURI = nullptr)
-{
-    if ( node == nullptr )
-        return string::EmptyString;
-    
-    xmlChar * ch = nullptr;
-    if ( nsURI != nullptr )
-    {
-        ch = xmlGetNsProp(node, reinterpret_cast<const xmlChar*>(name), reinterpret_cast<const xmlChar*>(nsURI));
-    }
-    
-    if ( ch == nullptr )
-    {
-        ch = xmlGetProp(node, reinterpret_cast<const xmlChar*>(name));
-    }
-    
-    if ( ch == nullptr )
-        return string::EmptyString;
-    
-    string result(ch);
-    xmlFree(ch);
-    return result;
-}
-#elif EPUB_USE(WIN_XML)
- static inline string _getProp(std::shared_ptr<xml::Node> node, const char *name, const char *nsURI = "")
+static inline string _getProp(std::shared_ptr<xml::Node> node, const char *name, const char *nsURI = "")
 {
 	return node->AttributeValue(name, nsURI);
 }
-#endif	// EPUB_USE(LIBXML2)
 
 EPUB3_END_NAMESPACE
 

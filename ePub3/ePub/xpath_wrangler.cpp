@@ -43,6 +43,10 @@ XPathWrangler::StringList XPathWrangler::Strings(const string& xpath, shared_ptr
     
 	xml::XPathEvaluator eval(xml::string(xpath.c_str()), _doc);
 	xml::XPathEvaluator::ObjectType type;
+    for (auto& pair : _namespaces)
+    {
+        eval.RegisterNamespace(pair.first.stl_str(), pair.second.stl_str());
+    }
 
 	if ( eval.Evaluate((bool(node) ? node : _doc), &type) )
     {
@@ -100,7 +104,7 @@ void XPathWrangler::RegisterNamespaces(const NamespaceList &namespaces)
 void XPathWrangler::NameDefaultNamespace(const string& name)
 {
 	xml::NamespaceList allNS = _doc->NamespacesInScope();
-	for (xml::Namespace* ns : allNS)
+	for (auto ns : allNS)
 	{
 		if (ns->Prefix().empty())
 		{

@@ -27,7 +27,7 @@
 #include <codecvt>
 
 #if EPUB_USE(LIBXML2)
-#include <libxml2/xmlstring.h>
+#include <libxml/xmlstring.h>
 #include <ePub3/utilities/utfstring.h>
 #elif EPUB_USE(WIN_XML)
 // Nothing

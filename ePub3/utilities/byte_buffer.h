@@ -118,8 +118,9 @@ private:
     size_t m_bufferCapacity;
     // whether to zero unused bytes
     bool m_secure;
-
+#if EPUB_PLATFORM(WINRT)
 	friend class ::Readium::BridgedByteBuffer;
+#endif
 };
 
 EPUB3_END_NAMESPACE

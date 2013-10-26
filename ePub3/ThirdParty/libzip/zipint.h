@@ -144,8 +144,12 @@ struct zip_file {
     char *buffer;
     z_stream *zstr;
 
-	// JCD added
+	/* JCD added below */
+    
 	int file_index;		/* index of this file in the zip archive */
+    off_t file_fpos;    /* position within this file itself -- relative to data type being returned */
+                        /* i.e. if ZIP_FL_COMPRESSED, this is offset into compressed bytes, */
+                        /* otherwise offset is into decompressed bytes */
 };
 
 /* zip archive directory entry (central or local) */
@@ -241,6 +245,7 @@ const char *_zip_error_strerror(struct zip_error *);
 
 int _zip_file_fillbuf(void *, size_t, struct zip_file *);
 unsigned int _zip_file_get_offset(struct zip *, int);
+unsigned int _zip_file_get_offset_safe(struct zip*, int);   /* JCD added, resets fpos before returning */
 
 int _zip_filerange_crc(FILE *, off_t, off_t, uLong *, struct zip_error *);
 
