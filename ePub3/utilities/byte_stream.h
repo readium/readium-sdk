@@ -577,12 +577,22 @@ public:
     ///
     /// @copydoc ByteStream::WriteBytes()
 	virtual size_type       WriteBytes(const void* buf, size_type len);
+    
+    /**
+     Seek to a position within the target file.
+     @param by The amount to move the file position.
+     @param dir The starting point for the position calculation: current position,
+     start of file, or end of file.
+	 @result The new file position. This may be different from the requested position,
+	 if for instance the file was not large enough to accomodate the request.
+    */
+    virtual size_type       Seek(size_type by, std::ios::seekdir dir) OVERRIDE;
 
 	/**
 	Returns the current position within the target file.
 	@result The current file position.
 	*/
-	virtual size_type		Position() const OVERRIDE { return _pos; }
+	virtual size_type		Position() const OVERRIDE;
 
 	/**
 	Creates a new independent stream object referring to the same file.
@@ -594,13 +604,7 @@ public:
     
 protected:
     struct zip_file*        _file;      ///< The underlying Zip file stream.
-
 	std::ios::openmode		_mode;		///< The mode used to open the file (used by Clone()).
-	size_type				_pos;		///< The current position (basically, the number of bytes read so far);
-    
-    ///
-    /// Sanitizes a path string, since `libzip` can be finnicky about them.
-    string Sanitized(const string& path) const;
 };
 
 /**
