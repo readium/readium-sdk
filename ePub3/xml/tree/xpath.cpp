@@ -21,12 +21,18 @@
 
 #include "xpath.h"
 #include "node.h"
+#include "document.h"
 #include <libxml/xpathInternals.h>
 
 EPUB3_XML_BEGIN_NAMESPACE
 
 static const xmlChar * _XMLInstanceVarName = BAD_CAST "instance";
 static const xmlChar * _XMLInstanceNamespace = BAD_CAST "urn:kobo:ePub3:xml:XPathInstance";
+
+static XPathEvaluator::ObjectType __get_obj_type(xmlXPathObjectPtr ptr)
+{
+    return (ptr == nullptr ? XPathEvaluator::ObjectType::Undefined : XPathEvaluator::ObjectType(ptr->type));
+}
 
 void XPathEvaluator::_XMLFunctionWrapper(xmlXPathParserContextPtr ctx, int nargs)
 {
@@ -47,12 +53,14 @@ void XPathEvaluator::_XMLFunctionWrapper(xmlXPathParserContextPtr ctx, int nargs
     evaluator->PerformFunction(ctx, ctx->context->function, ctx->context->functionURI, nargs);
 }
 
-XPathEvaluator::XPathEvaluator(const string & xpath, const class Document * document)
-: _xpath(xpath), _document(document), _lastResult(NULL)
+XPathEvaluator::XPathEvaluator(const string & xpath, std::shared_ptr<const class Document> document)
+: _xpath(xpath), _document(document), _ctx(nullptr), _compiled(nullptr), _lastResult(NULL)
 {
-    xmlDocPtr doc = nullptr;//const_cast<_xmlDoc*>(document->xml());
+    xmlDocPtr doc = const_cast<_xmlDoc*>(document->xml());
     _ctx = xmlXPathNewContext(doc);
-    _compiled = xmlXPathCompile(xpath.utf8());
+    xmlXPathRegisterAllFunctions(_ctx);
+    
+    //_compiled = xmlXPathCompile(xpath.utf8());
     
     // store a pointer back to the C++ object in the xpath context
     xmlXPathObject obj;
@@ -69,6 +77,15 @@ XPathEvaluator::~XPathEvaluator()
         xmlXPathFreeObject(_lastResult);
     if ( _ctx != nullptr )
         xmlXPathFreeContext(_ctx);
+}
+
+bool XPathEvaluator::Compile()
+{
+    if (_compiled)
+        return true;
+    
+    _compiled = xmlXPathCompile(_xpath.utf8());
+    return _compiled != nullptr;
 }
 
 #if 0
@@ -88,7 +105,7 @@ bool XPathEvaluator::RegisterNamespaces(const NamespaceMap &namespaces)
     }
     return true;
 }
-bool XPathEvaluator::RegisterAllNamespacesForElement(const Element *element)
+bool XPathEvaluator::RegisterAllNamespacesForElement(std::shared_ptr<const Element> element)
 {
     // TBI
     return false;
@@ -223,22 +240,34 @@ bool XPathEvaluator::RegisterVariable(const string &name, void *data, ObjectType
 #pragma mark - XPath Evaluation
 #endif
 
-bool XPathEvaluator::Evaluate(const Node *node, ObjectType * resultType)
+bool XPathEvaluator::Evaluate(std::shared_ptr<const Node> node, ObjectType * resultType)
 {
     if ( _lastResult != nullptr )
         xmlXPathFreeObject(_lastResult);
     
     _ctx->node = const_cast<xmlNodePtr>(node->xml());
-    _lastResult = xmlXPathCompiledEval(_compiled, _ctx);
+    if (_compiled != nullptr)
+        _lastResult = xmlXPathCompiledEval(_compiled, _ctx);
+    else
+        _lastResult = xmlXPathEval(_xpath.utf8(), _ctx);
+    if (resultType != nullptr)
+        *resultType = __get_obj_type(_lastResult);
     return ( _lastResult != nullptr );
 }
-bool XPathEvaluator::EvaluateAsBoolean(const Node *node)
+bool XPathEvaluator::EvaluateAsBoolean(std::shared_ptr<const Node> node)
 {
     if ( _lastResult != nullptr )
         xmlXPathFreeObject(_lastResult);
     
     _ctx->node = const_cast<xmlNodePtr>(node->xml());
-    int r = xmlXPathCompiledEvalToBoolean(_compiled, _ctx);
+    int r = 0;
+    if (_compiled != nullptr) {
+        r = xmlXPathCompiledEvalToBoolean(_compiled, _ctx);
+    } else {
+        xmlXPathObjectPtr obj = xmlXPathEval(_xpath.utf8(), _ctx);
+        if (obj != nullptr)
+            r = xmlXPathCastToBoolean(obj);
+    }
     return ( r != 0 );
 }
 bool XPathEvaluator::BooleanResult() const
@@ -272,18 +301,12 @@ ePub3::xml::NodeSet XPathEvaluator::NodeSetResult() const
     for ( int i = 0; i < xmlXPathNodeSetGetLength(ns); i++ )
     {
         xmlNodePtr xml = xmlXPathNodeSetItem(ns, i);
-        if ( xml->_private != nullptr )
+        auto node = Wrapped<Node>(xml);
+        if ( dynamic_cast<Node*>(node.get()) != nullptr )
         {
-            Node * node = reinterpret_cast<Node*>(xml->_private);
-            if ( typeid(*node) == typeid(Node) )
-            {
-                nodes.push_back(node);
-                continue;
-            }
+            nodes.push_back(node);
+            continue;
         }
-        
-        // need to build a wrapper
-        nodes.push_back(new Node(xml));
     }
     
     return nodes;

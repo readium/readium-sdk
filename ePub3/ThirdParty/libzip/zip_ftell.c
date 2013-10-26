@@ -1,6 +1,7 @@
 /*
-  zip_file_get_offset.c -- get offset of file data in archive.
-  Copyright (C) 1999-2007 Dieter Baron and Thomas Klausner
+  zip_ftell.c -- obtain location in file within zip archive
+  Copyright (C) 1999-2013 Dieter Baron and Thomas Klausner
+  Original implementation contributed by Jim Dovey.
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <libzip@nih.at>
@@ -31,65 +32,13 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #include "zipint.h"
 
-#if defined(_MSC_VER)
-# define strdup _strdup
-# define fseeko fseek
-# define ftello ftell
-# define fileno _fileno
-#endif
-
-
-
-/* _zip_file_get_offset(za, ze):
-   Returns the offset of the file data for entry ze.
-
-   On error, fills in za->error and returns 0.
-*/
-
-unsigned int
-_zip_file_get_offset(struct zip *za, int idx)
+ZIP_EXTERN long
+zip_ftell(struct zip_file* zf)
 {
-    struct zip_dirent de;
-    unsigned int offset;
-
-    offset = za->cdir->entry[idx].offset;
-
-    if (fseeko(za->zp, offset, SEEK_SET) != 0) {
-	_zip_error_set(&za->error, ZIP_ER_SEEK, errno);
-	return 0;
-    }
-
-    if (_zip_dirent_read(&de, za->zp, NULL, NULL, 1, &za->error) != 0)
-	return 0;
-
-    offset += LENTRYSIZE + de.filename_len + de.extrafield_len;
-
-    _zip_dirent_finalize(&de);
-
-    return offset;
-}
-
-/* JCD added */
-unsigned int
-_zip_file_get_offset_safe(struct zip* za, int idx)
-{
-    off_t curoff;
-    unsigned int offset;
+    if (!zf)
+        return -1;
     
-    curoff = ftello(za->zp);
-    offset = _zip_file_get_offset(za, idx);
-    fseeko(za->zp, curoff, SEEK_SET);
-    
-    return offset;
+    return zf->file_fpos;
 }

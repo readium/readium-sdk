@@ -24,13 +24,15 @@
 
 EPUB3_XML_BEGIN_NAMESPACE
 
-Namespace::Namespace(Document * doc, const string &prefix, const string &uri)
+Namespace::Namespace(std::shared_ptr<Document> doc, const string &prefix, const string &uri)
 {
     xmlDocPtr d = doc->xml();
     _xml = xmlNewNs(reinterpret_cast<xmlNodePtr>(d), uri.utf8(), prefix.utf8());
+    _xml->_private = this;
 }
 Namespace::~Namespace()
 {
+    _xml->_private = nullptr;
     if ( _xml != nullptr )
         xmlFreeNs(_xml);
 }

@@ -45,7 +45,7 @@ void PrintNodeSet(xml::NodeSet& nodeSet)
 	for (decltype(nodeSet.size()) i = 0; i < nodeSet.size(); i++)
 	{
 		auto node = nodeSet[i];
-		fprintf(stderr, "Node %02d: ", i);
+		fprintf(stderr, "Node %02lu: ", i);
 
 		if ( !bool(node) )
 		{
@@ -89,7 +89,7 @@ bool PackageBase::Open(const string& path)
 {
     ArchiveXmlReader reader(_archive->ReaderAtPath(path.stl_str()));
 #if EPUB_USE(LIBXML2)
-    _opf = std::make_shared<xml::Document>(reader.xmlReadDocument(path.c_str(), nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR));
+    _opf = reader.xmlReadDocument(path.c_str(), nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
 #elif EPUB_USE(WIN_XML)
 	_opf = reader.ReadDocument(path.c_str(), nullptr, 0);
 #endif
@@ -291,7 +291,7 @@ bool Package::Unpack()
 
     _spineCFIIndex = 0;
     uint32_t idx = 0;
-    auto child = root->FirstChild();
+    auto child = root->FirstElementChild();
     while ( bool(child) )
     {
         idx += 2;
@@ -310,7 +310,7 @@ bool Package::Unpack()
             HandleError(EPUBError::OPFMetadataOutOfOrder);
         }
         
-		child = child->NextSibling();
+		child = child->NextElementSibling();
     }
     
     if ( _spineCFIIndex == 0 )

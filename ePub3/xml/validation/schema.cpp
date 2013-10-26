@@ -30,7 +30,7 @@ Schema::Schema(_xmlSchema * xml) : _xml(xml), _owns_document(false)
 {
     _xml->_private = this;
 }
-Schema::Schema(class Document * document, bool assume_ownership) : _xml(NULL), _owns_document(false)
+Schema::Schema(std::shared_ptr<class Document> document, bool assume_ownership) : _xml(NULL), _owns_document(false)
 {
     SetDocument(document, assume_ownership);
 }
@@ -38,14 +38,14 @@ Schema::~Schema()
 {
     releaseDocument();
 }
-void Schema::SetDocument(class Document * document, bool assume_ownership)
+void Schema::SetDocument(std::shared_ptr<class Document> document, bool assume_ownership)
 {
     releaseDocument();
     
     bool created = false;
-    if ( document == NULL )
+    if ( !bool(document) )
     {
-        //document = new Document();
+        document = std::make_shared<class Document>();
         created = true;
     }
     
@@ -53,8 +53,6 @@ void Schema::SetDocument(class Document * document, bool assume_ownership)
     xmlSchemaParserCtxtPtr ctx = NULL;//xmlSchemaNewDocParserCtxt(document->xmlDoc());
     if ( ctx == NULL )
     {
-        if ( created )
-            delete document;
         throw ParserError("Failed to parse schema: ", xmlGetLastError());
     }
     
@@ -63,8 +61,6 @@ void Schema::SetDocument(class Document * document, bool assume_ownership)
     
     if ( _xml == NULL )
     {
-        if ( created )
-            delete document;
         throw ParserError("Schema could not be parsed: ", xmlGetLastError());
     }
     
@@ -104,14 +100,14 @@ void Schema::releaseDocument()
         _xml = NULL;
     }
 }
-Document * Schema::Document()
+std::shared_ptr<Document> Schema::Document()
 {
     if ( _xml == NULL || _xml->doc == NULL )
         return NULL;
     
     return Wrapped<class Document, _xmlDoc>(_xml->doc);
 }
-const Document * Schema::Document() const
+std::shared_ptr<const class Document> Schema::Document() const
 {
     return const_cast<Schema*>(this)->Document();
 }

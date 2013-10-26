@@ -25,6 +25,7 @@
 #include "../ePub3/utilities/error_handler.h"
 #include "catch.hpp"
 #include <cstdlib>
+#include "../ePub3/xml/tree/document.h"
 
 #define EPUB_PATH "TestData/childrens-literature-20120722.epub"
 #define BINDINGS_EPUB_PATH "TestData/widget-figure-gallery-20121022.epub"
@@ -643,7 +644,7 @@ TEST_CASE("Packages with no version should raise a spec error", "")
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
-    xmlDocPtr doc = xmlParseMemory(kInvalidVersion, (int)strlen(kInvalidVersion));
+    auto doc = ePub3::xml::Wrapped<ePub3::xml::Document>(xmlParseMemory(kInvalidVersion, (int)strlen(kInvalidVersion)));
     pkg->_OpenForTest(doc, "EPUB/");
     
     SetErrorHandler(DefaultErrorHandler);
@@ -663,7 +664,7 @@ TEST_CASE("Packages with no title metadata should raise a spec error", "")
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
-    xmlDocPtr doc = xmlParseMemory(kMissingTitle, (int)strlen(kMissingTitle));
+    auto doc = ePub3::xml::Wrapped<ePub3::xml::Document>(xmlParseMemory(kMissingTitle, (int)strlen(kMissingTitle)));
     pkg->_OpenForTest(doc, "EPUB/");
     
     SetErrorHandler(DefaultErrorHandler);
@@ -683,7 +684,7 @@ TEST_CASE("Packages with no identifier should raise a spec error", "")
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
-    xmlDocPtr doc = xmlParseMemory(kMissingIdentifier, (int)strlen(kMissingIdentifier));
+    auto doc = ePub3::xml::Wrapped<ePub3::xml::Document>(xmlParseMemory(kMissingIdentifier, (int)strlen(kMissingIdentifier)));
     pkg->_OpenForTest(doc, "EPUB/");
     
     SetErrorHandler(DefaultErrorHandler);
@@ -703,7 +704,7 @@ TEST_CASE("Packages with no language metadata should raise a spec error", "")
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
-    xmlDocPtr doc = xmlParseMemory(kMissingLanguage, (int)strlen(kMissingLanguage));
+    auto doc = ePub3::xml::Wrapped<ePub3::xml::Document>(xmlParseMemory(kMissingLanguage, (int)strlen(kMissingLanguage)));
     pkg->_OpenForTest(doc, "EPUB/");
     
     SetErrorHandler(DefaultErrorHandler);
@@ -723,7 +724,7 @@ TEST_CASE("Packages with no midification date should raise a spec error", "")
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
-    xmlDocPtr doc = xmlParseMemory(kMissingModDate, (int)strlen(kMissingModDate));
+    auto doc = ePub3::xml::Wrapped<ePub3::xml::Document>(xmlParseMemory(kMissingModDate, (int)strlen(kMissingModDate)));
     pkg->_OpenForTest(doc, "EPUB/");
     
     SetErrorHandler(DefaultErrorHandler);
@@ -743,7 +744,7 @@ TEST_CASE("Packages with an invalid unique-id reference should raise a spec erro
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
-    xmlDocPtr doc = xmlParseMemory(kInvalidUniqueIDRef, (int)strlen(kInvalidUniqueIDRef));
+    auto doc = ePub3::xml::Wrapped<ePub3::xml::Document>(xmlParseMemory(kInvalidUniqueIDRef, (int)strlen(kInvalidUniqueIDRef)));
     pkg->_OpenForTest(doc, "EPUB/");
     
     SetErrorHandler(DefaultErrorHandler);
@@ -763,7 +764,7 @@ TEST_CASE("'refines' should contain a valid IRI", "")
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
-    xmlDocPtr doc = xmlParseMemory(kInvalidRefinementIRI, (int)strlen(kInvalidRefinementIRI));
+    auto doc = ePub3::xml::Wrapped<ePub3::xml::Document>(xmlParseMemory(kInvalidRefinementIRI, (int)strlen(kInvalidRefinementIRI)));
     pkg->_OpenForTest(doc, "EPUB/");
     
     SetErrorHandler(DefaultErrorHandler);
@@ -783,7 +784,7 @@ TEST_CASE("'refine' should contain a relative IRI", "")
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
-    xmlDocPtr doc = xmlParseMemory(kAbsoluteRefinementIRI, (int)strlen(kAbsoluteRefinementIRI));
+    auto doc = ePub3::xml::Wrapped<ePub3::xml::Document>(xmlParseMemory(kAbsoluteRefinementIRI, (int)strlen(kAbsoluteRefinementIRI)));
     pkg->_OpenForTest(doc, "EPUB/");
     
     SetErrorHandler(DefaultErrorHandler);
@@ -803,7 +804,7 @@ TEST_CASE("'refine' IRI should reference an existing item", "")
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
-    xmlDocPtr doc = xmlParseMemory(kInvalidRefinement, (int)strlen(kInvalidRefinement));
+    auto doc = ePub3::xml::Wrapped<ePub3::xml::Document>(xmlParseMemory(kInvalidRefinement, (int)strlen(kInvalidRefinement)));
     pkg->_OpenForTest(doc, "EPUB/");
     
     SetErrorHandler(DefaultErrorHandler);
@@ -823,7 +824,7 @@ TEST_CASE("Spine 'idref' should reference an existing manifest item", "")
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
-    xmlDocPtr doc = xmlParseMemory(kInvalidSpineIDRef, (int)strlen(kInvalidSpineIDRef));
+    auto doc = ePub3::xml::Wrapped<ePub3::xml::Document>(xmlParseMemory(kInvalidSpineIDRef, (int)strlen(kInvalidSpineIDRef)));
     pkg->_OpenForTest(doc, "EPUB/");
     
     SetErrorHandler(DefaultErrorHandler);
@@ -843,7 +844,7 @@ TEST_CASE("Should raise an error if the Metadata is out of place", "")
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
-    xmlDocPtr doc = xmlParseMemory(kMetadataOutOfPlace, (int)strlen(kMetadataOutOfPlace));
+    auto doc = ePub3::xml::Wrapped<ePub3::xml::Document>(xmlParseMemory(kMetadataOutOfPlace, (int)strlen(kMetadataOutOfPlace)));
     pkg->_OpenForTest(doc, "EPUB/");
     
     SetErrorHandler(DefaultErrorHandler);
@@ -863,7 +864,7 @@ TEST_CASE("Should raise an error if the Manifest is out of place", "")
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
-    xmlDocPtr doc = xmlParseMemory(kManifestOutOfPlace, (int)strlen(kManifestOutOfPlace));
+    auto doc = ePub3::xml::Wrapped<ePub3::xml::Document>(xmlParseMemory(kManifestOutOfPlace, (int)strlen(kManifestOutOfPlace)));
     pkg->_OpenForTest(doc, "EPUB/");
     
     SetErrorHandler(DefaultErrorHandler);
@@ -883,7 +884,7 @@ TEST_CASE("Should raise an error if the spine is out of place", "")
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
-    xmlDocPtr doc = xmlParseMemory(kSpineOutOfPlace, (int)strlen(kSpineOutOfPlace));
+    auto doc = ePub3::xml::Wrapped<ePub3::xml::Document>(xmlParseMemory(kSpineOutOfPlace, (int)strlen(kSpineOutOfPlace)));
     pkg->_OpenForTest(doc, "EPUB/");
     
     SetErrorHandler(DefaultErrorHandler);
@@ -903,7 +904,7 @@ TEST_CASE("Should raise an error if a spine item doesn't reference a content ite
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
-    xmlDocPtr doc = xmlParseMemory(kNoContentDocInSpine, (int)strlen(kNoContentDocInSpine));
+    auto doc = ePub3::xml::Wrapped<ePub3::xml::Document>(xmlParseMemory(kNoContentDocInSpine, (int)strlen(kNoContentDocInSpine)));
     pkg->_OpenForTest(doc, "EPUB/");
     
     SetErrorHandler(DefaultErrorHandler);
@@ -923,7 +924,7 @@ TEST_CASE("Should be happy of a spine item only references a content item via th
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
-    xmlDocPtr doc = xmlParseMemory(kContentDocInFallback, (int)strlen(kContentDocInFallback));
+    auto doc = ePub3::xml::Wrapped<ePub3::xml::Document>(xmlParseMemory(kContentDocInFallback, (int)strlen(kContentDocInFallback)));
     pkg->_OpenForTest(doc, "EPUB/");
     
     SetErrorHandler(DefaultErrorHandler);
@@ -943,7 +944,7 @@ TEST_CASE("Should raise an error if a fallback chain contains circular reference
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = Package::New(c, "application/oebps-package+xml");
     
-    xmlDocPtr doc = xmlParseMemory(kCircularFallbackChain, (int)strlen(kCircularFallbackChain));
+    auto doc = ePub3::xml::Wrapped<ePub3::xml::Document>(xmlParseMemory(kCircularFallbackChain, (int)strlen(kCircularFallbackChain)));
     pkg->_OpenForTest(doc, "EPUB/");
     
     SetErrorHandler(DefaultErrorHandler);

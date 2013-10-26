@@ -38,19 +38,19 @@ class Namespace;
 /**
  @ingroup validation
  */
-typedef std::vector<Namespace *> NamespaceList;
+typedef std::vector<std::shared_ptr<Namespace>> NamespaceList;
 
 /**
  @ingroup validation
  */
 #if EPUB_USE(LIBXML2)
 
-class Namespace : public WrapperBase
+class Namespace : public WrapperBase<Namespace>
 {
 public:
     explicit Namespace(_xmlNs * ns) : _xml(ns) {}
     Namespace() : _xml(nullptr) {}
-    Namespace(Document * doc, const string & prefix, const string & uri);
+    Namespace(std::shared_ptr<Document> doc, const string & prefix, const string & uri);
     virtual ~Namespace();
     
     bool IsEmpty() const { return _xml == nullptr; }
