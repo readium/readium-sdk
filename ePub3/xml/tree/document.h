@@ -68,7 +68,7 @@ public:
 	explicit Document(NativeDocPtr xml);
 #if EPUB_ENABLE(XML_BUILDER)
     explicit Document(const string & version = "1.0");
-    explicit Document(Element * rootElement);
+    explicit Document(std::shared_ptr<Element> rootElement);
 #endif
     virtual ~Document();
     
@@ -92,10 +92,10 @@ public:
 #if EPUB_ENABLE(XML_BUILDER)
     // only comments and processing instructions can be outside the root node;
     // this will throw if another type of node is passed in-- it checks the node's Type()
-	Node * AddNode(std::shared_ptr<Node> commentOrPINode, bool beforeRoot = true);
+    std::shared_ptr<Node> AddNode(std::shared_ptr<Node> commentOrPINode, bool beforeRoot = true);
     
-    Node * AddComment(const string & comment, bool beforeRoot = true);
-    Node * AddProcessingInstruction(const string & name, const string & content, bool beforeRoot = true);
+    std::shared_ptr<Node> AddComment(const string & comment, bool beforeRoot = true);
+    std::shared_ptr<Node> AddProcessingInstruction(const string & name, const string & content, bool beforeRoot = true);
     
     // add an entity declaration to a given subset
     void DeclareEntity(const string & name, EntityType type, const string & publicID, const string & systemID, const string & value);
@@ -114,8 +114,12 @@ public:
     //////////////////////////////////////////////////////////////////////////////
     // Output
 #if EPUB_USE(LIBXML2)
+#if EPUB_ENABLE(XML_C14N)
     template <C14NVersion _Version, bool _WithComments>
-    string Canonicalize(const C14NParams<_Version, _WithComments> & params) const;
+    string Canonicalize(const C14NParams<_Version, _WithComments> & params) const {
+        return "";
+    }
+#endif
 
     void WriteXML(OutputBuffer & outbuf) const;
 #endif

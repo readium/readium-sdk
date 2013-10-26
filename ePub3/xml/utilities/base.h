@@ -57,11 +57,20 @@ EPUB3_XML_BEGIN_NAMESPACE
  @ingroup xml-utils
  */
 template <class _Tp, typename _Nm>
-static inline _Tp * Wrapped(_Nm * n)
+static inline std::shared_ptr<_Tp> Wrapped(_Nm * __n)
 {
-    if ( n == nullptr ) return nullptr;
-    if ( n->_private != nullptr ) return reinterpret_cast<_Tp*>(n->_private);
-    return new _Tp(n);
+    typedef typename std::shared_ptr<_Tp> _Ret;
+    
+    if ( __n == nullptr )
+        return nullptr;
+    
+    // _private is set to a heap-based std::shared_ptr -- return the value, not the pointer
+    if ( __n->_private != nullptr )
+        return *(reinterpret_cast<_Ret*>(__n->_private));
+    
+    _Ret* __r = new _Ret(new _Tp(__n));
+    __n->_private = __r;
+    return *__r;
 }
 #endif
 /**

@@ -80,6 +80,10 @@ public:
 	std::shared_ptr<const class Document> Document() const { return _document; }
     
     //////////////////////////////////////////////////////////////////
+    // Compilation (optional)
+    bool Compile();
+    
+    //////////////////////////////////////////////////////////////////
     // Evaluation
     
 	bool Evaluate(std::shared_ptr<const Node> node, ObjectType * resultType = nullptr);

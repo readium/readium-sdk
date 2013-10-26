@@ -25,6 +25,7 @@
 #include <ePub3/xml/base.h>
 #include <ePub3/xml/ns.h>
 #include <ePub3/xml/xmlstring.h>
+#include <ePub3/xml/node_traits.h>
 
 #include <string>
 #include <list>
@@ -43,60 +44,6 @@ typedef std::vector<std::shared_ptr<Node>> NodeSet;
 
 typedef std::map<string, string> NamespaceMap;
 
-#if EPUB_PLATFORM(WINRT)
-enum class NodeType {
-	Element						= int(Windows::Data::Xml::Dom::NodeType::ElementNode),
-	Attribute					= int(Windows::Data::Xml::Dom::NodeType::AttributeNode),
-	Text						= int(Windows::Data::Xml::Dom::NodeType::TextNode),
-	CDATASection				= int(Windows::Data::Xml::Dom::NodeType::TextNode)+1,
-	EntityReference				= int(Windows::Data::Xml::Dom::NodeType::EntityReferenceNode),
-	Entity						= int(Windows::Data::Xml::Dom::NodeType::EntityNode),
-	ProcessingInstruction		= int(Windows::Data::Xml::Dom::NodeType::ProcessingInstructionNode),
-	Comment						= int(Windows::Data::Xml::Dom::NodeType::CommentNode),
-	Document					= int(Windows::Data::Xml::Dom::NodeType::DocumentNode),
-	DocumentType				= int(Windows::Data::Xml::Dom::NodeType::DocumentTypeNode),
-	DocumentFragment			= int(Windows::Data::Xml::Dom::NodeType::DocumentFragmentNode),
-	Notation					= int(Windows::Data::Xml::Dom::NodeType::NotationNode),
-	HTMLDocument				= int(Windows::Data::Xml::Dom::NodeType::TextNode)+2,
-	DTD							= int(Windows::Data::Xml::Dom::NodeType::TextNode)+3,
-	ElementDeclaration			= int(Windows::Data::Xml::Dom::NodeType::TextNode)+4,
-	AttributeDeclaration		= int(Windows::Data::Xml::Dom::NodeType::TextNode)+5,
-	EntityDeclaration			= int(Windows::Data::Xml::Dom::NodeType::TextNode)+6,
-	NamespaceDeclaration		= int(Windows::Data::Xml::Dom::NodeType::TextNode)+7,
-	XIncludeStart				= int(Windows::Data::Xml::Dom::NodeType::TextNode)+8,
-	XIncludeEnd					= int(Windows::Data::Xml::Dom::NodeType::TextNode)+9,
-};
-#else
-/**
- @ingroup tree
- */
-enum class NodeType : uint8_t {
-    Element                         = ::XML_ELEMENT_NODE,
-    Attribute                       = ::XML_ATTRIBUTE_NODE,
-    Text                            = ::XML_TEXT_NODE,
-    CDATASection                    = ::XML_CDATA_SECTION_NODE,
-    EntityReference                 = ::XML_ENTITY_REF_NODE,
-    Entity                          = ::XML_ENTITY_NODE,
-    ProcessingInstruction           = ::XML_PI_NODE,
-    Comment                         = ::XML_COMMENT_NODE,
-    Document                        = ::XML_DOCUMENT_NODE,
-    DocumentType                    = ::XML_DOCUMENT_TYPE_NODE,
-    DocumentFragment                = ::XML_DOCUMENT_FRAG_NODE,
-    Notation                        = ::XML_NOTATION_NODE,
-    HTMLDocument                    = ::XML_HTML_DOCUMENT_NODE,
-    DTD                             = ::XML_DTD_NODE,
-    ElementDeclaration              = ::XML_ELEMENT_DECL,
-    AttributeDeclaration            = ::XML_ATTRIBUTE_DECL,
-    EntityDeclaration               = ::XML_ENTITY_DECL,
-    NamespaceDeclaration            = ::XML_NAMESPACE_DECL,
-    XIncludeStart                   = ::XML_XINCLUDE_START,
-    XIncludeEnd                     = ::XML_XINCLUDE_END,
-#ifdef LIBXML_DOCB_ENABLED
-    DocbookSGMLDocument             = ::XML_DOCB_DOCUMENT_NODE,
-#endif
-};
-#endif
-
 /**
  @ingroup xml-utils
  */
@@ -108,7 +55,7 @@ std::string TypeString(NodeType type);
 class Node : public WrapperBase<Node>
 {
 public:
-#if EPUB_USE(LIBXML)
+#if EPUB_USE(LIBXML2)
 	typedef _xmlNode*							NativePtr;
 #elif EPUB_USE(WIN_XML)
 	typedef Windows::Data::Xml::Dom::IXmlNode^	NativePtr;
@@ -146,9 +93,7 @@ public:
     void SetContent(const string & content);
 #endif
 
-#if EPUB_USE(WIN_XML)
 	string AttributeValue(const string& name, const string& namespaceURI) const;
-#endif
     
 	std::shared_ptr<Namespace> Namespace() const;
 #if EPUB_ENABLE(XML_BUILDER)
@@ -221,16 +166,16 @@ public:
 	std::shared_ptr<const Node> FirstElementChild() const;
     const NodeList Children(const string & filterByName = string()) const;
 #if EPUB_ENABLE(XML_BUILDER)
-    Element * AddChild(const string & name, const string & prefix = string());
+    std::shared_ptr<Element> AddChild(const string & name, const string & prefix = string());
 	void AddChild(std::shared_ptr<Node> child);
     
-    Element * InsertAfter(const string & name, const string & prefix = string());
+    std::shared_ptr<Element> InsertAfter(const string & name, const string & prefix = string());
 	void InsertAfter(std::shared_ptr<Node> child);
     
-    Element * InsertBefore(const string & name, const string & prefix = string());
+    std::shared_ptr<Element> InsertBefore(const string & name, const string & prefix = string());
 	void InsertBefore(std::shared_ptr<Node> child);
     
-	Node * CopyIn(std::shared_ptr<const Node> nodeToCopy, bool recursive = true);
+	std::shared_ptr<Node> CopyIn(std::shared_ptr<const Node> nodeToCopy, bool recursive = true);
     
     void Detach();
 #endif
@@ -247,11 +192,12 @@ public:
 	// Wrapper Factory
 
 #if EPUB_USE(LIBXML2)
-    static WrapperBase * Wrap(_xmlNode * xml);
+    static void Wrap(_xmlNode* xml);
     static void Unwrap(_xmlNode * xml);
 #elif EPUB_USE(WIN_XML)
 	static std::shared_ptr<Node> NewNode(NativePtr ptr);
 #endif
+    
 protected:
     NativePtr _xml;
 #if EPUB_ENABLE(XML_BUILDER)
@@ -267,18 +213,6 @@ protected:
     
 };
 
-#if EPUB_USE(LIBXML2)
-// specialization for the polymorphic Node class
-template <>
-inline Node * Wrapped<Node, _xmlNode>(xmlNode * n)
-{
-    if ( n == nullptr ) return nullptr;
-    if ( n->_private == nullptr ) return reinterpret_cast<Node*>(n->_private);
-    
-    // Node::Wrap() instantiates the correct WrapperBase subclass
-    return dynamic_cast<Node*>(Node::Wrap(n));
-}
-#endif
 EPUB3_XML_END_NAMESPACE
 
 #endif /* defined(__ePub3_xml_node__) */

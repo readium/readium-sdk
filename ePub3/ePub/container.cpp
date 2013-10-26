@@ -162,7 +162,7 @@ void Container::LoadEncryption()
     
     ArchiveXmlReader reader(std::move(pZipReader));
 #if EPUB_USE(LIBXML2)
-    xml::Document enc = std::make_shared<xml::Document>(reader.xmlReadDocument(gEncryptionFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR));
+    shared_ptr<xml::Document> enc = reader.xmlReadDocument(gEncryptionFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
 #elif EPUB_USE(WIN_XML)
 	auto enc = reader.ReadDocument(gEncryptionFilePath, nullptr, 0);
 #endif
