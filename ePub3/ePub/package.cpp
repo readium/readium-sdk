@@ -431,20 +431,38 @@ bool Package::Unpack()
     }
     catch (const std::system_error& exc)
     {
+        std::cerr << "Exception processing OPF file: " << exc.what() << std::endl;
+        
         if ( manifestNodes != nullptr )
             xmlXPathFreeNodeSet(manifestNodes);
         if ( spineNodes != nullptr )
             xmlXPathFreeNodeSet(spineNodes);
+        
         if ( exc.code().category() == epub_spec_category() )
             throw;
+        
+        return false;
+    }
+    catch(const std::exception &ex)
+    {
+        std::cerr << "Exception processing OPF file: " << ex.what() << std::endl;
+        
+        if ( manifestNodes != nullptr )
+            xmlXPathFreeNodeSet(manifestNodes);
+        if ( spineNodes != nullptr )
+            xmlXPathFreeNodeSet(spineNodes);
+        
         return false;
     }
     catch (...)
     {
+        std::cerr << "Exception processing OPF file!" << std::endl;
+        
         if ( manifestNodes != nullptr )
             xmlXPathFreeNodeSet(manifestNodes);
         if ( spineNodes != nullptr )
             xmlXPathFreeNodeSet(spineNodes);
+        
         return false;
     }
     
@@ -466,6 +484,8 @@ bool Package::Unpack()
         string uniqueIDRef = _getProp(root, "unique-identifier");
         if ( uniqueIDRef.empty() )
             HandleError(EPUBError::OPFPackageUniqueIDInvalid);
+        
+        std::vector<string> uidRefIds = std::vector<string>();
         
         for ( int i = 0; i < metadataNodes->nodeNr; i++ )
         {
@@ -500,8 +520,7 @@ bool Package::Unpack()
                     case DCType::Identifier:
                     {
                         foundIdentifier = true;
-                        if ( !uniqueIDRef.empty() && uniqueIDRef != p->XMLIdentifier() )
-                            HandleError(EPUBError::OPFPackageUniqueIDInvalid);
+                        uidRefIds.push_back(p->XMLIdentifier());
                         break;
                     }
                     case DCType::Title:
@@ -527,6 +546,24 @@ bool Package::Unpack()
                 
                 AddProperty(p);
                 StoreXMLIdentifiable(p);
+            }
+        }
+        
+        if ( foundIdentifier && !uniqueIDRef.empty() )
+        {
+            bool found = false;
+            for (int i = 0; i < uidRefIds.size(); i++)
+            {
+                const string id = uidRefIds[i];
+                if ( uniqueIDRef == id )
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                HandleError(EPUBError::OPFPackageUniqueIDInvalid);
             }
         }
         
@@ -612,20 +649,37 @@ bool Package::Unpack()
     }
     catch (std::system_error& exc)
     {
+        std::cerr << "Exception processing OPF file: " << exc.what() << std::endl;
+        
         if ( metadataNodes != nullptr )
             xmlXPathFreeNodeSet(metadataNodes);
         if ( refineNodes != nullptr )
             xmlXPathFreeNodeSet(refineNodes);
+        
         if ( exc.code().category() == epub_spec_category() )
             throw;
         return false;
     }
-    catch (...)
+    catch(const std::exception &ex)
     {
+        std::cerr << "Exception processing OPF file: " << ex.what() << std::endl;
+        
         if ( metadataNodes != nullptr )
             xmlXPathFreeNodeSet(metadataNodes);
         if ( refineNodes != nullptr )
             xmlXPathFreeNodeSet(refineNodes);
+        
+        return false;
+    }
+    catch (...)
+    {
+        std::cerr << "Exception processing OPF file!" << std::endl;
+        
+        if ( metadataNodes != nullptr )
+            xmlXPathFreeNodeSet(metadataNodes);
+        if ( refineNodes != nullptr )
+            xmlXPathFreeNodeSet(refineNodes);
+        
         return false;
     }
     
@@ -713,14 +767,19 @@ bool Package::Unpack()
     catch (std::exception& exc)
     {
         std::cerr << "Exception processing OPF file: " << exc.what() << std::endl;
+        
         if ( bindingNodes != nullptr )
             xmlXPathFreeNodeSet(bindingNodes);
+        
         throw;
     }
     catch (...)
     {
+        std::cerr << "Exception processing OPF file!" << std::endl;
+        
         if ( bindingNodes != nullptr )
             xmlXPathFreeNodeSet(bindingNodes);
+        
         return false;
     }
     
