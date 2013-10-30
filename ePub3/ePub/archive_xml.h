@@ -46,6 +46,8 @@ public:
 	virtual size_t size() const { return _reader->total_size(); }
 	virtual size_t offset() const { return _reader->position(); }
     
+    bool operator !() const { return !bool(_reader); }
+    
 protected:
     std::unique_ptr<ArchiveReader>  _reader;
     

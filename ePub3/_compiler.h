@@ -338,15 +338,17 @@
 
 #if EPUB_COMPILER_SUPPORTS(CXX_OVERRIDE_CONTROL)
 #define OVERRIDE override
+#else
+#define OVERRIDE
+#endif
 
+#if EPUB_COMPILER_SUPPORTS(CXX_FINAL_KEYWORD)
 #if EPUB_COMPILER_QUIRK(FINAL_IS_CALLED_SEALED)
 #define FINAL sealed
 #else
 #define FINAL final
 #endif
-
 #else
-#define OVERRIDE
 #define FINAL
 #endif
 

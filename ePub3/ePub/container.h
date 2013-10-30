@@ -29,6 +29,7 @@
 #include <ePub3/utilities/owned_by.h>
 #include <ePub3/xml/node.h>
 #include <vector>
+#include <future>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -88,7 +89,13 @@ public:
     
     ///
     /// Creates and returns a new Container instance.
-    static ContainerPtr    OpenContainer(const string& path);
+    static ContainerPtr
+        OpenContainer(const string& path);
+    
+    ///
+    /// Asynchronously returns a new Container instance.
+    static std::future<ContainerPtr>
+        OpenContainerAsync(const string& path, std::launch policy = std::launch::any);
     
     virtual         ~Container();
     
@@ -100,7 +107,7 @@ public:
     /// Retrieves the list of all instantiated packages within the container.
     virtual const PackageList&      Packages()              const   { return _packages; }
     
-    /**pack
+    /**
      Retrieves the default Package instance.
      
      Equivalent to `this->Packages().at(0)`.
