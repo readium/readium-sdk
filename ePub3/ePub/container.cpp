@@ -28,6 +28,7 @@
 #include "filter_manager.h"
 #include <ePub3/xml/document.h>
 #include <ePub3/xml/io.h>
+#include <ePub3/content_module_manager.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -64,6 +65,9 @@ bool Container::Open(const string& path)
     // TODO: Initialize lazily? Doing so would make initialization faster, but require
     // PackageLocations() to become non-const, like Packages().
     ArchiveXmlReader reader(_archive->ReaderAtPath(gContainerFilePath));
+    if (!reader) {
+        throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
+    }
 #if EPUB_USE(LIBXML2)
     _ocf = reader.xmlReadDocument(gContainerFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
 #else
@@ -107,12 +111,30 @@ bool Container::Open(const string& path)
 
     return true;
 }
-shared_ptr<Container> Container::OpenContainer(const string &path)
+ContainerPtr Container::OpenContainer(const string &path)
 {
-    ContainerPtr container = Container::New();
-    if ( container->Open(path) == false )
-        return nullptr;
-    return container;
+    auto future = OpenContainerAsync(path);
+    return future.get();    // blocks until ready
+}
+std::future<ContainerPtr> Container::OpenContainerAsync(const string& path, std::launch policy)
+{
+    auto result = ContentModuleManager::Instance()->LoadContentAtPath(path, policy);
+    
+    // see if it's complete with a nil value
+    if (result.wait_for(std::chrono::system_clock::duration(0)) == std::future_status::ready)
+    {
+        if (result.get().get() == nullptr)
+        {
+            result = std::async(policy, [path]() -> ContainerPtr {
+                ContainerPtr container = Container::New();
+                if (container->Open(path) == false)
+                    return nullptr;
+                return container;
+            });
+        }
+    }
+    
+    return result;
 }
 Container::PathList Container::PackageLocations() const
 {
