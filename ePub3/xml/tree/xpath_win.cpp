@@ -58,7 +58,7 @@ bool XPathEvaluator::RegisterNamespaces(const NamespaceMap &namespaces)
 bool XPathEvaluator::RegisterAllNamespacesForElement(std::shared_ptr<const Element> element)
 {
 	NamespaceList nslist = element->NamespacesInScope();
-	for (Namespace* ns : nslist)
+	for (auto& ns : nslist)
 	{
 		_namespaces[ns->Prefix()] = ns->URI();
 	}

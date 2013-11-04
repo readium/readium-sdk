@@ -142,7 +142,7 @@ public:
     virtual ~StreamInputBuffer() {}
     
     virtual size_t size() const OVERRIDE;
-    virtual size_t offset() const OVERRIDE { return _input.tellg(); }
+    virtual size_t offset() const OVERRIDE { return size_t(_input.tellg()); }
     
 protected:
     virtual size_t read(uint8_t * buf, size_t len);
@@ -163,7 +163,7 @@ public:
     virtual ~StreamOutputBuffer() {}
     
     virtual size_t size() const OVERRIDE;
-    virtual size_t offset() const OVERRIDE { return _output.tellp(); }
+    virtual size_t offset() const OVERRIDE { return size_t(_output.tellp()); }
     
 protected:
     virtual bool write(const uint8_t * buffer, size_t len);
