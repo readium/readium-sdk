@@ -41,15 +41,15 @@ void ContentModuleManager::DisplayMessage(const string& title, const string& mes
 {
     // nothing at the moment...
 }
-std::future<const Credentials>
+std::future<Credentials>
 ContentModuleManager::RequestCredentialInput(const CredentialRequest &request)
 {
     // nothing yet...
     // really want the std::make_immediate_future<>() function right now...
-    std::promise<const Credentials> promise;
+    std::promise<Credentials> promise;
     
     Credentials none;
-    promise.set_value(none);
+    promise.set_value(std::move(none));
     return promise.get_future();
 }
 

@@ -45,6 +45,12 @@ public:
     virtual ~CredentialRequest()
         {}
     
+	CredentialRequest& operator=(const CredentialRequest&& o)
+		{
+			m_components = o.m_components;
+			m_credentials = o.m_credentials;
+			m_promise = std::promise<Credentials>();
+		}
     CredentialRequest& operator=(CredentialRequest&& o)
         {
             m_components.swap(o.m_components);

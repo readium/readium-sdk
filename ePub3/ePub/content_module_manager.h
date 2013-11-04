@@ -53,7 +53,7 @@ public:
                    const string& message) _NOEXCEPT;
     
     static
-    std::future<const Credentials>
+    std::future<Credentials>
     RequestCredentialInput(const CredentialRequest& request);
     
 private:

@@ -17,12 +17,14 @@ EPUB3_BEGIN_NAMESPACE
 
 enum class ActionType
 {
-    Display         = 0,
-    Print           = 1,
-    Copy            = 2,
-    Quote           = 3,
-    Share           = 4,
-    Highlight       = 5
+    Display						= 0,
+    Print						= 1,
+    Copy						= 2,
+    Quote						= 3,
+    Share						= 4,
+    Highlight					= 5,
+	BeginMediaOverlayPlayback	= 6,
+	BeginSpeechSynthesis		= 7
 };
 
 class UserAction
@@ -37,13 +39,13 @@ public:
         {}
     
     virtual
-    ActionType           Type()         _NOEXCEPT FINAL { return m_type; };
+    ActionType           Type()         const _NOEXCEPT FINAL { return m_type; };
     virtual
-    const class CFI&     CFI()          _NOEXCEPT FINAL { return m_cfi; }
+    const class CFI&     CFI()          const _NOEXCEPT FINAL { return m_cfi; }
     virtual
-    ConstManifestItemPtr ManifestItem() _NOEXCEPT FINAL { return m_item; }
+    ConstManifestItemPtr ManifestItem() const _NOEXCEPT FINAL { return m_item; }
     virtual
-    const IRI&           IRI()          _NOEXCEPT FINAL { return m_iri; }
+    const IRI&           IRI()          const _NOEXCEPT FINAL { return m_iri; }
     
 private:
     ActionType              m_type;
