@@ -62,6 +62,9 @@
     <Filter Include="Public Interface">
       <UniqueIdentifier>{75dc7278-0a03-441b-9e58-bead16552580}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ePub3\ePub\ContentModule">
+      <UniqueIdentifier>{59241a09-f0c4-4e4f-b28a-9192648282fb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\ePub3\_compiler.h">
@@ -396,6 +399,33 @@
       <Filter>Public Interface</Filter>
     </ClInclude>
     <ClInclude Include="WinInitialization.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinFilterManager.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\content_module.h">
+      <Filter>ePub3\ePub\ContentModule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\content_module_manager.h">
+      <Filter>ePub3\ePub\ContentModule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\credential_request.h">
+      <Filter>ePub3\ePub\ContentModule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\user_action.h">
+      <Filter>ePub3\ePub\ContentModule</Filter>
+    </ClInclude>
+    <ClInclude Include="WinContentModuleManager.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="IContentModule.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinCredentialRequest.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="ExceptionWrapper.h">
       <Filter>Public Interface</Filter>
     </ClInclude>
   </ItemGroup>
@@ -795,6 +825,27 @@
       <Filter>Public Interface</Filter>
     </ClCompile>
     <ClCompile Include="WinInitialization.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinFilterManager.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\content_module_manager.cpp">
+      <Filter>ePub3\ePub\ContentModule</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\credential_request.cpp">
+      <Filter>ePub3\ePub\ContentModule</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fseek.c">
+      <Filter>ePub3\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_ftell.c">
+      <Filter>ePub3\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="WinCredentialRequest.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinContentModuleManager.cpp">
       <Filter>Public Interface</Filter>
     </ClCompile>
   </ItemGroup>

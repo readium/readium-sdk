@@ -313,15 +313,15 @@ NamespaceList Node::NamespacesInScope() const
 	auto element = dynamic_cast<IXmlElement^>(_xml);
 	if (element == nullptr)
 		element = dynamic_cast<IXmlElement^>(_xml->ParentNode);
+	std::map<::Platform::String^, std::shared_ptr<class Namespace>> nsmap;
 
-	std::map<::Platform::String^, class Namespace*> nsmap;
 	while (element != nullptr)
 	{
 		auto prefix = __winstr(element->Prefix);
 		if (prefix->IsEmpty() == false)
 		{
 			auto uri = __winstr(element->NamespaceUri);
-			nsmap[uri] = new class Namespace(std::const_pointer_cast<class Document>(Document()), prefix, uri);
+			nsmap[uri] = std::make_shared<class Namespace>(std::const_pointer_cast<class Document>(Document()), prefix, uri);
 		}
 
 		element = dynamic_cast<IXmlElement^>(element->ParentNode);

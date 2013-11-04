@@ -33,6 +33,9 @@
     <ClInclude Include="..\..\..\..\ePub3\ePub\cfi.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\container.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\content_handler.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\content_module.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\content_module_manager.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\credential_request.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\encryption.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\epub3.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\filter.h" />
@@ -57,6 +60,7 @@
     <ClInclude Include="..\..\..\..\ePub3\ePub\signatures.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\spine.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\switch_preprocessor.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\user_action.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\xpath_wrangler.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\zip_archive.h" />
     <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\base\basictypes.h" />
@@ -113,8 +117,10 @@
     <ClInclude Include="..\..\..\..\ePub3\_platform.h" />
     <ClInclude Include="BufferBridge.h" />
     <ClInclude Include="CollectionBridges.h" />
+    <ClInclude Include="ExceptionWrapper.h" />
     <ClInclude Include="IContentFilter.h" />
     <ClInclude Include="IContentHandler.h" />
+    <ClInclude Include="IContentModule.h" />
     <ClInclude Include="INavigationElement.h" />
     <ClInclude Include="IPropertyHolder.h" />
     <ClInclude Include="NavElementList.h" />
@@ -123,8 +129,11 @@
     <ClInclude Include="PropertyTypes.h" />
     <ClInclude Include="WinCFI.h" />
     <ClInclude Include="WinContainer.h" />
+    <ClInclude Include="WinContentModuleManager.h" />
+    <ClInclude Include="WinCredentialRequest.h" />
     <ClInclude Include="WinEncryptionInfo.h" />
     <ClInclude Include="WinFilterChain.h" />
+    <ClInclude Include="WinFilterManager.h" />
     <ClInclude Include="WinInitialization.h" />
     <ClInclude Include="WinLibrary.h" />
     <ClInclude Include="Readium.h" />
@@ -146,6 +155,8 @@
     <ClCompile Include="..\..\..\..\ePub3\ePub\cfi.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\container.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\content_handler.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\content_module_manager.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\credential_request.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\encryption.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\filter_chain.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager.cpp" />
@@ -385,6 +396,12 @@
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fseek.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_ftell.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_archive_comment.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
@@ -639,8 +656,11 @@
     <ClCompile Include="ThreadEmulation.cpp" />
     <ClCompile Include="WinCFI.cpp" />
     <ClCompile Include="WinContainer.cpp" />
+    <ClCompile Include="WinContentModuleManager.cpp" />
+    <ClCompile Include="WinCredentialRequest.cpp" />
     <ClCompile Include="WinEncryptionInfo.cpp" />
     <ClCompile Include="WinFilterChain.cpp" />
+    <ClCompile Include="WinFilterManager.cpp" />
     <ClCompile Include="WinInitialization.cpp" />
     <ClCompile Include="WinLibrary.cpp" />
     <ClCompile Include="WinManifest.cpp" />
