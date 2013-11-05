@@ -1,8 +1,8 @@
 //
-//  PropertyHolderImpl.cpp
-//  Readium
+//  PropertyHolderSubclassDecl.cpp
+//  ePub3
 //
-//  Created by Jim Dovey on 2013-09-27.
+//  Created by Jim Dovey on 2013-10-04.
 //  Copyright (c) 2012-2013 The Readium Foundation and contributors.
 //  
 //  The Readium SDK is free software: you can redistribute it and/or modify
@@ -19,69 +19,13 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "PropertyHolderImpl.h"
-#include "WinPackage.h"
-#include "WinManifest.h"
-#include "WinSpine.h"
-#include "WinProperty.h"
-#include "CollectionBridges.h"
+// Include this inside the definition file of a class which should implement IPropertyHolder
+// I'm using this as a cut-and-paste method of writing a crapload of code
 
-BEGIN_READIUM_API
+#ifndef PropertyHolder
+# error "Please define 'PropertyHolder' to be the correct class name"
+#endif
 
-typedef BridgedObjectVectorView<Property^, ::ePub3::PropertyPtr>	PropertyVectorView;
-
-ref class PropertyIteratorImpl : public IIterator<Property^>
-{
-private:
-	IPropertyHolder^	_holder;
-	unsigned int		_idx;
-
-internal:
-	PropertyIteratorImpl(IPropertyHolder^ holder) : _holder(holder), _idx(0) {}
-
-public:
-	virtual ~PropertyIteratorImpl() {}
-
-	// IIterator
-
-	virtual unsigned int GetMany(::Platform::WriteOnlyArray<Property^>^ items) {
-		if (HasCurrent) {
-			unsigned int max = items->Length;
-			unsigned int i = 0;
-			do {
-				items[i++] = Current;
-			} while (i < max && MoveNext());
-			return i;
-		}
-		return 0;
-	}
-	virtual bool MoveNext() {
-		if (!HasCurrent)
-			return false;
-		return (++_idx < _holder->Count);
-	}
-
-	property Property^ Current
-	{
-		virtual Property^ get() {
-			if (!HasCurrent)
-				return nullptr;
-			return _holder->At(_idx);
-		}
-	}
-	property bool HasCurrent
-	{
-		virtual bool get() {
-			return _idx < _holder->Count;
-		}
-	}
-};
-/*
-::ePub3::PropertyHolderPtr PropertyHolder::Native::get()
-{
-	return nullptr;
-}
-*/
 unsigned int PropertyHolder::Count::get()
 {
 	return static_cast<unsigned int>(Native->NumberOfProperties());
@@ -202,5 +146,3 @@ IIterator<Property^>^ PropertyHolder::First()
 {
 	return ref new PropertyIteratorImpl(this);
 }
-
-END_READIUM_API

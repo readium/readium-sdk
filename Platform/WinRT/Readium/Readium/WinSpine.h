@@ -31,10 +31,9 @@ BEGIN_READIUM_API
 ref class Package;
 ref class ManifestItem;
 
-public ref class SpineItem sealed : PropertyHolder
+public ref class SpineItem sealed : IPropertyHolder
 {
 	_DECLARE_BRIDGE_API_(::ePub3::SpineItemPtr, SpineItem^);
-	_PROPERTY_HOLDER_NATIVE_IMPL()
 
 internal:
 	SpineItem(::ePub3::SpineItemPtr native);
@@ -64,6 +63,8 @@ public:
 	property SpineItem^ PriorStep { SpineItem^ get(); }
 
 	SpineItem^ SpineItemAt(UINT idx);
+
+#include "PropertyHolderSubclassDecl.h"
 
 };
 

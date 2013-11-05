@@ -24,64 +24,59 @@
 
 #include "IPropertyHolder.h"
 #include <ePub3/property_holder.h>
+#include "CollectionBridges.h"
 
 using ::Windows::Foundation::Collections::IIterator;
 
 BEGIN_READIUM_API
 
-#define _PROPERTY_HOLDER_NATIVE_IMPL() \
-	protected private: \
-	property ::ePub3::PropertyHolderPtr Native { \
-		virtual ::ePub3::PropertyHolderPtr get() override { \
-			return std::dynamic_pointer_cast<::ePub3::PropertyHolder>(NativeObject); \
-		} \
-	}
+typedef BridgedObjectVectorView<Property^, ::ePub3::PropertyPtr>	PropertyVectorView;
 
-[::Windows::Foundation::Metadata::WebHostHidden]
-public ref class PropertyHolder : ::Windows::UI::Xaml::DependencyObject, IPropertyHolder
+ref class PropertyIteratorImpl : public IIterator<Property^>
 {
-internal:
-	PropertyHolder() {}
+private:
+	IPropertyHolder^	_holder;
+	unsigned int		_idx;
 
-protected private:
-	property ::ePub3::PropertyHolderPtr Native { virtual ::ePub3::PropertyHolderPtr get() { return nullptr; } }
+internal:
+	PropertyIteratorImpl(IPropertyHolder^ holder) : _holder(holder), _idx(0) {}
 
 public:
-	property unsigned int Count { virtual unsigned int get(); }
+	virtual ~PropertyIteratorImpl() {}
 
-	virtual void Append(Property^ prop);
-	virtual void Append(IPropertyHolder^ allProps);
+	// IIterator
 
-	virtual void Remove(Uri^ propertyIRI);
-	virtual void Remove(String^ reference);
-	virtual void Remove(String^ prefix, String^ reference);
+	virtual unsigned int GetMany(::Platform::WriteOnlyArray<Property^>^ items) {
+		if (HasCurrent) {
+			unsigned int max = items->Length;
+			unsigned int i = 0;
+			do {
+				items[i++] = Current;
+			} while (i < max && MoveNext());
+			return i;
+		}
+		return 0;
+	}
+	virtual bool MoveNext() {
+		if (!HasCurrent)
+			return false;
+		return (++_idx < _holder->Count);
+	}
 
-	virtual Property^ At(unsigned int idx);
-	virtual void EraseAt(unsigned int idx);
-
-	virtual bool Contains(DCType type);
-	virtual bool Contains(Uri^ propertyIRI);
-	virtual bool Contains(String^ reference);
-	virtual bool Contains(String^ prefix, String^ reference);
-
-	virtual Property^ PropertyMatching(DCType type);
-	virtual Property^ PropertyMatching(Uri^ propertyIRI);
-	virtual Property^ PropertyMatching(String^ reference);
-	virtual Property^ PropertyMatching(String^ prefix, String^ reference);
-
-	virtual IVectorView<Property^>^ PropertiesMatching(DCType type);
-	virtual IVectorView<Property^>^ PropertiesMatching(Uri^ propertyIRI);
-	virtual IVectorView<Property^>^ PropertiesMatching(String^ reference);
-	virtual IVectorView<Property^>^ PropertiesMatching(String^ prefix, String^ reference);
-
-	virtual void RegisterPrefixIRIStem(String^ prefix, String^ iriStem);
-
-	virtual Uri^ MakePropertyIRI(String^ reference);
-	virtual Uri^ MakePropertyIRI(String^ prefix, String^ reference);
-	virtual Uri^ PropertyIRIFromString(String^ str);
-
-	virtual IIterator<Property^>^ First();
-
+	property Property^ Current
+	{
+		virtual Property^ get() {
+			if (!HasCurrent)
+				return nullptr;
+			return _holder->At(_idx);
+		}
+	}
+	property bool HasCurrent
+	{
+		virtual bool get() {
+			return _idx < _holder->Count;
+		}
+	}
 };
 
 END_READIUM_API
