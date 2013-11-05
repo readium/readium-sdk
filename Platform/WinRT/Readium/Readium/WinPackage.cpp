@@ -384,4 +384,8 @@ void Package::SetFilterChain(FilterChain^ chain)
 	_native->SetFilterChain(chain->NativeObject);
 }
 
+#define PropertyHolder Package
+#include "PropertyHolderSubclassImpl.h"
+#undef PropertyHolder
+
 END_READIUM_API

@@ -44,7 +44,7 @@ using ::Windows::Foundation::DateTime;
 using ::Windows::Foundation::Collections::IVectorView;
 using ::Windows::Foundation::Collections::IMapView;
 
-public ref class Package sealed : public PropertyHolder
+public ref class Package sealed : public IPropertyHolder
 {
 private:
 	bool _returnLocalized;
@@ -52,8 +52,6 @@ private:
 
 private:
 	Package(::ePub3::PackagePtr native);
-
-	_PROPERTY_HOLDER_NATIVE_IMPL()
 
 public:
 	virtual ~Package() {}
@@ -159,6 +157,8 @@ public:
 	property IMapView<String^, MediaSupportInfo^>^ MediaSupport { IMapView<String^, MediaSupportInfo^>^ get(); void set(IMapView<String^, MediaSupportInfo^>^); }
 
 	void SetFilterChain(FilterChain^ chain);
+
+#include "PropertyHolderSubclassDecl.h"
 
 };
 

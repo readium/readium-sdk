@@ -10,6 +10,8 @@
 #include <iostream>
 #include <future>
 
+#include <ppltasks.h>
+
 EPUB3_BEGIN_NAMESPACE
 
 class inline_executor : public executor

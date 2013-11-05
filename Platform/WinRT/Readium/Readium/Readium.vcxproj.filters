@@ -431,6 +431,12 @@
     <ClInclude Include="WinErrorHandler.h">
       <Filter>Public Interface</Filter>
     </ClInclude>
+    <ClInclude Include="PropertyHolderSubclassDecl.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertyHolderSubclassImpl.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\ePub3\utilities\byte_buffer.cpp">
@@ -786,9 +792,6 @@
       <Filter>Public Interface</Filter>
     </ClCompile>
     <ClCompile Include="WinPackage.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="PropertyHolderImpl.cpp">
       <Filter>Public Interface</Filter>
     </ClCompile>
     <ClCompile Include="PluginMaps.cpp">
