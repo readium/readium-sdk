@@ -85,6 +85,12 @@
 # endif
 #endif
 
+#if EPUB_COMPILER(MSVC)
+# define _NORETURN_		__declspec(noreturn)
+#else
+# define _NORETURN_		__attribute__((noreturn))
+#endif
+
 #if EPUB_OS(WINDOWS)
 // Windows doesn't define ssize_t it seems
 typedef signed long ssize_t;
