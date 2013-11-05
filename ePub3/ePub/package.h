@@ -193,11 +193,19 @@ public:
     
     /**
      Get an array of manifest items which have *all* the given properties.
-     @param A vector of manifest `<item>` property names, e.g. `"nav"`, `"cover"`, etc.
+     @param properties A vector of manifest `<item>` property names, e.g. `"nav"`, `"cover"`, etc.
      @result A vector containing pointers to any matching manifest items.
      */
     EPUB3_EXPORT
     const shared_vector<ManifestItem> ManifestItemsWithProperties(PropertyIRIList properties) const;
+
+	/**
+	 Get a ManifestItem corresponding to a package-relative path.
+	 @param path The package-relative path to the item whose ManifestItem to locate.
+	 @result A ManifestItem pointer, or `nullptr` if no manifest item matches the path.
+	 */
+	EPUB3_EXPORT
+	ConstManifestItemPtr	ManifestItemAtRelativePath(const string& path) const;
     
     /// @}
     

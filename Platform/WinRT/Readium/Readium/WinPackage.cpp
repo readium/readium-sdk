@@ -141,6 +141,11 @@ IVectorView<ManifestItem^>^ Package::ManifestItemsWithProperties(IVectorView<Uri
 	return ref new ManifestList(_native->ManifestItemsWithProperties(nativeList));
 }
 
+ManifestItem^ Package::ManifestItemForRelativePath(String^ path)
+{
+	return ManifestItem::Wrapper(std::const_pointer_cast<::ePub3::ManifestItem>(_native->ManifestItemAtRelativePath(StringToNative(path))));
+}
+
 NavigationTable^ Package::GetNavigationTable(String^ type)
 {
 	return NavigationTable::Wrapper(_native->NavigationTable(StringToNative(type)));
