@@ -403,8 +403,8 @@ public:
 		void set(ErrorHandler^);
 	}
 
-	void HandleError(EPUBError error);
-	void HandleError(EPUBError error, ::Platform::String^ message);
+	static void HandleError(EPUBError error);
+	static void HandleError(EPUBError error, ::Platform::String^ message);
 
 };
 
