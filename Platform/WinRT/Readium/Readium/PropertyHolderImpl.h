@@ -30,6 +30,15 @@ using ::Windows::Foundation::Collections::IIterator;
 
 BEGIN_READIUM_API
 
+#define _PROPERTY_HOLDER_NATIVE_IMPL() \
+	protected private: \
+	property ::ePub3::PropertyHolderPtr Native { \
+		virtual ::ePub3::PropertyHolderPtr get() override { \
+			return std::dynamic_pointer_cast<::ePub3::PropertyHolder>(NativeObject); \
+		} \
+	}
+
+
 typedef BridgedObjectVectorView<Property^, ::ePub3::PropertyPtr>	PropertyVectorView;
 
 ref class PropertyIteratorImpl : public IIterator<Property^>
