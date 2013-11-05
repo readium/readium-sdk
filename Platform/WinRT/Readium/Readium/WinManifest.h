@@ -71,10 +71,9 @@ public:
 
 };
 
-public ref class ManifestItem sealed : public PropertyHolder
+public ref class ManifestItem sealed : public IPropertyHolder
 {
 	_DECLARE_BRIDGE_API_(::ePub3::ManifestItemPtr, ManifestItem^);
-	_PROPERTY_HOLDER_NATIVE_IMPL()
 
 internal:
 	ManifestItem(::ePub3::ManifestItemPtr native);
@@ -108,6 +107,8 @@ public:
 	::Windows::Data::Xml::Dom::XmlDocument^ LoadDocument();
 
 	IClosableStream^ ReadStream();
+
+#include "PropertyHolderSubclassDecl.h"
 
 };
 

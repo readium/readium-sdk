@@ -102,4 +102,8 @@ SpineItem^ SpineItem::SpineItemAt(UINT idx)
 	return Wrapper(_native->at(idx));
 }
 
+#define PropertyHolder SpineItem
+#include "PropertyHolderSubclassImpl.h"
+#undef PropertyHolder
+
 END_READIUM_API

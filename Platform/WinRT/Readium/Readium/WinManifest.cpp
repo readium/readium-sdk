@@ -120,4 +120,8 @@ IClosableStream^ ManifestItem::ReadStream()
 	return ref new Stream(_native->Reader());
 }
 
+#define PropertyHolder ManifestItem
+#include "PropertyHolderSubclassImpl.h"
+#undef PropertyHolder
+
 END_READIUM_API
