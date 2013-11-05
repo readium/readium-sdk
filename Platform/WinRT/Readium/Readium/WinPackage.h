@@ -73,6 +73,8 @@ public:
 
 	IVectorView<ManifestItem^>^ ManifestItemsWithProperties(IVectorView<Uri^>^ iriList);
 
+	ManifestItem^ ManifestItemForRelativePath(::Platform::String^ path);
+
 	NavigationTable^ GetNavigationTable(String^ type);
 
 	IClosableStream^ ReadStreamForItemAtPath(String^ path);

@@ -157,6 +157,16 @@ const shared_vector<ManifestItem> PackageBase::ManifestItemsWithProperties(Prope
     }
     return result;
 }
+ConstManifestItemPtr PackageBase::ManifestItemAtRelativePath(const string& path) const
+{
+	string absPath = _pathBase + path;
+	for (auto& item : _manifest)
+	{
+		if (item.second->AbsolutePath() == absPath)
+			return item.second;
+	}
+	return nullptr;
+}
 shared_ptr<NavigationTable> PackageBase::NavigationTable(const string &title) const
 {
     auto found = _navigation.find(title);
