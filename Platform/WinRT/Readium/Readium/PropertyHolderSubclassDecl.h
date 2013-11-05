@@ -23,7 +23,11 @@
 // I'm using this as a cut-and-paste method of writing a crapload of code
 
 protected private:
-	property ::ePub3::PropertyHolderPtr Native { virtual ::ePub3::PropertyHolderPtr get() { return nullptr; } }
+	property ::ePub3::PropertyHolderPtr Native {
+		::ePub3::PropertyHolderPtr get() {
+				return std::dynamic_pointer_cast<::ePub3::PropertyHolder>(NativeObject);
+		}
+	}
 
 public:
 	property unsigned int Count { virtual unsigned int get(); }
