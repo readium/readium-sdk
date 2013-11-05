@@ -116,6 +116,15 @@ const std::error_category& epub_spec_category() _NOEXCEPT
     return __get_epub_spec_category();
 }
 
+EPUB3_EXPORT
+EPUBSpec SpecFromEPUBError(EPUBError err)
+{
+	auto pos = gErrorLookupTable.find(err);
+	if (pos == gErrorLookupTable.end())
+		return EPUBSpec::UnknownSpec;
+	return pos->second.Spec();
+}
+
 std::string epub_spec_error::__init(const std::error_code& code, std::string what)
 {
     if ( code )
@@ -152,20 +161,21 @@ ViolationSeverity epub_spec_error::Severity() const
         return ViolationSeverity::Minor;
     return pos->second.Severity();
 }
+EPUBSpec epub_spec_error::Specification() const
+{
+	return SpecFromEPUBError(SpecErrorCode());
+}
 
 #if 0
 #pragma mark -
 #endif
 
 EPUB3_EXPORT
-bool DefaultErrorHandler(const std::runtime_error& err)
+bool DefaultErrorHandler(const error_details& err)
 {
-    std::cerr << "Error: '" << err.what() << "'" << std::endl;
-
-    const epub_spec_error* specErr = dynamic_cast<const epub_spec_error*>(&err);
-    if ( specErr != nullptr )
+    if (err.is_spec_error())
     {
-        switch ( specErr->Severity() )
+        switch ( err.severity() )
         {
             case ViolationSeverity::Critical:
             case ViolationSeverity::Major:

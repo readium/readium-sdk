@@ -29,17 +29,19 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+class error_details;
+
 /**
  Error handler function type.
  @param err The error code being raised.
  @result Return `true` to continue, ignoring the error, `false` to throw the error.
  */
-typedef std::function<bool(const std::runtime_error& err)>   ErrorHandlerFn;
+typedef std::function<bool(const error_details& err)>   ErrorHandlerFn;
 
 ///
 /// The default error handler. Always returns `false` except for Critical spec violations.
 EPUB3_EXPORT
-bool            DefaultErrorHandler(const std::runtime_error& err);
+bool            DefaultErrorHandler(const error_details& err);
 
 ///
 /// Retrieves the current error handler function.
@@ -58,8 +60,9 @@ enum class EPUBSpec
     ContentDocuments,                           // 0x02
     MediaOverlays,                              // 0x03
     CanonicalFragmentIdentifiers,           
-    
-    NUM_SPECS
+
+	UnknownSpec,
+    NUM_SPECS = UnknownSpec
 };
 
 enum class ViolationSeverity
@@ -397,7 +400,13 @@ public:
     const std::error_code&  code()      const   _NOEXCEPT   { return __ec; }
     
     EPUB3_EXPORT
-    ViolationSeverity       Severity()  const;
+	ViolationSeverity       Severity()  const;
+
+	EPUB3_EXPORT
+	EPUBError				SpecErrorCode()	const _NOEXCEPT { return EPUBError(__ec.value()); }
+
+	EPUB3_EXPORT
+	EPUBSpec				Specification()	const;
     
 private:
     static std::string __init(const std::error_code& code, std::string what);
@@ -408,17 +417,102 @@ EPUB3_EXPORT const std::string&         SeverityString(ViolationSeverity __s);
 EPUB3_EXPORT const std::error_code      ErrorCodeForEPUBError(EPUBError ev)  _NOEXCEPT;
 EPUB3_EXPORT const std::string          DetailedErrorMessage(EPUBError ev);
 EPUB3_EXPORT const std::error_category& epub_spec_category() _NOEXCEPT;
+EPUB3_EXPORT       EPUBSpec				SpecFromEPUBError(EPUBError ev);
+
+// Lo, the std::system:error class's code() method was not marked virtual,
+// and there was much fannying about.
+class error_details
+{
+private:
+	bool __is_spec_error_;
+	union
+	{
+		const std::system_error&		__system_error_;
+		const epub_spec_error&			__spec_error_;
+	};
+
+public:
+	error_details(const std::system_error& __sysErr)
+		: __is_spec_error_(false), __system_error_(__sysErr)
+		{}
+	error_details(const epub_spec_error& __specErr)
+		: __is_spec_error_(true), __spec_error_(__specErr)
+		{}
+	~error_details() {}
+
+private:
+	error_details(const error_details&) _DELETED_;
+	error_details& operator=(const error_details&) _DELETED_;
+
+public:
+	bool is_spec_error() const {
+		return __is_spec_error_;
+	}
+	bool is_system_error() const {
+		return !__is_spec_error_;
+	}
+
+	int code() const {
+		if (__is_spec_error_)
+			return __spec_error_.code().value();
+		else
+			return __system_error_.code().value();
+	}
+	const char* message() const {
+		if (__is_spec_error_)
+			return __spec_error_.what();
+		else
+			return __system_error_.what();
+	}
+
+	const std::error_category& category() const {
+		if (__is_spec_error_)
+			return __spec_error_.code().category();
+		else 
+			return __system_error_.code().category();
+	}
+	
+	EPUBSpec epub_spec() const {
+		if (__is_spec_error_)
+			return __spec_error_.Specification();
+		else
+			throw std::bad_cast("Attempt to get an EPUBSpec from a non-epub_spec_error exception");
+	}
+
+	ViolationSeverity severity() const {
+		if (__is_spec_error_)
+			return __spec_error_.Severity();
+		else
+			throw std::bad_cast("Attempt to get a ViolationSeverity from a non-epub_spec_error exception");
+	}
+
+	EPUBError epub_error_code() const {
+		if (__is_spec_error_)
+			return __spec_error_.SpecErrorCode();
+		else
+			throw std::bad_cast("Attempt to get an EPUBError from a non-epub_spec_error exception");
+	}
+
+	_NORETURN_
+	void throw_error() const {
+		if (__is_spec_error_)
+			throw __spec_error_;
+		else
+			throw __system_error_;
+	}
+
+};
 
 static inline FORCE_INLINE
-void __DispatchError(const std::runtime_error& __err)
+void __DispatchError(const std::system_error& __err)
 {
-    if ( ErrorHandler()(__err) == false )
+    if ( ErrorHandler()(error_details(__err)) == false )
         throw __err;
 }
 static inline FORCE_INLINE
 void __DispatchError(const epub_spec_error& __err)
 {
-    if ( ErrorHandler()(__err) == false )
+    if ( ErrorHandler()(error_details(__err)) == false )
         throw __err;
 }
 
