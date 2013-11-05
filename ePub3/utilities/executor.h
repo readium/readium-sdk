@@ -92,6 +92,11 @@ EPUB3_BEGIN_NAMESPACE
 class executor;
 class scheduled_executor;
 
+class __thread_pool_impl_stdcpp;
+#if EPUB_PLATFORM(WINRT)
+class __thread_pool_impl_winrt;
+#endif
+
 scheduled_executor* default_executor();
 void set_default_executor(scheduled_executor* executor);
 
@@ -113,7 +118,7 @@ public:
     
 protected:
     inline FORCE_INLINE
-    void _run_closure(closure_type closure) const {
+    static void _run_closure(closure_type closure) {
         // terminate if a closure throws an exception
         // this matches the paper's guidance
         try {
@@ -124,6 +129,11 @@ protected:
     }
     
     closure_type    _drained_handler;
+
+	friend class __thread_pool_impl_stdcpp;
+#if EPUB_PLATFORM(WINRT)
+	friend class __thread_pool_impl_winrt;
+#endif
     
 };
 
@@ -241,42 +251,109 @@ struct __timed_closure_less : std::binary_function<timed_closure, timed_closure,
     }
 };
 
+class __thread_pool_impl_stdcpp
+{
+	std::queue<executor::closure_type>	_queue;
+	timed_closure_queue                 _timed_queue;
+
+	std::vector<std::thread>            _threads;
+	std::thread                         _timed_addition_thread;
+
+	std::atomic_size_t                  _jobs_in_flight;
+
+	std::mutex                          _mutex;
+	std::atomic<bool>                   _exiting;
+	std::condition_variable             _jobs_ready;
+	std::condition_variable             _timers_updated;
+	
+	__thread_pool_impl_stdcpp(int num_threads);
+	virtual ~__thread_pool_impl_stdcpp();
+
+	void add(executor::closure_type closure);
+	size_t num_pending_closures() const {
+		return _queue.size() + _timed_queue.size() + _jobs_in_flight;
+	}
+
+	void add_at(std::chrono::system_clock::time_point abs_time, executor::closure_type closure);
+	void add_after(std::chrono::system_clock::duration rel_time, executor::closure_type closure) {
+		add_at(std::chrono::system_clock::now() + rel_time, closure);
+	}
+
+private:
+	void _RunWorker();
+	void _RunTimer();
+
+	friend class thread_pool;
+};
+
+#if EPUB_PLATFORM(WINRT)
+class __thread_pool_impl_winrt : public std::enable_shared_from_this<__thread_pool_impl_winrt>
+{
+	typedef ::Windows::System::Threading::ThreadPool		thread_pool;
+	typedef ::Windows::System::Threading::ThreadPoolTimer	timer;
+	typedef ::Windows::Foundation::IAsyncAction				work_item;
+
+	std::vector<work_item^>				_work_items;
+	std::vector<timer^>					_timers;
+
+	std::mutex                          _mutex;
+	std::atomic<bool>                   _exiting;
+
+	__thread_pool_impl_winrt(int num_threads);
+	virtual ~__thread_pool_impl_winrt();
+
+	void add(executor::closure_type closure);
+	size_t num_pending_closures() const {
+		return _work_items.size() + _timers.size();
+	}
+
+	void add_at(std::chrono::system_clock::time_point abs_time, executor::closure_type closure) {
+		add_after(abs_time - std::chrono::system_clock::now(), closure);
+	}
+	void add_after(std::chrono::system_clock::duration rel_time, executor::closure_type closure);
+
+	friend class ::ePub3::thread_pool;
+
+};
+#endif
+
 class thread_pool : public scheduled_executor
 {
 private:
-    std::queue<closure_type>            _queue;
-    timed_closure_queue                 _timed_queue;
-    
-    std::vector<std::thread>            _threads;
-    std::thread                         _timed_addition_thread;
-    
-    std::atomic_size_t                  _jobs_in_flight;
-    
-    std::mutex                          _mutex;
-    std::atomic<bool>                   _exiting;
-    std::condition_variable             _jobs_ready;
-    std::condition_variable             _timers_updated;
+#if EPUB_PLATFORM(WINRT)
+	typedef __thread_pool_impl_winrt	impl_t;
+#else
+	typedef __thread_pool_impl_stdcpp	impl_t;
+#endif
+	impl_t								__impl_;
     
 public:
     static const int Automatic          = 0;
     
 public:
-    thread_pool(int num_threads=Automatic);
-    virtual ~thread_pool();
-    
-    virtual void add(closure_type closure)      OVERRIDE;
-    virtual size_t num_pending_closures() const OVERRIDE {
-        return _queue.size() + _timed_queue.size() + _jobs_in_flight;
-    }
-    
-    virtual void add_at(std::chrono::system_clock::time_point abs_time, closure_type closure) OVERRIDE;
-    virtual void add_after(std::chrono::system_clock::duration rel_time, closure_type closure) OVERRIDE {
-        add_at(std::chrono::system_clock::now() + rel_time, closure);
-    }
-    
-private:
-    void _RunWorker();
-    void _RunTimer();
+	thread_pool(int num_threads = Automatic)
+		: __impl_(num_threads)
+		{}
+	virtual ~thread_pool()
+		{}
+
+	virtual void add(executor::closure_type closure) OVERRIDE
+		{
+			__impl_.add(closure);
+		}
+	virtual size_t num_pending_closures() const OVERRIDE
+		{
+			return __impl_.num_pending_closures();
+		}
+
+	virtual void add_at(std::chrono::system_clock::time_point abs_time, executor::closure_type closure) OVERRIDE
+		{
+			__impl_.add_at(abs_time, closure);
+		}
+	virtual void add_after(std::chrono::system_clock::duration rel_time, executor::closure_type closure) OVERRIDE
+		{
+			__impl_.add_after(rel_time, closure);
+		}
     
 };
 

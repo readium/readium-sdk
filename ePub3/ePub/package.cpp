@@ -271,16 +271,24 @@ bool Package::Unpack()
     auto root = _opf->Root();
     string rootName(root->Name());
     rootName.tolower();
+	bool isEPUB3 = true;
+	string versionStr;
     
     if ( rootName != "package" )
     {
         HandleError(EPUBError::OPFInvalidPackageDocument);
         return false;       // not an OPF file, innit?
     }
-    if ( _getProp(root, "version").empty() )
+	versionStr = _getProp(root, "version");
+    if ( versionStr.empty() )
     {
         HandleError(EPUBError::OPFPackageHasNoVersion);
     }
+	else
+	{
+		if (versionStr < "3.0")
+			isEPUB3 = false;
+	}
     
     InstallPrefixesFromAttributeValue(_getProp(root, "prefix", ePub3NamespaceURI));
     
@@ -537,7 +545,7 @@ bool Package::Unpack()
             HandleError(EPUBError::OPFMissingTitleMetadata);
         if ( !foundLanguage )
             HandleError(EPUBError::OPFMissingLanguageMetadata);
-        if ( !foundModDate )
+        if ( !foundModDate && isEPUB3 )
             HandleError(EPUBError::OPFMissingModificationDateMetadata);
         
         for ( auto node : refineNodes )

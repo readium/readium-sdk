@@ -200,7 +200,7 @@ void serial_executor::add(closure_type closure)
 #pragma mark -
 #endif
 
-thread_pool::thread_pool(int num_threads) : _queue(), _timed_queue(), _threads(), _timed_addition_thread(&thread_pool::_RunTimer, this), _jobs_in_flight(0), _mutex(), _exiting(false), _jobs_ready(), _timers_updated()
+__thread_pool_impl_stdcpp::__thread_pool_impl_stdcpp(int num_threads) : _queue(), _timed_queue(), _threads(), _timed_addition_thread(&__thread_pool_impl_stdcpp::_RunTimer, this), _jobs_in_flight(0), _mutex(), _exiting(false), _jobs_ready(), _timers_updated()
 {
     if ( num_threads < 1 )
         num_threads = std::thread::hardware_concurrency();
@@ -208,10 +208,10 @@ thread_pool::thread_pool(int num_threads) : _queue(), _timed_queue(), _threads()
         num_threads = 1;
     
     for ( int i = 0; i < num_threads; i++ ) {
-        _threads.emplace_back(&thread_pool::_RunWorker, this);
+		_threads.emplace_back(&__thread_pool_impl_stdcpp::_RunWorker, this);
     }
 }
-thread_pool::~thread_pool()
+__thread_pool_impl_stdcpp::~__thread_pool_impl_stdcpp()
 {
     _exiting = true;
     
@@ -226,7 +226,7 @@ thread_pool::~thread_pool()
     
     _timed_addition_thread.join();
 }
-void thread_pool::add(closure_type closure)
+void __thread_pool_impl_stdcpp::add(executor::closure_type closure)
 {
     std::unique_lock<std::mutex> _(_mutex);
     
@@ -236,7 +236,7 @@ void thread_pool::add(closure_type closure)
     // wake one available thread
     _jobs_ready.notify_one();
 }
-void thread_pool::add_at(std::chrono::system_clock::time_point abs_time, closure_type closure)
+void __thread_pool_impl_stdcpp::add_at(std::chrono::system_clock::time_point abs_time, executor::closure_type closure)
 {
     std::unique_lock<std::mutex> _(_mutex);
     
@@ -246,7 +246,7 @@ void thread_pool::add_at(std::chrono::system_clock::time_point abs_time, closure
     // notify the timer thread that changes have been made
     _timers_updated.notify_all();
 }
-void thread_pool::_RunWorker()
+void __thread_pool_impl_stdcpp::_RunWorker()
 {
     do
     {
@@ -257,7 +257,7 @@ void thread_pool::_RunWorker()
             break;
         
         // NB: mutex is locked at this point, remember
-        closure_type closure = _queue.front();
+		executor::closure_type closure = _queue.front();
         _queue.pop();
         ++_jobs_in_flight;
         
@@ -265,14 +265,14 @@ void thread_pool::_RunWorker()
         lk.unlock();
         
         // run the closure
-        _run_closure(closure);
+        executor::_run_closure(closure);
         
-        if ( --_jobs_in_flight == 0 && bool(_drained_handler) )
-            _drained_handler();
+//        if ( --_jobs_in_flight == 0 && bool(_drained_handler) )
+//            _drained_handler();
         
     } while (1);
 }
-void thread_pool::_RunTimer()
+void __thread_pool_impl_stdcpp::_RunTimer()
 {
     do
     {
@@ -297,7 +297,7 @@ void thread_pool::_RunTimer()
         if ( status == std::cv_status::timeout )
         {
             // remember that the mutex is still locked at this point
-            closure_type closure = _timed_queue.top().second;
+			executor::closure_type closure = _timed_queue.top().second;
             _timed_queue.pop();
             
             // unlock the mutex before calling add(), which will want to own the lock itself
@@ -309,5 +309,59 @@ void thread_pool::_RunTimer()
         
     } while (1);
 }
+
+#if EPUB_PLATFORM(WINRT)
+__thread_pool_impl_winrt::__thread_pool_impl_winrt(int num_threads)
+	: _work_items(),
+	  _timers(),
+	  _mutex(), 
+	  _exiting(false)
+{
+}
+__thread_pool_impl_winrt::~__thread_pool_impl_winrt()
+{
+	std::lock_guard<std::mutex> _(_mutex);
+	_exiting = true;
+
+	for (auto item : _timers)
+	{
+		item->Cancel();
+	}
+	for (auto item : _work_items)
+	{
+		item->Cancel();
+	}
+}
+void __thread_pool_impl_winrt::add(executor::closure_type closure)
+{
+	using namespace ::Windows::System::Threading;
+	std::unique_lock<std::mutex> _(_mutex);
+	if (_exiting)
+		return;
+
+	// enqueue the job
+	thread_pool::RunAsync(ref new WorkItemHandler([closure](work_item^ action) {
+		if (action->Status == ::Windows::Foundation::AsyncStatus::Started)
+			closure();
+	}));
+}
+void __thread_pool_impl_winrt::add_after(std::chrono::system_clock::duration rel_time, executor::closure_type closure)
+{
+	using namespace ::Windows::System::Threading;
+	std::lock_guard<std::mutex> _(_mutex);
+	if (_exiting)
+		return;
+
+	typedef std::chrono::duration<long long, std::ratio<1, 10000000>> _Ticks;
+	::Windows::Foundation::TimeSpan span;
+	span.Duration = std::chrono::duration_cast<_Ticks>(rel_time).count();
+
+	// create a timer which will enqueue the job
+	auto self = shared_from_this();
+	_timers.push_back(timer::CreateTimer(ref new TimerElapsedHandler([self, closure](timer^ theTimer) {
+		self->add(closure);
+	}), span));
+}
+#endif
 
 EPUB3_END_NAMESPACE
