@@ -132,6 +132,7 @@
     <ClInclude Include="WinContentModuleManager.h" />
     <ClInclude Include="WinCredentialRequest.h" />
     <ClInclude Include="WinEncryptionInfo.h" />
+    <ClInclude Include="WinErrorHandler.h" />
     <ClInclude Include="WinFilterChain.h" />
     <ClInclude Include="WinFilterManager.h" />
     <ClInclude Include="WinInitialization.h" />
@@ -659,6 +660,7 @@
     <ClCompile Include="WinContentModuleManager.cpp" />
     <ClCompile Include="WinCredentialRequest.cpp" />
     <ClCompile Include="WinEncryptionInfo.cpp" />
+    <ClCompile Include="WinErrorHandler.cpp" />
     <ClCompile Include="WinFilterChain.cpp" />
     <ClCompile Include="WinFilterManager.cpp" />
     <ClCompile Include="WinInitialization.cpp" />

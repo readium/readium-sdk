@@ -428,6 +428,9 @@
     <ClInclude Include="ExceptionWrapper.h">
       <Filter>Public Interface</Filter>
     </ClInclude>
+    <ClInclude Include="WinErrorHandler.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\ePub3\utilities\byte_buffer.cpp">
@@ -846,6 +849,9 @@
       <Filter>Public Interface</Filter>
     </ClCompile>
     <ClCompile Include="WinContentModuleManager.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinErrorHandler.cpp">
       <Filter>Public Interface</Filter>
     </ClCompile>
   </ItemGroup>

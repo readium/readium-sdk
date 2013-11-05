@@ -42,6 +42,14 @@ static inline
 }
 
 static inline
+::Platform::String^ StringFromCString(const char* cstr)
+{
+	typedef std::wstring_convert<std::codecvt_utf8<wchar_t>> _Convert;
+	std::wstring wstr(_Convert().from_bytes(cstr));
+	return ref new ::Platform::String(wstr.data(), (unsigned int)wstr.length());
+}
+
+static inline
 ::ePub3::string StringToNative(::Platform::String^ str)
 {
 	return ::ePub3::string(str->Data(), str->Length());
