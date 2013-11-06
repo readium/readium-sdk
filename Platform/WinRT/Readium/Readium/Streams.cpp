@@ -48,7 +48,6 @@ IAsyncOperationWithProgress<IBuffer^, unsigned int>^ Stream::ReadAsync(IBuffer^ 
 	return create_async([this, buffer, count, options](progress_reporter<unsigned int> reporter) -> IBuffer^ {
 		if (!IsOpen)
 			return buffer;
-
 		auto byteBuffer = getByteAccessForBuffer(buffer);
 		byte* bytes = nullptr;
 		byteBuffer->Buffer(&bytes);
@@ -56,6 +55,20 @@ IAsyncOperationWithProgress<IBuffer^, unsigned int>^ Stream::ReadAsync(IBuffer^ 
 		unsigned int toRead = ((options == InputStreamOptions::ReadAhead) ? std::max(count, buffer->Capacity) : std::min(count, buffer->Capacity));
 		ssize_t numRead = 0;
 		int total = 0;
+
+		auto asyncPtr = std::dynamic_pointer_cast<::ePub3::AsyncByteStream>(_native);
+		if (bool(asyncPtr))
+		{
+			::ePub3::AsyncEvent evt;
+			do
+			{
+				evt = asyncPtr->WaitNextEvent();
+
+			} while (evt == ::ePub3::AsyncEvent::HasSpaceAvailable || evt == ::ePub3::AsyncEvent::None);
+
+			if (evt != ::ePub3::AsyncEvent::HasBytesAvailable)
+				return buffer;
+		}
 
 		do
 		{
@@ -98,6 +111,20 @@ IAsyncOperationWithProgress<unsigned int, unsigned int>^ Stream::WriteAsync(IBuf
 		ssize_t numWritten = 0;
 		unsigned int total = 0;
 
+		auto asyncPtr = std::dynamic_pointer_cast<::ePub3::AsyncByteStream>(_native);
+		if (bool(asyncPtr))
+		{
+			::ePub3::AsyncEvent evt;
+			do
+			{
+				evt = asyncPtr->WaitNextEvent();
+
+			} while (evt == ::ePub3::AsyncEvent::HasBytesAvailable || evt == ::ePub3::AsyncEvent::None);
+
+			if (evt != ::ePub3::AsyncEvent::HasSpaceAvailable)
+				return 0;
+		}
+
 		do
 		{
 			numWritten = static_cast<ssize_t>(_native->WriteBytes(bytes, toWrite));
@@ -134,6 +161,20 @@ IAsyncOperationWithProgress<IBuffer^, unsigned int>^ RandomAccessStream::ReadAsy
 		unsigned int toRead = ((options == InputStreamOptions::ReadAhead) ? std::max(count, buffer->Capacity) : std::min(count, buffer->Capacity));
 		ssize_t numRead = 0;
 		int total = 0;
+
+		auto asyncPtr = std::dynamic_pointer_cast<::ePub3::AsyncByteStream>(_native);
+		if (bool(asyncPtr))
+		{
+			::ePub3::AsyncEvent evt;
+			do
+			{
+				evt = asyncPtr->WaitNextEvent();
+
+			} while (evt == ::ePub3::AsyncEvent::HasSpaceAvailable || evt == ::ePub3::AsyncEvent::None);
+
+			if (evt != ::ePub3::AsyncEvent::HasBytesAvailable)
+				return buffer;
+		}
 
 		do
 		{
@@ -175,6 +216,20 @@ IAsyncOperationWithProgress<unsigned int, unsigned int>^ RandomAccessStream::Wri
 		unsigned int toWrite = buffer->Length;
 		ssize_t numWritten = 0;
 		unsigned int total = 0;
+
+		auto asyncPtr = std::dynamic_pointer_cast<::ePub3::AsyncByteStream>(_native);
+		if (bool(asyncPtr))
+		{
+			::ePub3::AsyncEvent evt;
+			do
+			{
+				evt = asyncPtr->WaitNextEvent();
+
+			} while (evt == ::ePub3::AsyncEvent::HasBytesAvailable || evt == ::ePub3::AsyncEvent::None);
+
+			if (evt != ::ePub3::AsyncEvent::HasSpaceAvailable)
+				return 0;
+		}
 
 		do
 		{
