@@ -337,7 +337,7 @@ public:
 	virtual ~thread_pool()
 		{}
 
-	virtual void add(executor::closure_type closure) OVERRIDE
+	virtual void add(closure_type closure) OVERRIDE
 		{
 			__impl_.add(closure);
 		}
@@ -346,16 +346,40 @@ public:
 			return __impl_.num_pending_closures();
 		}
 
-	virtual void add_at(std::chrono::system_clock::time_point abs_time, executor::closure_type closure) OVERRIDE
+	virtual void add_at(std::chrono::system_clock::time_point abs_time, closure_type closure) OVERRIDE
 		{
 			__impl_.add_at(abs_time, closure);
 		}
-	virtual void add_after(std::chrono::system_clock::duration rel_time, executor::closure_type closure) OVERRIDE
+	virtual void add_after(std::chrono::system_clock::duration rel_time, closure_type closure) OVERRIDE
 		{
 			__impl_.add_after(rel_time, closure);
 		}
     
 };
+
+#if EPUB_PLATFORM(WINRT) || EPUB_PLATFORM(MAC)
+class main_thread_executor : public scheduled_executor, std::enable_shared_from_this<class main_thread_executor>
+{
+private:
+#if EPUB_PLATFORM(WINRT)
+	static ::Windows::UI::Core::CoreDispatcher^	_mainDispatcher;
+	static void SetMainDispatcher(::Windows::UI::Core::CoreDispatcher^ dispatcher);
+#endif
+
+	std::atomic_int_fast32_t	_num_closures;
+
+public:
+	main_thread_executor() : scheduled_executor() {}
+	virtual ~main_thread_executor() {}
+
+	virtual void add(closure_type closure) OVERRIDE;
+	virtual size_t num_pending_closures() const OVERRIDE;
+
+	virtual void add_at(std::chrono::system_clock::time_point abs_time, closure_type closure) OVERRIDE;
+	virtual void add_after(std::chrono::system_clock::duration rel_time, closure_type closure) OVERRIDE;
+
+};
+#endif
 
 EPUB3_END_NAMESPACE
 
