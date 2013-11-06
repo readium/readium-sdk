@@ -753,7 +753,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 }
                 else if (src_fragmentID.empty())
                 {
-                    HandleError(EPUBError::MediaOverlayTextSrcFragmentMissing, _Str(item->Href().c_str(), " [", src_file.c_str(), "] => text source fragment identifier is empty"));
+//                    HandleError(EPUBError::MediaOverlayTextSrcFragmentMissing, _Str(item->Href().c_str(), " [", src_file.c_str(), "] => text source fragment identifier is empty"));
                 }
 
                 ManifestItemPtr spineManifestItem = smilData->_spineItem->ManifestItem();
