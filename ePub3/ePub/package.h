@@ -482,6 +482,13 @@ public:
     }
     EPUB3_EXPORT
     shared_ptr<AsyncByteStream>     ContentStreamForItem(ManifestItemPtr manifestItem)  const;
+
+	EPUB3_EXPORT
+	shared_ptr<ByteStream>			SyncContentStreamForItem(SpineItemPtr spineItem)    const {
+		return SyncContentStreamForItem(spineItem->ManifestItem());
+	}
+	EPUB3_EXPORT
+	shared_ptr<ByteStream>			SyncContentStreamForItem(ManifestItemPtr manifestItem)  const;
     
     /// @}
     
