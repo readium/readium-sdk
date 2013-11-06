@@ -34,11 +34,14 @@ BEGIN_READIUM_API
 class BridgedBuffer : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::RuntimeClassType::WinRtClassicComMix>,
 														  ABI::Windows::Storage::Streams::IBuffer, Windows::Storage::Streams::IBufferByteAccess>
 {
+	InspectableClass(TEXT("RuntimeClass_Readium_BridgedBuffer"), BaseTrust);
+
 private:
 	byte*	_bytes;
 	size_t	_length;
 	size_t	_capacity;
 	bool	_allocated;
+
 
 public:
 	static inline
