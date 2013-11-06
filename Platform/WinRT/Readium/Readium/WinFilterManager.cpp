@@ -45,7 +45,9 @@ void FilterManager::RegisterFilter(String^ name, FilterPriority priority, Conten
 {
 	auto instance = ::ePub3::FilterManager::Instance();
 	instance->RegisterFilter(StringToNative(name), ::ePub3::ContentFilter::FilterPriority(priority), [factory](::ePub3::ConstPackagePtr pkg) {
-		return std::make_shared<WinRTContentFilter>(factory(Package::Wrapper(std::const_pointer_cast<::ePub3::Package>(pkg))));
+		auto rtPkg = Package::Wrapper(std::const_pointer_cast<::ePub3::Package>(pkg));
+		IContentFilter^ filter = factory(rtPkg);
+		return std::make_shared<WinRTContentFilter>(filter);
 	});
 }
 

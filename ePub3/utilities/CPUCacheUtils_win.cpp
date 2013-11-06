@@ -11,7 +11,7 @@
 #include <emmintrin.h>
 #endif
 
-	int epub_sys_cache_control(int operation, void* start, size_t len)
+	int epub_sys_cache_control(int operation, void* start, long len)
 	{
 		switch (operation)
 		{
@@ -27,7 +27,7 @@
 		return -1;
 	}
 
-	void epub_sys_cache_invalidate(void* start, size_t len)
+	void epub_sys_cache_invalidate(void* start, long len)
 	{
 #if EPUB_CPU(X86) || EPUB_CPU(X64)
 		// a no-op on Intel
@@ -36,7 +36,7 @@
 #endif
 	}
 
-	void epub_sys_cache_flush(void* start, size_t len)
+	void epub_sys_cache_flush(void* start, long len)
 	{
 #if EPUB_CPU(X86) || EPUB_CPU(X64)
 		if (start == nullptr || len <= 0)

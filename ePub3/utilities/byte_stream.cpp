@@ -782,6 +782,8 @@ ByteStream::size_type ZipFileByteStream::ReadBytes(void *buf, size_type len)
         Close();
         return 0;
     }
+
+	_eof = (_file->bytes_left == 0);
     
     return numRead;
 }
@@ -808,6 +810,7 @@ ByteStream::size_type ZipFileByteStream::Seek(size_type by, std::ios::seekdir di
     }
     
     zip_fseek(_file, long(by), whence);
+	_eof = (_file->bytes_left == 0);
     return Position();
 }
 ByteStream::size_type ZipFileByteStream::Position() const

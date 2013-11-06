@@ -22,13 +22,13 @@ enum
 
 __BEGIN_DECLS
 
-int epub_sys_cache_control(int operation, void* start, size_t len);
+int epub_sys_cache_control(int operation, void* start, long len);
 
 // equivalent to epub_sys_cache_control(kSyncCaches, ...)
-void epub_sys_cache_invalidate(void* start, size_t len);
+void epub_sys_cache_invalidate(void* start, long len);
 
 // equivalent to epub_sys_cache_control(kFlushCaches, ...)
-void epub_sys_cache_flush(void* start, size_t len);
+void epub_sys_cache_flush(void* start, long len);
 
 __END_DECLS
 

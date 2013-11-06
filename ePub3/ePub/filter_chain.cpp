@@ -143,8 +143,8 @@ void FilterChainSyncStream::CacheBytes()
 	while (_input->AtEnd() == false)
 	{
 		size_type numRead = _input->ReadBytes(buf, _TMP_BUF_LEN);
-		if (numRead < -1)
-			throw std::system_error(std::make_error_code(std::errc::io_error));
+		if (numRead == 0)
+			break;
 		if (numRead > 0)
 			_cache.AddBytes(buf, numRead);
 	}
