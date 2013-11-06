@@ -366,4 +366,105 @@ void __thread_pool_impl_winrt::add_after(std::chrono::system_clock::duration rel
 }
 #endif
 
+#if EPUB_PLATFORM(MAC)
+class __cf_clock
+{
+public:
+	typedef std::chrono::duration<CFTimeInterval>   duration;
+	typedef duration::rep                           rep;
+	typedef duration::period                        period;
+	typedef std::chrono::time_point<cf_clock>       time_point;
+	static const bool is_steady =                   false;
+
+	static time_point   now()                               noexcept;
+	static time_t       to_time_t(const time_point& __t)    noexcept;
+	static time_point   from_time_t(const time_t& __t)      noexcept;
+};
+
+void main_thread_executor::add(closure_type closure)
+{
+	_num_closures++;
+	std::weak_ptr<main_thread_executor> weakThis(shared_from_this());
+	CFRunLoopPerformBlock(CFRunLoopGetMain(), kCFRunLoopCommonModes, ^{
+		closure();
+		auto self = weakThis.lock();
+		if (bool(self))
+			self->_num_closures--;
+	});
+}
+size_t main_thread_executor::num_pending_closures() const
+{
+	return _num_closures;
+}
+void main_thread_executor::add_at(std::chrono::system_clock::time_point abs_time, closure_type closure)
+{
+	using namespace std::chrono;
+	__cf_clock::time_point cfTime = time_point_cast<__cf_clock::time_point>(abs_time);
+
+	auto self = shared_from_this();
+	CFRunLoopTimerRef timer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault, cfTime.time_since_epoch().count(), 0, 0, ^(CFRunLoopTimerRef theTimer) {
+		closure();
+		self->_num_closures--;
+	});
+
+	_num_closures++;
+	CFRunLoopAddTimer(CFRunLoopGetMain(), timer, kCFRunLoopCommonModes);
+}
+void main_thread_executor::add_after(std::chrono::system_clock::duration rel_time, closure_type closure)
+{
+	add_at(std::chrono::system_clock::now() + rel_time, closure);
+}
+#elif EPUB_PLATFORM(WINRT)
+::Windows::UI::Core::CoreDispatcher^ main_thread_executor::_mainDispatcher = nullptr;
+void main_thread_executor::SetMainDispatcher(::Windows::UI::Core::CoreDispatcher^ dispatcher)
+{
+	_mainDispatcher = dispatcher;
+}
+void main_thread_executor::add(closure_type closure)
+{
+	using namespace ::Windows::UI::Core;
+	_num_closures++;
+	CoreDispatcher^ dispatcher = _mainDispatcher;
+	if (dispatcher == nullptr)
+		throw std::system_error(std::error_code(E_HANDLE, std::system_category()), "You must call main_thread_executor::SetMainDispatcher() from the main UI thread before you can use this method");
+
+	if (dispatcher->HasThreadAccess)
+	{
+		closure();
+	}
+	else
+	{
+		auto self = shared_from_this();
+		dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([self, closure]() {
+			closure();
+			self->_num_closures--;
+		}));
+	}
+}
+size_t main_thread_executor::num_pending_closures() const
+{
+	return _num_closures;
+}
+void main_thread_executor::add_at(std::chrono::system_clock::time_point abs_time, closure_type closure)
+{
+	using namespace std::chrono;
+	add_after(abs_time - system_clock::now(), closure);
+}
+void main_thread_executor::add_after(std::chrono::system_clock::duration rel_time, closure_type closure)
+{
+	using namespace ::Windows::System::Threading;
+	using namespace std::chrono;
+
+	typedef duration<long long, std::ratio<1, 10000000>> _Ticks;
+	::Windows::Foundation::TimeSpan span;
+	span.Duration = duration_cast<_Ticks>(rel_time).count();
+
+	// create a timer which will enqueue the job
+	auto self = shared_from_this();
+	ThreadPoolTimer::CreateTimer(ref new TimerElapsedHandler([self, closure](ThreadPoolTimer^ theTimer) {
+		self->add(closure);
+	}), span);
+}
+#endif
+
 EPUB3_END_NAMESPACE
