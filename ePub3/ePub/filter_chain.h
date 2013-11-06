@@ -51,6 +51,7 @@ public:
     
     // obtains a stream which can be used to read filtered bytes from the chain
     std::shared_ptr<AsyncByteStream> GetFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const;
+	std::shared_ptr<ByteStream> GetSyncFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const;
     
 protected:
     typedef std::shared_ptr<AsyncByteStream>    ChainLink;

@@ -106,6 +106,10 @@ public:
 	[::Windows::Foundation::Metadata::DefaultOverload]
 	IClosableStream^ ContentStreamFor(ManifestItem^ item);
 
+	IClosableStream^ SyncContentStreamFor(SpineItem^ item);
+	[::Windows::Foundation::Metadata::DefaultOverload]
+	IClosableStream^ SyncContentStreamFor(ManifestItem^ item);
+
 	property NavigationTable^ TableOfContents { NavigationTable^ get(); }
 	property NavigationTable^ ListOfFigures { NavigationTable^ get(); }
 	property NavigationTable^ ListOfIllustrations { NavigationTable^ get(); }

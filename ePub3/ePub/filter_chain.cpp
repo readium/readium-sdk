@@ -19,6 +19,143 @@ EPUB3_BEGIN_NAMESPACE
 
 std::unique_ptr<thread_pool> FilterChain::_filterThreadPool(nullptr);
 
+class FilterChainSyncStream : public ByteStream
+{
+private:
+	typedef std::pair<ContentFilterPtr, std::unique_ptr<FilterContext>>	_FilterNode;
+
+	std::unique_ptr<ByteStream>		_input;
+	std::vector<_FilterNode>		_filters;
+
+	bool							_needs_cache;
+	ByteBuffer						_cache;
+
+public:
+	FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters);
+	virtual ~FilterChainSyncStream() {}
+
+	virtual size_type BytesAvailable() const OVERRIDE
+	{
+		if (_needs_cache && _input->AtEnd()) {
+			return _cache.GetBufferSize();
+		} else {
+			return _input->BytesAvailable();
+		}
+	}
+	virtual size_type SpaceAvailable() const OVERRIDE
+	{
+		return 0;
+	}
+	virtual bool IsOpen() const OVERRIDE
+	{
+		return _input->IsOpen();
+	}
+	virtual void Close() OVERRIDE
+	{
+		_input->Close();
+	}
+	virtual size_type ReadBytes(void* bytes, size_type len) OVERRIDE;
+	virtual size_type WriteBytes(const void* bytes, size_type len) OVERRIDE
+	{
+		throw std::system_error(std::make_error_code(std::errc::operation_not_supported));
+	}
+
+	virtual bool AtEnd() const _NOEXCEPT OVERRIDE
+	{
+		if (_needs_cache && _input->AtEnd()) {
+			return _cache.IsEmpty();
+		} else {
+			return _input->AtEnd();
+		}
+	}
+	virtual int Error() const _NOEXCEPT OVERRIDE
+	{
+		return _input->Error();
+	}
+
+private:
+	size_type ReadBytesFromCache(void* bytes, size_type len);
+	void CacheBytes();
+	size_type FilterBytes(void* bytes, size_type len);
+
+};
+
+FilterChainSyncStream::FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters)
+: _input(std::move(input)), _filters(), _needs_cache(false), _cache()
+{
+	for (auto& filter : filters)
+	{
+		_filters.emplace_back(filter, std::unique_ptr<FilterContext>(filter->MakeFilterContext()));
+		if (filter->RequiresCompleteData())
+			_needs_cache = true;
+	}
+}
+ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type len)
+{
+	if (_needs_cache)
+	{
+		if (_cache.GetBufferSize() == 0 && _input->AtEnd() == false)
+			CacheBytes();
+
+		return ReadBytesFromCache(bytes, len);
+	}
+
+	size_type result = _input->ReadBytes(bytes, len);
+	return FilterBytes(bytes, result);
+}
+ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, size_type len)
+{
+	size_type result = len;
+
+	for (auto& pair : _filters)
+	{
+		std::size_t filteredLen = 0;
+		void* filteredData = pair.first->FilterData(pair.second.get(), bytes, result, &filteredLen);
+		if (filteredData == nullptr || filteredLen == 0) {
+			if (filteredData != nullptr && filteredData != bytes)
+				delete[] filteredData;
+			throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
+		}
+
+		if (filteredData != bytes)
+		{
+			::memcpy_s(bytes, len, filteredData, filteredLen);
+			delete[] filteredData;
+		}
+
+		result = filteredLen;
+	}
+
+	return result;
+}
+ByteStream::size_type FilterChainSyncStream::ReadBytesFromCache(void* bytes, size_type len)
+{
+	size_type numToRead = std::min(len, size_type(_cache.GetBufferSize()));
+	::memcpy_s(bytes, len, _cache.GetBytes(), numToRead);
+	_cache.RemoveBytes(numToRead);
+	return numToRead;
+}
+void FilterChainSyncStream::CacheBytes()
+{
+	// read everything from the input stream
+#define _TMP_BUF_LEN 16*1024
+	uint8_t buf[_TMP_BUF_LEN];
+	while (_input->AtEnd() == false)
+	{
+		size_type numRead = _input->ReadBytes(buf, _TMP_BUF_LEN);
+		if (numRead < -1)
+			throw std::system_error(std::make_error_code(std::errc::io_error));
+		if (numRead > 0)
+			_cache.AddBytes(buf, numRead);
+	}
+
+	// filter everything completely
+	FilterBytes(_cache.GetBytes(), _cache.GetBufferSize());
+
+	// this potentially contains decrypted data, so use secure erasure
+	_cache.SetUsesSecureErasure();
+}
+
 std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const
 {
     std::unique_ptr<AsyncByteStream> rawInput = item->AsyncReader();
@@ -78,6 +215,21 @@ std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifest
     
     // return the output pipe
     return linkPipe.second;
+}
+std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const
+{
+	std::unique_ptr<ByteStream> rawInput = item->Reader();
+	if (rawInput->IsOpen() == false)
+		return nullptr;
+
+	std::vector<ContentFilterPtr> thisChain;
+	for (ContentFilterPtr filter : _filters)
+	{
+		if (filter->TypeSniffer()(item))
+			thisChain.push_back(filter);
+	}
+
+	return std::make_shared<FilterChainSyncStream>(std::move(rawInput), thisChain);
 }
 
 FilterChain::ChainLinkProcessor::ChainLinkProcessor(ContentFilterPtr filter, ChainLink input)
@@ -216,10 +368,15 @@ ssize_t FilterChain::ChainLinkProcessor::FunnelBytes()
             size_t filteredLen = 0;
             void* filteredData = _filter->FilterData(_context.get(), buf, thisChunk, &filteredLen);
             if ( filteredData == nullptr || filteredLen == 0 ) {
+				if (filteredData != nullptr && filteredData != buf)
+					delete[] filteredData;
                 throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
             }
-            
+
             _output->WriteBytes(filteredData, filteredLen);
+
+			if (filteredData != buf)
+				delete[] filteredData;
         }
         
         bytesToMove -= thisChunk;

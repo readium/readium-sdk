@@ -231,6 +231,15 @@ IClosableStream^ Package::ContentStreamFor(ManifestItem^ item)
 	return ref new Stream(_native->ContentStreamForItem(item->NativeObject));
 }
 
+IClosableStream^ Package::SyncContentStreamFor(SpineItem^ item)
+{
+	return ref new Stream(_native->SyncContentStreamForItem(item->NativeObject));
+}
+IClosableStream^ Package::SyncContentStreamFor(ManifestItem^ item)
+{
+	return ref new Stream(_native->SyncContentStreamForItem(item->NativeObject));
+}
+
 NavigationTable^ Package::TableOfContents::get()
 {
 	return NavigationTable::Wrapper(_native->TableOfContents());
