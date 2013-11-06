@@ -126,7 +126,7 @@ public:
 
 };
 
-WinRTContentHandler::WinRTContentHandler(IContentHandler^ bridgeInstance) : ::ePub3::ContentHandler(bridgeInstance->Owner->NativeObject, StringToNative(bridgeInstance->MediaType))
+WinRTContentHandler::WinRTContentHandler(IContentHandler^ bridgeInstance) : ::ePub3::ContentHandler(bridgeInstance->Owner->NativeObject, StringToNative(bridgeInstance->MediaType)), __bridge_(bridgeInstance)
 {
 	SetBridge<IContentHandler>(bridgeInstance);
 }
@@ -144,7 +144,7 @@ void WinRTContentHandler::operator()(const ::ePub3::string& src, const Parameter
 		bridge->Invoke(str, params);
 }
 
-WinRTContentFilter::WinRTContentFilter(IContentFilter^ bridgeInstance) : ::ePub3::ContentFilter(nullptr)
+WinRTContentFilter::WinRTContentFilter(IContentFilter^ bridgeInstance) : ::ePub3::ContentFilter(nullptr), __bridge_(bridgeInstance)
 {
 	SetTypeSniffer([bridgeInstance](::ePub3::ConstManifestItemPtr item) -> bool {
 		ManifestItem^ bridgeItem = item->GetBridge<ManifestItem>();
@@ -160,19 +160,18 @@ WinRTContentFilter::~WinRTContentFilter()
 ::ePub3::FilterContext* WinRTContentFilter::MakeFilterContext() const
 {
 	IContentFilter^ filter = GetBridge<IContentFilter>();
-	if (filter == nullptr)
+	if (__bridge_ == nullptr)
 		return nullptr;
-	auto obj = filter->MakeFilterContext();
+	auto obj = __bridge_->MakeFilterContext();
 	if (obj == nullptr)
 		return nullptr;
 	return new WinRTContentFilterContext(obj);
 }
 bool WinRTContentFilter::RequiresCompleteData() const
 {
-	IContentFilter^ filter = GetBridge<IContentFilter>();
-	if (filter == nullptr)
+	if (__bridge_ == nullptr)
 		return ::ePub3::ContentFilter::RequiresCompleteData();
-	return filter->RequiresCompleteData;
+	return __bridge_->RequiresCompleteData;
 }
 void* WinRTContentFilter::FilterData(::ePub3::FilterContext* context, void* data, size_t len, size_t* outLen)
 {
@@ -183,7 +182,7 @@ void* WinRTContentFilter::FilterData(::ePub3::FilterContext* context, void* data
 
 	auto buf = BridgedBuffer::MakeBuffer((byte*)data, (UINT)len);
 	IContentFilter^ filter = GetBridge<IContentFilter>();
-	auto outBuf = filter->FilterData(realContext, buf);
+	auto outBuf = __bridge_->FilterData(realContext, buf);
 
 	size_t outBufLen = outBuf->Length;
 	byte* outBytes = GetIBufferBytes(outBuf);

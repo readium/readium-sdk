@@ -44,6 +44,10 @@ public:
 
 	virtual void operator()(const ::ePub3::string& src, const ParameterList& parameters);
 
+private:
+	// ensure at least one strong reference exists!
+	IContentHandler^		__bridge_;
+
 };
 
 class WinRTContentFilter : public ::ePub3::ContentFilter
@@ -56,6 +60,10 @@ public:
 	virtual bool RequiresCompleteData() const;
 
 	virtual void* FilterData(::ePub3::FilterContext* context, void* data, size_t len, size_t* outLen);
+
+private:
+	// ensure at least one strong reference exists!
+	IContentFilter^		__bridge_;
 
 };
 
