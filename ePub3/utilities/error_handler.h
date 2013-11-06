@@ -300,7 +300,7 @@ enum class EPUBError
     // § 2.4.7
     MediaOverlayInvalidText,                ///< A <text> element MUST have a 'src' attribute. Critical.
     MediaOverlayInvalidTextSource,          ///< A <text> element's 'src' attribute MUST reference an item in the publication's <manifest>. Major.
-    MediaOverlayTextSrcFragmentMissing,     ///< A <text> element's 'src' attribute MUST contain a fragment identifier. Major.
+    MediaOverlayTextSrcFragmentMissing,     ///< A <text> element's 'src' attribute MUST contain a fragment identifier. Minor.
     
     // § 2.4.8
     MediaOverlayInvalidAudio,               ///< An <audio> element MUST have a 'src' attribute. Critical.
