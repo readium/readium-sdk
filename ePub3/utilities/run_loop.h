@@ -187,6 +187,7 @@ public:
         int                                 _evt[2];    ///< The event's pipe file descriptors.
 #elif EPUB_OS(WINDOWS)
         HANDLE                              _event;
+		std::vector<std::weak_ptr<RunLoop>>	_runLoops;
 #else
         std::atomic<bool>                   _signalled; ///< Whether the source has been signalled.
         bool                                _cancelled; ///< Whether the source is cancelled.
@@ -266,25 +267,26 @@ public:
         
     private:
 #if EPUB_USE(CF)
-        CFRefCounted<CFRunLoopTimerRef> _cf;        ///< The underlying CF type of the timer.
+        CFRefCounted<CFRunLoopTimerRef>		_cf;        ///< The underlying CF type of the timer.
 #elif EPUB_OS(ANDROID)
-        timer_t                         _timer;     ///< The underlying Linux timer.
-        int                             _pipeFDs[2];///< The pipe endpoints used with ALooper.
-        TimerFn                         _fn;        ///< The function to call when the timer fires.
+        timer_t								_timer;     ///< The underlying Linux timer.
+        int									_pipeFDs[2];///< The pipe endpoints used with ALooper.
+        TimerFn								_fn;        ///< The function to call when the timer fires.
 #elif EPUB_OS(WINDOWS)
 #if EPUB_PLATFORM(WINRT)
-		ThreadPoolTimer^				_timer;
+		ThreadPoolTimer^					_timer;
 #endif
-        HANDLE                          _handle;
-        Clock::time_point               _fireDate;
-        Clock::duration                 _interval;
-        TimerFn                         _fn;
-        bool                            _cancelled;
+		HANDLE								_handle;
+		std::vector<std::weak_ptr<RunLoop>>	_runLoops;
+        Clock::time_point					_fireDate;
+        Clock::duration						_interval;
+        TimerFn								_fn;
+        bool								_cancelled;
 #else
-        Clock::time_point               _fireDate;  ///< The date at which the timer will fire.
-        TimerFn                         _fn;        ///< The function to call when the timer fires.
-        Clock::duration                 _interval;  ///< The interval at which the timer repeats (if any)
-        bool                            _cancelled; ///< Set to `true` when the timer is cancelled.
+        Clock::time_point					_fireDate;  ///< The date at which the timer will fire.
+        TimerFn								_fn;        ///< The function to call when the timer fires.
+        Clock::duration						_interval;  ///< The interval at which the timer repeats (if any)
+        bool								_cancelled; ///< Set to `true` when the timer is cancelled.
 #endif
         
         friend class RunLoop;

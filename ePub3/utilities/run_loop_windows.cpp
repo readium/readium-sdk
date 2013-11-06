@@ -208,7 +208,7 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
     {
         pHandles[i++] = pair.first;
     }
-    pHandles[handleCount] = _wakeHandle;
+    pHandles[handleCount-1] = _wakeHandle;
 
     _listLock.lock();
 
@@ -236,7 +236,7 @@ RunLoop::ExitReason RunLoop::RunInternal(bool returnAfterSourceHandled, std::chr
             {
                 pHandles[i++] = pair.first;
             }
-            pHandles[handleCount] = _wakeHandle;
+            pHandles[handleCount-1] = _wakeHandle;
         }
         
         RunObservers(Observer::ActivityFlags::RunLoopBeforeWaiting);
@@ -413,20 +413,32 @@ void RunLoop::Observer::Cancel()
     _cancelled = true;
 }
 
-RunLoop::EventSource::EventSource(EventHandlerFn fn) : _event(NULL), _fn(fn)
+RunLoop::EventSource::EventSource(EventHandlerFn fn) : _event(NULL), _runLoops(), _fn(fn)
 {
 	_event = CreateEventEx(NULL, NULL, 0, 0);
     if ( _event == NULL )
         _THROW_LAST_ERROR();
 }
-RunLoop::EventSource::EventSource(const EventSource& o) : _event(NULL), _fn(o._fn)
+RunLoop::EventSource::EventSource(const EventSource& o) : _event(NULL), _runLoops(), _fn(o._fn)
 {
 	_event = CreateEventEx(NULL, NULL, 0, 0);
     if ( _event == NULL )
         _THROW_LAST_ERROR();
 }
-RunLoop::EventSource::EventSource(EventSource&& o) : _event(o._event), _fn(std::move(o._fn))
+RunLoop::EventSource::EventSource(EventSource&& o) : _event(o._event), _runLoops(std::move(o._runLoops)), _fn(std::move(o._fn))
 {
+	auto self = shared_from_this();
+	auto so = o.shared_from_this();
+	for (auto& wk : _runLoops)
+	{
+		auto ptr = wk.lock();
+		if (bool(ptr))
+		{
+			ptr->RemoveEventSource(so);
+			ptr->AddEventSource(self);
+		}
+	}
+
     o._event = NULL;
 }
 RunLoop::EventSource::~EventSource()
@@ -447,10 +459,33 @@ RunLoop::EventSource& RunLoop::EventSource::operator=(const EventSource& o)
 RunLoop::EventSource& RunLoop::EventSource::operator=(EventSource&& o)
 {
     _fn = std::move(o._fn);
+
+	auto self = shared_from_this();
+	for (auto& wk : _runLoops)
+	{
+		auto ptr = wk.lock();
+		if (bool(ptr))
+			ptr->RemoveEventSource(self);
+	}
+	_runLoops.clear();
+
     if ( _event != NULL )
         ::CloseHandle(_event);
+	_runLoops = std::move(o._runLoops);
+	_event = o._event;
+
+	auto so = o.shared_from_this();
+	for (auto& wk : _runLoops)
+	{
+		auto ptr = wk.lock();
+		if (bool(ptr))
+		{
+			ptr->RemoveEventSource(so);
+			ptr->AddEventSource(self);
+		}
+	}
     
-    _event = o._event; o._event = NULL;
+    o._event = NULL;
     return *this;
 }
 bool RunLoop::EventSource::operator==(const EventSource& o) const
@@ -463,12 +498,24 @@ bool RunLoop::EventSource::IsCancelled() const
 }
 void RunLoop::EventSource::Cancel()
 {
+	if (IsCancelled())
+		return;
+
+	auto self = shared_from_this();
+	for (auto& wk : _runLoops)
+	{
+		auto ptr = wk.lock();
+		if (bool(ptr))
+			ptr->RemoveEventSource(self);
+	}
+	_runLoops.clear();
+
     ::CloseHandle(_event);
     _event = NULL;
 }
 void RunLoop::EventSource::Signal()
 {
-    if ( _event == NULL )
+    if ( IsCancelled() )
         return;
     
     ::SetEvent(_event);
@@ -491,7 +538,7 @@ private:
 };
 #endif
 
-RunLoop::Timer::Timer(Clock::time_point& fireDate, Clock::duration& interval, TimerFn fn) : _fireDate(fireDate), _interval(interval), _fn(fn)
+RunLoop::Timer::Timer(Clock::time_point& fireDate, Clock::duration& interval, TimerFn fn) : _runLoops(), _fireDate(fireDate), _interval(interval), _fn(fn)
 {
     using namespace std::chrono;
 
@@ -500,7 +547,15 @@ RunLoop::Timer::Timer(Clock::time_point& fireDate, Clock::duration& interval, Ti
 	if (_handle == NULL)
 		_THROW_LAST_ERROR();
 
-	auto doneFn = ref new TimerCallbackWrapper([this](){if (_handle != NULL)::SetEvent(_handle); });
+	std::weak_ptr<Timer> weakThis(shared_from_this());
+	auto doneFn = ref new TimerCallbackWrapper([weakThis](){
+		auto self = weakThis.lock();
+		if (!bool(self))
+			return;
+
+		if (self->_handle != NULL)
+			::SetEvent(self->_handle);
+	});
 	auto elapsedHandler = ref new TimerElapsedHandler(doneFn, &TimerCallbackWrapper::Fire, Platform::CallbackContext::Any, true);
 
 	if (interval > Clock::duration(0))
@@ -534,7 +589,7 @@ RunLoop::Timer::Timer(Clock::time_point& fireDate, Clock::duration& interval, Ti
     }
 #endif
 }
-RunLoop::Timer::Timer(Clock::duration& interval, bool repeat, TimerFn fn) : _fireDate(Clock::now() + interval), _interval(interval), _fn(fn)
+RunLoop::Timer::Timer(Clock::duration& interval, bool repeat, TimerFn fn) : _runLoops(), _fireDate(Clock::now() + interval), _interval(interval), _fn(fn)
 {
     using namespace std::chrono;
 #if EPUB_PLATFORM(WINRT)
@@ -542,7 +597,15 @@ RunLoop::Timer::Timer(Clock::duration& interval, bool repeat, TimerFn fn) : _fir
     if ( _handle == NULL )
 		_THROW_LAST_ERROR();
 
-	auto doneFn = ref new TimerCallbackWrapper([this](){if (_handle != NULL)::SetEvent(_handle); });
+	std::weak_ptr<Timer> weakThis(shared_from_this());
+	auto doneFn = ref new TimerCallbackWrapper([weakThis](){
+		auto self = weakThis.lock();
+		if (!bool(self))
+			return;
+
+		if (self->_handle != NULL)
+			::SetEvent(self->_handle);
+	});
 	auto elapsedHandler = ref new TimerElapsedHandler(doneFn, &TimerCallbackWrapper::Fire, Platform::CallbackContext::Any, true);
 
 	Windows::Foundation::TimeSpan timeSpan{ interval.count() };
@@ -565,7 +628,7 @@ RunLoop::Timer::Timer(Clock::duration& interval, bool repeat, TimerFn fn) : _fir
     }
 #endif
 }
-RunLoop::Timer::Timer(const Timer& o) : _fireDate(o._fireDate), _interval(o._interval), _fn(o._fn)
+RunLoop::Timer::Timer(const Timer& o) : _runLoops(), _fireDate(o._fireDate), _interval(o._interval), _fn(o._fn)
 {
     using namespace std::chrono;
 #if EPUB_PLATFORM(WINRT)
@@ -573,7 +636,15 @@ RunLoop::Timer::Timer(const Timer& o) : _fireDate(o._fireDate), _interval(o._int
 	if (_handle == NULL)
 		_THROW_LAST_ERROR();
 
-	auto doneFn = ref new TimerCallbackWrapper([this](){if (_handle != NULL)::SetEvent(_handle); });
+	std::weak_ptr<Timer> weakThis(shared_from_this());
+	auto doneFn = ref new TimerCallbackWrapper([weakThis](){
+		auto self = weakThis.lock();
+		if (!bool(self))
+			return;
+
+		if (self->_handle != NULL)
+			::SetEvent(self->_handle);
+	});
 	auto elapsedHandler = ref new TimerElapsedHandler(doneFn, &TimerCallbackWrapper::Fire, Platform::CallbackContext::Any, true);
 
 	if (o._timer->Period.Duration != 0)
@@ -604,23 +675,33 @@ RunLoop::Timer::Timer(const Timer& o) : _fireDate(o._fireDate), _interval(o._int
     }
 #endif
 }
-RunLoop::Timer::Timer(Timer&& o) : _fireDate(std::move(_fireDate)), _interval(std::move(o._interval)), _fn(std::move(o._fn)),
+RunLoop::Timer::Timer(Timer&& o) : _runLoops(std::move(o._runLoops)), _fireDate(std::move(_fireDate)), _interval(std::move(o._interval)), _fn(std::move(o._fn)),
 #if EPUB_PLATFORM(WINRT)
-	_timer(o._timer)
-#else
-	_handle(o._handle)
+	_timer(o._timer),
 #endif
+	_handle(o._handle)
 {
 #if EPUB_PLATFORM(WINRT)
 	o._timer = nullptr;
-#else
-    o._handle = NULL;
 #endif
+	auto self = shared_from_this();
+	auto so = o.shared_from_this();
+	for (auto& wk : _runLoops)
+	{
+		auto ptr = wk.lock();
+		if (bool(ptr))
+		{
+			ptr->RemoveTimer(so);
+			ptr->AddTimer(self);
+		}
+	}
+
+    o._handle = NULL;
 }
 RunLoop::Timer::~Timer()
 {
 #if EPUB_PLATFORM(WINRT)
-	if (_timer != nullptr)
+	if (!IsCancelled())
 		_timer->Cancel();
 	_timer = nullptr;
 #endif
@@ -700,11 +781,27 @@ RunLoop::Timer& RunLoop::Timer::operator=(Timer&& o)
 #if EPUB_PLATFORM(WINRT)
 	_timer = o._timer;
 	o._timer = nullptr;
+
+	_runLoops = std::move(o._runLoops);
+	_handle = o._handle;
+
+	auto self = shared_from_this();
+	auto so = o.shared_from_this();
+	for (auto& wk : _runLoops)
+	{
+		auto ptr = wk.lock();
+		if (bool(ptr))
+		{
+			ptr->RemoveTimer(so);
+			ptr->AddTimer(self);
+		}
+	}
 #else
     if ( _handle != NULL )
         ::CancelWaitableTimer(_handle);
-    _handle = o._handle; o._handle = NULL;
 #endif
+	
+	o._handle = NULL;
     return *this;
 }
 bool RunLoop::Timer::operator==(const Timer& o) const
@@ -713,13 +810,28 @@ bool RunLoop::Timer::operator==(const Timer& o) const
 }
 void RunLoop::Timer::Cancel()
 {
+	if (IsCancelled())
+		return;
+
     _cancelled = true;
 #if EPUB_PLATFORM(WINRT)
 	if (_timer != nullptr)
 		_timer->Cancel();
+
+	auto self = shared_from_this();
+	for (auto& wk : _runLoops)
+	{
+		auto ptr = wk.lock();
+		if (bool(ptr))
+			ptr->RemoveTimer(self);
+	}
+	_runLoops.clear();
+
+	::CloseHandle(_handle);
 #else
     ::CancelWaitableTimer(_handle);
 #endif
+	_handle = NULL;
 }
 bool RunLoop::Timer::IsCancelled() const
 {
