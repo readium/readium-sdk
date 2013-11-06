@@ -179,11 +179,13 @@ void FilterChain::ChainLinkProcessor::ScheduleProcessor(RunLoopPtr runLoop)
             case AsyncEvent::ErrorOccurred:
                 std::cerr << "ChainLinkProcessor input stream error: " << stream->Error() << std::endl;
                 stream->Close();
-                _input->Close();
+				if (bool(_input))
+					_input->Close();
                 break;
                 
             case AsyncEvent::EndEncountered:
-                _input->Close();
+				if (bool(_input))
+					_input->Close();
                 break;
                 
             default:
