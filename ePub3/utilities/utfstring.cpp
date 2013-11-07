@@ -20,6 +20,7 @@
 //
 
 #include "utfstring.h"
+#include "integer_sequence.h"
 #include <locale>
 
 #if EPUB_PLATFORM(WINRT)
