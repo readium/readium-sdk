@@ -17,6 +17,10 @@
 #include <ppltasks.h>
 #endif
 
+// because without an implementation file including a header, it doesn't get
+//  indexed/coloured in Xcode (grr)
+#include "optional.h"
+
 EPUB3_BEGIN_NAMESPACE
 
 class inline_executor : public executor

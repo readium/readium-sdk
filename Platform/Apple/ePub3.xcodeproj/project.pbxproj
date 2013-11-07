@@ -74,6 +74,8 @@
 		AB8C79741821A2160013054F /* credential_request.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB8C79731821A2160013054F /* credential_request.cpp */; };
 		AB8C79751821A2160013054F /* credential_request.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB8C79731821A2160013054F /* credential_request.cpp */; };
 		AB8C79781821AADC0013054F /* async_open_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB8C79761821AADC0013054F /* async_open_tests.cpp */; };
+		AB906FAE182C1DFF0097A7FE /* optional.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB906FAD182C1DFF0097A7FE /* optional.cpp */; };
+		AB906FAF182C1DFF0097A7FE /* optional.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB906FAD182C1DFF0097A7FE /* optional.cpp */; };
 		AB95447D16B9730B00EFD2FD /* content_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB95447B16B9730B00EFD2FD /* content_handler.cpp */; };
 		AB95447E16B9730B00EFD2FD /* content_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB95447B16B9730B00EFD2FD /* content_handler.cpp */; };
 		AB95447F16B9730B00EFD2FD /* content_handler.h in Headers */ = {isa = PBXBuildFile; fileRef = AB95447C16B9730B00EFD2FD /* content_handler.h */; };
@@ -480,6 +482,12 @@
 		AB8C797218219C4F0013054F /* user_action.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = user_action.h; sourceTree = "<group>"; };
 		AB8C79731821A2160013054F /* credential_request.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = credential_request.cpp; sourceTree = "<group>"; };
 		AB8C79761821AADC0013054F /* async_open_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = async_open_tests.cpp; sourceTree = "<group>"; };
+		AB8C79771821AADC0013054F /* async_open_tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = async_open_tests.h; sourceTree = "<group>"; };
+		AB906FAB182BE2ED0097A7FE /* integer_sequence.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = integer_sequence.h; sourceTree = "<group>"; };
+		AB906FAC182BEFC90097A7FE /* optional.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = optional.h; sourceTree = "<group>"; };
+		AB906FAD182C1DFF0097A7FE /* optional.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = optional.cpp; sourceTree = "<group>"; };
+		AB906FB0182C1ECF0097A7FE /* string_view.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = string_view.h; sourceTree = "<group>"; };
+		AB906FB1182C1F0F0097A7FE /* __strhash.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = __strhash.h; sourceTree = "<group>"; };
 		AB95447B16B9730B00EFD2FD /* content_handler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = content_handler.cpp; sourceTree = "<group>"; };
 		AB95447C16B9730B00EFD2FD /* content_handler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = content_handler.h; sourceTree = "<group>"; };
 		AB95448116BAD32000EFD2FD /* switch_preprocessor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = switch_preprocessor.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
@@ -1006,8 +1014,13 @@
 				AB5284CF17CBC0FA003D7BBF /* CPUCacheUtils_x64.s */,
 				AB5284FD17CE5B22003D7BBF /* executor.cpp */,
 				AB5284FE17CE5B22003D7BBF /* executor.h */,
+				AB906FAB182BE2ED0097A7FE /* integer_sequence.h */,
+				AB906FAC182BEFC90097A7FE /* optional.h */,
+				AB906FAD182C1DFF0097A7FE /* optional.cpp */,
 				ABB39514183D21A100F19CA7 /* path_help.h */,
 				ABB39515183D21AC00F19CA7 /* path_help.cpp */,
+				AB906FB0182C1ECF0097A7FE /* string_view.h */,
+				AB906FB1182C1F0F0097A7FE /* __strhash.h */,
 			);
 			path = utilities;
 			sourceTree = "<group>";
@@ -2016,6 +2029,7 @@
 				ABA4BB3716ADF64400161B77 /* zip_stat_init.c in Sources */,
 				ABA4BB3816ADF64400161B77 /* zip_strerror.c in Sources */,
 				ABA4BB3916ADF64400161B77 /* zip_unchange.c in Sources */,
+				AB906FAF182C1DFF0097A7FE /* optional.cpp in Sources */,
 				ABA4BB3A16ADF64400161B77 /* zip_unchange_all.c in Sources */,
 				ABA4BB3B16ADF64400161B77 /* zip_unchange_archive.c in Sources */,
 				ABA4BB3C16ADF64400161B77 /* zip_unchange_data.c in Sources */,
@@ -2191,6 +2205,7 @@
 				AB95448816BAF11000EFD2FD /* object_preprocessor.cpp in Sources */,
 				ABA88FBE16C062BF00F2014B /* media_support_info.cpp in Sources */,
 				ABA88FC316C1534900F2014B /* byte_stream.cpp in Sources */,
+				AB906FAE182C1DFF0097A7FE /* optional.cpp in Sources */,
 				ABA88FD216C2B4ED00F2014B /* ring_buffer.cpp in Sources */,
 				AB17B29E171301C800FD5917 /* run_loop_cf.cpp in Sources */,
 				AB976C4A173443DD00AC26CF /* property.cpp in Sources */,

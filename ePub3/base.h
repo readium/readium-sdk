@@ -32,7 +32,8 @@
 #include <stdlib.h>
 
 #ifdef __cplusplus
-#define EPUB3_BEGIN_NAMESPACE namespace ePub3 {
+#define EPUB3_NAMESPACE ePub3
+#define EPUB3_BEGIN_NAMESPACE namespace EPUB3_NAMESPACE {
 #define EPUB3_END_NAMESPACE };
 #endif
 

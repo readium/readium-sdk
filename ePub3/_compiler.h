@@ -102,7 +102,7 @@
 #define EPUB_COMPILER_SUPPORTS_CXX_INIT_CAPTURE __has_extension(cxx_init_capture)
 #define EPUB_COMPILER_SUPPORTS_CXX_GENERIC_LAMBDA __has_extension(cxx_generic_lambda)
 #define EPUB_COMPILER_SUPPORTS_CXX_RETURN_TYPE_DEDUCTION __has_extension(cxx_return_type_deduction)
-#define EPUB_COMPILER_SUPPORTS_CXX_RUNTIME_ARRAY __has_extension(cxx_runtime_array)
+#define EPUB_COMPILER_SUPPORTS_CXX_RUNTIME_SIZED_ARRAYS __has_extension(cxx_runtime_array)
 #define EPUB_COMPILER_SUPPORTS_CXX_VARIABLE_TEMPLATES __has_extension(cxx_variable_templates)
 
 #endif
@@ -244,7 +244,7 @@
 # if GCC_VERSION_AT_LEAST(4,9,0)
 #  define EPUB_COMPILER_SUPPORTS_CXX_CONTEXTUAL_CONVERSIONS 1
 #  define EPUB_COMPILER_SUPPORTS_CXX_BINARY_LITERALS 1
-#  define EPUB_COMPILER_SUPPORTS_CXX_RUNTIME_ARRAY 1
+#  define EPUB_COMPILER_SUPPORTS_CXX_RUNTIME_SIZED_ARRAYS 1
 #  define EPUB_COMPILER_SUPPORTS_CXX_INIT_CAPTURE 1
 # endif
 #endif

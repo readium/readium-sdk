@@ -23,6 +23,7 @@
 #define __ePub3_xml_string__
 
 #include <ePub3/utilities/basic.h>
+#include <ePub3/utilities/integer_sequence.h>
 #include <string>
 #include <iterator>
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
