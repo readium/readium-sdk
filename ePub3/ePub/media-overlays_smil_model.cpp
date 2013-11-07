@@ -151,7 +151,7 @@ EPUB3_BEGIN_NAMESPACE
                 std::stringstream s;
                 s << "Media Overlays total duration mismatch (milliseconds): METADATA " << (long) _totalDuration << " != SMILs " << (long) totalDurationFromSMILs;
                 const std::string & str = _Str(s.str());
-                printf("%s\n", str.c_str());
+                //printf("%s\n", str.c_str());
 
                 //_totalDuration = totalDurationFromSMILs;
 
@@ -269,7 +269,7 @@ EPUB3_BEGIN_NAMESPACE
                     std::stringstream s;
                     s << "Media Overlays metadata duration mismatch (milliseconds): TOTAL " << (long) _totalDuration << " != ACCUMULATED " << (long) accumulatedDurationMilliseconds;
                     const std::string & str = _Str(s.str());
-                    printf("%s\n", str.c_str());
+                    //printf("%s\n", str.c_str());
                     HandleError(EPUBError::MediaOverlayMismatchDurationMetadata, str);
                 }
             }
@@ -426,7 +426,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     std::stringstream s;
                     s << "Media Overlays SMIL duration mismatch (milliseconds): METADATA " << (long) metaDur << " != SMIL " << (long) smilDur << " (" << item->Href().c_str() << ")";
                     const std::string & str = _Str(s.str());
-                    printf("%s\n", str.c_str());
+                    //printf("%s\n", str.c_str());
 
                     //smilData->_duration = smilDur;
 
@@ -546,7 +546,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 }
             }
 
-            printf("------> manifest item path NOT FOUND??!: [%s] %s\n", smilOPFPath.c_str(), filepathInSmil.c_str());
+            //printf("------> manifest item path NOT FOUND??!: [%s] %s\n", smilOPFPath.c_str(), filepathInSmil.c_str());
             return nullptr;
         }
 
@@ -605,9 +605,8 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             {
                 if (!textref_file.empty() && textrefManifestItem == nullptr)
                 {
-                    printf("Media Overlays TEXT REF error: %s [%s]\n", textref_file.c_str(), item->Href().c_str());
-                    // REMOVED, because breaks execution flow unnecessarily
-                    // HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
+                    //printf("Media Overlays TEXT REF error: %s [%s]\n", textref_file.c_str(), item->Href().c_str());
+                    HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
                 }
 
                 smilData->_root = new SMILData::Sequence(nullptr, textref_file, textref_fragmentID, textrefManifestItem, type, smilData);
@@ -622,9 +621,8 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             {
                 if (!textref_file.empty() && textrefManifestItem == nullptr)
                 {
-                    printf("Media Overlays TEXT REF error: %s\n", textref_file.c_str());
-                    // REMOVED, because breaks execution flow unnecessarily
-                    // HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
+                    //printf("Media Overlays TEXT REF error: %s\n", textref_file.c_str());
+                    HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
                 }
 
                 if (sequence == nullptr)
@@ -641,9 +639,8 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             {
                 if (!textref_file.empty() && textrefManifestItem == nullptr)
                 {
-                    printf("Media Overlays TEXT REF error: %s\n", textref_file.c_str());
-                    // REMOVED, because breaks execution flow unnecessarily
-                    // HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
+                    //printf("Media Overlays TEXT REF error: %s\n", textref_file.c_str());
+                    HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
                 }
 
                 if (sequence == nullptr)
@@ -671,9 +668,9 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 {
                     HandleError(EPUBError::MediaOverlayInvalidAudioSource, _Str(item->Href().c_str(), " [", src_file.c_str(), "] => audio source manifest cannot be found"));
                 }
-                else if (srcManifestItem->MediaType() != "audio/mpeg" || srcManifestItem->MediaType() != "audio/mp4") //package->CoreMediaTypes.find(mediaType) == package->CoreMediaTypes.end()
+                else if (srcManifestItem->MediaType() != "audio/mpeg" && srcManifestItem->MediaType() != "audio/mp4") //package->CoreMediaTypes.find(mediaType) == package->CoreMediaTypes.end()
                 {
-                    HandleError(EPUBError::MediaOverlayInvalidAudioType, _Str(item->Href().c_str(), " [", src_file.c_str(), "] => audio source type is invalid"));
+                    HandleError(EPUBError::MediaOverlayInvalidAudioType, _Str(item->Href().c_str(), " [", src_file.c_str(), " (", srcManifestItem->MediaType().c_str(), ")] => audio source type is invalid"));
                 }
 
                 uint32_t clipBeginMilliseconds = 0;
@@ -753,7 +750,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 }
                 else if (src_fragmentID.empty())
                 {
-//                    HandleError(EPUBError::MediaOverlayTextSrcFragmentMissing, _Str(item->Href().c_str(), " [", src_file.c_str(), "] => text source fragment identifier is empty"));
+                    HandleError(EPUBError::MediaOverlayTextSrcFragmentMissing, _Str(item->Href().c_str(), " [", src_file.c_str(), "] => text source fragment identifier is empty"));
                 }
 
                 ManifestItemPtr spineManifestItem = smilData->_spineItem->ManifestItem();

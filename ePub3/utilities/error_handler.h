@@ -300,7 +300,7 @@ enum class EPUBError
     // § 2.4.7
     MediaOverlayInvalidText,                ///< A <text> element MUST have a 'src' attribute. Critical.
     MediaOverlayInvalidTextSource,          ///< A <text> element's 'src' attribute MUST reference an item in the publication's <manifest>. Major.
-    MediaOverlayTextSrcFragmentMissing,     ///< A <text> element's 'src' attribute MUST contain a fragment identifier. Minor.
+    MediaOverlayTextSrcFragmentMissing,     ///< A <text> element's 'src' attribute MUST contain a fragment identifier. Medium.
     
     // § 2.4.8
     MediaOverlayInvalidAudio,               ///< An <audio> element MUST have a 'src' attribute. Critical.
@@ -309,7 +309,7 @@ enum class EPUBError
 
     MediaOverlayMissingDurationMetadata,           ///< A SMIL manifest item has no corresponding media:duration metadata. Medium.
     MediaOverlayMismatchDurationMetadata,           ///< A SMIL / metadata duration mismatch. Medium.
-    MediaOverlayInvalidSmilClockValue,           ///< A given SMIL Clock Value (media:duration, clipBegin or clipEnd) has an invalid syntax. Major.
+    MediaOverlayInvalidSmilClockValue,           ///< A given SMIL Clock Value (media:duration, clipBegin or clipEnd) has an invalid syntax. Medium.
     MediaOverlayCannotParseSMILXML,           ///< A given SMIL XML file fails to parse. Major.
     MediaOverlayUnknownSMILElement,           ///< A given SMIL file contains an unknown XML element. Major.
     MediaOverlaySMILTextParallelParent,           ///< A given SMIL file contains a text XML element that does not have a parallel parent time container. Major.
