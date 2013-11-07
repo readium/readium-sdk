@@ -15,6 +15,10 @@
 
 #define ASYNC_BUF_SIZE 4096*4
 
+#if !EPUB_OS(WINDOWS)
+# define memcpy_s(dst, dstLen, src, srcLen) memcpy(dst, src, srcLen)
+#endif
+
 EPUB3_BEGIN_NAMESPACE
 
 std::unique_ptr<thread_pool> FilterChain::_filterThreadPool(nullptr);
@@ -34,7 +38,7 @@ public:
 	FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters);
 	virtual ~FilterChainSyncStream() {}
 
-	virtual size_type BytesAvailable() const OVERRIDE
+	virtual size_type BytesAvailable() const _NOEXCEPT OVERRIDE
 	{
 		if (_needs_cache && _input->AtEnd()) {
 			return _cache.GetBufferSize();
@@ -42,11 +46,11 @@ public:
 			return _input->BytesAvailable();
 		}
 	}
-	virtual size_type SpaceAvailable() const OVERRIDE
+	virtual size_type SpaceAvailable() const _NOEXCEPT OVERRIDE
 	{
 		return 0;
 	}
-	virtual bool IsOpen() const OVERRIDE
+	virtual bool IsOpen() const _NOEXCEPT OVERRIDE
 	{
 		return _input->IsOpen();
 	}
@@ -113,14 +117,14 @@ ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, size_type 
 		void* filteredData = pair.first->FilterData(pair.second.get(), bytes, result, &filteredLen);
 		if (filteredData == nullptr || filteredLen == 0) {
 			if (filteredData != nullptr && filteredData != bytes)
-				delete[] filteredData;
+				delete[] reinterpret_cast<char*>(filteredData);
 			throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
 		}
 
 		if (filteredData != bytes)
 		{
 			::memcpy_s(bytes, len, filteredData, filteredLen);
-			delete[] filteredData;
+			delete[] reinterpret_cast<char*>(filteredData);
 		}
 
 		result = filteredLen;
@@ -369,14 +373,14 @@ ssize_t FilterChain::ChainLinkProcessor::FunnelBytes()
             void* filteredData = _filter->FilterData(_context.get(), buf, thisChunk, &filteredLen);
             if ( filteredData == nullptr || filteredLen == 0 ) {
 				if (filteredData != nullptr && filteredData != buf)
-					delete[] filteredData;
+					delete[] reinterpret_cast<char*>(filteredData);
                 throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
             }
 
             _output->WriteBytes(filteredData, filteredLen);
 
 			if (filteredData != buf)
-				delete[] filteredData;
+				delete[] reinterpret_cast<char*>(filteredData);
         }
         
         bytesToMove -= thisChunk;
