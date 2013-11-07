@@ -50,6 +50,7 @@ public:
 			m_components = o.m_components;
 			m_credentials = o.m_credentials;
 			m_promise = std::promise<Credentials>();
+            return *this;
 		}
     CredentialRequest& operator=(CredentialRequest&& o)
         {
@@ -104,9 +105,6 @@ private:
             {}
         Component(const Component& o)
             : m_type(o.m_type), m_title(o.m_title), m_secret(o.m_secret), m_default(o.m_default)
-            {}
-        Component(Component&& o)
-        : m_type(o.m_type), m_title(std::move(o.m_title)), m_secret(o.m_secret), m_default(std::move(o.m_default))
             {}
         ~Component() {}
         
