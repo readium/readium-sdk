@@ -427,16 +427,16 @@ private:
 	bool __is_spec_error_;
 	union
 	{
-		const std::system_error&		__system_error_;
-		const epub_spec_error&			__spec_error_;
+		const std::system_error*		__system_error_;
+		const epub_spec_error*			__spec_error_;
 	};
 
 public:
 	error_details(const std::system_error& __sysErr)
-		: __is_spec_error_(false), __system_error_(__sysErr)
+		: __is_spec_error_(false), __system_error_(&__sysErr)
 		{}
 	error_details(const epub_spec_error& __specErr)
-		: __is_spec_error_(true), __spec_error_(__specErr)
+		: __is_spec_error_(true), __spec_error_(&__specErr)
 		{}
 	~error_details() {}
 
@@ -454,51 +454,51 @@ public:
 
 	int code() const {
 		if (__is_spec_error_)
-			return __spec_error_.code().value();
+			return __spec_error_->code().value();
 		else
-			return __system_error_.code().value();
+			return __system_error_->code().value();
 	}
 	const char* message() const {
 		if (__is_spec_error_)
-			return __spec_error_.what();
+			return __spec_error_->what();
 		else
-			return __system_error_.what();
+			return __system_error_->what();
 	}
 
 	const std::error_category& category() const {
 		if (__is_spec_error_)
-			return __spec_error_.code().category();
+			return __spec_error_->code().category();
 		else 
-			return __system_error_.code().category();
+			return __system_error_->code().category();
 	}
 	
 	EPUBSpec epub_spec() const {
 		if (__is_spec_error_)
-			return __spec_error_.Specification();
+			return __spec_error_->Specification();
 		else
-			throw std::bad_cast("Attempt to get an EPUBSpec from a non-epub_spec_error exception");
+			throw std::logic_error("Attempt to get an EPUBSpec from a non-epub_spec_error exception");
 	}
 
 	ViolationSeverity severity() const {
 		if (__is_spec_error_)
-			return __spec_error_.Severity();
+			return __spec_error_->Severity();
 		else
-			throw std::bad_cast("Attempt to get a ViolationSeverity from a non-epub_spec_error exception");
+			throw std::logic_error("Attempt to get a ViolationSeverity from a non-epub_spec_error exception");
 	}
 
 	EPUBError epub_error_code() const {
 		if (__is_spec_error_)
-			return __spec_error_.SpecErrorCode();
+			return __spec_error_->SpecErrorCode();
 		else
-			throw std::bad_cast("Attempt to get an EPUBError from a non-epub_spec_error exception");
+			throw std::logic_error("Attempt to get an EPUBError from a non-epub_spec_error exception");
 	}
 
 	_NORETURN_
 	void throw_error() const {
 		if (__is_spec_error_)
-			throw __spec_error_;
+			throw *__spec_error_;
 		else
-			throw __system_error_;
+			throw *__system_error_;
 	}
 
 };

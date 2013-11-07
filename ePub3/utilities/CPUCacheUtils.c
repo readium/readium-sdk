@@ -8,7 +8,7 @@
 
 #include "CPUCacheUtils.h"
 
-int epub_sys_cache_control(int operation, void* start, size_t len)
+int epub_sys_cache_control(int operation, void* start, long len)
 {
     switch ( operation )
     {

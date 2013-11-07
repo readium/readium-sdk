@@ -6,11 +6,16 @@
 //  Copyright (c) 2013 The Readium Foundation and contributors. All rights reserved.
 //
 
+#include "epub3.h"
 #include "executor.h"
 #include <iostream>
 #include <future>
 
+#if EPUB_PLATFORM(MAC)
+#include <CoreFoundation/CoreFoundation.h>
+#elif EPUB_PLATFORM(WINRT)
 #include <ppltasks.h>
+#endif
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -367,19 +372,23 @@ void __thread_pool_impl_winrt::add_after(std::chrono::system_clock::duration rel
 #endif
 
 #if EPUB_PLATFORM(MAC)
-class __cf_clock
+template <typename _Rep, typename _Period>
+CFTimeInterval CFTimeIntervalFromDuration(std::chrono::duration<_Rep, _Period>& __d)
 {
-public:
-	typedef std::chrono::duration<CFTimeInterval>   duration;
-	typedef duration::rep                           rep;
-	typedef duration::period                        period;
-	typedef std::chrono::time_point<cf_clock>       time_point;
-	static const bool is_steady =                   false;
+    using namespace std::chrono;
+    typedef duration<CFTimeInterval> CFSeconds;
+    CFSeconds __cfs = duration_cast<CFSeconds>(__d);
+    return __cfs.count();
+}
 
-	static time_point   now()                               noexcept;
-	static time_t       to_time_t(const time_point& __t)    noexcept;
-	static time_point   from_time_t(const time_t& __t)      noexcept;
-};
+template <typename _Clock, typename _Duration = typename _Clock::duration>
+CFAbsoluteTime CFAbsoluteTimeFromTimePoint(std::chrono::time_point<_Clock, _Duration>& __t)
+{
+    using namespace std::chrono;
+    typedef duration<CFAbsoluteTime> CFSeconds;
+    CFSeconds __s1970 = duration_cast<CFSeconds>(__t.time_since_epoch());
+    return __s1970.count() + kCFAbsoluteTimeIntervalSince1970;
+}
 
 void main_thread_executor::add(closure_type closure)
 {
@@ -399,10 +408,10 @@ size_t main_thread_executor::num_pending_closures() const
 void main_thread_executor::add_at(std::chrono::system_clock::time_point abs_time, closure_type closure)
 {
 	using namespace std::chrono;
-	__cf_clock::time_point cfTime = time_point_cast<__cf_clock::time_point>(abs_time);
+    CFAbsoluteTime cfTime = CFAbsoluteTimeFromTimePoint(abs_time);
 
 	auto self = shared_from_this();
-	CFRunLoopTimerRef timer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault, cfTime.time_since_epoch().count(), 0, 0, ^(CFRunLoopTimerRef theTimer) {
+	CFRunLoopTimerRef timer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault, cfTime, 0.0, 0, 0, ^(CFRunLoopTimerRef theTimer) {
 		closure();
 		self->_num_closures--;
 	});
