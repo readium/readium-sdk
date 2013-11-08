@@ -22,6 +22,7 @@
 #include "nav_table.h"
 #include "xpath_wrangler.h"
 #include "package.h"
+#include "error_handler.h"
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -38,6 +39,28 @@ static __name_pair_t __name_pairs[1] = {
 };
 static std::map<string, bool> AllowedRootNodeNames(&__name_pairs[0], &__name_pairs[1]);
 #endif
+
+static void NCXNavLabelText(shared_ptr<xml::Node> navLabel, string& outString)
+{
+	auto textNode = navLabel->FirstElementChild();
+	string cName = textNode->Name();
+	while (bool(textNode) && cName != "Text") {
+		textNode = textNode->NextElementSibling();
+	}
+
+	if (bool(textNode))
+		outString = textNode->StringValue();
+	else
+		outString.clear();
+}
+static void NCXContentHref(shared_ptr<xml::Node> content, string& outString)
+{
+	xml::string val = content->AttributeValue((const char*)"src", (const char*)NCXNamespaceURI);
+	if (val.empty())
+		val = content->AttributeValue((const char*)"src", (const char*)"");
+
+	outString = val;
+}
 
 NavigationTable::NavigationTable(shared_ptr<Package>& owner, const string& sourceHref)
     : OwnedBy(owner), _type(), _title(), _sourceHref(sourceHref)
@@ -91,6 +114,82 @@ bool NavigationTable::ParseXML(shared_ptr<xml::Node> node)
     
     return true;
 }
+bool NavigationTable::ParseNCXNavMap(shared_ptr<xml::Node> node, const string& title)
+{
+	_type = "toc";
+	_title = title;
+
+	for (auto navPoint = node->FirstElementChild(); bool(navPoint); navPoint = navPoint->NextElementSibling())
+	{
+		string cName(navPoint->Name());
+		if (cName != "navPoint")
+		{
+			HandleError(EPUBError::NavElementUnexpectedType, "Found a non-navPoint element inside an NCX navMap");
+			continue;
+		}
+
+		LoadChildNavPoint(Ptr(), navPoint);
+	}
+
+	return true;
+}
+bool NavigationTable::ParseNCXPageList(shared_ptr<xml::Node> pNode)
+{
+	_type = "page-list";
+	_title = "Page List";	// TODO: localization
+	
+	for (auto sub = pNode->FirstElementChild(); bool(sub); sub = sub->NextElementSibling())
+	{
+		string cName(sub->Name());
+		if (cName != "pageTarget")
+		{
+			HandleError(EPUBError::NavElementUnexpectedType, "Found a non-pageTarget element inside an NCX pageList");
+			continue;
+		}
+
+		LoadChildNavPoint(Ptr(), sub);
+	}
+
+	return true;
+}
+bool NavigationTable::ParseNCXNavList(shared_ptr<xml::Node> pNode)
+{
+	
+
+	for (auto sub = pNode->FirstElementChild(); bool(sub); sub = sub->NextElementSibling())
+	{
+		string cName(sub->Name());
+		if (cName == "navLabel")
+		{
+			if (_title.empty())
+			{
+				NCXNavLabelText(sub, _title);
+				if (_title == "List of Illustrations")
+					_type = "loi";
+				else if (_title == "List of Tables")
+					_type = "lot";
+				else if (_title == "List of Figures")
+					_type = "lof";
+			}
+			else
+			{
+				HandleError(EPUBError::NavListElementInvalidChild, "Multiple navLabel elements within an NCX navList");
+			}
+
+			continue;
+		}
+
+		if (cName != "navTarget")
+		{
+			HandleError(EPUBError::NavElementUnexpectedType, "Found a non-pageTarget element inside an NCX pageList");
+			continue;
+		}
+
+		LoadChildNavPoint(Ptr(), sub);
+	}
+
+	return true;
+}
 
 void NavigationTable::LoadChildElements(shared_ptr<NavigationElement> pElement, shared_ptr<xml::Node> olNode)
 {
@@ -107,29 +206,32 @@ void NavigationTable::LoadChildElements(shared_ptr<NavigationElement> pElement, 
 
     for ( auto liNode : liNodes )
     {
-        auto childElement = BuildNavigationPoint(liNode);
+        auto childElement = BuildNCXNavigationPoint(liNode);
         if ( childElement )
         {
             pElement->AppendChild(childElement);
         }
     }
 }
+void NavigationTable::LoadChildNavPoint(shared_ptr<NavigationElement> pElement, shared_ptr<xml::Node> node)
+{
+	auto childElement = BuildNCXNavigationPoint(node);
+	if (childElement)
+		pElement->AppendChild(childElement);
+}
 
 shared_ptr<NavigationElement> NavigationTable::BuildNavigationPoint(shared_ptr<xml::Node> liNode)
 {
     auto elementPtr = CastPtr<NavigationElement>();
-    auto liChild = liNode->FirstChild();
+    auto liChild = liNode->FirstElementChild();
 
 	if ( !bool(liChild) )
 		return nullptr;
 
     auto point = NavigationPoint::New(elementPtr);
 
-    for ( ; bool(liChild); liChild = liChild->NextSibling() )
+    for ( ; bool(liChild); liChild = liChild->NextElementSibling() )
     {
-        if ( !liChild->IsElementNode() )
-            continue;
-
         string cName(liChild->Name());
 
         if ( cName == "a" )
@@ -149,6 +251,35 @@ shared_ptr<NavigationElement> NavigationTable::BuildNavigationPoint(shared_ptr<x
     }
 
     return point;
+}
+
+shared_ptr<NavigationElement> NavigationTable::BuildNCXNavigationPoint(shared_ptr<xml::Node> node)
+{
+	auto elementPtr = CastPtr<NavigationElement>();
+	auto point = NavigationPoint::New(elementPtr);
+
+	for (auto sub = node->FirstElementChild(); bool(sub); sub = sub->NextElementSibling())
+	{
+		string cName = sub->Name();
+		string tmp;
+
+		if (cName == "navLabel")
+		{
+			NCXNavLabelText(sub, tmp);
+			point->SetTitle(tmp);
+		}
+		else if (cName == "content")
+		{
+			NCXContentHref(sub, tmp);
+			point->SetContent(tmp);
+		}
+		else if (cName == "navPoint")
+		{
+			LoadChildNavPoint(point, sub);
+		}
+	}
+
+	return point;
 }
 
 EPUB3_END_NAMESPACE
