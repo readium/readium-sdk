@@ -35,6 +35,8 @@ ref class SpineItem;
 ref class CFI;
 ref class EncryptionInfo;
 
+interface class IContentModule;
+
 using ::Platform::String;
 using ::Windows::Foundation::Collections::IVectorView;
 using ::Windows::Foundation::IAsyncOperation;
@@ -93,6 +95,15 @@ public:
 	</result>
 	*/
 	IClosableStream^ ReadStreamAtPath(String^ path);
+
+	/**
+	<summary>
+		Gets/sets the ContentModule which created this container, if any.
+
+		Note that a Creator may only be set once. Any attempt to set another Creator will raise an exception.
+	</summary>
+	*/
+	property IContentModule^ Creator { IContentModule^ get(); void set(IContentModule^); }
 
 };
 

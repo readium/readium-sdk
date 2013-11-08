@@ -27,6 +27,7 @@
 #include <ePub3/package.h>
 #include <ePub3/utilities/utfstring.h>
 #include <ePub3/utilities/owned_by.h>
+#include <ePub3/content_module.h>
 #include <ePub3/xml/node.h>
 #include <vector>
 #include <future>
@@ -141,13 +142,26 @@ public:
     ///
     /// The underlying archive.
     ArchivePtr                      GetArchive()            const   { return _archive; }
-    
+
+	///
+	/// Returns the ContentModule which created this container, if any.
+	std::shared_ptr<ContentModule>	Creator()				const	{ return _creator; }
+
+	///
+	/// Asserts ownership of a Container from a ContentModule.
+	void							SetCreator(std::shared_ptr<ContentModule> creator)
+	{
+		if (bool(_creator))
+			throw std::runtime_error("Attempt to set a second Creator on a Container instance");
+		_creator = creator;
+	}
     
 protected:
     ArchivePtr						_archive;
     shared_ptr<xml::Document>		_ocf;
     PackageList						_packages;
     EncryptionList					_encryption;
+	std::shared_ptr<ContentModule>	_creator;
     
     ///
     /// Parses the file META-INF/encryption.xml into an EncryptionList.
