@@ -46,6 +46,9 @@
 #define XMLENCNamespaceURI "http://www.w3.org/2001/04/xmlenc#"
 #define XMLDSigNamespaceURI "http://www.w3.org/2000/09/xmldsig#"
 #define XHTMLNamespaceURI "http://www.w3.org/1999/xhtml"
+#define NCXNamespaceURI "http://www.daisy.org/z3986/2005/ncx/"
+
+#define NCXContentType "application/x-dtbncx+xml"
 
 EPUB3_BEGIN_NAMESPACE
 
