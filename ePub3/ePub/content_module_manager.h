@@ -41,7 +41,7 @@ public:
     // Registering Content Module implementations
     
     void
-    RegisterContentModule(std::unique_ptr<ContentModule>&& module,
+    RegisterContentModule(std::shared_ptr<ContentModule> module,
                           const string& name) _NOEXCEPT;
     
     ////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ private:
     static std::unique_ptr<ContentModuleManager>        s_instance;
     
     std::mutex                                          _mutex;
-    std::map<string, std::unique_ptr<ContentModule>>    _known_modules;
+    std::map<string, std::shared_ptr<ContentModule>>    _known_modules;
     
     friend class Container;
     

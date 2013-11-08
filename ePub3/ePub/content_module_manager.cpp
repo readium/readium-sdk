@@ -30,11 +30,11 @@ ContentModuleManager* ContentModuleManager::Instance() _NOEXCEPT
     }, &s_instance);
     return s_instance.get();
 }
-void ContentModuleManager::RegisterContentModule(std::unique_ptr<ContentModule>&& module,
+void ContentModuleManager::RegisterContentModule(std::shared_ptr<ContentModule> module,
                                                  const string& name) _NOEXCEPT
 {
     std::unique_lock<std::mutex>(_mutex);
-    _known_modules[name] = std::move(module);
+    _known_modules[name] = module;
 }
 
 void ContentModuleManager::DisplayMessage(const string& title, const string& message) _NOEXCEPT

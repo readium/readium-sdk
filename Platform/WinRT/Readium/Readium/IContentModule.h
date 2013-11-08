@@ -53,6 +53,11 @@ internal:
 		: _native(native)
 		{}
 
+	property const ::ePub3::UserAction& Native
+	{
+		const ::ePub3::UserAction& get() { return _native; }
+	}
+
 public:
 	virtual ~UserAction()
 		{}

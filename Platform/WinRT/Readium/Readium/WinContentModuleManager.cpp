@@ -33,96 +33,9 @@ using namespace ::Windows::Foundation;
 
 BEGIN_READIUM_API
 
-template <typename _Result, typename _NativeResult = _Result>
-static void __process_operation_completion(IAsyncOperation<_Result>^ operation, AsyncStatus status, std::promise<_NativeResult>& promise,
-	std::function<void()> process_result)
-{
-	if (status == AsyncStatus::Completed)
-	{
-		process_result();
-	}
-	else if (status == AsyncStatus::Error || operation->ErrorCode.Value != 0)
-	{
-		auto rt_exc = ref new COMException(operation->ErrorCode.Value);
-		promise.set_exception(std::make_exception_ptr(__WinRTException(rt_exc)));
-	}
-	else if (status == AsyncStatus::Canceled)
-	{
-		promise.set_exception(std::make_exception_ptr(std::system_error(std::make_error_code(std::errc::operation_canceled))));
-	}
-	else
-	{
-		promise.set_exception(std::make_exception_ptr(std::system_error(std::make_error_code(std::errc::state_not_recoverable))));
-	}
-}
-
-class __WinRTContentModule 
-	: public ::ePub3::ContentModule
-{
-private:
-	IContentModule^	__winrt_;
-
-public:
-	__WinRTContentModule(IContentModule^ __rt)
-		: __winrt_(__rt)
-		{}
-
-	virtual
-	std::future<ePub3::ContainerPtr>
-	ProcessFile(const ::ePub3::string& path, std::launch policy = std::launch::any)
-		{
-			auto op = __winrt_->ProcessFile(StringFromNative(path));
-			auto promise = new std::promise<::ePub3::ContainerPtr>();
-
-			op->Completed = ref new AsyncOperationCompletedHandler<Container^>([promise](IAsyncOperation<Container^>^ operation, AsyncStatus status) {
-				__process_operation_completion(operation, status, *promise, [operation, promise]() {
-					Container^ container = operation->GetResults();
-					if (container == nullptr)
-						promise->set_value(nullptr);
-					else
-						promise->set_value(container->NativeObject);
-				});
-				delete promise;
-			});
-
-			return promise->get_future();
-		}
-
-	//////////////////////////////////////////////
-	// Content Filters
-
-	virtual
-	void
-	RegisterContentFilters()
-		{
-			__winrt_->RegisterContentFilters();
-		}
-
-	//////////////////////////////////////////////
-	// User actions
-
-	virtual
-	std::future<bool>
-	ApproveUserAction(const ::ePub3::UserAction& action)
-		{
-			auto promise = new std::promise<bool>();
-			auto op = __winrt_->ApproveUserAction(ref new UserAction(action));
-
-			op->Completed = ref new AsyncOperationCompletedHandler<bool>([promise](IAsyncOperation<bool>^ operation, AsyncStatus status) {
-				__process_operation_completion(operation, status, *promise, [operation, promise]() {
-					promise->set_value(operation->GetResults());
-				});
-				delete promise;
-			});
-
-			return promise->get_future();
-		}
-
-};
-
 void ContentModuleManager::RegisterContentModule(IContentModule^ module, String^ name)
 {
-	::ePub3::ContentModuleManager::Instance()->RegisterContentModule(std::make_unique<__WinRTContentModule>(module), StringToNative(name));
+	::ePub3::ContentModuleManager::Instance()->RegisterContentModule(std::make_shared<__WinRTContentModule>(module), StringToNative(name));
 }
 
 void ContentModuleManager::DisplayMessage(String^ title, String^ message)
