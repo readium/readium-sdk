@@ -206,6 +206,8 @@ EPUB3_BEGIN_NAMESPACE
             // for (ManifestTable::const_iterator iter = manifestTable.begin(); iter != manifestTable.end(); iter++)
             // ManifestItemPtr item = iter->second; //shared_ptr<ManifestItem>
 
+            bool allFake = true;
+
             shared_ptr<SpineItem> spineItem = package->FirstSpineItem();
             while (spineItem != nullptr)
             {
@@ -220,6 +222,9 @@ EPUB3_BEGIN_NAMESPACE
                 item = item->MediaOverlay();
                 if (item == nullptr)
                 {
+                    SMILDataPtr smilData = std::make_shared<class SMILData>(sharedMe, nullptr, spineItem, 0);
+                    _smilDatas.push_back(smilData);
+
                     spineItem = spineItem->Next();
                     continue;
                 }
@@ -241,6 +246,8 @@ EPUB3_BEGIN_NAMESPACE
                         durationWholeMilliseconds = SmilClockValuesParser::ToWholeMilliseconds(itemDurationStr);
                         //printf("Media Overlays SMIL DURATION (milliseconds): %ld\n", (long) durationWholeMilliseconds);
 
+                        allFake = false;
+
                         SMILDataPtr smilData = std::make_shared<class SMILData>(sharedMe, item, spineItem, durationWholeMilliseconds);
                         _smilDatas.push_back(smilData);
 
@@ -248,6 +255,9 @@ EPUB3_BEGIN_NAMESPACE
                     }
                     catch (const std::invalid_argument& exc)
                     {
+                        SMILDataPtr smilData = std::make_shared<class SMILData>(sharedMe, nullptr, spineItem, 0);
+                        _smilDatas.push_back(smilData);
+
                         HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str(item->Href(), " -- media:duration=", itemDurationStr, " => invalid SMIL Clock Value syntax"));
                     }
                     //catch (...)
@@ -276,6 +286,38 @@ EPUB3_BEGIN_NAMESPACE
             else
             {
                 //printf("Media Overlays SMIL DURATION check okay.\n");
+            }
+
+            if (allFake)
+            {
+                for (int i = 0; i < _smilDatas.size(); i++)
+                {
+                    shared_ptr<SMILData> o = _smilDatas[i];
+                    //TODO: o->releaseMemory() ?
+                }
+
+                //_smilDatas.erase(_smilDatas.begin(), _smilDatas.end());
+                _smilDatas.clear();
+            }
+            else
+            {
+                for (int i = 0; i < _smilDatas.size(); i++)
+                {
+                    shared_ptr<SMILData> data = _smilDatas.at(i);
+                    if (data->SmilManifestItem() != nullptr)
+                    {
+                        continue;
+                    }
+                    printf("SMIL placeholder for blank page: %s\n", data->XhtmlSpineItem()->ManifestItem()->Href().c_str());
+
+                    data->_root = new SMILData::Sequence(nullptr, "", "", nullptr, "", data);
+
+                    SMILData::Sequence * sequence = const_cast<SMILData::Sequence *>(data->Body());
+
+                    SMILData::Parallel *par = new SMILData::Parallel(sequence, "", data);
+
+                    SMILData::Text *text = new SMILData::Text(par, data->XhtmlSpineItem()->ManifestItem()->Href(), "", nullptr, data);
+                }
             }
         }
 
@@ -402,6 +444,12 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 for (int i = 0; i < _smilDatas.size(); i++)
                 {
                     shared_ptr<SMILData> data = _smilDatas.at(i);
+
+                    if (data->SmilManifestItem() == nullptr)
+                    {
+                        continue;
+                    }
+
                     if (data->SmilManifestItem()->Identifier() == id)
                     {
                         auto seq = data->Body();
@@ -410,6 +458,10 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                             continue;
                         }
 
+                        if (data->XhtmlSpineItem()->ManifestItem()->Identifier() != spineItem->ManifestItem()->Identifier())
+                        {
+                            printf("XHTML spine item's manifest item ID mismatch?!\n");
+                        }
                         smilData = data;
                         break;
                     }
