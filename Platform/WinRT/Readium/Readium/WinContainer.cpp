@@ -25,6 +25,9 @@
 #include "Streams.h"
 #include "WinManifest.h"
 #include "CollectionBridges.h"
+#include "IContentModule.h"
+#include "PluginMaps.h"
+#include "WinContentModuleManager.h"
 
 #include <ppltasks.h>
 
@@ -79,6 +82,33 @@ EncryptionInfo^ Container::EncryptionInfoForPath(String^ path)
 IClosableStream^ Container::ReadStreamAtPath(String^ path)
 {
 	return ref new Stream(_native->ReadStreamAtPath(StringToNative(path)));
+}
+
+IContentModule^ Container::Creator::get()
+{
+	std::shared_ptr<ePub3::ContentModule> __n = _native->Creator();
+	auto __w = std::dynamic_pointer_cast<__WinRTContentModule>(__n);
+	if (bool(__w))
+		return __w->__rtObj();
+
+	return ref new ContentModuleWrapper(__n);
+}
+void Container::Creator::set(IContentModule^ module)
+{
+	try
+	{
+		_native->SetCreator(std::make_shared<__WinRTContentModule>(module));
+	}
+	catch (std::exception& exc)
+	{
+		typedef std::wstring_convert<std::codecvt_utf8<wchar_t>>	_Converter;
+		std::wstring wstr = _Converter().from_bytes(exc.what());
+		throw ref new ::Platform::COMException(E_ILLEGAL_METHOD_CALL, ::Platform::StringReference(wstr.c_str()));
+	}
+	catch (...)
+	{
+		throw ref new ::Platform::COMException(E_ILLEGAL_METHOD_CALL, TEXT("Container::Creator::set()"));
+	}
 }
 
 END_READIUM_API
