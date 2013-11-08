@@ -840,7 +840,7 @@ bool Package::Unpack()
 		__m["opf"] = OPFNamespace;
 		XPathWrangler xpath(_opf, __m);
 #endif
-		auto tocNames = xpath.Strings("/opf:package/opf:spine/@toc/text()");
+		auto tocNames = xpath.Strings("/opf:package/opf:spine/@toc");
 
 		if (tocNames.empty())
 		{

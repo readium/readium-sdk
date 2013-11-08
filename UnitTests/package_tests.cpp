@@ -634,10 +634,9 @@ TEST_CASE("Package should have a Unique ID, Package ID, Type, Version, and a Bas
 TEST_CASE("Packages with no version should raise a spec error", "")
 {
     EPUBError triggeredError = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr != nullptr )
-            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+    SetErrorHandler([&](const error_details& err){
+        if (err.is_spec_error())
+            triggeredError = err.epub_error_code();
         return true;
     });
     
@@ -654,10 +653,9 @@ TEST_CASE("Packages with no version should raise a spec error", "")
 TEST_CASE("Packages with no title metadata should raise a spec error", "")
 {
     EPUBError triggeredError = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr != nullptr )
-            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+    SetErrorHandler([&](const error_details& err){
+        if (err.is_spec_error())
+            triggeredError = err.epub_error_code();
         return true;
     });
     
@@ -674,10 +672,9 @@ TEST_CASE("Packages with no title metadata should raise a spec error", "")
 TEST_CASE("Packages with no identifier should raise a spec error", "")
 {
     EPUBError triggeredError = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr != nullptr )
-            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+    SetErrorHandler([&](const error_details& err){
+        if (err.is_spec_error())
+            triggeredError = err.epub_error_code();
         return true;
     });
     
@@ -694,10 +691,9 @@ TEST_CASE("Packages with no identifier should raise a spec error", "")
 TEST_CASE("Packages with no language metadata should raise a spec error", "")
 {
     EPUBError triggeredError = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr != nullptr )
-            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+    SetErrorHandler([&](const error_details& err){
+        if (err.is_spec_error())
+            triggeredError = err.epub_error_code();
         return true;
     });
     
@@ -714,10 +710,9 @@ TEST_CASE("Packages with no language metadata should raise a spec error", "")
 TEST_CASE("Packages with no midification date should raise a spec error", "")
 {
     EPUBError triggeredError = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr != nullptr )
-            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+    SetErrorHandler([&](const error_details& err){
+        if (err.is_spec_error())
+            triggeredError = err.epub_error_code();
         return true;
     });
     
@@ -734,10 +729,9 @@ TEST_CASE("Packages with no midification date should raise a spec error", "")
 TEST_CASE("Packages with an invalid unique-id reference should raise a spec error", "")
 {
     EPUBError triggeredError = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr != nullptr )
-            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+    SetErrorHandler([&](const error_details& err){
+        if (err.is_spec_error())
+            triggeredError = err.epub_error_code();
         return true;
     });
     
@@ -754,10 +748,9 @@ TEST_CASE("Packages with an invalid unique-id reference should raise a spec erro
 TEST_CASE("'refines' should contain a valid IRI", "")
 {
     EPUBError triggeredError = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr != nullptr )
-            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+    SetErrorHandler([&](const error_details& err){
+        if (err.is_spec_error())
+            triggeredError = err.epub_error_code();
         return true;
     });
     
@@ -774,10 +767,9 @@ TEST_CASE("'refines' should contain a valid IRI", "")
 TEST_CASE("'refine' should contain a relative IRI", "")
 {
     EPUBError triggeredError = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr != nullptr )
-            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+    SetErrorHandler([&](const error_details& err){
+        if (err.is_spec_error())
+            triggeredError = err.epub_error_code();
         return true;
     });
     
@@ -794,10 +786,9 @@ TEST_CASE("'refine' should contain a relative IRI", "")
 TEST_CASE("'refine' IRI should reference an existing item", "")
 {
     EPUBError triggeredError = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr != nullptr )
-            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+    SetErrorHandler([&](const error_details& err){
+        if (err.is_spec_error())
+            triggeredError = err.epub_error_code();
         return true;
     });
     
@@ -814,10 +805,9 @@ TEST_CASE("'refine' IRI should reference an existing item", "")
 TEST_CASE("Spine 'idref' should reference an existing manifest item", "")
 {
     EPUBError triggeredError = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr != nullptr )
-            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+    SetErrorHandler([&](const error_details& err){
+        if (err.is_spec_error())
+            triggeredError = err.epub_error_code();
         return true;
     });
     
@@ -834,10 +824,9 @@ TEST_CASE("Spine 'idref' should reference an existing manifest item", "")
 TEST_CASE("Should raise an error if the Metadata is out of place", "")
 {
     EPUBError triggeredError = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr != nullptr )
-            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+    SetErrorHandler([&](const error_details& err){
+        if (err.is_spec_error())
+            triggeredError = err.epub_error_code();
         return true;
     });
     
@@ -854,10 +843,9 @@ TEST_CASE("Should raise an error if the Metadata is out of place", "")
 TEST_CASE("Should raise an error if the Manifest is out of place", "")
 {
     EPUBError triggeredError = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr != nullptr )
-            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+    SetErrorHandler([&](const error_details& err){
+        if (err.is_spec_error())
+            triggeredError = err.epub_error_code();
         return true;
     });
     
@@ -874,10 +862,9 @@ TEST_CASE("Should raise an error if the Manifest is out of place", "")
 TEST_CASE("Should raise an error if the spine is out of place", "")
 {
     EPUBError triggeredError = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr != nullptr )
-            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+    SetErrorHandler([&](const error_details& err){
+        if (err.is_spec_error())
+            triggeredError = err.epub_error_code();
         return true;
     });
     
@@ -894,10 +881,9 @@ TEST_CASE("Should raise an error if the spine is out of place", "")
 TEST_CASE("Should raise an error if a spine item doesn't reference a content item", "")
 {
     EPUBError triggeredError = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr != nullptr )
-            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+    SetErrorHandler([&](const error_details& err){
+        if (err.is_spec_error())
+            triggeredError = err.epub_error_code();
         return true;
     });
     
@@ -914,10 +900,9 @@ TEST_CASE("Should raise an error if a spine item doesn't reference a content ite
 TEST_CASE("Should be happy of a spine item only references a content item via the fallback chain", "")
 {
     EPUBError triggeredError = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr != nullptr )
-            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+    SetErrorHandler([&](const error_details& err){
+        if (err.is_spec_error())
+            triggeredError = err.epub_error_code();
         return true;
     });
     
@@ -934,10 +919,9 @@ TEST_CASE("Should be happy of a spine item only references a content item via th
 TEST_CASE("Should raise an error if a fallback chain contains circular references", "")
 {
     EPUBError triggeredError = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr != nullptr )
-            triggeredError = static_cast<EPUBError>(epubErr->code().value());
+    SetErrorHandler([&](const error_details& err){
+        if (err.is_spec_error())
+            triggeredError = err.epub_error_code();
         return true;
     });
     

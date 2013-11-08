@@ -207,7 +207,7 @@ void serial_executor::add(closure_type closure)
 #pragma mark -
 #endif
 
-__thread_pool_impl_stdcpp::__thread_pool_impl_stdcpp(int num_threads) : _queue(), _timed_queue(), _threads(), _timed_addition_thread(&__thread_pool_impl_stdcpp::_RunTimer, this), _jobs_in_flight(0), _mutex(), _exiting(false), _jobs_ready(), _timers_updated()
+__thread_pool_impl_stdcpp::__thread_pool_impl_stdcpp(int num_threads) : _queue(), _timed_queue(), _threads(), _jobs_in_flight(0), _mutex(), _exiting(false), _jobs_ready(), _timers_updated(), _timed_addition_thread(&__thread_pool_impl_stdcpp::_RunTimer, this)
 {
     if ( num_threads < 1 )
         num_threads = std::thread::hardware_concurrency();
@@ -220,7 +220,9 @@ __thread_pool_impl_stdcpp::__thread_pool_impl_stdcpp(int num_threads) : _queue()
 }
 __thread_pool_impl_stdcpp::~__thread_pool_impl_stdcpp()
 {
+    _mutex.lock();
     _exiting = true;
+    _mutex.unlock();
     
     // wake up all threads -- any that are waiting will see _exiting and exit immediately
     _jobs_ready.notify_all();
@@ -284,6 +286,8 @@ void __thread_pool_impl_stdcpp::_RunTimer()
     do
     {
         std::unique_lock<std::mutex> lk(_mutex);
+        if (_exiting)
+            break;
         
         std::cv_status status = std::cv_status::no_timeout;
         if ( _timed_queue.empty() )
