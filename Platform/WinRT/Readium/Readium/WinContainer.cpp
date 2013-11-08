@@ -44,9 +44,12 @@ Container::Container(::ePub3::ContainerPtr native) : _native(native)
 IAsyncOperation<Container^>^ Container::OpenContainer(IStorageFile^ file)
 {
 	return create_async([file]() -> Container^ {
-		auto native = ::ePub3::Container::OpenContainer(StringToNative(file->Path));
-		return Wrapper(native);
+		return OpenContainerSync(file);
 	});
+}
+Container^ Container::OpenContainerSync(IStorageFile^ file)
+{
+	return Wrapper(::ePub3::Container::OpenContainerSync(StringToNative(file->Path)));
 }
 
 IVectorView<String^>^ Container::PackageLocations()

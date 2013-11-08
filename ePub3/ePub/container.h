@@ -89,7 +89,7 @@ public:
     bool            Open(const string& path);
     
     ///
-    /// Creates and returns a new Container instance.
+    /// Creates and returns a new Container instance by calling OpenContainerAsync() and blocking.
     static ContainerPtr
         OpenContainer(const string& path);
     
@@ -97,6 +97,11 @@ public:
     /// Asynchronously returns a new Container instance.
     static std::future<ContainerPtr>
         OpenContainerAsync(const string& path, std::launch policy = std::launch::any);
+
+	///
+	/// Synchronously creates a new container. Consider this internal, please.
+	static ContainerPtr
+		OpenContainerSync(const string& path);
     
     virtual         ~Container();
     
