@@ -224,6 +224,7 @@ void AsyncByteStream::InitAsyncHandler()
                     
                     // wait a bit and try again
                     std::this_thread::sleep_for(kTickLen);
+                    continue;
                 }
                 
                 // by definition not an empty runloop
