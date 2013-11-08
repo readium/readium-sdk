@@ -124,17 +124,17 @@ std::future<ContainerPtr> Container::OpenContainerAsync(const string& path, std:
     if (result.wait_for(std::chrono::system_clock::duration(0)) == std::future_status::ready)
     {
         if (result.get().get() == nullptr)
-        {
-            result = std::async(policy, [path]() -> ContainerPtr {
-                ContainerPtr container = Container::New();
-                if (container->Open(path) == false)
-                    return nullptr;
-                return container;
-            });
-        }
+            result = std::async(policy, &Container::OpenContainerSync, path);
     }
     
     return result;
+}
+ContainerPtr Container::OpenContainerSync(const string& path)
+{
+	ContainerPtr container = Container::New();
+	if (container->Open(path) == false)
+		return nullptr;
+	return container;
 }
 Container::PathList Container::PackageLocations() const
 {

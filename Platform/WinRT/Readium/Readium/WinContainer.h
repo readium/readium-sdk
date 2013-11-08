@@ -54,6 +54,7 @@ public:
 	virtual ~Container() {}
 
 	static IAsyncOperation<Container^>^ OpenContainer(IStorageFile^ file);
+	static Container^ OpenContainerSync(IStorageFile^ file);
 
 	/// ePub-relative paths for all packages
 	IVectorView<String^>^ PackageLocations();
