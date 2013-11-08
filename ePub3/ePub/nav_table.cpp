@@ -44,7 +44,7 @@ static void NCXNavLabelText(shared_ptr<xml::Node> navLabel, string& outString)
 {
 	auto textNode = navLabel->FirstElementChild();
 	string cName = textNode->Name();
-	while (bool(textNode) && cName != "Text") {
+	while (bool(textNode) && cName != "text") {
 		textNode = textNode->NextElementSibling();
 	}
 

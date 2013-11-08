@@ -49,9 +49,8 @@ TEST_CASE("CFIs should be constructable from valid strings", "")
     REQUIRE_THROWS_AS(CFI("Henry Fitzwilliam"), epub_spec_error);
     
     EPUBError expectedErr = EPUBError::NoError;
-    SetErrorHandler([&](const std::runtime_error& err){
-        const epub_spec_error* epubErr = dynamic_cast<const epub_spec_error*>(&err);
-        if ( epubErr->code().value() == int(expectedErr) )
+    SetErrorHandler([&](const error_details& err){
+        if ( err.is_spec_error() && err.epub_error_code() == expectedErr )
             return false;
         return true;
     });

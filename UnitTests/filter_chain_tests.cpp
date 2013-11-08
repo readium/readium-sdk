@@ -202,8 +202,8 @@ TEST_CASE("Filters apply automatically", "")
     // run until done
     runloop->Run();
     
-    std::cout << "Read filtered data:" << std::endl << std::endl;
-    std::cout << output << std::endl;
+//    std::cout << "Read filtered data:" << std::endl << std::endl;
+//    std::cout << output << std::endl;
     
     string expected(kROT13Content);
     REQUIRE(output == expected);
