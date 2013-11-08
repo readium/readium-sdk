@@ -260,9 +260,15 @@ protected:
     shared_ptr<SpineItem>   ConfirmOrCorrectSpineItemQualifier(shared_ptr<SpineItem> pItem, CFI::Component* pComponent) const;
     
     ///
-    /// Loads navigation tables from a given manifest item (which has the `"nav"` property).
+    /// Loads navigation tables from a given manifest item (which has the `"nav"` property) or one referencing an NCX document.
     static NavigationList   NavTablesFromManifestItem(shared_ptr<PackageBase> owner, shared_ptr<ManifestItem> pItem);
 
+private:
+	// these are only called by NavTablesFromManifestItem()
+	static NavigationList	_LoadEPUB3NavTablesFromManifestItem(shared_ptr<Package> owner, shared_ptr<ManifestItem> pItem, shared_ptr<xml::Document> doc);
+	static NavigationList	_LoadNCXNavTablesFromManifestItem(shared_ptr<Package> owner, shared_ptr<ManifestItem> pItem, shared_ptr<xml::Document> doc);
+
+protected:
 #if EPUB_COMPILER_SUPPORTS(CXX_DEFAULT_TEMPLATE_ARGS)
     template <class _Tp, class = typename std::enable_if
                             <

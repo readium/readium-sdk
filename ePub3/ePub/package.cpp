@@ -219,35 +219,89 @@ NavigationList PackageBase::NavTablesFromManifestItem(shared_ptr<PackageBase> ow
     if ( !bool(doc) )
         return NavigationList();
     
-    // find each <nav> node
+	if (pItem->MediaType() == NCXContentType)
+		return _LoadNCXNavTablesFromManifestItem(sharedPkg, pItem, doc);
+	else
+		return _LoadEPUB3NavTablesFromManifestItem(sharedPkg, pItem, doc);
+}
+NavigationList PackageBase::_LoadEPUB3NavTablesFromManifestItem(PackagePtr sharedPkg, ManifestItemPtr pItem, shared_ptr<xml::Document> doc)
+{
+	// find each <nav> node
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
 	XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"html", XHTMLNamespaceURI}}); // goddamn I love C++11 initializer list constructors
 #else
-    XPathWrangler::NamespaceList __m;
-    __m["epub"] = ePub3NamespaceURI;
-    XPathWrangler xpath(doc, __m);
+	XPathWrangler::NamespaceList __m;
+	__m["epub"] = ePub3NamespaceURI;
+	XPathWrangler xpath(doc, __m);
 #endif
-    xpath.NameDefaultNamespace("html");
-    
-    xml::NodeSet nodes = xpath.Nodes("//html:nav");
-    
-    NavigationList tables;
-    for ( auto navNode : nodes )
-    {
-        auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
-        if ( navTablePtr->ParseXML(navNode) )
-            tables.push_back(navTablePtr);
-    }
-    
-    // now look for any <dl> nodes with an epub:type of "glossary"
-    nodes = xpath.Nodes("//html:dl[epub:type='glossary']");
+	xpath.NameDefaultNamespace("html");
+
+	xml::NodeSet nodes = xpath.Nodes("//html:nav");
+
+	NavigationList tables;
+	for (auto navNode : nodes)
+	{
+		auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
+		if (navTablePtr->ParseXML(navNode))
+			tables.push_back(navTablePtr);
+	}
+
+	// now look for any <dl> nodes with an epub:type of "glossary"
+	nodes = xpath.Nodes("//html:dl[epub:type='glossary']");
 	for (auto node : nodes)
 	{
 		auto glosPtr = Glossary::New(node, sharedPkg);
 		tables.push_back(glosPtr);
 	}
-    
-    return tables;
+
+	return tables;
+}
+NavigationList PackageBase::_LoadNCXNavTablesFromManifestItem(PackagePtr sharedPkg, ManifestItemPtr pItem, shared_ptr<xml::Document> doc)
+{
+	// find each <nav> node
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+	XPathWrangler xpath(doc, { { "ncx", NCXNamespaceURI} }); // goddamn I love C++11 initializer list constructors
+#else
+	XPathWrangler::NamespaceList __m;
+	__m["ncx"] = NCXNamespaceURI;
+	XPathWrangler xpath(doc, __m);
+#endif
+	xpath.NameDefaultNamespace("ncx");
+
+	auto titles = xpath.Strings("/ncx:ncx/ncx:docTitle/ncx:text/text()");
+	string title;
+	if (!titles.empty())
+		title = titles[0];
+
+	auto nodes = xpath.Nodes("/ncx:ncx/ncx:navMap");
+
+	NavigationList tables;
+	if (!nodes.empty())
+	{
+		auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
+		if (navTablePtr->ParseNCXNavMap(nodes[0], title))
+			tables.push_back(navTablePtr);
+	}
+
+	// now look for any <pageList> nodes
+	nodes = xpath.Nodes("/ncx:ncx/ncx:pageList");
+	if (!nodes.empty())
+	{
+		auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
+		if (navTablePtr->ParseNCXPageList(nodes[0]))
+			tables.push_back(navTablePtr);
+	}
+
+	// now any <navList> nodes
+	nodes = xpath.Nodes("/ncx:ncx/ncx:navList");
+	for (auto node : nodes)
+	{
+		auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
+		if (navTablePtr->ParseNCXNavList(node))
+			tables.push_back(navTablePtr);
+	}
+
+	return tables;
 }
 
 #if 0
@@ -283,6 +337,7 @@ bool Package::Unpack()
     rootName.tolower();
 	bool isEPUB3 = true;
 	string versionStr;
+	double version = 0.0;
     
     if ( rootName != "package" )
     {
@@ -296,7 +351,8 @@ bool Package::Unpack()
     }
 	else
 	{
-		if (versionStr < "3.0")
+		version = std::stod(versionStr.stl_str());
+		if (version < 3.0)
 			isEPUB3 = false;
 	}
     
@@ -748,32 +804,93 @@ bool Package::Unpack()
     }
     catch (...)
     {
-        return false;
+		return false;
     }
     
     // now the navigation tables
-    for ( auto item : _manifest )
-    {
-        if ( !item.second->HasProperty(ItemProperties::Navigation) )
-            continue;
-        
-        NavigationList tables = NavTablesFromManifestItem(sharedMe, item.second);
-        for ( auto& table : tables )
-        {
-            // have to dynamic_cast these guys to get the right pointer type
-            NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
+	if (isEPUB3)
+	{
+		// look for EPUB3 navigation document(s)
+		for ( auto item : _manifest )
+		{
+			if ( !item.second->HasProperty(ItemProperties::Navigation) )
+	            continue;
+			
+			NavigationList tables = NavTablesFromManifestItem(sharedMe, item.second);
+			for ( auto& table : tables )
+			{
+				// have to dynamic_cast these guys to get the right pointer type
+				NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
-            _navigation.emplace(navTable->Type(), navTable);
+				_navigation.emplace(navTable->Type(), navTable);
 #else
-            _navigation[navTable->Type()] = navTable;
+				_navigation[navTable->Type()] = navTable;
 #endif
-        }
-    }
+			}
+		}
+	}
 
-    //std::weak_ptr<Package> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy()
-    _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
-    _mediaOverlays->Initialize();
+	if (_navigation.empty())
+	{
+		// look for EPUB2 NCX file
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+		XPathWrangler xpath(_opf, { { "opf", OPFNamespace } });
+#else
+		XPathWrangler::NamespaceList __m;
+		__m["opf"] = OPFNamespace;
+		XPathWrangler xpath(_opf, __m);
+#endif
+		auto tocNames = xpath.Strings("/opf:package/opf:spine/@toc/text()");
 
+		if (tocNames.empty())
+		{
+			HandleError(EPUBError::OPFNoNavDocument);
+		}
+		else
+		{
+			try
+			{
+                _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
+                _mediaOverlays->Initialize();
+
+                //std::weak_ptr<Package> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy()
+                _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
+                _mediaOverlays->Initialize();
+                
+				ManifestItemPtr tocItem = ManifestItemWithID(tocNames[0]);
+				if (!bool(tocItem))
+					throw EPUBError::OPFNoNavDocument;
+
+				NavigationList tables = NavTablesFromManifestItem(sharedMe, tocItem);
+				for (auto& table : tables)
+				{
+					// have to dynamic_cast these guys to get the right pointer type
+					NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+					_navigation.emplace(navTable->Type(), navTable);
+#else
+					_navigation[navTable->Type()] = navTable;
+#endif
+				}
+			}
+			catch (std::exception& exc)
+			{
+				std::cerr << "Exception locating or processing NCX navigation document: " << exc.what() << std::endl;
+				throw;
+			}
+			catch (EPUBError errCode)
+			{
+				// a 'break'-style mechanism here
+				// the error handler will determine if it's safe to continue
+				HandleError(errCode);
+			}
+			catch (...)
+			{
+				HandleError(EPUBError::OPFNoNavDocument);
+			}
+		}
+	}
+    
     // lastly, let's set the media support information...
     InitMediaSupport();
     // ...and get our filter chain set up
