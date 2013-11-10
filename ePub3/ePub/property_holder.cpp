@@ -152,86 +152,144 @@ void PropertyHolder::ErasePropertyAt(size_type idx)
     pos += idx;
     _properties.erase(pos);
 }
-bool PropertyHolder::ContainsProperty(DCType type) const
+bool PropertyHolder::ContainsProperty(DCType type, bool lookupParents) const
 {
     IRI iri = IRIForDCType(type);
-    return ContainsProperty(iri);
+    return ContainsProperty(iri, lookupParents);
 }
-bool PropertyHolder::ContainsProperty(const IRI& iri) const
+bool PropertyHolder::ContainsProperty(const IRI& iri, bool lookupParents) const
 {
     for ( auto &i : _properties )
     {
         if ( i->PropertyIdentifier() == iri )
             return true;
     }
-    
-    auto parent = _parent.lock();
-    if ( parent )
-        return parent->ContainsProperty(iri);
+
+    if (lookupParents)
+    {
+        auto parent = _parent.lock();
+        if ( parent )
+            return parent->ContainsProperty(iri, lookupParents);
+    }
     
     return false;
 }
-bool PropertyHolder::ContainsProperty(const string& reference, const string& prefix) const
+bool PropertyHolder::ContainsProperty(const string& reference, const string& prefix, bool lookupParents) const
 {
     IRI iri = MakePropertyIRI(reference, prefix);
     if ( iri.IsEmpty() )
         return false;
-    return ContainsProperty(iri);
+    return ContainsProperty(iri, lookupParents);
 }
-const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(DCType type) const
+bool PropertyHolder::ContainsProperty(DCType type) const
+{
+	return ContainsProperty(type, true);
+}
+
+bool PropertyHolder::ContainsProperty(const IRI& iri) const
+{
+	return ContainsProperty(iri, true);
+}
+
+bool PropertyHolder::ContainsProperty(const string& reference, const string& prefix) const
+{
+	return ContainsProperty(reference, prefix, true);
+}
+
+const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(DCType type, bool lookupParents) const
 {
     IRI iri = IRIForDCType(type);
-    return PropertiesMatching(iri);
+    return PropertiesMatching(iri, lookupParents);
 }
-const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(const IRI& iri) const
+const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(const IRI& iri, bool lookupParents) const
 {
     PropertyList output;
     BuildPropertyList(output, iri);
-    
-    auto parent = _parent.lock();
-    if ( parent )
-    {
-        //parent->BuildPropertyList(output, iri);
 
-        PropertyHolder::PropertyList pList = parent->PropertiesMatching(iri);
-        output.insert(output.end(), pList.begin(), pList.end());
+    if (lookupParents)
+    {
+        auto parent = _parent.lock();
+        if ( parent )
+        {
+            //parent->BuildPropertyList(output, iri);
+
+            PropertyHolder::PropertyList pList = parent->PropertiesMatching(iri, lookupParents);
+            output.insert(output.end(), pList.begin(), pList.end());
+        }
     }
-    
+
     return output;
 }
-const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(const string& reference, const string& prefix) const
+const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(const string& reference, const string& prefix, bool lookupParents) const
 {
     IRI iri = MakePropertyIRI(reference, prefix);
     if ( iri.IsEmpty() )
         return PropertyList();
-    return PropertiesMatching(iri);
+    return PropertiesMatching(iri, lookupParents);
 }
-PropertyPtr PropertyHolder::PropertyMatching(DCType type) const
+
+
+const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(DCType type) const
+{
+	return PropertiesMatching(type, true);
+}
+
+const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(const IRI& iri) const
+{
+	return PropertiesMatching(iri, true);
+}
+
+const PropertyHolder::PropertyList PropertyHolder::PropertiesMatching(const string& reference, const string& prefix) const
+{
+	return PropertiesMatching(reference, prefix, true);
+}
+
+PropertyPtr PropertyHolder::PropertyMatching(DCType type, bool lookupParents) const
 {
     IRI iri = IRIForDCType(type);
-    return PropertyMatching(iri);
+    return PropertyMatching(iri, lookupParents);
 }
-PropertyPtr PropertyHolder::PropertyMatching(const IRI& iri) const
+PropertyPtr PropertyHolder::PropertyMatching(const IRI& iri, bool lookupParents) const
 {
     for ( auto &i : _properties )
     {
         if ( i->PropertyIdentifier() == iri )
             return i;
     }
-    
-    auto parent = _parent.lock();
-    if ( parent )
-        return parent->PropertyMatching(iri);
-    
+
+    if (lookupParents)
+    {
+        auto parent = _parent.lock();
+        if ( parent )
+            return parent->PropertyMatching(iri, lookupParents);
+    }
+
     return nullptr;
 }
-PropertyPtr PropertyHolder::PropertyMatching(const string& reference, const string& prefix) const
+PropertyPtr PropertyHolder::PropertyMatching(const string& reference, const string& prefix, bool lookupParents) const
 {
     IRI iri = MakePropertyIRI(reference, prefix);
     if ( iri.IsEmpty() )
         return false;
-    return PropertyMatching(iri);
+    return PropertyMatching(iri, lookupParents);
 }
+
+
+PropertyPtr PropertyHolder::PropertyMatching(DCType type) const
+{
+	return PropertyMatching(type, true);
+}
+
+PropertyPtr PropertyHolder::PropertyMatching(const IRI& iri) const
+{
+	return PropertyMatching(iri, true);
+}
+
+PropertyPtr PropertyHolder::PropertyMatching(const string& reference, const string& prefix) const
+{
+	return PropertyMatching(reference, prefix, true);
+}
+
 void PropertyHolder::RegisterPrefixIRIStem(const string &prefix, const string &iriStem)
 {
     _vocabularyLookup[prefix] = iriStem;

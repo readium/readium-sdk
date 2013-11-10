@@ -40,6 +40,7 @@
 #include <ePub3/media_support_info.h>
 #include <ePub3/property_holder.h>
 #include <ePub3/utilities/xml_identifiable.h>
+//#include "media-overlays_smil_model.h"
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -50,6 +51,7 @@ class ByteStream;
 class Container;
 class PackageBase;
 class Package;
+class MediaOverlaysSmilModel;
 
 typedef shared_ptr<Package>     PackagePtr;
 
@@ -135,7 +137,7 @@ public:
     ///
     /// Returns an immutable reference to the map of navigation tables.
     const NavigationMap&    NavigationTables()      const       { return _navigation; }
-    
+
     /// @}
     
     /// @{
@@ -234,7 +236,8 @@ protected:
     ContentHandlerMap       _contentHandlers;   ///< All installed content handlers, indexed by media-type.
     shared_ptr<SpineItem>   _spine;             ///< The first item in the spine (SpineItems are a linked list).
     XMLIDLookup             _xmlIDLookup;       ///< Lookup table for all items with XML ID values.
-    
+
+protected:
     // used to verify/correct CFIs
     uint32_t                _spineCFIIndex;     ///< The CFI index for the `<spine>` element in the package document.
     
@@ -274,6 +277,11 @@ protected:
 #endif
         }
     }
+
+protected:
+    shared_ptr<MediaOverlaysSmilModel> _mediaOverlays;      ///< The Media Overlays SMIL model
+public:
+    shared_ptr<MediaOverlaysSmilModel>    MediaOverlaysSmilModel()      const       { return _mediaOverlays; }
 
     shared_ptr<Archive> Archive() const { return _archive; }
 };
@@ -621,7 +629,45 @@ public:
      */
     EPUB3_EXPORT
     const string&           Language()                              const;
-    
+
+    /**
+     Retrieves the Media Overlays media:active-class (may be empty string, if unspecified in the OPF package)
+     @result The publication's Media Overlays media:active-class CSS class name.
+     */
+    EPUB3_EXPORT
+    const string& MediaOverlays_ActiveClass() const;
+
+    /**
+     Retrieves the Media Overlays media:playback-active-class (may be empty string, if unspecified in the OPF package)
+     @result The publication's Media Overlays media:playback-active-class CSS class name.
+     */
+    EPUB3_EXPORT
+    const string& MediaOverlays_PlaybackActiveClass() const;
+
+    /**
+     Retrieves the Media Overlays media:duration (may be empty string, if unspecified in the OPF package)
+     @result The publication's Media Overlays media:duration
+     */
+    EPUB3_EXPORT
+    const string& MediaOverlays_DurationTotal() const;
+
+    /**
+     Retrieves the Media Overlays media:duration (may be empty string, if unspecified in the OPF package)
+     @result The publication's Media Overlays media:duration
+     */
+    EPUB3_EXPORT
+    const string& MediaOverlays_DurationItem(const std::shared_ptr<ManifestItem> manifestItem);
+
+    /**
+     Retrieves a the Media Overlays media:narrator (may be empty string, if unspecified in the OPF package)
+     @param localized Set to `true` (the default) to obtain a localized value if
+     one is available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result the Media Overlays media:narrator
+     */
+    EPUB3_EXPORT
+    const string& MediaOverlays_Narrator(bool localized=true) const;
+
     /**
      Retrieves the source of the publication, if available.
      @param localized Set to `true` (the default) to obtain a localized value if

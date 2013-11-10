@@ -231,6 +231,8 @@ LOCAL_SRC_FILES := \
 		ePub3/ePub/archive.cpp \
 		ePub3/ePub/container.cpp \
 		ePub3/ePub/package.cpp \
+		ePub3/ePub/media-overlays_smil_data.cpp \
+		ePub3/ePub/media-overlays_smil_model.cpp \
 		ePub3/ePub/archive_xml.cpp \
 		ePub3/ePub/xpath_wrangler.cpp \
 		ePub3/ePub/spine.cpp \

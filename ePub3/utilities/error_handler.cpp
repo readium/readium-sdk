@@ -160,12 +160,11 @@ ViolationSeverity epub_spec_error::Severity() const
 EPUB3_EXPORT
 bool DefaultErrorHandler(const std::runtime_error& err)
 {
+    std::cerr << "Error: '" << err.what() << "'" << std::endl;
+
     const epub_spec_error* specErr = dynamic_cast<const epub_spec_error*>(&err);
     if ( specErr != nullptr )
     {
-#if 0
-        std::cerr << "Spec Error: '" << err.what() << "'" << std::endl;
-#endif
         switch ( specErr->Severity() )
         {
             case ViolationSeverity::Critical:
