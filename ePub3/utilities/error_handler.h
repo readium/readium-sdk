@@ -299,14 +299,26 @@ enum class EPUBError
     
     // § 2.4.7
     MediaOverlayInvalidText,                ///< A <text> element MUST have a 'src' attribute. Critical.
-    MediaOverlayInvalidTextSource,          ///< A <text> element's 'src' attribute MUST reference an item in the publication's <manifest>. Medium.
-    MediaOverlayTextSrcFragmentMissing,     ///< A <text> element's 'src' attribute MUST contain a fragment identifier. Major.
+    MediaOverlayInvalidTextSource,          ///< A <text> element's 'src' attribute MUST reference an item in the publication's <manifest>. Major.
+    MediaOverlayTextSrcFragmentMissing,     ///< A <text> element's 'src' attribute MUST contain a fragment identifier. Medium.
     
     // § 2.4.8
     MediaOverlayInvalidAudio,               ///< An <audio> element MUST have a 'src' attribute. Critical.
     MediaOverlayInvalidAudioSource,         ///< An <audio> element's 'src' attribute MUST reference an item in the publication's <manifest>. Major.
     MediaOverlayInvalidAudioType,           ///< An <audio> element's 'src' attribute MUST reference an item which is a member of the EPUB 3 Core Media Types. Medium.
-    
+
+    MediaOverlayMissingDurationMetadata,           ///< A SMIL manifest item has no corresponding media:duration metadata. Medium.
+    MediaOverlayMismatchDurationMetadata,           ///< A SMIL / metadata duration mismatch. Medium.
+    MediaOverlayInvalidSmilClockValue,           ///< A given SMIL Clock Value (media:duration, clipBegin or clipEnd) has an invalid syntax. Medium.
+    MediaOverlayCannotParseSMILXML,           ///< A given SMIL XML file fails to parse. Major.
+    MediaOverlayUnknownSMILElement,           ///< A given SMIL file contains an unknown XML element. Major.
+    MediaOverlaySMILTextParallelParent,           ///< A given SMIL file contains a text XML element that does not have a parallel parent time container. Major.
+    MediaOverlaySMILAudioParallelParent,           ///< A given SMIL file contains an audio XML element that does not have a parallel parent time container. Major.
+    MediaOverlaySMILParallelSequenceParent,           ///< A given SMIL file contains a parallel time container XML element that does not have a sequence parent time container. Major.
+    MediaOverlaySMILSequenceSequenceParent,           ///< A given SMIL file contains a sequence time container XML element that does not have a sequence parent time container. Major.
+    MediaOverlayInvalidTextRefSource,          ///< A <body> <seq> or <par> element's 'epub:textref' attribute MUST reference an item in the publication's <manifest>. Medium.
+
+
     MediaOverlayErrorMax,
     
     
