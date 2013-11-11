@@ -66,7 +66,7 @@ for (var i in configurations)
 {
     for (var j in architectures)
     {
-        WScript.Echo("Copying '" + configurations[i] + "' files of '" + architectures[j][0] + "' architeture ");
+        WScript.Echo("Copying '" + configurations[i][0] + "' files of '" + architectures[j][0] + "' architeture ");
         for (var k in assets)
         {
 
