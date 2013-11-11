@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+  <Metadata>
+    <Identity Id="VSIXReadium..0af475aa-c819-49db-805f-451fa07f1818" Version="1.0" Language="en-US" Publisher="Readium" />
+    <DisplayName>VSIXReadium</DisplayName>
+    <Description xml:space="preserve">
+      The Readium SDK is an ePub reader SDK of similar scope and capability to Adobe's Reader Mobile SDK (RMSDK). As such, it is designed to implement an ePub3- compliant Reading System, although its initial form will concentrate solely on the core ePub3 specification and fixed-layout metadata, expanding later to cover associated standards such as Page Templates.
+      The project's aim is to develop a productized, high-performance, cross-platform rendering engine for EPUB 3 content, optimized for use in native applications (mobile/tablet and secondarily desktop systems). Simplistic test applications for Android, iOS, OS X and Windows are part of the SDK, along with unit tests. The SDK is designed to be extensible in various areas, including in support for pluggable encryption and digital signature modules which might be used to implement a form of DRM.
+    </Description>
+    <Icon>Images\readium.png</Icon>
+  </Metadata>
+  <Installation Scope="Global" AllUsers="true">
+    <InstallationTarget Id="Microsoft.ExtensionSDK" TargetPlatformIdentifier="Windows" TargetPlatformVersion="v8.1" SdkName="VSIXReadium" SdkVersion="1.0" />
+  </Installation>
+  <Dependencies>
+    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+  </Dependencies>
+  <Assets>
+    <Asset Type="Microsoft.ExtensionSDK" d:Source="File" Path="SDKManifest.xml" />
+  </Assets>
+</PackageManifest>
