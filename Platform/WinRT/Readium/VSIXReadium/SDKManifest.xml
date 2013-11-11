@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<FileList
+  MinVSVersion = "12.0"
+  DisplayName = "Readium SDK"
+  MinToolsVersion = "4.0"
+  AppliesTo="CSharp+WindowsAppContainer"
+  SupportedArchitectures="x86;x64;ARM">
+  <File Reference = "Readium.winmd" Implementation = "Readium.dll" />
+</FileList>
