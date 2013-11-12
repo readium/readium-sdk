@@ -10,6 +10,7 @@
 #define ePub3_credential_request_h
 
 #include <ePub3/epub3.h>
+#include <ePub3/content_module.h>
 #include <map>
 #include <future>
 #include <vector>
@@ -31,7 +32,7 @@ public:
     };
     
     using ButtonHandler =
-    std::function<void(const CredentialRequest*, size_t)>;
+        std::function<void(const CredentialRequest*, size_t)>;
     
 public:
     CredentialRequest(const string& title,
@@ -120,7 +121,7 @@ private:
     
     std::vector<Component>          m_components;
     Credentials                     m_credentials;
-    std::promise<Credentials>       m_promise;
+    promised_result<Credentials>    m_promise;
 };
 
 EPUB3_END_NAMESPACE
