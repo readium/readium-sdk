@@ -337,7 +337,8 @@ bool Package::Unpack()
     rootName.tolower();
 	bool isEPUB3 = true;
 	string versionStr;
-	double version = 0.0;
+	int version = 0;
+
     
     if ( rootName != "package" )
     {
@@ -351,8 +352,9 @@ bool Package::Unpack()
     }
 	else
 	{
-		version = std::stod(versionStr.stl_str());
-		if (version < 3.0)
+		version = std::stoi(versionStr.stl_str());
+
+		if (version < 3)
 			isEPUB3 = false;
 	}
     
