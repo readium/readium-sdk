@@ -233,7 +233,7 @@ std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredOutputStreamForManifestI
 			thisChain.push_back(filter);
 	}
 
-	return std::make_shared<FilterChainSyncStream>(std::move(rawInput), thisChain);
+	return std::make_shared<FilterChainSyncStream>(std::move(rawInput), thisChain, item);
 }
 
 FilterChain::ChainLinkProcessor::ChainLinkProcessor(ContentFilterPtr filter, ChainLink input, ConstManifestItemPtr item)
