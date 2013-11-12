@@ -69,7 +69,8 @@ ContentModuleManager::LoadContentAtPath(const string& path, std::launch policy)
     std::future<ContainerPtr> result;
     for (auto& item : _known_modules)
     {
-        result = item.second->ProcessFile(path, policy);
+        auto modulePtr = item.second;
+        result = modulePtr->ProcessFile(path, policy);
         
         // check the state of the future -- has it already been set?
         std::future_status status = result.wait_for(std::chrono::system_clock::duration(0));
@@ -78,13 +79,20 @@ ContentModuleManager::LoadContentAtPath(const string& path, std::launch policy)
         // if it's ready, the call to get() will never block
         if (status == std::future_status::deferred || status == std::future_status::ready) {
             if (bool(result.get())) {
-                break;          // we have a valid container already
+                // we have a valid container already
+//                result.then([modulePtr]() {
+                    modulePtr->RegisterContentFilters();
+//                });
+                break;
             } else {
                 continue;       // no container, so try the next module
             }
         } else {
             // it must be 'timeout', which means the module is attempting to process the file
             // we take this to mean that we stop looking and return the result
+//            result.then([modulePtr]() {
+                modulePtr->RegisterContentFilters();
+//            });
             break;
         }
     }

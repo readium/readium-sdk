@@ -17,14 +17,17 @@ EPUB3_BEGIN_NAMESPACE
 
 enum class ActionType
 {
-    Display						= 0,
-    Print						= 1,
-    Copy						= 2,
-    Quote						= 3,
-    Share						= 4,
-    Highlight					= 5,
-	BeginMediaOverlayPlayback	= 6,
-	BeginSpeechSynthesis		= 7
+    Display                     = 0,
+    Print                       = 1,
+    Copy                        = 2,
+    Quote                       = 3,
+    Share                       = 4,
+    Highlight                   = 5,
+	BeginMediaOverlayPlayback   = 6,
+	BeginSpeechSynthesis        = 7,
+    BeginAudioMediaPlayback     = 8,
+    BeginVideoMediaPlayback     = 9,
+    BeginAnimation              = 10
 };
 
 class UserAction
