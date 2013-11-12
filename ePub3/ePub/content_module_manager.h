@@ -53,7 +53,7 @@ public:
                    const string& message) _NOEXCEPT;
     
     static
-    std::future<Credentials>
+    async_result<Credentials>
     RequestCredentialInput(const CredentialRequest& request);
     
 private:
@@ -65,7 +65,7 @@ private:
     friend class Container;
     
     // for the use of Container::OpenContainer(path)
-    std::future<ContainerPtr> LoadContentAtPath(const string& path, std::launch policy);
+    async_result<ContainerPtr> LoadContentAtPath(const string& path, std::launch policy);
     
 };
 

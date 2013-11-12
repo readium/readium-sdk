@@ -48,6 +48,8 @@
 
 #define EPUB_CLANG_PRAGMA(PRAGMA) _Pragma(PRAGMA)
 
+/* C++11 Features */
+
 /* Specific compiler features */
 #define EPUB_COMPILER_SUPPORTS_CXX_VARIADIC_TEMPLATES __has_extension(cxx_variadic_templates)
 
@@ -90,8 +92,18 @@
 #define EPUB_COMPILER_SUPPORTS_CXX_EXTERN_TEMPLATES CLANG_VERSION_AT_LEAST(3,2,0)
 #define EPUB_COMPILER_SUPPORTS_CXX_FINAL_KEYWORD EPUB_COMPILER_SUPPORTS_CXX_OVERRIDE_CONTROL
 
+/* C++14 features */
+
 #define EPUB_COMPILER_SUPPORTS_CXX_BINARY_LITERALS __has_extension(cxx_binary_literals)
 #define EPUB_COMPILER_SUPPORTS_CXX_RELAXED_CONSTEXPR __has_extension(cxx_relaxed_constexpr)
+#define EPUB_COMPILER_SUPPORTS_CXX_CONTEXTUAL_CONVERSIONS __has_extension(cxx_contextual_conversions)
+#define EPUB_COMPILER_SUPPORTS_CXX_DECLTYPE_AUTO __has_extension(cxx_decltype_auto)
+#define EPUB_COMPILER_SUPPORTS_CXX_AGGREGATE_NSDMI __has_extension(cxx_aggregate_nsdmi)
+#define EPUB_COMPILER_SUPPORTS_CXX_INIT_CAPTURE __has_extension(cxx_init_capture)
+#define EPUB_COMPILER_SUPPORTS_CXX_GENERIC_LAMBDA __has_extension(cxx_generic_lambda)
+#define EPUB_COMPILER_SUPPORTS_CXX_RETURN_TYPE_DEDUCTION __has_extension(cxx_return_type_deduction)
+#define EPUB_COMPILER_SUPPORTS_CXX_RUNTIME_ARRAY __has_extension(cxx_runtime_array)
+#define EPUB_COMPILER_SUPPORTS_CXX_VARIABLE_TEMPLATES __has_extension(cxx_variable_templates)
 
 #endif
 
@@ -224,9 +236,16 @@
 #  define EPUB_COMPILER_SUPPORTS_CXX_ATTRIBUTES 1
 #  define EPUB_COMPILER_SUPPORTS_CXX_ALIGNAS 1
 #  define EPUB_COMPILER_SUPPORTS_CXX_THREAD_LOCAL 1
+#  define EPUB_COMPILER_SUPPORTS_CXX_RETURN_TYPE_DEDUCTION 1
 # endif
 # if GCC_VERSION_AT_LEAST(4,8,1)
 #  define EPUB_COMPILER_SUPPORTS_CXX_REFERENCE_QUALIFIED_FUNCTIONS 1
+# endif
+# if GCC_VERSION_AT_LEAST(4,9,0)
+#  define EPUB_COMPILER_SUPPORTS_CXX_CONTEXTUAL_CONVERSIONS 1
+#  define EPUB_COMPILER_SUPPORTS_CXX_BINARY_LITERALS 1
+#  define EPUB_COMPILER_SUPPORTS_CXX_RUNTIME_ARRAY 1
+#  define EPUB_COMPILER_SUPPORTS_CXX_INIT_CAPTURE 1
 # endif
 #endif
 

@@ -206,7 +206,7 @@ void NavigationTable::LoadChildElements(shared_ptr<NavigationElement> pElement, 
 
     for ( auto liNode : liNodes )
     {
-        auto childElement = BuildNCXNavigationPoint(liNode);
+        auto childElement = BuildNavigationPoint(liNode);
         if ( childElement )
         {
             pElement->AppendChild(childElement);

@@ -364,7 +364,7 @@
 		ABF2D9A816682E1E0036B8CA /* spine.h in Headers */ = {isa = PBXBuildFile; fileRef = ABF2D9A616682E1E0036B8CA /* spine.h */; };
 		ABF2D9AC1668301D0036B8CA /* manifest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABF2D9AA1668301D0036B8CA /* manifest.cpp */; };
 		ABF2D9AD1668301D0036B8CA /* manifest.h in Headers */ = {isa = PBXBuildFile; fileRef = ABF2D9AB1668301D0036B8CA /* manifest.h */; };
-		ABFCE19E182D6BBE00A63C4A /* ncx_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABFCE19D182D6BBE00A63C4A /* ncx_tests.cpp */; };
+		ABFCE19E182D6BBE00A63C4A /* nav_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABFCE19D182D6BBE00A63C4A /* nav_tests.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -855,7 +855,10 @@
 		ABF2D9A616682E1E0036B8CA /* spine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spine.h; sourceTree = "<group>"; };
 		ABF2D9AA1668301D0036B8CA /* manifest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = manifest.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		ABF2D9AB1668301D0036B8CA /* manifest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = manifest.h; sourceTree = "<group>"; };
-		ABFCE19D182D6BBE00A63C4A /* ncx_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ncx_tests.cpp; sourceTree = "<group>"; };
+		ABFCE19D182D6BBE00A63C4A /* nav_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nav_tests.cpp; sourceTree = "<group>"; };
+		ABFCE19F182D955500A63C4A /* DRMInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DRMInterface.h; sourceTree = "<group>"; };
+		ABFCE1A0182D980400A63C4A /* DRMModuleSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DRMModuleSample.cpp; sourceTree = "<group>"; };
+		ABFCE1A1182D980400A63C4A /* DRMModuleSample.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DRMModuleSample.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -957,6 +960,10 @@
 				AB0EDE7917DE23D00007ED42 /* filter_chain_tests.cpp */,
 				ABB0459D175407A9001274E3 /* page_spread_tests.cpp */,
 				AB8C79761821AADC0013054F /* async_open_tests.cpp */,
+				ABFCE19D182D6BBE00A63C4A /* nav_tests.cpp */,
+				ABFCE19F182D955500A63C4A /* DRMInterface.h */,
+				ABFCE1A0182D980400A63C4A /* DRMModuleSample.cpp */,
+				ABFCE1A1182D980400A63C4A /* DRMModuleSample.h */,
 				A250D509FCF18CA865884D31 /* media-overlays_smil_utils_tests.cpp */,
 				ABFCE19D182D6BBE00A63C4A /* ncx_tests.cpp */,
 			);
@@ -1918,7 +1925,7 @@
 				ABA4BB6016B1942100161B77 /* metadata_tests.cpp in Sources */,
 				AB95448C16BC28F300EFD2FD /* switch_preproc_tests.cpp in Sources */,
 				AB95448E16BC539200EFD2FD /* object_preproc_tests.cpp in Sources */,
-				ABFCE19E182D6BBE00A63C4A /* ncx_tests.cpp in Sources */,
+				ABFCE19E182D6BBE00A63C4A /* nav_tests.cpp in Sources */,
 				AB17B29B170C872E00FD5917 /* font_obfuscation_tests.cpp in Sources */,
 				AB0EDE7A17DE23D00007ED42 /* filter_chain_tests.cpp in Sources */,
 				ABB0459E175407A9001274E3 /* page_spread_tests.cpp in Sources */,
