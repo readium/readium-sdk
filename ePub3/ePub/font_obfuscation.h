@@ -110,7 +110,7 @@ public:
         std::memcpy(_key, o._key, KeySize);
     }
     
-    virtual FilterContext* MakeFilterContext() const OVERRIDE { return new FontObfuscationContext; }
+    virtual FilterContext* MakeFilterContext(ConstManifestItemPtr) const OVERRIDE { return new FontObfuscationContext; }
     
     /**
      Applies the font obfuscation algorithm to the resource data.

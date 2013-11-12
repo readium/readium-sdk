@@ -157,12 +157,12 @@ WinRTContentFilter::~WinRTContentFilter()
 	IContentFilter^ filter = GetBridge<IContentFilter>();
 	SetNativeContentFilter(filter, nullptr);
 }
-::ePub3::FilterContext* WinRTContentFilter::MakeFilterContext() const
+::ePub3::FilterContext* WinRTContentFilter::MakeFilterContext(::ePub3::ConstManifestItemPtr forItem) const
 {
 	IContentFilter^ filter = GetBridge<IContentFilter>();
 	if (__bridge_ == nullptr)
 		return nullptr;
-	auto obj = __bridge_->MakeFilterContext();
+	auto obj = __bridge_->MakeFilterContext(ManifestItem::Wrapper(std::const_pointer_cast<::ePub3::ManifestItem>(forItem)));
 	if (obj == nullptr)
 		return nullptr;
 	return new WinRTContentFilterContext(obj);
@@ -255,9 +255,9 @@ bool ContentFilterWrapper::RequiresCompleteData::get()
 {
 	return _native->RequiresCompleteData();
 }
-Object^ ContentFilterWrapper::MakeFilterContext()
+Object^ ContentFilterWrapper::MakeFilterContext(ManifestItem^ forItem)
 {
-	return ref new FilterContextWrapper(_native->MakeFilterContext());
+	return ref new FilterContextWrapper(_native->MakeFilterContext(forItem->NativeObject));
 }
 IBuffer^ ContentFilterWrapper::FilterData(Object^ contextInfo, IBuffer^ inputData)
 {

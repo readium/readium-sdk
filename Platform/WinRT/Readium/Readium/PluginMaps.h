@@ -42,7 +42,7 @@ public:
 	WinRTContentHandler(IContentHandler^ bridgeInstance);
 	virtual ~WinRTContentHandler();
 
-	virtual void operator()(const ::ePub3::string& src, const ParameterList& parameters);
+	virtual void operator()(const ::ePub3::string& src, const ParameterList& parameters) override;
 
 private:
 	// ensure at least one strong reference exists!
@@ -56,10 +56,10 @@ public:
 	WinRTContentFilter(IContentFilter^ bridgeInstance);
 	virtual ~WinRTContentFilter();
 
-	virtual ::ePub3::FilterContext* MakeFilterContext() const;
-	virtual bool RequiresCompleteData() const;
+	virtual ::ePub3::FilterContext* MakeFilterContext(::ePub3::ConstManifestItemPtr forItem) const override;
+	virtual bool RequiresCompleteData() const override;
 
-	virtual void* FilterData(::ePub3::FilterContext* context, void* data, size_t len, size_t* outLen);
+	virtual void* FilterData(::ePub3::FilterContext* context, void* data, size_t len, size_t* outLen) override;
 
 private:
 	// ensure at least one strong reference exists!
@@ -81,7 +81,7 @@ public:
 
 	property Package^ Owner { virtual Package^ get(); }
 	property String^ MediaType { virtual String^ get(); }
-	virtual void Invoke(String^ srcPath, ::Windows::Foundation::Collections::IMapView<String^, String^>^ params);
+	virtual void Invoke(String^ srcPath, ::Windows::Foundation::Collections::IMapView<String^, String^>^ params) override;
 
 };
 
@@ -95,11 +95,11 @@ internal:
 public:
 	virtual ~ContentFilterWrapper() {}
 
-	property ContentFilterTypeSniffer^ TypeSniffer { virtual ContentFilterTypeSniffer^ get(); }
-	property bool RequiresCompleteData { virtual bool get(); }
+	property ContentFilterTypeSniffer^ TypeSniffer { virtual ContentFilterTypeSniffer^ get() override; }
+	property bool RequiresCompleteData { virtual bool get() override; }
 
-	virtual ::Platform::Object^ MakeFilterContext();
-	virtual ::Windows::Storage::Streams::IBuffer^ FilterData(::Platform::Object^ contextInfo, ::Windows::Storage::Streams::IBuffer^ inputData);
+	virtual ::Platform::Object^ MakeFilterContext(ManifestItem^ forItem) override;
+	virtual ::Windows::Storage::Streams::IBuffer^ FilterData(::Platform::Object^ contextInfo, ::Windows::Storage::Streams::IBuffer^ inputData) override;
 
 };
 

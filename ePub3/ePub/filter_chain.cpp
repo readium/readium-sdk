@@ -35,7 +35,7 @@ private:
 	ByteBuffer						_cache;
 
 public:
-	FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters);
+	FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem);
 	virtual ~FilterChainSyncStream() {}
 
 	virtual size_type BytesAvailable() const _NOEXCEPT OVERRIDE
@@ -84,12 +84,12 @@ private:
 
 };
 
-FilterChainSyncStream::FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters)
+FilterChainSyncStream::FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem)
 : _input(std::move(input)), _filters(), _needs_cache(false), _cache()
 {
 	for (auto& filter : filters)
 	{
-		_filters.emplace_back(filter, std::unique_ptr<FilterContext>(filter->MakeFilterContext()));
+		_filters.emplace_back(filter, std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem)));
 		if (filter->RequiresCompleteData())
 			_needs_cache = true;
 	}
@@ -177,7 +177,7 @@ std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifest
             if ( !thisChain.empty() )
                 thisChain.back()->SetOutputLink(linkPipe.first);
             
-            thisChain.push_back(ChainLinkProcessor::New(filter, input));
+            thisChain.push_back(ChainLinkProcessor::New(filter, input, item));
             linkPipe = AsyncPipe::LinkedPair();
             input = linkPipe.second;
         }
@@ -236,9 +236,9 @@ std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredOutputStreamForManifestI
 	return std::make_shared<FilterChainSyncStream>(std::move(rawInput), thisChain);
 }
 
-FilterChain::ChainLinkProcessor::ChainLinkProcessor(ContentFilterPtr filter, ChainLink input)
+FilterChain::ChainLinkProcessor::ChainLinkProcessor(ContentFilterPtr filter, ChainLink input, ConstManifestItemPtr item)
   : _filter(filter),
-    _context(filter->MakeFilterContext()),
+    _context(filter->MakeFilterContext(item)),
     _input(input),
     _output(nullptr),
     _collectionBuffer()
