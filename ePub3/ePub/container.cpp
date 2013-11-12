@@ -58,63 +58,75 @@ Container::~Container()
 }
 bool Container::Open(const string& path)
 {
-    _archive = Archive::Open(path.stl_str());
-    if ( _archive == nullptr )
-        throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
-    
-    // TODO: Initialize lazily? Doing so would make initialization faster, but require
-    // PackageLocations() to become non-const, like Packages().
-    ArchiveXmlReader reader(_archive->ReaderAtPath(gContainerFilePath));
-    if (!reader) {
-        throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
-    }
+	_archive = Archive::Open(path.stl_str());
+	if (_archive == nullptr)
+		throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
+
+	// TODO: Initialize lazily? Doing so would make initialization faster, but require
+	// PackageLocations() to become non-const, like Packages().
+	ArchiveXmlReader reader(_archive->ReaderAtPath(gContainerFilePath));
+	if (!reader) {
+		throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
+	}
 #if EPUB_USE(LIBXML2)
-    _ocf = reader.xmlReadDocument(gContainerFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
+	_ocf = reader.xmlReadDocument(gContainerFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
 #else
 	decltype(_ocf) __tmp(reader.ReadDocument(gContainerFilePath, nullptr, /*RESOLVE_EXTERNALS*/ 1));
 	_ocf = __tmp;
 #endif
-    if ( !((bool)_ocf) )
-        return false;
+	if (!((bool)_ocf))
+		return false;
 
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-    XPathWrangler xpath(_ocf, {{"ocf", "urn:oasis:names:tc:opendocument:xmlns:container"}});
+	XPathWrangler xpath(_ocf, { { "ocf", "urn:oasis:names:tc:opendocument:xmlns:container" } });
 #else
-    XPathWrangler::NamespaceList __ns;
-    __ns["ocf"] = OCFNamespaceURI;
-    XPathWrangler xpath(_ocf, __ns);
+	XPathWrangler::NamespaceList __ns;
+	__ns["ocf"] = OCFNamespaceURI;
+	XPathWrangler xpath(_ocf, __ns);
 #endif
-    xml::NodeSet nodes = xpath.Nodes(gRootfilesXPath);
-    
-    if ( nodes.empty() )
-        return false;
-    
-    LoadEncryption();
-    
-    for ( auto n : nodes )
-    {
-        string type = _getProp(n, "media-type");
-        
-        string path = _getProp(n, "full-path");
-        if ( path.empty() )
-            continue;
-        
-        auto pkg = Package::New(Ptr(), type);
-        if ( pkg->Open(path) )
-            _packages.push_back(pkg);
-    }
-    
-    for ( auto& pkg : _packages )
-    {
-        pkg->SetFilterChain(FilterManager::Instance()->BuildFilterChainForPackage(pkg));
-    }
+	xml::NodeSet nodes = xpath.Nodes(gRootfilesXPath);
 
-    return true;
+	if (nodes.empty())
+		return false;
+
+	LoadEncryption();
+
+	for (auto n : nodes)
+	{
+		string type = _getProp(n, "media-type");
+
+		string path = _getProp(n, "full-path");
+		if (path.empty())
+			continue;
+
+		auto pkg = Package::New(Ptr(), type);
+		if (pkg->Open(path))
+			_packages.push_back(pkg);
+	}
+
+	for (auto& pkg : _packages)
+	{
+		pkg->SetFilterChain(FilterManager::Instance()->BuildFilterChainForPackage(pkg));
+	}
+
+	return true;
 }
 ContainerPtr Container::OpenContainer(const string &path)
 {
-    auto future = OpenContainerAsync(path);
-    return future.get();    // blocks until ready
+	auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, std::launch::any);
+	ContainerPtr result;
+
+	// see if it's complete with a nil value
+	if (future.wait_for(std::chrono::system_clock::duration(0)) == std::future_status::ready)
+	{
+		if (future.get().get() == nullptr)
+			result = OpenContainerForContentModule(path);
+	}
+
+	if (!bool(result))
+		result = future.get();
+
+	return result;
 }
 std::future<ContainerPtr> Container::OpenContainerAsync(const string& path, std::launch policy)
 {
@@ -124,12 +136,12 @@ std::future<ContainerPtr> Container::OpenContainerAsync(const string& path, std:
     if (result.wait_for(std::chrono::system_clock::duration(0)) == std::future_status::ready)
     {
         if (result.get().get() == nullptr)
-            result = std::async(policy, &Container::OpenContainerSync, path);
+            result = std::async(policy, &Container::OpenContainerForContentModule, path);
     }
     
     return result;
 }
-ContainerPtr Container::OpenContainerSync(const string& path)
+ContainerPtr Container::OpenContainerForContentModule(const string& path)
 {
 	ContainerPtr container = Container::New();
 	if (container->Open(path) == false)
