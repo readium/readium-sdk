@@ -146,9 +146,21 @@ public:
     /// C++11 move constructor.
     ContentFilter(ContentFilter&& o) : _sniffer(std::move(o._sniffer)) {}
     
-    ///
-    /// Allocate and return a new FilterContext subclass. The default returns `nullptr`.
-    virtual FilterContext* MakeFilterContext() const { return nullptr; }
+    /**
+	 Allocate and return a new FilterContext subclass. The default returns `nullptr`.
+
+	 Each filter is instantiated once per Package. A filter can then be used to process
+	 data from multiple ManifestItems at any one time. Any information specific to a single
+	 ManifestItem can be encapsulated within a FilterContext pointer, which will be passed
+	 into each invocation of the FilterData() method. The prospective ManifestItem is
+	 passed into this function so that it can inform the creation of filter context data.
+
+	 Filter context objects can be anything that inherits from ContextFilter, which itself
+	 asserts no conditions on the structure or implementation of the object.
+	 @param item The Manifest Item being processed, and for which the context is created.
+	 @result An object containing per-item data, or nullptr.
+	 */
+    virtual FilterContext* MakeFilterContext(ConstManifestItemPtr item) const { return nullptr; }
     
     /**
      Create a new content filter with a (required) type sniffer.

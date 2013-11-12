@@ -59,7 +59,7 @@ protected:
     class ChainLinkProcessor : public PointerType<ChainLinkProcessor>
     {
     public:
-        ChainLinkProcessor(ContentFilterPtr filter, ChainLink input);
+        ChainLinkProcessor(ContentFilterPtr filter, ChainLink input, ConstManifestItemPtr manifestItem);
         ChainLinkProcessor(const ChainLinkProcessor& o) : _filter(o._filter), _context(o._context), _input(o._input), _output(o._output), _collectionBuffer(o._collectionBuffer) {}
         ChainLinkProcessor(ChainLinkProcessor&& o) : _filter(std::move(o._filter)), _context(o._context), _input(std::move(o._input)), _output(std::move(o._output)) {}
         virtual ~ChainLinkProcessor();
