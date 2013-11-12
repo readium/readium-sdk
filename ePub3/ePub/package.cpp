@@ -808,7 +808,7 @@ bool Package::Unpack()
 		}
 	}
 
-	if (_navigation.empty())
+	if (_navigation.empty() || _navigation["toc"]->Children().empty())
 	{
 		// look for EPUB2 NCX file
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
@@ -820,8 +820,10 @@ bool Package::Unpack()
 #endif
 		auto tocNames = xpath.Strings("/opf:package/opf:spine/@toc");
 
-		if (tocNames.empty())
+		if (tocNames.empty() && _navigation.empty())
 		{
+            // no NCX, and no other nav document
+            // otherwise, we had a valid EPUB3 nav with empty (one-level) TOC
 			HandleError(EPUBError::OPFNoNavDocument);
 		}
 		else
