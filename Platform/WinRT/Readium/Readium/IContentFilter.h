@@ -57,7 +57,7 @@ public interface class IContentFilter
 	property ContentFilterTypeSniffer^ TypeSniffer { ContentFilterTypeSniffer^ get(); }
 	property bool RequiresCompleteData { bool get(); }
 
-	::Platform::Object^ MakeFilterContext();
+	::Platform::Object^ MakeFilterContext(ManifestItem^ forItem);
 	::Windows::Storage::Streams::IBuffer^ FilterData(::Platform::Object^ contextInfo, ::Windows::Storage::Streams::IBuffer^ inputData);
 };
 
