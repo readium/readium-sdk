@@ -99,9 +99,9 @@ public:
         OpenContainerAsync(const string& path, std::launch policy = std::launch::any);
 
 	///
-	/// Synchronously creates a new container. Consider this internal, please.
+	/// Synchronously creates a new container. Available for the use of ContentModule implementations only.
 	static ContainerPtr
-		OpenContainerSync(const string& path);
+		OpenContainerForContentModule(const string& path);
     
     virtual         ~Container();
     
