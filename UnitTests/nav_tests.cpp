@@ -81,7 +81,7 @@ TEST_CASE("ePub2 files should have a Table of Contents", "")
     auto toc = pkg->TableOfContents();
     REQUIRE(bool(toc));
     
-    PrintNavTable(toc);
+    //PrintNavTable(toc);
 }
 
 TEST_CASE("ePub3 files should have a Table of Contents", "")
@@ -90,5 +90,5 @@ TEST_CASE("ePub3 files should have a Table of Contents", "")
     auto toc = pkg->TableOfContents();
     REQUIRE(bool(toc));
     
-    PrintNavTable(toc);
+    //PrintNavTable(toc);
 }
