@@ -842,9 +842,6 @@
 		ABF2D9AA1668301D0036B8CA /* manifest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = manifest.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		ABF2D9AB1668301D0036B8CA /* manifest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = manifest.h; sourceTree = "<group>"; };
 		ABFCE19D182D6BBE00A63C4A /* nav_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nav_tests.cpp; sourceTree = "<group>"; };
-		ABFCE19F182D955500A63C4A /* DRMInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DRMInterface.h; sourceTree = "<group>"; };
-		ABFCE1A0182D980400A63C4A /* DRMModuleSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DRMModuleSample.cpp; sourceTree = "<group>"; };
-		ABFCE1A1182D980400A63C4A /* DRMModuleSample.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DRMModuleSample.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -935,9 +932,6 @@
 				ABB0459D175407A9001274E3 /* page_spread_tests.cpp */,
 				AB8C79761821AADC0013054F /* async_open_tests.cpp */,
 				ABFCE19D182D6BBE00A63C4A /* nav_tests.cpp */,
-				ABFCE19F182D955500A63C4A /* DRMInterface.h */,
-				ABFCE1A0182D980400A63C4A /* DRMModuleSample.cpp */,
-				ABFCE1A1182D980400A63C4A /* DRMModuleSample.h */,
 			);
 			name = UnitTests;
 			path = ../../UnitTests;
