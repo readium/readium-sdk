@@ -141,6 +141,20 @@ std::future<ContainerPtr> Container::OpenContainerAsync(const string& path, std:
     
     return result;
 }
+ContainerPtr Container::OpenSynchronouslyForWinRT(const string& path)
+{
+	auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, std::launch::deferred);
+
+	// see if it's complete with a nil value
+	if (future.wait_for(std::chrono::system_clock::duration(0)) == std::future_status::ready)
+	{
+		if (future.get().get() == nullptr)
+			return OpenContainerForContentModule(path);
+	}
+
+	// deferred call, will run the operation synchronously now
+	return future.get();
+}
 ContainerPtr Container::OpenContainerForContentModule(const string& path)
 {
 	ContainerPtr container = Container::New();

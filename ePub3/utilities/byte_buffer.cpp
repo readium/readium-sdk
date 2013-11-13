@@ -175,16 +175,22 @@ void ByteBuffer::AddBytes(unsigned char *extraBytes, size_t extraBytesSize)
     m_bufferSize += extraBytesSize;
 }
 
-void ByteBuffer::RemoveBytes(size_t numBytesToRemove)
+void ByteBuffer::RemoveBytes(size_t numBytesToRemove, size_t pos)
 {
-    if (numBytesToRemove >= m_bufferSize)
+	if (numBytesToRemove >= m_bufferSize && pos == 0)
     {
         m_bufferSize = 0;
         return;
     }
+
+	numBytesToRemove = std::min(numBytesToRemove, m_bufferSize - pos);
     
     size_t newBufferSize = m_bufferSize - numBytesToRemove;
-    ::memmove(m_buffer, m_buffer+numBytesToRemove, newBufferSize);
+	if (pos < m_bufferSize - numBytesToRemove)
+	{
+		::memmove(m_buffer + pos, m_buffer + pos + numBytesToRemove, newBufferSize);
+	}
+
     m_bufferSize = newBufferSize;
     
     if ( m_secure )

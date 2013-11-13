@@ -88,12 +88,12 @@ public:
     void AddBytes(unsigned char *extraBytes, size_t extraBytesSize);
     
     /**
-     Removes a number of bytes from the beginning of the buffer.
+     Removes a number of bytes from the the buffer.
      @param numBytesToRemove The number of bytes to remove.
      @note If this is used a lot, would be useful to maintain a start/end range rather
      than just a size-- this would make 'removal' much simpler and O(1).
      */
-    void RemoveBytes(size_t numBytesToRemove);
+    void RemoveBytes(size_t numBytesToRemove, size_t pos=0);
     
     unsigned char* GetBytes() { return m_buffer; }
     const unsigned char* GetBytes() const { return m_buffer; }
