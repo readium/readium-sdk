@@ -136,6 +136,8 @@ public:
     ///
     /// The OCF version of the container document.
     virtual string                  Version()               const;
+
+	const string&                   Path()                  const   { return _path; }
     
     ///
     /// Retrieves the encryption information embedded in the container.
@@ -180,6 +182,7 @@ protected:
     PackageList						_packages;
     EncryptionList					_encryption;
 	std::shared_ptr<ContentModule>	_creator;
+	string							_path;
     
     ///
     /// Parses the file META-INF/encryption.xml into an EncryptionList.

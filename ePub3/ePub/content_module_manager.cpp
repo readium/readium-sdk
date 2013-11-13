@@ -24,7 +24,7 @@ ContentModuleManager::~ContentModuleManager()
 }
 ContentModuleManager* ContentModuleManager::Instance() _NOEXCEPT
 {
-    std::once_flag __once;
+    static std::once_flag __once;
     std::call_once(__once, [](std::unique_ptr<ContentModuleManager> *ptr) {
         ptr->reset(new ContentModuleManager);
     }, &s_instance);
