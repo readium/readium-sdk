@@ -81,10 +81,13 @@ public:
 
 			if (policy == std::launch::deferred)
 			{
-				std::shared_ptr<ePub3::ContentModule> self(this->shared_from_this());
-				return std::async(std::launch::deferred, [path, this, self]() -> ePub3::ContainerPtr {
-					return ProcessFileAsyncInternal(path).get();
-				});
+				Container^ container = __winrt_->ProcessFileSync(StringFromNative(path));
+				std::promise<ePub3::ContainerPtr> __p;
+				if (container)
+					__p.set_value(container->NativeObject);
+				else
+					__p.set_value(nullptr);
+				return __p.get_future();
 			}
 			else
 			{
@@ -180,6 +183,15 @@ public:
 		return create_async([__fut]() -> Container^ {
 			return Container::Wrapper(__fut.get());
 		});
+	}
+
+	virtual Container^ ProcessFileSync(::Platform::String^ path)
+	{
+		auto __fut = _native->ProcessFile(StringToNative(path));
+		auto __nat = __fut.get();
+		if (!bool(__nat))
+			return nullptr;
+		return Container::Wrapper(__nat);
 	}
 
 	virtual void RegisterContentFilters()
