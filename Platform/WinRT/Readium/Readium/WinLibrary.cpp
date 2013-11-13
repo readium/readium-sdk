@@ -104,9 +104,9 @@ void Library::AddPublicationsInContainer(Container^ container, IStorageFile^ fil
 IAsyncAction^ Library::AddPublicationsInContainer(IStorageFile^ file)
 {
 	return create_async([this, file]() {
-		create_task(Container::OpenContainer(file)).then([this, file](Container^ container) {
+		auto container = Container::OpenContainer(file);
+		if (container != nullptr)
 			AddPublicationsInContainer(container, file);
-		});
 	});
 }
 
