@@ -69,6 +69,8 @@ public:
 	/// The version number of this container's data.
 	String^ Version();
 
+	property String^ Path { String^ get(); }
+
 	/// All information from META-INF/encryption.xml
 	IVectorView<EncryptionInfo^>^ EncryptionData();
 

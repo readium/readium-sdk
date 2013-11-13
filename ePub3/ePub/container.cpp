@@ -42,14 +42,14 @@ Container::Container() :
 #if EPUB_PLATFORM(WINRT)
 	NativeBridge(),
 #endif
-	_archive(nullptr), _ocf(nullptr), _packages(), _encryption()
+	_archive(nullptr), _ocf(nullptr), _packages(), _encryption(), _path()
 {
 }
 Container::Container(Container&& o) :
 #if EPUB_PLATFORM(WINRT)
 NativeBridge(),
 #endif
-_archive(std::move(o._archive)), _ocf(o._ocf), _packages(std::move(o._packages))
+_archive(std::move(o._archive)), _ocf(o._ocf), _packages(std::move(o._packages)), _path(std::move(o._path))
 {
     o._ocf = nullptr;
 }
@@ -61,6 +61,7 @@ bool Container::Open(const string& path)
 	_archive = Archive::Open(path.stl_str());
 	if (_archive == nullptr)
 		throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
+	_path = path;
 
 	// TODO: Initialize lazily? Doing so would make initialization faster, but require
 	// PackageLocations() to become non-const, like Packages().

@@ -78,6 +78,11 @@ String^ Container::Version()
 	return StringFromNative(_native->Version());
 }
 
+String^ Container::Path::get()
+{
+	return StringFromNative(_native->Path());
+}
+
 IVectorView<EncryptionInfo^>^ Container::EncryptionData()
 {
 	return ref new BridgedObjectVectorView<EncryptionInfo^, ::ePub3::EncryptionInfoPtr>(_native->EncryptionData());
