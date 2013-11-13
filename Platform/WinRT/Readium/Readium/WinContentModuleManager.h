@@ -75,24 +75,21 @@ public:
 
 	virtual
 	std::future<ePub3::ContainerPtr>
-	ProcessFile(const ::ePub3::string& path, std::launch policy = std::launch::any)
+	ProcessFile(const ::ePub3::string& path, std::launch policy = std::launch::async)
 		{
-		using namespace ::Windows::Foundation;
-			auto op = __winrt_->ProcessFile(StringFromNative(path));
-			auto promise = new std::promise<::ePub3::ContainerPtr>();
+			using namespace ::Windows::Foundation;
 
-			op->Completed = ref new AsyncOperationCompletedHandler<Container^>([promise](IAsyncOperation<Container^>^ operation, AsyncStatus status) {
-				__process_operation_completion(operation, status, *promise, [operation, promise]() {
-					Container^ container = operation->GetResults();
-					if (container == nullptr)
-						promise->set_value(nullptr);
-					else
-						promise->set_value(container->NativeObject);
+			if (policy == std::launch::deferred)
+			{
+				std::shared_ptr<ePub3::ContentModule> self(this->shared_from_this());
+				return std::async(std::launch::deferred, [path, this, self]() -> ePub3::ContainerPtr {
+					return ProcessFileAsyncInternal(path).get();
 				});
-				delete promise;
-			});
-
-			return promise->get_future();
+			}
+			else
+			{
+				return ProcessFileAsyncInternal(path);
+			}
 		}
 
 	//////////////////////////////////////////////
@@ -119,6 +116,27 @@ public:
 			op->Completed = ref new AsyncOperationCompletedHandler<bool>([promise](IAsyncOperation<bool>^ operation, AsyncStatus status) {
 				__process_operation_completion(operation, status, *promise, [operation, promise]() {
 					promise->set_value(operation->GetResults());
+				});
+				delete promise;
+			});
+
+			return promise->get_future();
+		}
+
+private:
+	std::future<ePub3::ContainerPtr> ProcessFileAsyncInternal(const ePub3::string& path)
+		{
+			using namespace ::Windows::Foundation;
+			auto op = __winrt_->ProcessFile(StringFromNative(path));
+			auto promise = new std::promise<::ePub3::ContainerPtr>();
+
+			op->Completed = ref new AsyncOperationCompletedHandler<Container^>([promise](IAsyncOperation<Container^>^ operation, AsyncStatus status) {
+				__process_operation_completion(operation, status, *promise, [operation, promise]() {
+					Container^ container = operation->GetResults();
+					if (container == nullptr)
+						promise->set_value(nullptr);
+					else
+						promise->set_value(container->NativeObject);
 				});
 				delete promise;
 			});

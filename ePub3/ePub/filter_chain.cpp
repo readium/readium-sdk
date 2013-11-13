@@ -154,7 +154,11 @@ void FilterChainSyncStream::CacheBytes()
 	}
 
 	// filter everything completely
-	FilterBytes(_cache.GetBytes(), _cache.GetBufferSize());
+	size_type filtered = FilterBytes(_cache.GetBytes(), _cache.GetBufferSize());
+	if (filtered < _cache.GetBufferSize())
+	{
+		_cache.RemoveBytes(_cache.GetBufferSize() - filtered, filtered);
+	}
 
 	// this potentially contains decrypted data, so use secure erasure
 	_cache.SetUsesSecureErasure();

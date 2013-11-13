@@ -53,7 +53,8 @@ private:
 public:
 	virtual ~Container() {}
 
-	static IAsyncOperation<Container^>^ OpenContainer(IStorageFile^ file);
+	static Container^ OpenContainer(IStorageFile^ file);
+	static IAsyncOperation<Container^>^ OpenContainerAsync(IStorageFile^ file);
 	static Container^ OpenContainerForContentModule(IStorageFile^ file);
 
 	/// ePub-relative paths for all packages

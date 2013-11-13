@@ -41,12 +41,17 @@ Container::Container(::ePub3::ContainerPtr native) : _native(native)
 {
 	_native->SetBridge(this);
 }
-IAsyncOperation<Container^>^ Container::OpenContainer(IStorageFile^ file)
+IAsyncOperation<Container^>^ Container::OpenContainerAsync(IStorageFile^ file)
 {
 	return create_async([file]() -> Container^ {
-		auto native = ::ePub3::Container::OpenContainer(StringToNative(file->Path));
+		auto native = ::ePub3::Container::OpenSynchronouslyForWinRT(StringToNative(file->Path));
 		return Wrapper(native);
 	});
+}
+Container^ Container::OpenContainer(IStorageFile^ file)
+{
+	auto native = ::ePub3::Container::OpenSynchronouslyForWinRT(StringToNative(file->Path));
+	return Wrapper(native);
 }
 Container^ Container::OpenContainerForContentModule(IStorageFile^ file)
 {

@@ -75,9 +75,8 @@ ContentModuleManager::LoadContentAtPath(const string& path, std::launch policy)
         // check the state of the future -- has it already been set?
         std::future_status status = result.wait_for(std::chrono::system_clock::duration(0));
         
-        // if it's deferred, then the computation will only happen when the value is requested
         // if it's ready, the call to get() will never block
-        if (status == std::future_status::deferred || status == std::future_status::ready) {
+        if (status == std::future_status::ready) {
             if (bool(result.get())) {
                 // we have a valid container already
 //                result.then([modulePtr]() {
@@ -88,7 +87,7 @@ ContentModuleManager::LoadContentAtPath(const string& path, std::launch policy)
                 continue;       // no container, so try the next module
             }
         } else {
-            // it must be 'timeout', which means the module is attempting to process the file
+            // it must be 'timeout' or 'deferred', which means the module is attempting to process the file
             // we take this to mean that we stop looking and return the result
 //            result.then([modulePtr]() {
                 modulePtr->RegisterContentFilters();

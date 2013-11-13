@@ -32,6 +32,19 @@
 #include <vector>
 #include <future>
 
+///////////////////////////////////////////////////////////////////////////////////
+// Bit of a hack -- make the WinRT Container class available so we can befriend it.
+
+#if EPUB_PLATFORM(WINRT)
+namespace Readium
+{
+	ref class Container;
+}
+#endif
+
+// End hack
+///////////////////////////////////////////////////////////////////////////////////
+
 EPUB3_BEGIN_NAMESPACE
 
 class Archive;
@@ -171,6 +184,21 @@ protected:
     ///
     /// Parses the file META-INF/encryption.xml into an EncryptionList.
     void							LoadEncryption();
+
+	//////////////////////////////////////////////////////////////////////////////
+	// BLATANT HACK!
+	//
+	// This is here because we're seeing weird stuff happen with nested IAsyncAction()
+	// stuff on WinRT, and we've got 2 days to make it work. Proper solution forthcoming.
+
+#if EPUB_PLATFORM(WINRT)
+	friend ref class ::Readium::Container;
+	static ContainerPtr OpenSynchronouslyForWinRT(const string& path);
+#endif
+
+	// End hack
+	//////////////////////////////////////////////////////////////////////////////
+
 };
 
 EPUB3_END_NAMESPACE
