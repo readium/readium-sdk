@@ -99,6 +99,7 @@ public:
 public interface class IContentModule
 {
 	::Windows::Foundation::IAsyncOperation<Container^>^ ProcessFile(::Platform::String^ path);
+	Container^ ProcessFileSync(::Platform::String^ path);
 	void RegisterContentFilters();
 	::Windows::Foundation::IAsyncOperation<bool>^ ApproveUserAction(UserAction^ action);
 
