@@ -77,8 +77,15 @@ ContentModuleManager::LoadContentAtPath(const string& path, std::launch policy)
         
         // if it's ready, the call to get() will never block
         if (status == std::future_status::ready) {
-            if (bool(result.get())) {
+			// unpack the future
+			ContainerPtr container = result.get();
+
+            if (bool(container)) {
                 // we have a valid container already
+				std::promise<ContainerPtr> p;
+				p.set_value(container);
+				result = p.get_future();
+//				result = make_ready_future(container);
 //                result.then([modulePtr]() {
                     modulePtr->RegisterContentFilters();
 //                });
