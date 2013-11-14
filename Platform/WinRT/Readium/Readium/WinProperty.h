@@ -33,6 +33,8 @@ using ::Platform::String;
 using ::Windows::Foundation::Uri;
 using ::Windows::Foundation::Collections::IVectorView;
 
+interface class IPropertyHolder;
+
 public ref class Property sealed
 {
 	_DECLARE_BRIDGE_API_(::ePub3::PropertyPtr, Property^);
@@ -41,6 +43,8 @@ internal:
 	Property(::ePub3::PropertyPtr native);
 
 public:
+	Property(IPropertyHolder^ holder);
+	Property(IPropertyHolder^ holder, Uri^ identifier, String^ value);
 	virtual ~Property() {}
 
 	static Uri^ IRIForDCType(Readium::DCType type);
