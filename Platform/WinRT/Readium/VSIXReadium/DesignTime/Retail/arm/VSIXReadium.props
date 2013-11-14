@@ -3,7 +3,7 @@
   <PropertyGroup>
     <VSIXReadiumPath>$(FrameworkSDKRoot)\..\v8.1\ExtensionSDKs\VSIXReadium\1.0\</VSIXReadiumPath>
     <IncludePath>$(VSIXReadiumPath)DesignTime\CommonConfiguration\Neutral\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VSIXReadiumPath)DesignTime\Release\arm;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VSIXReadiumPath)DesignTime\Retail\arm;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <Link>
