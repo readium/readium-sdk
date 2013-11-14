@@ -44,6 +44,8 @@ public:
 
 	property String^ Content { String^ get(); void set(String^); }
 
+	property INavigationElement^ Parent { INavigationElement^ get(); }
+
 };
 
 END_READIUM_API
