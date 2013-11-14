@@ -65,4 +65,9 @@ void NavigationPoint::Content::set(String^ value)
 	_native->SetContent(std::move(StringToNative(value)));
 }
 
+INavigationElement^ NavigationPoint::Parent::get()
+{
+	return NavElementFromNative()(_native->Owner());
+}
+
 END_READIUM_API
