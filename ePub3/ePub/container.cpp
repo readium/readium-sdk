@@ -38,6 +38,14 @@ static const char * gRootfilesXPath = "/ocf:container/ocf:rootfiles/ocf:rootfile
 static const char * gRootfilePathsXPath = "/ocf:container/ocf:rootfiles/ocf:rootfile/@full-path";
 static const char * gVersionXPath = "/ocf:container/@version";
 
+template <typename _Tp>
+std::future<_Tp> __make_ready_future(_Tp& value)
+{
+	std::promise<_Tp> __p;
+	__p.set_value(value);
+	return __p.get_future();
+}
+
 Container::Container() :
 #if EPUB_PLATFORM(WINRT)
 	NativeBridge(),
@@ -136,7 +144,10 @@ std::future<ContainerPtr> Container::OpenContainerAsync(const string& path, std:
     // see if it's complete with a nil value
     if (result.wait_for(std::chrono::system_clock::duration(0)) == std::future_status::ready)
     {
-        if (result.get().get() == nullptr)
+		ContainerPtr container = result.get();
+		if (container)
+			result = __make_ready_future(container);
+		else
             result = std::async(policy, &Container::OpenContainerForContentModule, path);
     }
     
@@ -149,7 +160,10 @@ ContainerPtr Container::OpenSynchronouslyForWinRT(const string& path)
 	// see if it's complete with a nil value
 	if (future.wait_for(std::chrono::system_clock::duration(0)) == std::future_status::ready)
 	{
-		if (future.get().get() == nullptr)
+		ContainerPtr result = future.get();
+		if (bool(result))
+			return result;
+		else
 			return OpenContainerForContentModule(path);
 	}
 
