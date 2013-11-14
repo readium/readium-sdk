@@ -22,6 +22,11 @@
 #include "WinProperty.h"
 #include "WinPropertyExtension.h"
 #include "CollectionBridges.h"
+#include "IPropertyHolder.h"
+#include "PropertyHolderImpl.h"
+#include "WinPackage.h"
+#include "WinSpine.h"
+#include "WinManifest.h"
 
 using namespace ::Platform;
 using namespace ::Windows::Foundation;
@@ -31,11 +36,39 @@ BEGIN_READIUM_API
 
 using ExtensionList = BridgedObjectVectorView<PropertyExtension^, ::ePub3::PropertyExtensionPtr>;
 
+static ::ePub3::PropertyHolderPtr GetNative(IPropertyHolder^ holder)
+{
+	Package^ pkg = dynamic_cast<Package^>(holder);
+	if (pkg != nullptr)
+		return std::dynamic_pointer_cast<::ePub3::PropertyHolder>(pkg->NativeObject);
+
+	SpineItem^ spine = dynamic_cast<SpineItem^>(holder);
+	if (spine != nullptr)
+		return std::dynamic_pointer_cast<::ePub3::PropertyHolder>(spine->NativeObject);
+
+	ManifestItem^ manifest = dynamic_cast<ManifestItem^>(holder);
+	if (manifest != nullptr)
+		return std::dynamic_pointer_cast<::ePub3::PropertyHolder>(manifest->NativeObject);
+
+	return nullptr;
+}
+
 _BRIDGE_API_IMPL_(::ePub3::PropertyPtr, Property)
 
 Property::Property(::ePub3::PropertyPtr native) : _native(native)
 {
 	_native->SetBridge(this);
+}
+
+Property::Property(IPropertyHolder^ holder) : _native(ePub3::Property::New(GetNative(holder)))
+{
+	_native->SetBridge(this);
+}
+Property::Property(IPropertyHolder^ holder, Uri^ type, String^ value) : _native(ePub3::Property::New(GetNative(holder)))
+{
+	_native->SetBridge(this);
+	_native->SetPropertyIdentifier(URIToIRI(type));
+	_native->SetValue(StringToNative(value));
 }
 
 Uri^ Property::IRIForDCType(DCType type)
