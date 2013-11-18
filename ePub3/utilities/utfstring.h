@@ -24,6 +24,7 @@
 
 #include <ePub3/utilities/basic.h>
 #include <ePub3/utilities/integer_sequence.h>
+#include <ePub3/utilities/string_view.h>
 #include <string>
 #include <iterator>
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
@@ -164,6 +165,12 @@ public:
 	string(::Platform::String^ s) : string(s->Data(), s->Length()) {}
 	string(const ::Platform::StringReference& s) : string(s.Data(), s.Length()) {}
 #endif
+    
+    // From string_view, u16string_view, u32string_view, wstring_view
+    string(const string_view& view) : _base(view.begin(), view.end()) {}
+    string(const u16string_view& view);
+    string(const u32string_view& view);
+    string(const wstring_view& view);
     
     template <class InputIterator>
     EPUB3_EXPORT string(InputIterator begin, InputIterator end);
@@ -554,6 +561,9 @@ public:
     __base::const_pointer data() const _NOEXCEPT { return _base.data(); }
     
     const __base& stl_str() const { return _base; }
+    
+    string_view view() const { return string_view(_base); }
+    operator string_view() const { return view(); }
 
 #if 0//EPUB_PLATFORM(WINRT)
 	::Platform::String^ winrt_str() const;

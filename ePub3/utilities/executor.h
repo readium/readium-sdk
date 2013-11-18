@@ -5,6 +5,10 @@
 //  Created by Jim Dovey on 2013-08-28.
 //  Copyright (c) 2013 The Readium Foundation and contributors. All rights reserved.
 //
+//  Based on C++ WG document ISO/IEC JTC1 SC22 WG21 N3785
+//  Published: 2013-10-08
+//  Authors: Chris Mysen, Niklas Gustafsson, Matt Austern, Jeffrey Yasskin
+//
 
 #ifndef __ePub3__executor__
 #define __ePub3__executor__
@@ -18,6 +22,7 @@
 #include <thread>
 #include <cassert>
 #include <condition_variable>
+#include <ePub3/utilities/invoke.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -27,8 +32,6 @@ EPUB3_BEGIN_NAMESPACE
 
         class executor;
         class scheduled_executor;
-        static scheduled_executor* default_executor();
-        static void set_default_executor(scheduled_executor*executor);
 
         executor* singleton_inline_executor();
 
@@ -36,17 +39,45 @@ EPUB3_BEGIN_NAMESPACE
         public:
             virtual ~executor();
             virtual void add(function<void()> closure) = 0;
-            virtual size_t num_pending_closures() const = 0;
+            virtual size_t uninitiated_task_count() const = 0;
         };
         
         class scheduled_executor : public executor {
         public:
-            virtual void add_at(chrono::system_clock::time_point abs_time, function<void()> closure) = 0;
-            virtual void add_after(chrono::system_clock::duration rel_time, function<void()> closure) = 0;
+            virtual void add_at(chrono::system_clock::time_point& abs_time, function<void()> closure) = 0;
+            virtual void add_after(chrono::system_clock::duration& rel_time, function<void()> closure) = 0;
+        };
+ 
+    Header <thread_pool> synopsis
+
+        class thread_pool;
+ 
+        class thread_pool : public scheduled_executor {
+        public:
+            explicit thread_pool(int num_threads);
+            virtual ~thread_pool();
+            
+            // [executor methods omitted]
+        };
+ 
+    Header <serial_executor> synopsis
+
+        class serial_executor;
+ 
+        class serial_executor : public executor {
+        public:
+            explicit serial_executor(executor& underlying_executor);
+            virtual ~serial_executor();
+            
+            executor* underlying_executor();
+            
+            // [executor methods omitted]
         };
  
     Header <loop_executor> synopsis
 
+        class loop_executor;
+ 
         class loop_executor : public executor {
         public:
             loop_executor();
@@ -61,25 +92,23 @@ EPUB3_BEGIN_NAMESPACE
             // [executor methods omitted]
         };
  
-    Header <serial_executor> synopsis
+    Header <inline_executor> synopsis
 
-        class serial_executor : public executor {
+        class inline_executor;
+ 
+        class inline_executor : public executor {
         public:
-            explicit serial_executor(executor* underlying_executor);
-            virtual ~serial_executor();
-            
-            executor* underlying_executor();
-            
+            explicit inline_executor();
             // [executor methods omitted]
         };
  
-    Header <thread_pool> synopsis
+    Header <thread_executor> synopsis
 
-        class thread_pool : public scheduled_executor {
+        class thread_executor;
+ 
+        class thread_executor : public executor {
         public:
-            explicit thread_pool(int num_threads);
-            virtual ~thread_pool();
-            
+            explicit thread_executor();
             // [executor methods omitted]
         };
  
@@ -91,44 +120,59 @@ EPUB3_BEGIN_NAMESPACE
 
 class executor;
 class scheduled_executor;
+class thread_pool;
+class serial_executor;
+class loop_executor;
+class inline_executor;
+class thread_executor;
 
 class __thread_pool_impl_stdcpp;
 #if EPUB_PLATFORM(WINRT)
 class __thread_pool_impl_winrt;
 #endif
 
-scheduled_executor* default_executor();
-void set_default_executor(scheduled_executor* executor);
-
-executor* singleton_inline_executor();
-
 class executor
+    : public std::enable_shared_from_this<executor>
 {
 public:
     typedef std::function<void()>   closure_type;
     
 public:
-    virtual ~executor() {}
+    virtual FORCE_INLINE
+    ~executor()
+        {}
     
-    virtual void add(closure_type closure) = 0;
-    virtual size_t num_pending_closures() const = 0;
+    virtual
+    void add(closure_type closure) = 0;
     
-    virtual closure_type GetDrainedHandler() const _NOEXCEPT { return _drained_handler; }
-    virtual void SetDrainedHandler(closure_type handler) _NOEXCEPT { _drained_handler = handler; }
+    virtual
+    size_t uninitiated_task_count() const = 0;
     
 protected:
     inline FORCE_INLINE
-    static void _run_closure(closure_type closure) {
-        // terminate if a closure throws an exception
-        // this matches the paper's guidance
-        try {
-            closure();
-        } catch (...) {
-            std::terminate();
+    static
+    void _run_closure(closure_type closure)
+        {
+            // terminate if a closure throws an exception
+            // this matches the paper's guidance
+            try {
+                invoke(closure);
+            } catch (...) {
+#ifndef NDEBUG
+                std::exception_ptr __exc = std::current_exception();
+                try
+                {
+                    std::rethrow_exception(__exc);
+                }
+                catch (std::exception& __e)
+                {
+                    std::cerr << "executor::_run_closure: caught exception" << std::endl;
+                    std::cerr << __e.what() << std::endl;
+                }
+#endif
+                std::terminate();
+            }
         }
-    }
-    
-    closure_type    _drained_handler;
 
 	friend class __thread_pool_impl_stdcpp;
 #if EPUB_PLATFORM(WINRT)
@@ -137,20 +181,27 @@ protected:
     
 };
 
-class scheduled_executor : public executor
+class scheduled_executor
+    : public executor
 {
 public:
-    virtual void add_at(std::chrono::system_clock::time_point abs_time, closure_type closure) = 0;
-    virtual void add_after(std::chrono::system_clock::duration rel_time, closure_type closure) = 0;
+    virtual
+    void add_at(std::chrono::system_clock::time_point& abs_time, closure_type closure) = 0;
     
-    template <class _Duration>
-    void add_at(std::chrono::time_point<std::chrono::system_clock, _Duration> abs_time, closure_type closure) {
-        add_at(std::chrono::time_point_cast<std::chrono::system_clock::duration>(abs_time), closure);
-    }
-    template <class _Duration>
-    void add_after(_Duration rel_time, closure_type closure) {
-        add_after(std::chrono::duration_cast<std::chrono::system_clock::duration>(rel_time), closure);
-    }
+    virtual
+    void add_after(std::chrono::system_clock::duration& rel_time, closure_type closure) = 0;
+    
+    template <class _Clock, class _Duration>
+    void add_at(std::chrono::time_point<_Clock, _Duration>& abs_time, closure_type closure)
+        {
+            add_at(std::chrono::time_point_cast<std::chrono::system_clock::duration>(abs_time), closure);
+        }
+    
+    template <class _Rep, class _Period>
+    void add_after(std::chrono::duration<_Rep, _Period>& rel_time, closure_type closure)
+        {
+            add_after(std::chrono::duration_cast<std::chrono::system_clock::duration>(rel_time), closure);
+        }
     
 };
 
@@ -158,7 +209,8 @@ public:
 #pragma mark - <loop_executor>
 #endif
 
-class loop_executor : public executor
+class loop_executor
+    : public executor
 {
 private:
     std::queue<closure_type>    _queue;
@@ -166,17 +218,35 @@ private:
     std::atomic<bool>           _make_loop_exit;
     
 public:
-    loop_executor() : _queue(), _running_closures(false), _make_loop_exit(false) {}
-    virtual ~loop_executor();
+    FORCE_INLINE
+    loop_executor()
+        : _queue(), _running_closures(false), _make_loop_exit(false)
+        {}
     
-    virtual void add(closure_type closure)      OVERRIDE    { _queue.push(closure); }
-    virtual size_t num_pending_closures() const OVERRIDE    { return _queue.size(); }
+    virtual
+    ~loop_executor();
+    
+    virtual
+    void add(closure_type closure) OVERRIDE
+        {
+            _queue.push(closure);
+        }
+    
+    virtual
+    size_t uninitiated_task_count() const OVERRIDE
+        {
+            return _queue.size();
+        }
     
     void loop();
     void run_queued_closures();
     bool try_one_closure();
     
-    void make_loop_exit() { _make_loop_exit = (bool)_running_closures; }
+    FORCE_INLINE
+    void make_loop_exit()
+        {
+            _make_loop_exit = (bool)_running_closures;
+        }
     
 private:
     void _set_running(const char* errorText);
@@ -203,7 +273,8 @@ loop_executor::~loop_executor()
 #pragma mark - <serial_executor>
 #endif
 
-class serial_executor : public executor
+class serial_executor
+    : public executor
 {
 private:
     executor*                   _underlying_executor;
@@ -214,24 +285,270 @@ private:
     std::condition_variable     _exit_condition;
     
 public:
-    explicit serial_executor(executor* underlying_executor) : _underlying_executor(underlying_executor) {
-        if (_underlying_executor == nullptr) {
-            throw std::invalid_argument("serial_executor: underlying_executor cannot be NULL");
+    explicit FORCE_INLINE
+    serial_executor(executor& underlying_executor)
+        : _underlying_executor(&underlying_executor),
+          _queue(),
+          _running(0),
+          _exiting(false),
+          _lock(),
+          _exit_condition()
+        {
+            if (_underlying_executor == nullptr) {
+                throw std::invalid_argument("serial_executor: underlying_executor cannot be NULL");
+            }
         }
-    }
-    virtual ~serial_executor();
     
-    executor* underlying_executor() { return _underlying_executor; }
+    virtual
+    ~serial_executor();
     
-    virtual void add(closure_type closure)      OVERRIDE;
-    virtual size_t num_pending_closures() const OVERRIDE    { return _queue.size(); }
+    FORCE_INLINE
+    executor& underlying_executor()
+        {
+            return *_underlying_executor;
+        }
     
-    virtual closure_type GetDrainedHandler() const _NOEXCEPT OVERRIDE {
-        return _underlying_executor->GetDrainedHandler();
-    }
-    virtual void SetDrainedHandler(closure_type handler) _NOEXCEPT OVERRIDE {
-        _underlying_executor->SetDrainedHandler(handler);
-    }
+    virtual
+    void add(closure_type closure) OVERRIDE;
+    
+    virtual
+    size_t uninitiated_task_count() const OVERRIDE
+        {
+            return _queue.size();
+        }
+    
+};
+
+#if 0
+#pragma mark - <inline_executor>
+#endif
+
+class inline_executor
+    : public executor
+{
+public:
+    explicit FORCE_INLINE
+    inline_executor()
+        {}
+    
+    virtual FORCE_INLINE
+    ~inline_executor()
+        {}
+    
+    virtual
+    void add(closure_type closure) OVERRIDE
+        {
+            _run_closure(closure);
+        }
+    
+    virtual
+    size_t uninitiated_task_count() const OVERRIDE
+        {
+            return 0;
+        }
+    
+};
+
+#if 0
+#pragma mark - <thread_executor>
+#endif
+
+class thread_executor
+    : public executor
+{
+private:
+//    std::map<std::thread::id, std::thread>  __threads_;
+    std::mutex                              __lock_;
+    std::condition_variable                 __cleanup_cv_;
+    std::atomic_size_t                      __pending_count_;
+    std::atomic_size_t                      __running_count_;
+    std::atomic<bool>                       __destruct_;
+    /*
+    class __thread_reaper
+    {
+        typedef std::pair<thread_executor*, std::thread::id>    _ReapPair;
+        
+        std::thread             __reaper_thread_;
+        std::queue<_ReapPair>   __to_reap_;
+        std::mutex              __lock_;
+        std::condition_variable __wake_;
+        std::atomic<bool>       __destruct_;
+        
+    public:
+        FORCE_INLINE
+        __thread_reaper()
+            : __to_reap_(),
+              __lock_(),
+              __wake_(),
+              __destruct_(),
+              __reaper_thread_(std::mem_fn(&__thread_reaper::_run_reaper_thread), this)
+            {}
+        
+        ~__thread_reaper()
+            {
+                __destruct_ = true;
+                __wake_.notify_all();
+                if (__reaper_thread_.joinable())
+                    __reaper_thread_.join();
+            }
+        
+        FORCE_INLINE
+        void reap_thread(thread_executor* __exec, std::thread::id __thr)
+            {
+                if (__destruct_)
+                    return;
+                
+                std::unique_lock<std::mutex> __lk(__lock_);
+                __to_reap_.emplace(__exec, __thr);
+                __wake_.notify_all();
+            }
+        
+        void reap_all(thread_executor* __exec, std::vector<std::thread::id>& __thr)
+            {
+                if (__destruct_)
+                    return;
+                
+                std::unique_lock<std::mutex> __lk(__lock_);
+                for (auto& __id : __thr)
+                {
+                    __to_reap_.emplace(__exec, __id);
+                }
+                __wake_.notify_all();
+            }
+        
+    private:
+        void _run_reaper_thread()
+            {
+                while (!__destruct_)
+                {
+                    std::unique_lock<std::mutex> __lk(__lock_);
+                    __wake_.wait(__lk, [this](){return __destruct_ || !__to_reap_.empty();});
+                    
+                    while (!__to_reap_.empty())
+                    {
+                        auto __p = __to_reap_.front();
+                        auto __thr = __p.first->__threads_.find(__p.second);
+                        if (__thr == __p.first->__threads_.end())
+                        {
+                            __p.first->__cleanup_cv_.notify_all();
+                            continue;
+                        }
+                        
+                        if (__thr->second.joinable())
+                        {
+                            // unlock the mutex before calling join()
+                            __lk.unlock();
+                            
+                            try
+                            {
+                                // race between joinable() and join(), grrr...
+                                __thr->second.join();
+                            }
+                            catch (...)
+                            {
+                            }
+                            
+                            __lk.lock();
+                        }
+                        
+                        __p.first->__threads_.erase(__thr);
+                        
+                        if (__p.first->__threads_.empty())
+                            __p.first->__cleanup_cv_.notify_all();
+                        
+                        __to_reap_.pop();
+                    }
+                }
+            }
+        
+    };
+    
+    static __thread_reaper                  __reaper_;
+    */
+public:
+    explicit FORCE_INLINE
+    thread_executor()
+        : /*__threads_(), */__lock_(), __cleanup_cv_(), __pending_count_(0), __running_count_(0)
+        {}
+    
+    virtual
+    ~thread_executor()
+        {
+            __destruct_ = true;
+            
+            std::unique_lock<std::mutex> __lk(__lock_);
+            /*
+            std::vector<std::thread::id> __vec;
+            for (auto& __item : __threads_)
+            {
+                __vec.emplace_back(__item.first);
+            }
+            
+            if (!__vec.empty())
+            {
+                __reaper_.reap_all(this, __vec);
+                __cleanup_cv_.wait(__lk, [this](){return __threads_.empty();});
+            }
+             */
+            __cleanup_cv_.wait(__lk, [this](){return __running_count_ == 0;});
+        }
+    
+    virtual
+    void add(closure_type closure) OVERRIDE
+        {
+            if (__destruct_)
+                return;
+            
+            __pending_count_++;
+            
+            // this lock stops the thread from invoking the closure until this method exits
+            std::lock_guard<std::mutex> __lk(__lock_);
+            std::thread __thr(std::mem_fn(&thread_executor::__run_closure_thread), this, closure);
+//#if EPUB_HAVE(CXX_MAP_EMPLACE)
+//            __threads_.emplace(__thr.get_id(), std::move(__thr));
+//#else
+//            __threads_[__thr.get_id()] = std::move(__thr);
+//#endif
+            __thr.detach();
+        }
+    
+    virtual
+    size_t uninitiated_task_count() const OVERRIDE
+        {
+            return __pending_count_;
+        }
+    
+private:
+    /*
+    void __reap_thread(std::thread::id __tid)
+        {
+            __reaper_.reap_thread(this, __tid);
+        }
+     */
+    
+    void __run_closure_thread(closure_type __c)
+        {
+            // wait until the thread has been safely installed in the executor's
+            // state before running the closure
+            std::unique_lock<std::mutex> __lk(__lock_);
+            if (!__destruct_)
+            {
+                __lk.unlock();
+                
+                __running_count_++;
+                __pending_count_--;
+                
+                _run_closure(__c);
+                
+                __running_count_--;
+                
+                __lk.lock();
+            }
+            
+            if (__running_count_ == 0)
+                __cleanup_cv_.notify_all();
+//            __reap_thread(std::this_thread::get_id());
+        }
     
 };
 
@@ -246,9 +563,10 @@ typedef std::priority_queue<timed_closure, std::vector<timed_closure>, __timed_c
 struct __timed_closure_less : std::binary_function<timed_closure, timed_closure, bool>
 {
     inline FORCE_INLINE
-    bool operator ()(const timed_closure& __lhs, const timed_closure& __rhs) const {
-        return __lhs.first < __rhs.first;
-    }
+    bool operator ()(const timed_closure& __lhs, const timed_closure& __rhs) const
+        {
+            return __lhs.first < __rhs.first;
+        }
 };
 
 class __thread_pool_impl_stdcpp
@@ -267,17 +585,25 @@ class __thread_pool_impl_stdcpp
 	std::condition_variable             _timers_updated;
 	
 	__thread_pool_impl_stdcpp(int num_threads);
-	virtual ~__thread_pool_impl_stdcpp();
+    
+	virtual
+    ~__thread_pool_impl_stdcpp();
 
 	void add(executor::closure_type closure);
-	size_t num_pending_closures() const {
-		return _queue.size() + _timed_queue.size() + _jobs_in_flight;
-	}
+    
+    FORCE_INLINE
+	size_t uninitiated_task_count() const
+        {
+            return _queue.size() + _timed_queue.size();
+        }
 
 	void add_at(std::chrono::system_clock::time_point abs_time, executor::closure_type closure);
-	void add_after(std::chrono::system_clock::duration rel_time, executor::closure_type closure) {
-		add_at(std::chrono::system_clock::now() + rel_time, closure);
-	}
+    
+    FORCE_INLINE
+	void add_after(std::chrono::system_clock::duration rel_time, executor::closure_type closure)
+        {
+            add_at(std::chrono::system_clock::now() + rel_time, closure);
+        }
 
 private:
 	void _RunWorker();
@@ -300,18 +626,27 @@ class __thread_pool_impl_winrt : public std::enable_shared_from_this<__thread_po
 	std::atomic<bool>                   _exiting;
 
 	__thread_pool_impl_winrt(int num_threads);
-	virtual ~__thread_pool_impl_winrt();
+    
+	virtual
+    ~__thread_pool_impl_winrt();
 
 	void add(executor::closure_type closure);
-	size_t num_pending_closures() const {
-		return _work_items.size() + _timers.size();
-	}
+    
+    FORCE_INLINE
+	size_t uninitiated_task_count() const
+        {
+            return _work_items.size() + _timers.size();
+        }
 
-	void add_at(std::chrono::system_clock::time_point abs_time, executor::closure_type closure) {
-		add_after(abs_time - std::chrono::system_clock::now(), closure);
-	}
-	void add_after(std::chrono::system_clock::duration rel_time, executor::closure_type closure);
+    FORCE_INLINE
+	void add_at(std::chrono::system_clock::time_point& abs_time, executor::closure_type closure)
+        {
+            add_after(abs_time - std::chrono::system_clock::now(), closure);
+        }
+    
+	void add_after(std::chrono::system_clock::duration& rel_time, executor::closure_type closure);
 
+private:
 	friend class ::ePub3::thread_pool;
 
 };
@@ -334,52 +669,35 @@ public:
 	thread_pool(int num_threads = Automatic)
 		: __impl_(num_threads)
 		{}
-	virtual ~thread_pool()
+	virtual
+    ~thread_pool()
 		{}
 
-	virtual void add(closure_type closure) OVERRIDE
+	virtual
+    void add(closure_type closure) OVERRIDE
 		{
 			__impl_.add(closure);
 		}
-	virtual size_t num_pending_closures() const OVERRIDE
+	virtual
+    size_t uninitiated_task_count() const OVERRIDE
 		{
-			return __impl_.num_pending_closures();
+			return __impl_.uninitiated_task_count();
 		}
 
-	virtual void add_at(std::chrono::system_clock::time_point abs_time, closure_type closure) OVERRIDE
+	virtual
+    void add_at(std::chrono::system_clock::time_point& abs_time, closure_type closure) OVERRIDE
 		{
 			__impl_.add_at(abs_time, closure);
 		}
-	virtual void add_after(std::chrono::system_clock::duration rel_time, closure_type closure) OVERRIDE
+	virtual
+    void add_after(std::chrono::system_clock::duration& rel_time, closure_type closure) OVERRIDE
 		{
 			__impl_.add_after(rel_time, closure);
 		}
     
 };
 
-#if EPUB_PLATFORM(WINRT) || EPUB_PLATFORM(MAC)
-class main_thread_executor : public scheduled_executor, std::enable_shared_from_this<class main_thread_executor>
-{
-private:
-#if EPUB_PLATFORM(WINRT)
-	static ::Windows::UI::Core::CoreDispatcher^	_mainDispatcher;
-	static void SetMainDispatcher(::Windows::UI::Core::CoreDispatcher^ dispatcher);
-#endif
-
-	std::atomic_int_fast32_t	_num_closures;
-
-public:
-	main_thread_executor() : scheduled_executor() {}
-	virtual ~main_thread_executor() {}
-
-	virtual void add(closure_type closure) OVERRIDE;
-	virtual size_t num_pending_closures() const OVERRIDE;
-
-	virtual void add_at(std::chrono::system_clock::time_point abs_time, closure_type closure) OVERRIDE;
-	virtual void add_after(std::chrono::system_clock::duration rel_time, closure_type closure) OVERRIDE;
-
-};
-#endif
+std::shared_ptr<executor> main_thread_executor();
 
 EPUB3_END_NAMESPACE
 

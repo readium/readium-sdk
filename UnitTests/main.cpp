@@ -49,7 +49,20 @@ int main(int argc, char * const argv[])
     ePub3::InitializeSdk();
     ePub3::PopulateFilterManager();
     
-    int result = Catch::Main(argc, argv);
+    /////////////////////////////////////
+    // Unit Tests
+    /////////////////////////////////////
+    
+    Catch::Session session;
+    
+    //session.configData().showSuccessfulTests = true;
+    session.configData().showDurations = Catch::ShowDurations::Always;
+    
+    int returnCode = session.applyCommandLine(argc, argv);
+    if (returnCode != 0)
+        return returnCode;
+    
+    int result = session.run();
     
     //////////////////////////////////////
     // global teardown here

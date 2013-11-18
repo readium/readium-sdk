@@ -23,104 +23,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-class inline_executor : public executor
-{
-private:
-    std::mutex                  _mutex;
-    std::atomic_int_fast32_t    _running;
-    std::atomic<bool>           _shutdown;
-    std::condition_variable     _shutdown_wait;
-    
-public:
-    inline_executor();
-    virtual ~inline_executor();
-    
-    virtual void add(closure_type closure)      OVERRIDE;
-    virtual size_t num_pending_closures() const OVERRIDE;
-    
-};
-
-#if 0
-#pragma mark -
-#endif
-
-//static thread_pool InitialDefaultExecutor;
-static scheduled_executor* DefaultExecutor = nullptr;
-
-scheduled_executor* default_executor()
-{
-	static std::once_flag __once;
-	std::call_once(__once, [=](){
-		DefaultExecutor = new thread_pool;
-	});
-    return DefaultExecutor;
-}
-
-void set_default_executor(scheduled_executor* executor)
-{
-    if ( executor == nullptr )
-        throw std::invalid_argument("set_default_executor: null executor argument");
-
-	if (DefaultExecutor != nullptr)
-		std::async([](){delete DefaultExecutor;});
-    DefaultExecutor = executor;
-}
-
-executor* singleton_inline_executor()
-{
-    static inline_executor InlineExecutor;
-    return &InlineExecutor;
-}
-
-#if 0
-#pragma mark -
-#endif
-
-inline_executor::inline_executor() : _mutex(), _running(0), _shutdown(false), _shutdown_wait()
-{
-}
-inline_executor::~inline_executor()
-{
-    bool cur = false;
-    _shutdown.compare_exchange_strong(cur, true);
-    assert(cur == false);
-    
-    // wait for all pending closures to complete
-    std::unique_lock<std::mutex> lk(_mutex);
-    _shutdown_wait.wait(lk, [&]{return _running == 0;});
-    
-    if ( bool(_drained_handler) )
-        _drained_handler();
-}
-void inline_executor::add(closure_type closure)
-{
-    if ( _shutdown )
-        return;
-    
-    // bump the run count
-    ++_running;
-    
-    // execute the closure
-    _run_closure(closure);
-    
-    // drop the run count
-    --_running;
-    
-    if ( _running == 0 && bool(_drained_handler) && !_shutdown )
-        _drained_handler();
-    
-    // signal completion
-    _shutdown_wait.notify_all();
-}
-size_t inline_executor::num_pending_closures() const
-{
-    int_fast32_t num = _running;
-    return (num > 0 ? static_cast<size_t>(num) : 0);
-}
-
-#if 0
-#pragma mark -
-#endif
+//thread_executor::__thread_reaper thread_executor::__reaper_;
 
 void loop_executor::loop()
 {
@@ -149,9 +52,6 @@ void loop_executor::run_queued_closures()
     
     _running_closures = false;
     _make_loop_exit = false;
-    
-    if ( _queue.empty() && bool(_drained_handler) )
-        _drained_handler();
 }
 bool loop_executor::try_one_closure()
 {
@@ -165,9 +65,6 @@ bool loop_executor::try_one_closure()
     }
     
     _running_closures = false;
-    if ( _queue.empty() && bool(_drained_handler) )
-        _drained_handler();
-    
     return result;
 }
 
@@ -186,23 +83,44 @@ void serial_executor::add(closure_type closure)
     if ( _exiting )
         return;
     
+    std::unique_lock<std::mutex> lk(_lock);
     _queue.push(closure);
+    
+    // if there's already a closure on the underlying executor, it will consume the new closure for us.
+    if (_running > 0)
+        return;
+    
+    // unlock our mutex -- the underlying executor could be an inline_executor
+    lk.unlock();
+    
     _underlying_executor->add([&]{
-        if (_exiting || _queue.empty()) {
+        std::unique_lock<std::mutex> ulk(_lock);
+        
+        _exit_condition.wait(ulk, [this](){
+            return _running == 0 || _exiting;
+        });
+        
+        if (_exiting) {
             return;
         }
         
-        ++_running;
+        while (!_queue.empty())
+        {
+            ++_running;
+            
+            closure_type closure_to_run = _queue.front();
+            _queue.pop();
+            
+            // unlock the mutex before the closure runs
+            ulk.unlock();
+            
+            _run_closure(closure_to_run);
+            
+            ulk.lock();
+            
+            --_running;
+        }
         
-        // synchronize the queue fetch/pop operation
-        _lock.lock();
-        closure_type closure_to_run = _queue.front();
-        _queue.pop();
-        _lock.unlock();
-        
-        _run_closure(closure_to_run);
-        
-        --_running;
         _exit_condition.notify_all();
     });
 }
@@ -211,7 +129,7 @@ void serial_executor::add(closure_type closure)
 #pragma mark -
 #endif
 
-__thread_pool_impl_stdcpp::__thread_pool_impl_stdcpp(int num_threads) : _queue(), _timed_queue(), _threads(), _jobs_in_flight(0), _mutex(), _exiting(false), _jobs_ready(), _timers_updated(), _timed_addition_thread(&__thread_pool_impl_stdcpp::_RunTimer, this)
+__thread_pool_impl_stdcpp::__thread_pool_impl_stdcpp(int num_threads) : _queue(), _timed_queue(), _threads(), _jobs_in_flight(0), _mutex(), _exiting(false), _jobs_ready(), _timers_updated(), _timed_addition_thread()
 {
     if ( num_threads < 1 )
         num_threads = std::thread::hardware_concurrency();
@@ -221,6 +139,8 @@ __thread_pool_impl_stdcpp::__thread_pool_impl_stdcpp(int num_threads) : _queue()
     for ( int i = 0; i < num_threads; i++ ) {
 		_threads.emplace_back(&__thread_pool_impl_stdcpp::_RunWorker, this);
     }
+    
+    _timed_addition_thread = std::thread(&__thread_pool_impl_stdcpp::_RunTimer, this);
 }
 __thread_pool_impl_stdcpp::~__thread_pool_impl_stdcpp()
 {
@@ -264,10 +184,14 @@ void __thread_pool_impl_stdcpp::_RunWorker()
     do
     {
         std::unique_lock<std::mutex> lk(_mutex);
-        _jobs_ready.wait(lk);
+        if (!_exiting && _queue.size() == 0)
+            _jobs_ready.wait(lk);
         
         if ( _exiting )
             break;
+        
+        if (_queue.empty())
+            continue;       // is this why the copy below is crashing sometimes?
         
         // NB: mutex is locked at this point, remember
 		executor::closure_type closure = _queue.front();
@@ -287,7 +211,7 @@ void __thread_pool_impl_stdcpp::_RunWorker()
 }
 void __thread_pool_impl_stdcpp::_RunTimer()
 {
-    do
+    while (!_exiting)
     {
         std::unique_lock<std::mutex> lk(_mutex);
         if (_exiting)
@@ -322,7 +246,7 @@ void __thread_pool_impl_stdcpp::_RunTimer()
             add(closure);
         }
         
-    } while (1);
+    }
 }
 
 #if EPUB_PLATFORM(WINRT)
@@ -360,7 +284,7 @@ void __thread_pool_impl_winrt::add(executor::closure_type closure)
 			closure();
 	}));
 }
-void __thread_pool_impl_winrt::add_after(std::chrono::system_clock::duration rel_time, executor::closure_type closure)
+void __thread_pool_impl_winrt::add_after(std::chrono::system_clock::duration rel_time&, executor::closure_type closure)
 {
 	using namespace ::Windows::System::Threading;
 	std::lock_guard<std::mutex> _(_mutex);
@@ -376,6 +300,49 @@ void __thread_pool_impl_winrt::add_after(std::chrono::system_clock::duration rel
 	_timers.push_back(timer::CreateTimer(ref new TimerElapsedHandler([self, closure](timer^ theTimer) {
 		self->add(closure);
 	}), span));
+}
+#endif
+
+#if EPUB_PLATFORM(WINRT) || EPUB_PLATFORM(MAC)
+class __main_thread_executor : public scheduled_executor
+{
+private:
+#if EPUB_PLATFORM(WINRT)
+	static ::Windows::UI::Core::CoreDispatcher^	_mainDispatcher;
+	static void SetMainDispatcher(::Windows::UI::Core::CoreDispatcher^ dispatcher);
+#endif
+
+	std::atomic_int_fast32_t    _num_closures;
+
+public:
+    
+    explicit FORCE_INLINE
+	__main_thread_executor()
+        : scheduled_executor()
+        {}
+    
+	virtual
+    ~__main_thread_executor()
+        {}
+
+	virtual
+    void add(closure_type closure) OVERRIDE;
+	
+    virtual
+    size_t uninitiated_task_count() const OVERRIDE;
+
+	virtual
+    void add_at(std::chrono::system_clock::time_point& abs_time, closure_type closure) OVERRIDE;
+	
+    virtual
+    void add_after(std::chrono::system_clock::duration& rel_time, closure_type closure) OVERRIDE;
+
+};
+
+std::shared_ptr<executor>
+main_thread_executor()
+{
+    return std::make_shared<__main_thread_executor>();
 }
 #endif
 
@@ -398,27 +365,28 @@ CFAbsoluteTime CFAbsoluteTimeFromTimePoint(std::chrono::time_point<_Clock, _Dura
     return __s1970.count() + kCFAbsoluteTimeIntervalSince1970;
 }
 
-void main_thread_executor::add(closure_type closure)
+void __main_thread_executor::add(closure_type closure)
 {
 	_num_closures++;
-	std::weak_ptr<main_thread_executor> weakThis(shared_from_this());
-	CFRunLoopPerformBlock(CFRunLoopGetMain(), kCFRunLoopCommonModes, ^{
-		closure();
-		auto self = weakThis.lock();
-		if (bool(self))
-			self->_num_closures--;
-	});
+    std::weak_ptr<__main_thread_executor> weakThis(std::dynamic_pointer_cast<__main_thread_executor>(shared_from_this()));
+    CFRunLoopPerformBlock(CFRunLoopGetMain(), kCFRunLoopCommonModes, ^{
+        auto self = weakThis.lock();
+        if (bool(self))
+            self->_num_closures--;
+        closure();
+    });
+    CFRunLoopWakeUp(CFRunLoopGetMain());
 }
-size_t main_thread_executor::num_pending_closures() const
+size_t __main_thread_executor::uninitiated_task_count() const
 {
 	return _num_closures;
 }
-void main_thread_executor::add_at(std::chrono::system_clock::time_point abs_time, closure_type closure)
+void __main_thread_executor::add_at(std::chrono::system_clock::time_point& abs_time, closure_type closure)
 {
 	using namespace std::chrono;
     CFAbsoluteTime cfTime = CFAbsoluteTimeFromTimePoint(abs_time);
 
-	auto self = shared_from_this();
+	auto self = std::dynamic_pointer_cast<__main_thread_executor>(shared_from_this());
 	CFRunLoopTimerRef timer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault, cfTime, 0.0, 0, 0, ^(CFRunLoopTimerRef theTimer) {
 		closure();
 		self->_num_closures--;
@@ -427,17 +395,18 @@ void main_thread_executor::add_at(std::chrono::system_clock::time_point abs_time
 	_num_closures++;
 	CFRunLoopAddTimer(CFRunLoopGetMain(), timer, kCFRunLoopCommonModes);
 }
-void main_thread_executor::add_after(std::chrono::system_clock::duration rel_time, closure_type closure)
+void __main_thread_executor::add_after(std::chrono::system_clock::duration& rel_time, closure_type closure)
 {
-	add_at(std::chrono::system_clock::now() + rel_time, closure);
+    auto abs_time = std::chrono::system_clock::now() + rel_time;
+	add_at(abs_time, closure);
 }
 #elif EPUB_PLATFORM(WINRT)
 ::Windows::UI::Core::CoreDispatcher^ main_thread_executor::_mainDispatcher = nullptr;
-void main_thread_executor::SetMainDispatcher(::Windows::UI::Core::CoreDispatcher^ dispatcher)
+void __main_thread_executor::SetMainDispatcher(::Windows::UI::Core::CoreDispatcher^ dispatcher)
 {
 	_mainDispatcher = dispatcher;
 }
-void main_thread_executor::add(closure_type closure)
+void __main_thread_executor::add(closure_type closure)
 {
 	using namespace ::Windows::UI::Core;
 	_num_closures++;
@@ -458,16 +427,17 @@ void main_thread_executor::add(closure_type closure)
 		}));
 	}
 }
-size_t main_thread_executor::num_pending_closures() const
+size_t __main_thread_executor::num_pending_closures() const
 {
 	return _num_closures;
 }
-void main_thread_executor::add_at(std::chrono::system_clock::time_point abs_time, closure_type closure)
+void __main_thread_executor::add_at(std::chrono::system_clock::time_point abs_time, closure_type closure)
 {
 	using namespace std::chrono;
-	add_after(abs_time - system_clock::now(), closure);
+    auto rel_time = abs_time - system_clock::now();
+	add_after(rel_time, closure);
 }
-void main_thread_executor::add_after(std::chrono::system_clock::duration rel_time, closure_type closure)
+void __main_thread_executor::add_after(std::chrono::system_clock::duration rel_time, closure_type closure)
 {
 	using namespace ::Windows::System::Threading;
 	using namespace std::chrono;
