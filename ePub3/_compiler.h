@@ -422,6 +422,7 @@
 #define _NOEXCEPT_(x) noexcept(x)
 #else
 #ifndef _MSC_VER
+#define noexcept throw()
 #define _NOEXCEPT throw()
 #endif
 #define _NOEXCEPT_(x)

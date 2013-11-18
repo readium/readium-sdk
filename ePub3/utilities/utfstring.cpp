@@ -100,6 +100,15 @@ string::string(const __base & s, size_type i, size_type n)
     throw_unless_insertable(s, i, n);
     _base.assign(s, i, n);
 }
+string::string(const u16string_view& view) : _base(_Convert<char16_t>::toUTF8(view.data(), 0, view.size()))
+{
+}
+string::string(const u32string_view& view) : _base(_Convert<char32_t>::toUTF8(view.data(), 0, view.size()))
+{
+}
+string::string(const wstring_view& view) : _base(_Convert<wchar_t>::toUTF8(view.data(), 0, view.size()))
+{
+}
 template <>
 string::string(iterator first, iterator last) : _base(first.base(), last.base())
 {

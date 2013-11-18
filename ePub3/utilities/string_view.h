@@ -216,8 +216,8 @@ template <class _CharT, class _Traits> struct hash;
 template<class _CharT, class _Traits = std::char_traits<_CharT>>
 class basic_string_view {
 private:
-    _CharT*     __data_;
-    size_t      __size_;
+    const _CharT*   __data_;
+    size_t          __size_;
     
 public:
     // types
@@ -876,18 +876,23 @@ __do_string_view_hash(_Ptr __p, _Ptr __e)
     return __murmur2_or_cityhash<size_t>()(__p, (__e - __p)*sizeof(value_type));
 }
 
-template <class _CharT, class _Traits>
-struct hash : public std::unary_function<basic_string_view<_CharT, _Traits>, std::size_t>
-{
-    std::size_t operator()(const basic_string_view<_CharT, _Traits>& __s) const _NOEXCEPT;
-};
-
-template <class _CharT, class _Traits>
-std::size_t hash<_CharT, _Traits>::operator()(const basic_string_view<_CharT, _Traits> &__s) const _NOEXCEPT
-{
-    return __do_string_view_hash(__s.data(), __s.data() + __s.size());
-}
-
 EPUB3_END_NAMESPACE
+
+namespace std
+{
+
+    template <class _CharT, class _Traits>
+    struct hash<ePub3::basic_string_view<_CharT, _Traits>> : public std::unary_function<::ePub3::basic_string_view<_CharT, _Traits>, std::size_t>
+    {
+        std::size_t operator()(const ::ePub3::basic_string_view<_CharT, _Traits>& __s) const _NOEXCEPT;
+    };
+
+    template <class _CharT, class _Traits>
+    std::size_t hash<ePub3::basic_string_view<_CharT, _Traits>>::operator()(const ::ePub3::basic_string_view<_CharT, _Traits> &__s) const _NOEXCEPT
+    {
+        return __do_string_view_hash(__s.data(), __s.data() + __s.size());
+    }
+
+}
 
 #endif
