@@ -32,7 +32,7 @@ private:
     FilterManagerImpl(const FilterManagerImpl &o) _DELETED_;
     FilterManagerImpl(FilterManagerImpl &&o) _DELETED_;
     
-    std::set<Record>     m_registeredFilters;
+    std::set<Record, PriorityOrderHighToLow>     m_registeredFilters;
     
 };
 
