@@ -11,7 +11,7 @@
 
 #include <ePub3/epub3.h>
 #include <ePub3/filter.h>
-#include <ePUb3/container.h>
+#include <ePub3/container.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -57,6 +57,13 @@ public:
         ContentFilter::TypeFactoryFn m_factory;
         
     };
+
+	struct PriorityOrderHighToLow : public std::binary_function<Record, Record, bool>
+	{
+		bool operator()(const Record& __a, const Record& __b) {
+			return __b < __a;
+		}
+	};
     
     virtual ~FilterManager() {}
     
