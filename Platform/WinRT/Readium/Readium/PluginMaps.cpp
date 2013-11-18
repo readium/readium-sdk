@@ -116,13 +116,18 @@ void SetNativeContentFilter(IContentFilter^ bridge, ::ePub3::ContentFilterPtr na
 	}
 }
 
-class WinRTContentFilterContext : public ::ePub3::FilterContext, public ::ePub3::NativeBridge
+class WinRTContentFilterContext : public ::ePub3::FilterContext
 {
+private:
+	::Platform::Object^	_rtObj;
+
 public:
 	WinRTContentFilterContext(::Platform::Object^ obj) {
-		SetBridge(obj);
+		_rtObj = obj;
 	}
 	virtual ~WinRTContentFilterContext() {}
+
+	::Platform::Object^ WinRTContextObject() { return _rtObj; }
 
 };
 
@@ -178,7 +183,7 @@ void* WinRTContentFilter::FilterData(::ePub3::FilterContext* context, void* data
 	::Platform::Object^ realContext = nullptr;
 	auto rtContext = dynamic_cast<WinRTContentFilterContext*>(context);
 	if (rtContext != nullptr)
-		realContext = rtContext->GetBridge<::Platform::Object>();
+		realContext = rtContext->WinRTContextObject();
 
 	auto buf = BridgedBuffer::MakeBuffer((byte*)data, (UINT)len);
 	IContentFilter^ filter = GetBridge<IContentFilter>();
