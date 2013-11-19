@@ -494,53 +494,6 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeInputStream
 
 	return inputStream;
 }
-JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeReadStreamForRelativePath
-		(JNIEnv* env, jobject thiz, jlong pckgPtr, jlong contnrPtr, jstring jrelativePath) {
-	char *relativePath = (char *) env->GetStringUTFChars(jrelativePath, NULL);
-    auto path = ePub3::string(PCKG(pckgPtr)->BasePath()).append(relativePath);
-    auto archive = contnr->GetArchive();
-    bool containsPath = archive->ContainsItem(path);
-    if (!containsPath) {
-        LOGE("Package.nativeReadStreamForRelativePath(): no archive found for path '%s'", path.c_str());
-        return NULL;
-    }
-    auto archiveInfo = archive->InfoAtPath(path);
-    auto reader = PCKG(pckgPtr)->ReaderForRelativePath( ePub3::string(relativePath));
-
-	env->ReleaseStringUTFChars(jrelativePath, relativePath);
-
-    if (reader == NULL) {
-    	LOGE("Package.nativeReadStreamForRelativePath(): no reader found for path '%s'", path.c_str());
-        return NULL;
-    } else {
-    	LOGD("Package.nativeReadStreamForRelativePath(): archive found for path '%s'", path.c_str());
-    }
-
-    char tmpBuffer[BUFFER_SIZE];
-
-    //TODO start check for memory leak
-    jobject jbuffer = javaEPub3_createBuffer(env, (jint) archiveInfo.UncompressedSize());
-
-    ssize_t readBytes = reader->read(tmpBuffer, BUFFER_SIZE);
-    while (readBytes > 0) {
-    	jsize length = (jsize) readBytes;
-    	jbyteArray jtmpBuffer = env->NewByteArray(readBytes);
-        jbyte* jbyteBuffer = (jbyte*) malloc(sizeof(jchar) * length);
-
-        for (int i = 0; i < length; i ++) {
-        	jbyteBuffer[i] = (jbyte)tmpBuffer[i];
-        }
-    	env->SetByteArrayRegion(jtmpBuffer, 0, length, jbyteBuffer);
-    	javaEPub3_appendBytesToBuffer(env, jbuffer, jtmpBuffer);
-
-		env->DeleteLocalRef(jtmpBuffer);
-    	free(jbyteBuffer);
-        readBytes = reader->read(tmpBuffer, BUFFER_SIZE);
-//        PRINT("After readBytes: %d", readBytes);
-    }
-    //TODO end check for memory leak
-	return jbuffer;
-}
 
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetProperty
 		(JNIEnv* env, jobject thiz, jlong pckgPtr, jstring jpropertyName, jstring jprefix)

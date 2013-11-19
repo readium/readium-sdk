@@ -186,13 +186,6 @@ JNIEXPORT jint JNICALL Java_org_readium_sdk_android_Package_nativeGetArchiveInfo
 		(JNIEnv* env, jobject thiz, jlong pckgPtr, jlong contnrPtr, jstring jrelativePath);
 /*
  * Class:     org_readium_sdk_android_Package
- * Method:    nativeReadStreamForRelativePath
- * Signature: (JJLjava/lang/String;)Ljava/nio/ByteBuffer;
- */
-JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeReadStreamForRelativePath
-		(JNIEnv* env, jobject thiz, jlong pckgPtr, jlong contnrPtr, jstring jrelativePath);
-/*
- * Class:     org_readium_sdk_android_Package
  * Method:    nativeInputStreamForRelativePath
  * Signature: (JJLjava/lang/String;)Ljava/io/InputStream;
  */
