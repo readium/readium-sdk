@@ -21,6 +21,7 @@
 
 package org.readium.sdk.android;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -366,13 +367,18 @@ public class Package {
 	 * @return the resource as a byte array. If no data is retrieved, the byte array length is 0.
 	 */
 	public byte[] getContent(String relativePath) {
-		ByteBuffer buffer = nativeReadStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath);
-		if (buffer == null) {
-			return new byte[0];
+		InputStream in = getInputStream(relativePath);
+		if (in == null) {
+			return null;
 		}
-		byte[] content = new byte[buffer.limit()];
-		System.arraycopy(buffer.array(), 0, content, 0, content.length);
-		return content;
+		try {
+			byte[] content = new byte[in.available()];
+			in.read(content);
+			return content;
+		} catch (IOException ex) {
+			Log.e(TAG, ""+ex.getMessage(), ex);
+		}
+		return null;
 	}
 
 	/**
@@ -461,8 +467,6 @@ public class Package {
 	 * Content 
 	 */
 	private native InputStream nativeInputStreamForRelativePath(long nativePtr, 
-			long containerPtr, String relativePath);
-	private native ByteBuffer nativeReadStreamForRelativePath(long nativePtr, 
 			long containerPtr, String relativePath);
 	
 	private native int nativeGetArchiveInfoSize(long nativePtr, 
