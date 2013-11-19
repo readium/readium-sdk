@@ -894,11 +894,12 @@ bool Package::Unpack()
 			}
 		}
 	}
+
+	// go through the TOC and copy titles to the relevant spine items for easy access
+	CompileSpineItemTitles();
     
-    // lastly, let's set the media support information...
+    // lastly, let's set the media support information
     InitMediaSupport();
-    // ...and get our filter chain set up
-    BuildFilterChain();
     
     return true;
 }
@@ -1626,9 +1627,41 @@ void Package::InitMediaSupport()
         }
     }
 }
-void Package::BuildFilterChain()
+void Package::CompileSpineItemTitles()
 {
-    _filterChain = FilterManager::Instance()->BuildFilterChainForPackage(Ptr());
+	NavigationTablePtr toc = TableOfContents();
+	if (!bool(toc))
+		return;
+
+	// optimization: we assume that TOC/spine are both in-order, so we can avoid searching a linked-list every time
+
+	std::map<string, string> lookup;
+	_CompileSpineItemTitlesInternal(toc->Children(), lookup);
+
+	for (auto item = FirstSpineItem(); bool(item); item = item->Next())
+	{
+		string path = item->ManifestItem()->AbsolutePath();
+		auto pos = lookup.find(path);
+		if (pos != lookup.end())
+			item->SetTitle(pos->second);
+	}
+}
+void Package::_CompileSpineItemTitlesInternal(const NavigationList& navPoints, std::map<string, string>& compiled)
+{
+	// compile the titles to a list, accessed by absolute path
+	for (auto& element : navPoints)
+	{
+		NavigationPointPtr pt = std::dynamic_pointer_cast<NavigationPoint>(element);
+		if (bool(pt))
+		{
+			string path = pt->AbsolutePath();
+			auto pos = compiled.find(path);
+			if (pos == compiled.end())
+				compiled[path] = pt->Title();
+		}
+
+		_CompileSpineItemTitlesInternal(element->Children(), compiled);
+	}
 }
 
 EPUB3_END_NAMESPACE

@@ -640,6 +640,10 @@
 #define EPUB_HAVE_MADV_FREE 1
 #endif
 
+#if EPUB_PLATFORM(WINRT)
+#define EPUB_HAVE_CXX_FILESYSTEM 1
+#endif
+
 /* WTF original does all the ENABLE_[FEATURE] bits here */
 
 #endif

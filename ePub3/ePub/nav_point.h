@@ -58,6 +58,10 @@ public:
     const string&           Content()                   const   { return _content; }
     void                    SetContent(const string& str)       { _content = str; }
     void                    SetContent(string&& str)            { _content = str; }
+
+	///
+	/// Turns the Content() href into an absolute value, similar to ManifestItem::AbsolutePath().
+	string					AbsolutePath()				const;
     
 protected:
     string _label;

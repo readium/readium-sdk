@@ -139,6 +139,12 @@ public:
     /// Determine the spread location for this item (or for the first page thereof).
     EPUB3_EXPORT
     PageSpread          Spread()            const;
+
+	///
+	/// The title for this spine item, as defined in the TOC.
+	EPUB3_EXPORT
+	const string&		Title()				const		{ return _toc_title; }
+	void				SetTitle(const string& str)		{ _toc_title = str; }
     
     /// @}
     
@@ -196,6 +202,8 @@ public:
 protected:
     string                  _idref;             ///< The `idref` value targetting a ManifestItem.
     bool                    _linear;            ///< `true` if the item is linear (the default).
+	
+	string					_toc_title;
     
     weak_ptr<SpineItem>     _prev;              ///< The SpineItem preceding this one in the spine.
     shared_ptr<SpineItem>   _next;              ///< The SpineItem following this one in the spine.

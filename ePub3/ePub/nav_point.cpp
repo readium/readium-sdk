@@ -20,7 +20,60 @@
 //
 
 #include "nav_point.h"
+#include "nav_table.h"
+#include "utilities/path_help.h"
 
 EPUB3_BEGIN_NAMESPACE
+
+string NavigationPoint::AbsolutePath() const
+{
+	NavigationElementPtr parent = Owner();
+	NavigationTablePtr root;
+	do
+	{
+		if (!bool(parent))
+			break;
+
+		root = std::dynamic_pointer_cast<NavigationTable>(parent);
+		if (!bool(root))
+		{
+			NavigationPointPtr pt = std::dynamic_pointer_cast<NavigationPoint>(parent);
+			if (!bool(pt))
+				break;
+			parent = pt->Owner();
+		}
+
+	} while (!bool(root));
+
+	if (!bool(root))
+		return _content;
+
+	string sourceRoot = root->SourceHref();
+	auto pos = sourceRoot.rfind('/');
+	if (pos != string::npos)
+		sourceRoot.erase(pos);
+
+	string full = sourceRoot;
+	if (_content[0] == '/' && sourceRoot[sourceRoot.size() - 1] == '/')
+	{
+		full += _content.c_str() + 1;
+	}
+	else if (_content[0] != '/' && sourceRoot[sourceRoot.size() - 1] != '/')
+	{
+		full += '/';
+		full += _content;
+	}
+	else
+	{
+		full += _content;
+	}
+
+	full = CleanupPath(full);
+	pos = full.rfind('#');
+	if (pos != string::npos)
+		full.erase(pos);
+
+	return full;
+}
 
 EPUB3_END_NAMESPACE
