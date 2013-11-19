@@ -33,6 +33,7 @@ private:
 
 	bool							_needs_cache;
 	ByteBuffer						_cache;
+	ByteBuffer						_read_cache;
 
 public:
 	FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem);
@@ -85,7 +86,7 @@ private:
 };
 
 FilterChainSyncStream::FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem)
-: _input(std::move(input)), _filters(), _needs_cache(false), _cache()
+: _input(std::move(input)), _filters(), _needs_cache(false), _cache(), _read_cache()
 {
 	for (auto& filter : filters)
 	{
@@ -104,17 +105,26 @@ ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type le
 		return ReadBytesFromCache(bytes, len);
 	}
 
+	if (_read_cache.GetBufferSize() > 0)
+	{
+		size_type toMove = std::min(len, _read_cache.GetBufferSize());
+		::memcpy_s(bytes, len, _read_cache.GetBytes(), toMove);
+		_read_cache.RemoveBytes(toMove);
+		return toMove;
+	}
+
 	size_type result = _input->ReadBytes(bytes, len);
 	return FilterBytes(bytes, result);
 }
 ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, size_type len)
 {
 	size_type result = len;
+	ByteBuffer buf(reinterpret_cast<unsigned char*>(bytes), len);
 
 	for (auto& pair : _filters)
 	{
 		std::size_t filteredLen = 0;
-		void* filteredData = pair.first->FilterData(pair.second.get(), bytes, result, &filteredLen);
+		void* filteredData = pair.first->FilterData(pair.second.get(), buf.GetBytes(), buf.GetBufferSize(), &filteredLen);
 		if (filteredData == nullptr || filteredLen == 0) {
 			if (filteredData != nullptr && filteredData != bytes)
 				delete[] reinterpret_cast<char*>(filteredData);
@@ -123,12 +133,26 @@ ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, size_type 
 
 		if (filteredData != bytes)
 		{
-			::memcpy_s(bytes, len, filteredData, filteredLen);
+			if (filteredLen <= len)
+			{
+				::memcpy_s(buf.GetBytes(), buf.GetBufferSize(), filteredData, filteredLen);
+				if (filteredLen < buf.GetBufferSize())
+					buf.RemoveBytes(buf.GetBufferSize() - filteredLen, filteredLen);
+			}
+			else
+			{
+				uint8_t* p = reinterpret_cast<uint8_t*>(filteredData);
+				buf.RemoveBytes(buf.GetBufferSize());
+				buf.AddBytes(p, filteredLen);
+			}
 			delete[] reinterpret_cast<char*>(filteredData);
 		}
 
 		result = filteredLen;
 	}
+
+	result = buf.MoveTo(reinterpret_cast<uint8_t*>(bytes), len);
+	_read_cache = std::move(buf);
 
 	return result;
 }
@@ -155,6 +179,11 @@ void FilterChainSyncStream::CacheBytes()
 
 	// filter everything completely
 	size_type filtered = FilterBytes(_cache.GetBytes(), _cache.GetBufferSize());
+	if (!_read_cache.IsEmpty())
+	{
+		_cache.AddBytes(_read_cache.GetBytes(), _read_cache.GetBufferSize());
+		_read_cache.RemoveBytes(_read_cache.GetBufferSize());
+	}
 	if (filtered < _cache.GetBufferSize())
 	{
 		_cache.RemoveBytes(_cache.GetBufferSize() - filtered, filtered);
