@@ -795,6 +795,12 @@ protected:
     ///
     /// Used to handle the `prefix` attribute of the OPF `<package>` element.
     void                    InstallPrefixesFromAttributeValue(const string& attrValue);
+	///
+	/// Assigns titlues to SpineItems based on the contents of the TOC nav table.
+	void					CompileSpineItemTitles();
+	///
+	/// Internal recursive function for navigating the TOC tree.
+	static void				_CompileSpineItemTitlesInternal(const NavigationList& navPoints, std::map<string, string>& compiled);
     
     // default is `true`
     EPUB3_EXPORT
