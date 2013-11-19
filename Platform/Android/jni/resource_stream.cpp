@@ -127,7 +127,6 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_
     char tmpBuffer[BUFFER_SIZE];
     auto byteStream = stream->getPtr();
 
-    //TODO start check for memory leak
     jobject jbuffer = javaEPub3_createBuffer(env, dataLength);
 
 	std::size_t readBytes = byteStream->ReadBytes(&tmpBuffer, std::min(dataLength, BUFFER_SIZE));
@@ -136,23 +135,17 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_
     while (readData <= dataLength && readBytes > 0) {
     	jsize length = (jsize) readBytes;
     	jbyteArray jtmpBuffer = env->NewByteArray(readBytes);
-        jbyte* jbyteBuffer = (jbyte*) malloc(sizeof(jchar) * length);
 
-        for (int i = 0; i < length; i ++) {
-        	jbyteBuffer[i] = (jbyte)tmpBuffer[i];
-        }
-    	env->SetByteArrayRegion(jtmpBuffer, 0, length, jbyteBuffer);
+        env->SetByteArrayRegion(jtmpBuffer, 0, length, tmpBuffer);
     	javaEPub3_appendBytesToBuffer(env, jbuffer, jtmpBuffer);
 
 		env->DeleteLocalRef(jtmpBuffer);
-    	free(jbyteBuffer);
 
     	if (readData <= dataLength) {
     		readBytes = byteStream->ReadBytes(&tmpBuffer, std::min(dataLength - readData, BUFFER_SIZE));
 			readData += readBytes;
     	}
     }
-    //TODO end check for memory leak
 	return jbuffer;
 }
 
