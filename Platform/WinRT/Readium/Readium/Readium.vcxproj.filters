@@ -1,72 +1,184 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Resources">
       <UniqueIdentifier>d12a9e57-cb5c-4e15-bc18-8d86324b576f</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Public Interface">
+      <UniqueIdentifier>{6b16c072-47f7-46a0-85c2-b29b4b4d9be8}</UniqueIdentifier>
+    </Filter>
     <Filter Include="ePub3">
-      <UniqueIdentifier>{748cb2b9-498b-4ea8-91e7-2c6ce9e3f509}</UniqueIdentifier>
+      <UniqueIdentifier>{898eeabb-8235-4c18-b292-85a10a8a460f}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub">
-      <UniqueIdentifier>{27418a2a-91b6-4a65-b75e-95a65126aeee}</UniqueIdentifier>
+      <UniqueIdentifier>{0617d508-cccd-4ee6-8bd2-9da10e1f0a06}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\Filters">
-      <UniqueIdentifier>{263c7764-2844-4cd5-b35b-dfdaf2874799}</UniqueIdentifier>
+      <UniqueIdentifier>{1b9e2b57-2577-43d3-83ba-5682c7e1a427}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\Filters\Content Preprocessing">
-      <UniqueIdentifier>{a9d9b5f8-4270-4c5e-9a0c-11547b4bc1c9}</UniqueIdentifier>
+      <UniqueIdentifier>{b78af7cd-e21b-4356-8066-76db70077083}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\Filters\Encryption">
-      <UniqueIdentifier>{60af53db-d0a2-4248-b9c5-cf5d2658ebd0}</UniqueIdentifier>
+      <UniqueIdentifier>{f4fc6d43-ec16-48e7-8f07-970faa891371}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\Library">
-      <UniqueIdentifier>{800704d6-132c-4cce-85a9-b48dc8af7367}</UniqueIdentifier>
+      <UniqueIdentifier>{8bd45694-c6d9-40e5-bcd6-f2ec1116c833}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\Components">
-      <UniqueIdentifier>{e25df9a7-1461-42fa-834a-f74a7f70b24c}</UniqueIdentifier>
+      <UniqueIdentifier>{7531472e-13d9-4591-8113-d3edad5c312a}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\Components\Properties">
-      <UniqueIdentifier>{b2011019-646f-4b9e-a718-da05291e6ee8}</UniqueIdentifier>
+      <UniqueIdentifier>{1a230b56-18a2-4760-a1dc-c783e40463bc}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\Components\Navigation">
-      <UniqueIdentifier>{a9adfa17-18bb-49c3-9700-1854679d43ab}</UniqueIdentifier>
+      <UniqueIdentifier>{eb783f34-5ed6-4bec-944b-77eb931803ef}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\Archives">
-      <UniqueIdentifier>{3235d633-cd46-4100-bc13-d5b0e97b0867}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ePub3\xml">
-      <UniqueIdentifier>{7d669fb4-ab13-4291-bf8e-95d7ddcd8d3c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ePub3\utilities">
-      <UniqueIdentifier>{adb09294-1d65-490d-8da1-67978cafd0af}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ePub3\ThirdParty">
-      <UniqueIdentifier>{77e0190d-efe0-42a6-81c6-85e4a2a68642}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ePub3\xml\tree">
-      <UniqueIdentifier>{79635073-fd33-40af-ab36-18d53e9c2ad6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ePub3\xml\utilities">
-      <UniqueIdentifier>{85909288-0ea0-4fb8-8aa9-2c23b233f970}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ePub3\xml\validation">
-      <UniqueIdentifier>{3af8ac1e-f268-453b-b9ce-42478cf7422d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ePub3\ThirdParty\google-url">
-      <UniqueIdentifier>{ca534ab5-ecc1-41e3-a2f1-43f0d004a390}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ePub3\ThirdParty\libzip">
-      <UniqueIdentifier>{2f8add03-0030-4022-a58f-cfae68875819}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Public Interface">
-      <UniqueIdentifier>{75dc7278-0a03-441b-9e58-bead16552580}</UniqueIdentifier>
+      <UniqueIdentifier>{88bd7c19-dc7a-4411-9da4-6bc1e8976c17}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\ContentModule">
-      <UniqueIdentifier>{59241a09-f0c4-4e4f-b28a-9192648282fb}</UniqueIdentifier>
+      <UniqueIdentifier>{1e60e318-cc76-49c7-bd56-11d6ac47676f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ePub3\xml">
+      <UniqueIdentifier>{2816625c-25b2-41ca-87b2-11df60fff7b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ePub3\xml\tree">
+      <UniqueIdentifier>{362e7ffa-ff7d-4730-ad9a-086438b165c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ePub3\xml\utilities">
+      <UniqueIdentifier>{55f0a9a0-bb65-49b1-af88-534ae94fe4fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ePub3\xml\validation">
+      <UniqueIdentifier>{fb7fa3c7-1271-4b26-8b31-a3f1aba39030}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ePub3\utilities">
+      <UniqueIdentifier>{a59af293-11a6-4a86-b377-581a2c735b20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ePub3\ThirdParty">
+      <UniqueIdentifier>{4d2a4fa4-4be5-471d-9a0e-2587c8109e3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ePub3\ThirdParty\google-url">
+      <UniqueIdentifier>{a52215dd-277b-4d23-a2dc-2ad8b2a311aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ePub3\ThirdParty\libzip">
+      <UniqueIdentifier>{8277a60a-510e-49f2-b440-9d1b0ac8679c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ThreadEmulation.h" />
+    <ClInclude Include="BufferBridge.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CollectionBridges.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="ExceptionWrapper.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="IContentFilter.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="IContentHandler.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="IContentModule.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="INavigationElement.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="IPropertyHolder.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="NavElementList.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="PluginMaps.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertyHolderImpl.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertyHolderSubclassDecl.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertyHolderSubclassImpl.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertyTypes.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinCFI.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinContainer.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinContentModuleManager.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinCredentialRequest.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinEncryptionInfo.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinErrorHandler.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinFilterChain.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinFilterManager.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinInitialization.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinLibrary.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Readium.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Streams.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinManifest.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinMediaHandler.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinMediaSupport.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinNavPoint.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinNavTable.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinPackage.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinProperty.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinPropertyExtension.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinSpine.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\base.h">
+      <Filter>ePub3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\epub3.h">
+      <Filter>ePub3</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\..\ePub3\_compiler.h">
       <Filter>ePub3</Filter>
     </ClInclude>
@@ -76,8 +188,140 @@
     <ClInclude Include="..\..\..\..\ePub3\_platform.h">
       <Filter>ePub3</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\ePub3\base.h">
-      <Filter>ePub3</Filter>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\Forward.h">
+      <Filter>ePub3\ePub</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\xpath_wrangler.h">
+      <Filter>ePub3\ePub</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\filter.h">
+      <Filter>ePub3\ePub\Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\filter_chain.h">
+      <Filter>ePub3\ePub\Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\filter_manager.h">
+      <Filter>ePub3\ePub\Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\filter_manager_impl.h">
+      <Filter>ePub3\ePub\Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\object_preprocessor.h">
+      <Filter>ePub3\ePub\Filters\Content Preprocessing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\switch_preprocessor.h">
+      <Filter>ePub3\ePub\Filters\Content Preprocessing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\font_obfuscation.h">
+      <Filter>ePub3\ePub\Filters\Encryption</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\library.h">
+      <Filter>ePub3\ePub\Library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\cfi.h">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\container.h">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\content_handler.h">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\encryption.h">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\initialization.h">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\manifest.h">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\media_support_info.h">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\package.h">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\signatures.h">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\spine.h">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\property.h">
+      <Filter>ePub3\ePub\Components\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\property_extension.h">
+      <Filter>ePub3\ePub\Components\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\property_holder.h">
+      <Filter>ePub3\ePub\Components\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\glossary.h">
+      <Filter>ePub3\ePub\Components\Navigation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\nav_element.h">
+      <Filter>ePub3\ePub\Components\Navigation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\nav_point.h">
+      <Filter>ePub3\ePub\Components\Navigation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\nav_table.h">
+      <Filter>ePub3\ePub\Components\Navigation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\archive.h">
+      <Filter>ePub3\ePub\Archives</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\archive_xml.h">
+      <Filter>ePub3\ePub\Archives</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\zip_archive.h">
+      <Filter>ePub3\ePub\Archives</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\content_module.h">
+      <Filter>ePub3\ePub\ContentModule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\content_module_manager.h">
+      <Filter>ePub3\ePub\ContentModule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\credential_request.h">
+      <Filter>ePub3\ePub\ContentModule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\user_action.h">
+      <Filter>ePub3\ePub\ContentModule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\document.h">
+      <Filter>ePub3\xml\tree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\element.h">
+      <Filter>ePub3\xml\tree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\node.h">
+      <Filter>ePub3\xml\tree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\xpath.h">
+      <Filter>ePub3\xml\tree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\utilities\base.h">
+      <Filter>ePub3\xml\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\utilities\io.h">
+      <Filter>ePub3\xml\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\utilities\xmlstring.h">
+      <Filter>ePub3\xml\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\validation\c14n.h">
+      <Filter>ePub3\xml\validation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\validation\dtd.h">
+      <Filter>ePub3\xml\validation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\validation\ns.h">
+      <Filter>ePub3\xml\validation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\xml\validation\schema.h">
+      <Filter>ePub3\xml\validation</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\ePub3\utilities\basic.h">
       <Filter>ePub3\utilities</Filter>
@@ -109,6 +353,9 @@
     <ClInclude Include="..\..\..\..\ePub3\utilities\make_unique.h">
       <Filter>ePub3\utilities</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\NativeBridge.h">
+      <Filter>ePub3\utilities</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\..\ePub3\utilities\owned_by.h">
       <Filter>ePub3\utilities</Filter>
     </ClInclude>
@@ -130,7 +377,6 @@
     <ClInclude Include="..\..\..\..\ePub3\utilities\xml_identifiable.h">
       <Filter>ePub3\utilities</Filter>
     </ClInclude>
-    <ClInclude Include="ThreadEmulation.h" />
     <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\base\basictypes.h">
       <Filter>ePub3\ThirdParty\google-url</Filter>
     </ClInclude>
@@ -442,10 +688,179 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ThreadEmulation.cpp" />
+    <ClCompile Include="PluginMaps.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Streams.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinCFI.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinContainer.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinContentModuleManager.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinCredentialRequest.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinEncryptionInfo.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinErrorHandler.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinFilterChain.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinFilterManager.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinInitialization.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinLibrary.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinManifest.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinMediaHandler.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinMediaSupport.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinNavPoint.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinNavTable.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinPackage.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinProperty.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinPropertyExtension.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinSpine.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\xpath_wrangler.cpp">
+      <Filter>ePub3\ePub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_chain.cpp">
+      <Filter>ePub3\ePub\Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager.cpp">
+      <Filter>ePub3\ePub\Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager_impl.cpp">
+      <Filter>ePub3\ePub\Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\object_preprocessor.cpp">
+      <Filter>ePub3\ePub\Filters\Content Preprocessing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\switch_preprocessor.cpp">
+      <Filter>ePub3\ePub\Filters\Content Preprocessing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\font_obfuscation.cpp">
+      <Filter>ePub3\ePub\Filters\Encryption</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\library.cpp">
+      <Filter>ePub3\ePub\Library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\cfi.cpp">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\container.cpp">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\content_handler.cpp">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\encryption.cpp">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\initialization.cpp">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\manifest.cpp">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media_support_info.cpp">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\package.cpp">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\signatures.cpp">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\spine.cpp">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\property.cpp">
+      <Filter>ePub3\ePub\Components\Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\property_extension.cpp">
+      <Filter>ePub3\ePub\Components\Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\property_holder.cpp">
+      <Filter>ePub3\ePub\Components\Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\glossary.cpp">
+      <Filter>ePub3\ePub\Components\Navigation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\nav_point.cpp">
+      <Filter>ePub3\ePub\Components\Navigation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\nav_table.cpp">
+      <Filter>ePub3\ePub\Components\Navigation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\archive.cpp">
+      <Filter>ePub3\ePub\Archives</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\archive_xml.cpp">
+      <Filter>ePub3\ePub\Archives</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\zip_archive.cpp">
+      <Filter>ePub3\ePub\Archives</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\content_module_manager.cpp">
+      <Filter>ePub3\ePub\ContentModule</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\credential_request.cpp">
+      <Filter>ePub3\ePub\ContentModule</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\xml\tree\document_win.cpp">
+      <Filter>ePub3\xml\tree</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\xml\tree\element_win.cpp">
+      <Filter>ePub3\xml\tree</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\xml\tree\node_win.cpp">
+      <Filter>ePub3\xml\tree</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\xml\tree\xpath_win.cpp">
+      <Filter>ePub3\xml\tree</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\xml\utilities\io_win.cpp">
+      <Filter>ePub3\xml\utilities</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\utilities\byte_buffer.cpp">
       <Filter>ePub3\utilities</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\utilities\byte_stream.cpp">
+      <Filter>ePub3\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\CPUCacheUtils_win.cpp">
       <Filter>ePub3\utilities</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\utilities\epub_locale.cpp">
@@ -467,10 +882,6 @@
       <Filter>ePub3\utilities</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\utilities\utfstring.cpp">
-      <Filter>ePub3\utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="ThreadEmulation.cpp" />
-    <ClCompile Include="..\..\..\..\ePub3\utilities\CPUCacheUtils_win.cpp">
       <Filter>ePub3\utilities</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\base\string16.cc">
@@ -551,9 +962,6 @@
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_entry_new.c">
       <Filter>ePub3\ThirdParty\libzip</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_err_str.c">
-      <Filter>ePub3\ThirdParty\libzip</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error.c">
       <Filter>ePub3\ThirdParty\libzip</Filter>
     </ClCompile>
@@ -572,7 +980,13 @@
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error_to_str.c">
       <Filter>ePub3\ThirdParty\libzip</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_err_str.c">
+      <Filter>ePub3\ThirdParty\libzip</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fclose.c">
+      <Filter>ePub3\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_filerange_crc.c">
       <Filter>ePub3\ThirdParty\libzip</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_error_clear.c">
@@ -587,9 +1001,6 @@
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_strerror.c">
       <Filter>ePub3\ThirdParty\libzip</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_filerange_crc.c">
-      <Filter>ePub3\ThirdParty\libzip</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fopen.c">
       <Filter>ePub3\ThirdParty\libzip</Filter>
     </ClCompile>
@@ -600,6 +1011,12 @@
       <Filter>ePub3\ThirdParty\libzip</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_free.c">
+      <Filter>ePub3\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fseek.c">
+      <Filter>ePub3\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_ftell.c">
       <Filter>ePub3\ThirdParty\libzip</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_archive_comment.c">
