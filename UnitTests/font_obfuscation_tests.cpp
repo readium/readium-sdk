@@ -41,7 +41,7 @@ TEST_CASE("Obfuscated fonts are decrypted properly", "")
     
     // should match this manifest item & encInfo
     FontObfuscator obfuscator(c);
-    FilterContext* ctx = obfuscator.MakeFilterContext();
+    FilterContext* ctx = obfuscator.MakeFilterContext(manifestItem);
     
     REQUIRE(obfuscator.TypeSniffer()(manifestItem));
     
