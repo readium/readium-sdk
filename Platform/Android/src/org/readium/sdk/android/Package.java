@@ -73,6 +73,7 @@ public class Package {
 	private String authors;
 	private String modificationDate;
 	private String pageProgressionDirection;
+	private String smilDataJson;
 	private List<String> authorList;
 	private List<String> subjects;
 	private List<SpineItem> spineItems;
@@ -159,6 +160,7 @@ public class Package {
 		subjects = nativeGetSubjects(__nativePtr);
 		spineItems = nativeGetSpineItems(__nativePtr);
 		manifestTable = nativeGetManifestTable(__nativePtr);
+		smilDataJson = nativeGetSmilDataAsJson(__nativePtr);
 		Log.i(TAG, "package nativePtr: " + __nativePtr);
 		Log.i(TAG, "title: "+title);
 		Log.i(TAG, "subtitle: "+subtitle);
@@ -184,6 +186,7 @@ public class Package {
 		Log.i(TAG, "subjects: "+subjects);
 		Log.i(TAG, "spineItems: "+spineItems.size());
 		Log.i(TAG, "manifestTable: "+manifestTable.size());
+		Log.i(TAG, "smilDataJson: "+ smilDataJson);
 	}
 
 	public long getNativePtr() {
@@ -477,4 +480,8 @@ public class Package {
 	private native int nativeGetArchiveInfoSize(long nativePtr, 
 			long containerPtr, String relativePath);
 
+	/*
+	 * SMIL
+	 */
+	private native String nativeGetSmilDataAsJson(long nativePtr);
 }

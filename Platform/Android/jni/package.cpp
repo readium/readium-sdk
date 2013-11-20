@@ -27,6 +27,9 @@
 
 #include <ePub3/archive.h>
 #include <ePub3/container.h>
+#include <ePub3/media-overlays_smil_model.h>	// ePub3::MediaOverlaysSmilModel
+#include <ePub3/media-overlays_smil_data.h>		// ePub3::SMILData
+#include <ePub3/package.h>
 #include <ePub3/nav_element.h>
 #include <ePub3/nav_point.h>
 #include <ePub3/nav_table.h>
@@ -181,6 +184,170 @@ static jobject loadNavigationTable(JNIEnv* env, shared_ptr<class ePub3::Navigati
 	return env->CallStaticObjectMethod(javaJavaObjectsFactoryClass, createNavigationTable_ID,
 			name, name, NULL);
 }
+
+static void populateJsonWithSmilParAudio(stringstream &stream, const ePub3::SMILData::Audio *audio){
+	stream << "{" << endl;
+	stream << "\"nodeType\" : \"audio\"," << endl;
+	stream << "\"src\" : \"" << audio->SrcFile() << "\"," << endl;
+	stream << "\"clipBegin\" : \"" << (long) audio->ClipBeginMilliseconds() << "\"," << endl;
+	stream << "\"clipEnd\" : \"" << (long) audio->ClipEndMilliseconds() << "\"" << endl;
+	stream << "}," << endl; //TODO how to delete this last comma here
+}
+
+
+static void populateJsonWithSmilParText(stringstream &stream, const ePub3::SMILData::Text *text){
+    auto srcFragmentId = text->SrcFragmentId();
+    auto srcFile = text->SrcFile();
+
+    stream << "{" << endl;
+    stream << "\"nodeType\" : \"text\"," << endl;
+    stream << "\"srcFile\" : \"" << srcFile << "\"," << endl;
+    stream << "\"srcFragmentId\" : \"" << srcFragmentId << "\"," << endl;
+
+    if(srcFragmentId.empty()){
+    	stream << "\"src\" : \"" << srcFile << "\"" << endl;
+    } else {
+		stream << "\"src\" : \"" << srcFile << '#' << srcFragmentId << "\"" << endl;
+    }
+
+    stream << "}" << endl;
+}
+
+static void populateJsonWithSmilPar(stringstream &stream, const ePub3::SMILData::Parallel *par){
+	//TODO do we need this?
+    //printf("CHECK SMIL DATA TREE TEXTREF FRAGID %s\n", par->_textref_fragmentID.c_str());
+
+	if(nullptr == par){
+		return;
+	}
+
+    stream << "{" << endl;
+	stream << "\"epubtype\": \"" << par->Type() << "\" ," << endl;
+	stream << "\"nodeType\": \"" << par->Name() << "\" ," << endl;
+
+	stream << "\"children\" : [ " <<endl;
+    if (nullptr != par->Text()){
+        populateJsonWithSmilParText(stream, par->Text());
+    }
+
+    if (nullptr != par->Audio()){
+        populateJsonWithSmilParAudio(stream, par->Audio());
+    }
+    stream << "]" << endl;
+	stream << "}" << endl;
+
+}
+
+static void populateJsonWithSmilSeq(stringstream &stream, const ePub3::SMILData::Sequence *seqq, bool wasFirstCall){
+	//TODO do we need this?
+    //printf("CHECK SMIL DATA TREE TEXTREF FRAGID %s\n", seqq->_textref_fragmentID.c_str());
+
+
+	if(nullptr == seqq){
+		return;
+	}
+
+	if(!wasFirstCall){
+		stream << ',';
+	}
+
+    stream << "{" << endl;
+    stream << "\"textref\": \"" << seqq->TextRefFile() << "\" ," << endl;
+	stream << "\"epubtype\": \"" << seqq->Type() << "\" ," << endl;
+	stream << "\"nodeType\": \"" << seqq->Name() << "\" ," << endl;
+
+	stream << "\"children\": [" << endl;
+
+	int childrenCount = seqq->GetChildrenCount();
+
+    for (int i = 0; i < childrenCount; ++i){
+        const ePub3::SMILData::TimeContainer *container = seqq->GetChild(i);
+
+        const ePub3::SMILData::Sequence *seq = dynamic_cast<const ePub3::SMILData::Sequence *>(container);
+        if (nullptr != seq){
+            populateJsonWithSmilSeq(stream, seq, i==0);
+            continue;
+        }
+
+        const ePub3::SMILData::Parallel *par = dynamic_cast<const ePub3::SMILData::Parallel *>(container);
+        if (nullptr != par){
+            populateJsonWithSmilPar(stream, par);
+            continue;
+        }
+        if(i != childrenCount-1){
+        	stream << ',';
+        }
+
+    }
+    stream << ']' << endl;
+    stream << '}' << endl;
+
+}
+
+static void populateJsonWithSmilDatas(stringstream &stream, std::shared_ptr<ePub3::MediaOverlaysSmilModel> &smilDatas){
+    
+    if(nullptr == smilDatas){
+    	return;
+    }
+
+    int smilDataAmount = smilDatas->GetSmilCount();
+
+    for (int i = 0; i < smilDataAmount; ++i){
+        shared_ptr<ePub3::SMILData> smilData = smilDatas->GetSmil(i);
+
+        if(nullptr == smilData){
+        	continue;
+        }
+
+        stream << "{" << endl;
+
+        //issue duration
+        stream << "\"duration\" : \"" << (long) smilData->DurationMilliseconds_Metadata() << "\"," << endl;
+
+        //issue smil manifest id
+        stream << "\"id\" : ";
+        string manifestId = "";
+        if(nullptr != smilData->SmilManifestItem()){
+        	manifestId = smilData->SmilManifestItem()->Identifier().c_str();
+    	}
+
+        if(!manifestId.empty()){
+        	stream << "\"" <<  manifestId << "\"";
+        } else {
+        	stream << "\"blank page\"";
+        }
+        stream << "," << endl;
+
+        //issue smilVersion
+        stream << "\"smilVersion\" : \"3.0\"," << endl;
+
+        ePub3::SpineItemPtr spineptr = smilData->XhtmlSpineItem();
+
+        string href = spineptr->ManifestItem()->Href().c_str();
+        if(href.empty()){
+        	stream << "\"href\" : \"blank page\"," << endl;
+        } else {
+        	stream << "\"href\" : \"" << spineptr->ManifestItem()->Href().c_str() << "\"," << endl;
+        }
+
+        
+        stream << "\"spineItemId\" : \"" << spineptr->ManifestItem()->Identifier() << "\"," << endl;
+
+        stream << "\"children\":[" << endl;
+        populateJsonWithSmilSeq(stream, smilData->Body(), true);
+        stream << "]" << endl;
+
+		stream << "}" << endl;
+
+		//if we are not at the last index, set a comma
+		if(i != smilDataAmount-1){
+			stream << ",";
+		}
+
+
+    }
+}
+
 
 
 /*
@@ -508,6 +675,30 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetProperty
     RELEASE_UTF8(jprefix, prefix);
 
     return jprop;
+}
+
+JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetSmilDataAsJson
+		(JNIEnv* env, jobject thiz, jlong pckgPtr)
+{
+	stringstream stream;
+
+	const std::string& s = PCKG(pckgPtr)->Title().stl_str();
+
+	//#define PCKG(pckgPtr)    (static_pointer_cast<ePub3::Package>(jni::Pointer(pckgPtr).getPtr()))
+	auto package = PCKG(pckgPtr);
+	auto model = package->MediaOverlaysSmilModel();
+
+	stream << "\"smil_models\" : [" << endl;
+
+	populateJsonWithSmilDatas(stream, model);
+
+	
+	stream << "]"; // smil_models [
+
+
+	std::string result {stream.str()};
+	jni::StringUTF str(env, result);
+	return (jstring) str;
 }
 
 
