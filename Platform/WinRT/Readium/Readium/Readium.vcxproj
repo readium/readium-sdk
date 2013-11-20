@@ -95,6 +95,7 @@
     <ClInclude Include="..\..\..\..\ePub3\utilities\make_unique.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\NativeBridge.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\owned_by.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\path_help.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\pointer_type.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\ring_buffer.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\run_loop.h" />
@@ -655,6 +656,7 @@
     <ClCompile Include="..\..\..\..\ePub3\utilities\error_handler.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\executor.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\iri.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\path_help.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\ring_buffer.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\run_loop_windows.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\utfstring.cpp" />
