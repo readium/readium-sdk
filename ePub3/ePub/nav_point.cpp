@@ -22,12 +22,15 @@
 #include "nav_point.h"
 #include "nav_table.h"
 #include "package.h"
-#include "utilities/path_help.h"
+#include "../utilities/path_help.h"
 
 EPUB3_BEGIN_NAMESPACE
 
 string NavigationPoint::AbsolutePath(ConstPackagePtr pkg) const
 {
+    if (_content.empty())
+        return string::EmptyString;
+    
 	string full = pkg->BasePath();
 
 	NavigationElementPtr parent = Owner();
@@ -51,26 +54,36 @@ string NavigationPoint::AbsolutePath(ConstPackagePtr pkg) const
 	if (bool(root))
 	{
 		string sourceRoot = root->SourceHref();
-		auto pos = sourceRoot.rfind('/');
-		if (pos != string::npos)
-			sourceRoot.erase(pos);
+		
+        auto pos = sourceRoot.rfind('/');
+		if (pos == string::npos)
+            pos = 0;
+        
+        sourceRoot.erase(pos);
 
 		full += sourceRoot;
 	}
 
-	if (_content[0] == '/' && full[full.size() - 1] == '/')
-	{
-		full += _content.c_str() + 1;
-	}
-	else if (_content[0] != '/' && full[full.size() - 1] != '/')
-	{
-		full += '/';
-		full += _content;
-	}
-	else
-	{
-		full += _content;
-	}
+    try
+    {
+        if (_content[0] == '/' && full[full.size() - 1] == '/')
+        {
+            full += _content.c_str() + 1;
+        }
+        else if (_content[0] != '/' && full[full.size() - 1] != '/')
+        {
+            full += '/';
+            full += _content;
+        }
+        else
+        {
+            full += _content;
+        }
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << "Exception: " << e.what() << std::endl;
+    }
 
 	full = CleanupPath(full);
 	auto pos = full.rfind('#');

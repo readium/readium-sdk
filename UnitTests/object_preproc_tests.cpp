@@ -181,7 +181,7 @@ TEST_CASE("Normal object tags are left unchanged", "")
     PackagePtr pkg = c->DefaultPackage();
     
     ObjectPreprocessor proc(pkg);
-    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext());
+    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext(nullptr));
     
     size_t outLen = 0;
     char* input = strdup(gNormalObject);
@@ -202,7 +202,7 @@ TEST_CASE("Object tags for bound media should be replaced by iframes and buttons
     PackagePtr pkg = c->DefaultPackage();
     
     ObjectPreprocessor proc(pkg);
-    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext());
+    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext(nullptr));
     
     size_t outLen = 0;
     char* input = strdup(gGalleryObject);
@@ -219,7 +219,7 @@ TEST_CASE("The title of the 'Open Fullscreen' button may be replaced", "")
     PackagePtr pkg = c->DefaultPackage();
     
     ObjectPreprocessor proc(pkg, "Ouvrir");
-    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext());
+    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext(nullptr));
     
     size_t outLen = 0;
     char* input = strdup(gGalleryObject);

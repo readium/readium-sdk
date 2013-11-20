@@ -219,10 +219,16 @@ NavigationList PackageBase::NavTablesFromManifestItem(shared_ptr<PackageBase> ow
     if ( !bool(doc) )
         return NavigationList();
     
-	if (pItem->MediaType() == NCXContentType)
-		return _LoadNCXNavTablesFromManifestItem(sharedPkg, pItem, doc);
-	else
-		return _LoadEPUB3NavTablesFromManifestItem(sharedPkg, pItem, doc);
+    NavigationList navList;
+	if (pItem->MediaType() != NCXContentType)
+		navList = _LoadEPUB3NavTablesFromManifestItem(sharedPkg, pItem, doc);
+    else
+        navList = _LoadNCXNavTablesFromManifestItem(sharedPkg, pItem, doc);
+    
+    if (navList.empty() && pItem->Href().rfind(".ncx") == pItem->Href().size()-4)
+        navList = _LoadNCXNavTablesFromManifestItem(sharedPkg, pItem, doc);
+    
+    return navList;
 }
 NavigationList PackageBase::_LoadEPUB3NavTablesFromManifestItem(PackagePtr sharedPkg, ManifestItemPtr pItem, shared_ptr<xml::Document> doc)
 {

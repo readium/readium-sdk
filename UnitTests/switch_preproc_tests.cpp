@@ -312,7 +312,7 @@ xml:lang="en">
 TEST_CASE("Default processor should render epub:default only", "")
 {
     SwitchPreprocessor proc;
-    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext());
+    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext(nullptr));
     
     size_t outLen = 0;
     char* input = strdup(gInput);
@@ -330,7 +330,7 @@ TEST_CASE("Default processor should render epub:default only", "")
 TEST_CASE("Processors should be able to support a mix of supported and unsupported namespaces", "")
 {
     SwitchPreprocessor proc;
-    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext());
+    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext(nullptr));
     
     SwitchPreprocessor::SetSupportedNamespaces({"http://www.xml-cml.org/schema"});
     size_t outLen = 0;
@@ -346,7 +346,7 @@ TEST_CASE("Processors should be able to support a mix of supported and unsupport
     free(input);
     
     SwitchPreprocessor::SetSupportedNamespaces({MathMLNamespaceURI});
-    ctx.reset(proc.MakeFilterContext());
+    ctx.reset(proc.MakeFilterContext(nullptr));
     input = strdup(gInput);
     output = reinterpret_cast<char*>(proc.FilterData(ctx.get(), input, sizeof(gInput), &outLen));
     output[outLen] = '\0';
@@ -364,7 +364,7 @@ TEST_CASE("Processors should be able to support a mix of supported and unsupport
 TEST_CASE("Processors should be able to support multiple supported namespaces", "")
 {
     SwitchPreprocessor proc;
-    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext());
+    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext(nullptr));
     
     SwitchPreprocessor::SetSupportedNamespaces({"http://www.xml-cml.org/schema", MathMLNamespaceURI});
     
@@ -386,7 +386,7 @@ TEST_CASE("Processors should be able to support multiple supported namespaces", 
 TEST_CASE("Processors should gracefully handle comments around non-default switched content", "")
 {
     SwitchPreprocessor proc;
-    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext());
+    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext(nullptr));
     
     SwitchPreprocessor::SetSupportedNamespaces({});
     
@@ -408,7 +408,7 @@ TEST_CASE("Processors should gracefully handle comments around non-default switc
 TEST_CASE("Processors should NOT uncomment switch constructs which have been commented out in their entirety", "Note that the switches themselves will still be processed.")
 {
     SwitchPreprocessor proc;
-    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext());
+    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext(nullptr));
     
     size_t outLen = 0;
     char* input = strdup(gTotallyCommentedInput);
