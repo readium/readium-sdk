@@ -437,6 +437,9 @@
     <ClInclude Include="PropertyHolderSubclassImpl.h">
       <Filter>Public Interface</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\path_help.h">
+      <Filter>ePub3\utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\ePub3\utilities\byte_buffer.cpp">
@@ -856,6 +859,9 @@
     </ClCompile>
     <ClCompile Include="WinErrorHandler.cpp">
       <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\path_help.cpp">
+      <Filter>ePub3\utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
