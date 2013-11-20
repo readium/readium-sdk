@@ -22,7 +22,7 @@
 #ifndef __ePub3__property__
 #define __ePub3__property__
 
-#include <ePub3/ePub3.h>
+#include <ePub3/epub3.h>
 #include <ePub3/utilities/basic.h>
 #include <ePub3/utilities/owned_by.h>
 #include <ePub3/utilities/iri.h>
