@@ -863,6 +863,9 @@
     <ClCompile Include="..\..\..\..\ePub3\utilities\path_help.cpp">
       <Filter>ePub3\utilities</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\path_help.cpp">
+      <Filter>ePub3\utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\ePub3\utilities\utfstringspec.inl">
