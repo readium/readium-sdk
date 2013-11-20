@@ -57,6 +57,8 @@ public:
 
 	property PageSpread Spread { PageSpread get(); }
 
+	property ::Platform::String^ Title { ::Platform::String^ get(); void set(::Platform::String^); }
+
 	property SpineItem^ Next { SpineItem^ get(); }
 	property SpineItem^ Previous { SpineItem^ get(); }
 	property SpineItem^ NextStep { SpineItem^ get(); }

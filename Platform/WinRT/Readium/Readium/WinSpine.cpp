@@ -80,6 +80,15 @@ PageSpread SpineItem::Spread::get()
 	return PageSpread(_native->Spread());
 }
 
+String^ SpineItem::Title::get()
+{
+	return StringFromNative(_native->Title());
+}
+void SpineItem::Title::set(String^ title)
+{
+	_native->SetTitle(StringToNative(title));
+}
+
 SpineItem^ SpineItem::Next::get()
 {
 	return Wrapper(_native->Next());

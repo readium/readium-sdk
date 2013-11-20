@@ -95,6 +95,7 @@
     <ClInclude Include="..\..\..\..\ePub3\utilities\make_unique.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\NativeBridge.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\owned_by.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\path_help.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\pointer_type.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\ring_buffer.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\run_loop.h" />
@@ -129,6 +130,9 @@
     <ClInclude Include="PropertyHolderSubclassDecl.h" />
     <ClInclude Include="PropertyHolderSubclassImpl.h" />
     <ClInclude Include="PropertyTypes.h" />
+    <ClInclude Include="Readium.h" />
+    <ClInclude Include="Streams.h" />
+    <ClInclude Include="ThreadEmulation.h" />
     <ClInclude Include="WinCFI.h" />
     <ClInclude Include="WinContainer.h" />
     <ClInclude Include="WinContentModuleManager.h" />
@@ -139,9 +143,6 @@
     <ClInclude Include="WinFilterManager.h" />
     <ClInclude Include="WinInitialization.h" />
     <ClInclude Include="WinLibrary.h" />
-    <ClInclude Include="Readium.h" />
-    <ClInclude Include="Streams.h" />
-    <ClInclude Include="ThreadEmulation.h" />
     <ClInclude Include="WinManifest.h" />
     <ClInclude Include="WinMediaHandler.h" />
     <ClInclude Include="WinMediaSupport.h" />
@@ -401,17 +402,17 @@
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fseek.c">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_ftell.c">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
@@ -655,6 +656,7 @@
     <ClCompile Include="..\..\..\..\ePub3\utilities\error_handler.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\executor.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\iri.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\path_help.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\ring_buffer.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\run_loop_windows.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\utfstring.cpp" />
@@ -687,7 +689,9 @@
     <ClCompile Include="WinSpine.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\ePub3\utilities\utfstringspec.inl" />
+    <None Include="..\..\..\..\ePub3\utilities\utfstringspec.inl">
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{a6cc9e63-8351-4b12-abad-90a28d8d587d}</ProjectGuid>
