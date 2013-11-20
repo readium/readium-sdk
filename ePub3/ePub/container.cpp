@@ -153,6 +153,7 @@ std::future<ContainerPtr> Container::OpenContainerAsync(const string& path, std:
     
     return result;
 }
+#if EPUB_PLATFORM(WINRT)
 ContainerPtr Container::OpenSynchronouslyForWinRT(const string& path)
 {
 	auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, std::launch::deferred);
@@ -170,6 +171,7 @@ ContainerPtr Container::OpenSynchronouslyForWinRT(const string& path)
 	// deferred call, will run the operation synchronously now
 	return future.get();
 }
+#endif
 ContainerPtr Container::OpenContainerForContentModule(const string& path)
 {
 	ContainerPtr container = Container::New();
