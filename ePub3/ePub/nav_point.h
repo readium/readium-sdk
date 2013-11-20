@@ -61,7 +61,7 @@ public:
 
 	///
 	/// Turns the Content() href into an absolute value, similar to ManifestItem::AbsolutePath().
-	string					AbsolutePath()				const;
+	string					AbsolutePath(ConstPackagePtr pkg)				const;
     
 protected:
     string _label;

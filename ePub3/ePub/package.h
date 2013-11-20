@@ -800,7 +800,7 @@ protected:
 	void					CompileSpineItemTitles();
 	///
 	/// Internal recursive function for navigating the TOC tree.
-	static void				_CompileSpineItemTitlesInternal(const NavigationList& navPoints, std::map<string, string>& compiled);
+	void					_CompileSpineItemTitlesInternal(const NavigationList& navPoints, std::map<string, string>& compiled);
     
     // default is `true`
     EPUB3_EXPORT
