@@ -1538,10 +1538,21 @@ void Package::_CompileSpineItemTitlesInternal(const NavigationList& navPoints, s
 		NavigationPointPtr pt = std::dynamic_pointer_cast<NavigationPoint>(element);
 		if (bool(pt))
 		{
-			string path = pt->AbsolutePath();
-			auto pos = compiled.find(path);
-			if (pos == compiled.end())
-				compiled[path] = pt->Title();
+			try
+			{
+				string path = pt->AbsolutePath(Ptr());
+				auto pos = compiled.find(path);
+				if (pos == compiled.end())
+					compiled[path] = pt->Title();
+			}
+			catch (std::exception& cppErr)
+			{
+				std::cerr << "Exception: " << cppErr.what() << std::endl;
+				std::cerr.flush();
+#if EPUB_OS(WINDOWS)
+				OutputDebugStringA(_Str("Exception: ", cppErr.what()).c_str());
+#endif
+			}
 		}
 
 		_CompileSpineItemTitlesInternal(element->Children(), compiled);

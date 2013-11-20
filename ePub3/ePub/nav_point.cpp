@@ -21,12 +21,15 @@
 
 #include "nav_point.h"
 #include "nav_table.h"
+#include "package.h"
 #include "utilities/path_help.h"
 
 EPUB3_BEGIN_NAMESPACE
 
-string NavigationPoint::AbsolutePath() const
+string NavigationPoint::AbsolutePath(ConstPackagePtr pkg) const
 {
+	string full = pkg->BasePath();
+
 	NavigationElementPtr parent = Owner();
 	NavigationTablePtr root;
 	do
@@ -45,20 +48,21 @@ string NavigationPoint::AbsolutePath() const
 
 	} while (!bool(root));
 
-	if (!bool(root))
-		return _content;
+	if (bool(root))
+	{
+		string sourceRoot = root->SourceHref();
+		auto pos = sourceRoot.rfind('/');
+		if (pos != string::npos)
+			sourceRoot.erase(pos);
 
-	string sourceRoot = root->SourceHref();
-	auto pos = sourceRoot.rfind('/');
-	if (pos != string::npos)
-		sourceRoot.erase(pos);
+		full += sourceRoot;
+	}
 
-	string full = sourceRoot;
-	if (_content[0] == '/' && sourceRoot[sourceRoot.size() - 1] == '/')
+	if (_content[0] == '/' && full[full.size() - 1] == '/')
 	{
 		full += _content.c_str() + 1;
 	}
-	else if (_content[0] != '/' && sourceRoot[sourceRoot.size() - 1] != '/')
+	else if (_content[0] != '/' && full[full.size() - 1] != '/')
 	{
 		full += '/';
 		full += _content;
@@ -69,7 +73,7 @@ string NavigationPoint::AbsolutePath() const
 	}
 
 	full = CleanupPath(full);
-	pos = full.rfind('#');
+	auto pos = full.rfind('#');
 	if (pos != string::npos)
 		full.erase(pos);
 
