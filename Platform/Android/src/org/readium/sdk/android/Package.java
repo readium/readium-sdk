@@ -23,7 +23,6 @@ package org.readium.sdk.android;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -377,6 +376,12 @@ public class Package {
 			return content;
 		} catch (IOException ex) {
 			Log.e(TAG, ""+ex.getMessage(), ex);
+		} finally {
+			try {
+				in.close();
+			} catch (IOException ex) {
+				Log.e(TAG, ""+ex.getMessage(), ex);
+			}
 		}
 		return null;
 	}
