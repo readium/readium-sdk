@@ -23,9 +23,62 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-        const string SMILData::Sequence::_Name = string("seq");
-        const string SMILData::Parallel::_Name = string("par");
-        const string SMILData::Audio::_Name = string("audio");
-        const string SMILData::Text::_Name = string("text");
+SMILData::TimeContainer::~TimeContainer()
+{
+    //printf("~TimeContainer()\n");
+}
 
-        EPUB3_END_NAMESPACE
+SMILData::TimeNode::~TimeNode()
+{
+    //printf("~TimeNode()\n");
+}
+
+SMILData::Sequence::~Sequence()
+{
+    //printf("~Sequence()\n");
+
+    for (int i = 0; i < _children.size(); i++)
+    {
+        const TimeContainer *o = _children[i];
+        if (o != nullptr)
+        {
+            delete o;
+        }
+    }
+}
+
+SMILData::Media::~Media()
+{
+    //printf("~Media()\n");
+}
+
+SMILData::Audio::~Audio()
+{
+	//printf("~Audio()\n");
+}
+
+SMILData::Text::~Text()
+{
+    //printf("~Text()\n");
+}
+
+SMILData::Parallel::~Parallel()
+{
+    //printf("~Parallel()\n");
+
+    if (_audio != nullptr)
+    {
+        delete _audio;
+    }
+    if (_text != nullptr)
+    {
+        delete _text;
+    }
+}
+
+const string SMILData::Sequence::_Name = string("seq");
+const string SMILData::Parallel::_Name = string("par");
+const string SMILData::Audio::_Name = string("audio");
+const string SMILData::Text::_Name = string("text");
+
+EPUB3_END_NAMESPACE

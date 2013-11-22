@@ -71,10 +71,7 @@ EPUB3_BEGIN_NAMESPACE
                     //return string::EmptyString;
                 }
 
-                virtual ~TimeNode()
-                {
-                    //printf("~TimeNode()\n");
-                }
+                virtual ~TimeNode();
 
                 EPUB3_EXPORT
 
@@ -110,10 +107,7 @@ EPUB3_BEGIN_NAMESPACE
                 string _type; // space-separated
 
             public:
-                virtual ~TimeContainer()
-                {
-                    //printf("~TimeContainer()\n");
-                }
+                virtual ~TimeContainer();
 
                 EPUB3_EXPORT
 
@@ -307,19 +301,7 @@ EPUB3_BEGIN_NAMESPACE
                     return _Name;
                 }
 
-                virtual ~Sequence()
-                {
-                    //printf("~Sequence()\n");
-
-                    for (int i = 0; i < _children.size(); i++)
-                    {
-                        const TimeContainer *o = _children[i];
-                        if (o != nullptr)
-                        {
-                            delete o;
-                        }
-                    }
-                }
+                virtual ~Sequence();
 
                 EPUB3_EXPORT
 
@@ -435,10 +417,7 @@ EPUB3_BEGIN_NAMESPACE
                 ManifestItemPtr _srcManifestItem;
 
             public:
-                virtual ~Media()
-                {
-                    //printf("~Media()\n");
-                }
+                virtual ~Media();
 
                 EPUB3_EXPORT
 
@@ -514,10 +493,7 @@ EPUB3_BEGIN_NAMESPACE
                     return _Name;
                 }
 
-                virtual ~Audio()
-                {
-                    //printf("~Audio()\n");
-                }
+                virtual ~Audio();
 
                 EPUB3_EXPORT
 
@@ -586,10 +562,7 @@ EPUB3_BEGIN_NAMESPACE
                     return _Name;
                 }
 
-                virtual ~Text()
-                {
-                    //printf("~Text()\n");
-                }
+                virtual ~Text();
 
                 EPUB3_EXPORT
 
@@ -641,19 +614,7 @@ EPUB3_BEGIN_NAMESPACE
                     return _Name;
                 }
 
-                virtual ~Parallel()
-                {
-                    //printf("~Parallel()\n");
-
-                    if (_audio != nullptr)
-                    {
-                        delete _audio;
-                    }
-                    if (_text != nullptr)
-                    {
-                        delete _text;
-                    }
-                }
+                virtual ~Parallel();
 
                 EPUB3_EXPORT
 
