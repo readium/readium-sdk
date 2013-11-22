@@ -327,7 +327,7 @@ static void populateJsonWithSmilDatas(stringstream &stream, std::shared_ptr<ePub
         if(href.empty()){
         	stream << "\"href\" : \"blank page\"," << endl;
         } else {
-        	stream << "\"href\" : \"" << spineptr->ManifestItem()->Href().c_str() << "\"," << endl;
+        	stream << "\"href\" : \"" << href << "\"," << endl;
         }
 
         
@@ -682,9 +682,6 @@ JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetSmilData
 {
 	stringstream stream;
 
-	const std::string& s = PCKG(pckgPtr)->Title().stl_str();
-
-	//#define PCKG(pckgPtr)    (static_pointer_cast<ePub3::Package>(jni::Pointer(pckgPtr).getPtr()))
 	auto package = PCKG(pckgPtr);
 	auto model = package->MediaOverlaysSmilModel();
 
