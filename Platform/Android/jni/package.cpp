@@ -189,8 +189,12 @@ static void populateJsonWithSmilParAudio(stringstream &stream, const ePub3::SMIL
 	stream << "{" << endl;
 	stream << "\"nodeType\" : \"audio\"," << endl;
 	stream << "\"src\" : \"" << audio->SrcFile() << "\"," << endl;
-	stream << "\"clipBegin\" : \"" << (long) audio->ClipBeginMilliseconds() << "\"," << endl;
-	stream << "\"clipEnd\" : \"" << (long) audio->ClipEndMilliseconds() << "\"" << endl;
+
+	double begin = (static_cast<double>(audio->ClipBeginMilliseconds())) / 1000;
+	double end = (static_cast<double>(audio->ClipEndMilliseconds())) / 1000;
+
+	stream << "\"clipBegin\" : \"" << begin << "\"," << endl;
+	stream << "\"clipEnd\" : \"" << end << "\"" << endl;
 	stream << "}," << endl; //TODO how to delete this last comma here
 }
 
@@ -290,6 +294,8 @@ static void populateJsonWithSmilDatas(stringstream &stream, std::shared_ptr<ePub
     	return;
     }
 
+    stream << "\"smil_models\" : [" << endl;
+
     int smilDataAmount = smilDatas->GetSmilCount();
 
     for (int i = 0; i < smilDataAmount; ++i){
@@ -301,37 +307,30 @@ static void populateJsonWithSmilDatas(stringstream &stream, std::shared_ptr<ePub
 
         stream << "{" << endl;
 
-        //issue duration
-        stream << "\"duration\" : \"" << (long) smilData->DurationMilliseconds_Metadata() << "\"," << endl;
-
-        //issue smil manifest id
-        stream << "\"id\" : ";
-        string manifestId = "";
-        if(nullptr != smilData->SmilManifestItem()){
-        	manifestId = smilData->SmilManifestItem()->Identifier().c_str();
-    	}
-
-        if(!manifestId.empty()){
-        	stream << "\"" <<  manifestId << "\"";
-        } else {
-        	stream << "\"blank page\"";
-        }
-        stream << "," << endl;
-
-        //issue smilVersion
+		//issue smilVersion
         stream << "\"smilVersion\" : \"3.0\"," << endl;
 
-        ePub3::SpineItemPtr spineptr = smilData->XhtmlSpineItem();
+        //issue duration
+        double duration = static_cast<double>(smilData->DurationMilliseconds_Metadata())/1000;
+        stream << "\"duration\" : \"" << duration  << "\"," << endl;
 
-        string href = spineptr->ManifestItem()->Href().c_str();
-        if(href.empty()){
-        	stream << "\"href\" : \"blank page\"," << endl;
-        } else {
-        	stream << "\"href\" : \"" << href << "\"," << endl;
+
+        auto item = smilData->SmilManifestItem();
+
+        string id;
+        string href;
+        if(nullptr == item){
+        	id = "";
+        	href = "fake.smil";
+        } else{
+        	id = item->Identifier().c_str();
+        	href = item->Href().c_str();
         }
 
+        stream << "\"id\" : \""<< id << "\"," << endl;
+        stream << "\"href\" : \""<< href << "\"," << endl;
         
-        stream << "\"spineItemId\" : \"" << spineptr->ManifestItem()->Identifier() << "\"," << endl;
+        stream << "\"spineItemId\" : \"" << smilData->XhtmlSpineItem()->Idref().c_str() << "\"," << endl;
 
         stream << "\"children\":[" << endl;
         populateJsonWithSmilSeq(stream, smilData->Body(), true);
@@ -343,9 +342,61 @@ static void populateJsonWithSmilDatas(stringstream &stream, std::shared_ptr<ePub
 		if(i != smilDataAmount-1){
 			stream << ",";
 		}
-
-
     }
+
+    stream << ']'; // smil_models [
+}
+
+static void populateJsonWithEscapeables(stringstream &stream, std::shared_ptr<ePub3::MediaOverlaysSmilModel> &smilDatas){
+	stream << "\"escapables\" : [" << endl;
+
+	auto amountOfEscapeables = smilDatas->GetEscapablesCount();
+
+	for(std::vector<string>::size_type i = 0; i < amountOfEscapeables; ++i){
+		stream << "\"" << smilDatas->GetEscapable(i) << "\"";
+		if(i != amountOfEscapeables-1){
+			stream << "," << endl;
+		} else{
+			stream << endl;
+		}
+	}
+
+	stream << "]," << endl; //escapeables: [, the comma is there because we know that after this there will be skippables
+}
+
+static void populateJsonWithSkippables(stringstream &stream, std::shared_ptr<ePub3::MediaOverlaysSmilModel> &smilDatas){
+	stream << "\"skippables\" : [" << endl;
+
+	auto amountOfSkippables = smilDatas->GetSkippablesCount();
+
+	for(std::vector<string>::size_type i = 0; i < amountOfSkippables; ++i){
+		stream << "\"" << smilDatas->GetSkippable(i) << "\"";
+		if(i != amountOfSkippables-1){
+			stream << "," << endl;
+		} else{
+			stream << endl;
+		}
+	}
+
+	stream << "]," << endl; //skippables: [, the comma is there because we know that after this there will be smil_models
+}
+
+static void populateJsonWithMediaOverlayContent(stringstream &stream, std::shared_ptr<ePub3::MediaOverlaysSmilModel> &model){
+	//sanity check
+	if(nullptr == model){
+    	return;
+    }
+
+    double duration = static_cast<double>(model->DurationMilliseconds_Metadata())/1000;
+
+    stream << "\"activeClass\" : \"" << model->ActiveClass() << "\"," << endl;
+    stream << "\"duration\" : \"" << duration << "\"," << endl;
+    stream << "\"narrator\" : \"" << model->Narrator() << "\"," << endl;
+    stream << "\"playbackActiveClass\" : \"" << model->PlaybackActiveClass() << "\"," << endl;
+    
+    populateJsonWithEscapeables(stream, model);
+    populateJsonWithSkippables(stream, model);
+	populateJsonWithSmilDatas(stream, model);
 }
 
 
@@ -685,13 +736,11 @@ JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetSmilData
 	auto package = PCKG(pckgPtr);
 	auto model = package->MediaOverlaysSmilModel();
 
-	stream << "\"smil_models\" : [" << endl;
+	stream << "\"media_overlay\": {" << endl;
 
-	populateJsonWithSmilDatas(stream, model);
+	populateJsonWithMediaOverlayContent(stream, model);
 
-	
-	stream << "]"; // smil_models [
-
+	stream << '}'; // media_overlay {
 
 	std::string result {stream.str()};
 	jni::StringUTF str(env, result);
