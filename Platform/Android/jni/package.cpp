@@ -186,6 +186,7 @@ static jobject loadNavigationTable(JNIEnv* env, shared_ptr<class ePub3::Navigati
 }
 
 static void populateJsonWithSmilParAudio(stringstream &stream, const ePub3::SMILData::Audio *audio){
+	
 	stream << "{" << endl;
 	stream << "\"nodeType\" : \"audio\"," << endl;
 	stream << "\"src\" : \"" << audio->SrcFile() << "\"," << endl;
@@ -200,6 +201,7 @@ static void populateJsonWithSmilParAudio(stringstream &stream, const ePub3::SMIL
 
 
 static void populateJsonWithSmilParText(stringstream &stream, const ePub3::SMILData::Text *text){
+    
     auto srcFragmentId = text->SrcFragmentId();
     auto srcFile = text->SrcFile();
 
@@ -246,10 +248,10 @@ static void populateJsonWithSmilSeq(stringstream &stream, const ePub3::SMILData:
 	//TODO do we need this?
     //printf("CHECK SMIL DATA TREE TEXTREF FRAGID %s\n", seqq->_textref_fragmentID.c_str());
 
-
 	if(nullptr == seqq){
 		return;
 	}
+
 
 	if(!wasFirstCall){
 		stream << ',';
@@ -262,22 +264,28 @@ static void populateJsonWithSmilSeq(stringstream &stream, const ePub3::SMILData:
 
 	stream << "\"children\": [" << endl;
 
-	int childrenCount = seqq->GetChildrenCount();
+	auto childrenCount = seqq->GetChildrenCount();
 
     for (int i = 0; i < childrenCount; ++i){
+
         const ePub3::SMILData::TimeContainer *container = seqq->GetChild(i);
 
-        const ePub3::SMILData::Sequence *seq = dynamic_cast<const ePub3::SMILData::Sequence *>(container);
-        if (nullptr != seq){
-            populateJsonWithSmilSeq(stream, seq, i==0);
-            continue;
+        if(nullptr == container){
+        	continue;
         }
 
-        const ePub3::SMILData::Parallel *par = dynamic_cast<const ePub3::SMILData::Parallel *>(container);
-        if (nullptr != par){
-            populateJsonWithSmilPar(stream, par);
-            continue;
+        //const ePub3::SMILData::Sequence *seq = dynamic_cast<const ePub3::SMILData::Sequence *>(container);
+        if (container->IsSequence()){
+        	populateJsonWithSmilSeq(stream, container, i==0);
+            //continue;
         }
+
+        //const ePub3::SMILData::Parallel *par = dynamic_cast<const ePub3::SMILData::Parallel *>(container);
+        if (container->IsParallel()){
+        	populateJsonWithSmilPar(stream, container);
+            //continue;
+        }
+
         if(i != childrenCount-1){
         	stream << ',';
         }
