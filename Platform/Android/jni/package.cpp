@@ -274,15 +274,16 @@ static void populateJsonWithSmilSeq(stringstream &stream, const ePub3::SMILData:
         	continue;
         }
 
-        //const ePub3::SMILData::Sequence *seq = dynamic_cast<const ePub3::SMILData::Sequence *>(container);
-        if (container->IsSequence()){
-        	populateJsonWithSmilSeq(stream, container, i==0);
+        
+        const ePub3::SMILData::Sequence *seq = dynamic_cast<const ePub3::SMILData::Sequence *>(container);
+        if (nullptr != seq){
+        	populateJsonWithSmilSeq(stream, seq, i==0);
             //continue;
         }
 
-        //const ePub3::SMILData::Parallel *par = dynamic_cast<const ePub3::SMILData::Parallel *>(container);
-        if (container->IsParallel()){
-        	populateJsonWithSmilPar(stream, container);
+        const ePub3::SMILData::Parallel *par = dynamic_cast<const ePub3::SMILData::Parallel *>(container);
+        if (nullptr != par){
+        	populateJsonWithSmilPar(stream, par);
             //continue;
         }
 
