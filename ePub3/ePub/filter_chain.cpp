@@ -88,10 +88,13 @@ private:
 FilterChainSyncStream::FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem)
 : _input(std::move(input)), _filters(), _needs_cache(false), _cache(), _read_cache()
 {
+	_cache.SetUsesSecureErasure();
+	_read_cache.SetUsesSecureErasure();
+
 	for (auto& filter : filters)
 	{
 		_filters.emplace_back(filter, std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem)));
-		if (filter->RequiresCompleteData())
+		if (filter->RequiresCompleteData() && !_needs_cache)
 			_needs_cache = true;
 	}
 }
@@ -112,46 +115,39 @@ ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type le
 		_read_cache.RemoveBytes(toMove);
 		return toMove;
 	}
-
-	size_type result = _input->ReadBytes(bytes, len);
-	return FilterBytes(bytes, result);
+	else 
+	{
+		size_type result = _input->ReadBytes(bytes, len);
+		result = FilterBytes(bytes, result);
+		size_type toMove = std::min(len, _read_cache.GetBufferSize());
+		::memcpy_s(bytes, len, _read_cache.GetBytes(), toMove);
+		_read_cache.RemoveBytes(toMove);
+		return toMove;
+	}
 }
 ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, size_type len)
 {
 	size_type result = len;
-	ByteBuffer buf(reinterpret_cast<unsigned char*>(bytes), len);
+	ByteBuffer buf(reinterpret_cast<uint8_t*>(bytes), len);
+	buf.SetUsesSecureErasure();
 
 	for (auto& pair : _filters)
 	{
-		std::size_t filteredLen = 0;
+		size_type filteredLen = 0;
 		void* filteredData = pair.first->FilterData(pair.second.get(), buf.GetBytes(), buf.GetBufferSize(), &filteredLen);
 		if (filteredData == nullptr || filteredLen == 0) {
 			if (filteredData != nullptr && filteredData != bytes)
-				delete[] reinterpret_cast<char*>(filteredData);
+				delete[] reinterpret_cast<uint8_t*>(filteredData);
 			throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
 		}
 
 		if (filteredData != bytes)
 		{
-			if (filteredLen <= len)
-			{
-				::memcpy_s(buf.GetBytes(), buf.GetBufferSize(), filteredData, filteredLen);
-				if (filteredLen < buf.GetBufferSize())
-					buf.RemoveBytes(buf.GetBufferSize() - filteredLen, filteredLen);
-			}
-			else
-			{
-				uint8_t* p = reinterpret_cast<uint8_t*>(filteredData);
-				buf.RemoveBytes(buf.GetBufferSize());
-				buf.AddBytes(p, filteredLen);
-			}
-			delete[] reinterpret_cast<char*>(filteredData);
+			buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), filteredLen);
+			result = filteredLen;
+			delete[] reinterpret_cast<uint8_t*>(filteredData);
 		}
-
-		result = filteredLen;
 	}
-
-	result = buf.MoveTo(reinterpret_cast<uint8_t*>(bytes), len);
 	_read_cache = std::move(buf);
 
 	return result;
@@ -167,7 +163,7 @@ void FilterChainSyncStream::CacheBytes()
 {
 	// read everything from the input stream
 #define _TMP_BUF_LEN 16*1024
-	uint8_t buf[_TMP_BUF_LEN];
+	uint8_t buf[_TMP_BUF_LEN] = {};
 	while (_input->AtEnd() == false)
 	{
 		size_type numRead = _input->ReadBytes(buf, _TMP_BUF_LEN);
@@ -179,14 +175,11 @@ void FilterChainSyncStream::CacheBytes()
 
 	// filter everything completely
 	size_type filtered = FilterBytes(_cache.GetBytes(), _cache.GetBufferSize());
-	if (!_read_cache.IsEmpty())
+
+	if (filtered > 0)
 	{
-		_cache.AddBytes(_read_cache.GetBytes(), _read_cache.GetBufferSize());
+		_cache = std::move(_read_cache);
 		_read_cache.RemoveBytes(_read_cache.GetBufferSize());
-	}
-	if (filtered < _cache.GetBufferSize())
-	{
-		_cache.RemoveBytes(_cache.GetBufferSize() - filtered, filtered);
 	}
 
 	// this potentially contains decrypted data, so use secure erasure
