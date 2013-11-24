@@ -249,6 +249,7 @@ static void populateJsonWithSmilSeq(stringstream &stream, const ePub3::SMILData:
     //printf("CHECK SMIL DATA TREE TEXTREF FRAGID %s\n", seqq->_textref_fragmentID.c_str());
 
 	if(nullptr == seqq){
+        stream << "!! NULL SMIL SEQQ" << endl;
 		return;
 	}
 
@@ -271,20 +272,28 @@ static void populateJsonWithSmilSeq(stringstream &stream, const ePub3::SMILData:
         const ePub3::SMILData::TimeContainer *container = seqq->GetChild(i);
 
         if(nullptr == container){
+            stream << "!! NULL SMIL CONTAINER" << endl;
         	continue;
         }
 
         
-        const ePub3::SMILData::Sequence *seq = dynamic_cast<const ePub3::SMILData::Sequence *>(container);
-        if (nullptr != seq){
+        //const ePub3::SMILData::Sequence *seq = dynamic_cast<const ePub3::SMILData::Sequence *>(container);
+        //if (nullptr != seq){
+        if (container->IsSequence()){
+            ePub3::SMILData::Sequence *seq = (ePub3::SMILData::Sequence *)container;
         	populateJsonWithSmilSeq(stream, seq, i==0);
             //continue;
         }
 
-        const ePub3::SMILData::Parallel *par = dynamic_cast<const ePub3::SMILData::Parallel *>(container);
-        if (nullptr != par){
+        //const ePub3::SMILData::Parallel *par = dynamic_cast<const ePub3::SMILData::Parallel *>(container);
+        //if (nullptr != par){
+        else if (container->IsParallel()){
+            ePub3::SMILData::Parallel *par = (ePub3::SMILData::Parallel *)container;
         	populateJsonWithSmilPar(stream, par);
             //continue;
+        }
+        else{
+            stream << "!! SMIL CONTAINER TYPE???" << endl;
         }
 
         if(i != childrenCount-1){
@@ -342,7 +351,11 @@ static void populateJsonWithSmilDatas(stringstream &stream, std::shared_ptr<ePub
         stream << "\"spineItemId\" : \"" << smilData->XhtmlSpineItem()->Idref().c_str() << "\"," << endl;
 
         stream << "\"children\":[" << endl;
-        populateJsonWithSmilSeq(stream, smilData->Body(), true);
+
+        ePub3::SMILData::Sequence *seq = smilData->Body();
+        //ePub3::SMILData::Sequence *seq = const_cast<ePub3::SMILData::Sequence *>(smilData->Body());
+        populateJsonWithSmilSeq(stream, seq, true);
+        
         stream << "]" << endl;
 
 		stream << "}" << endl;

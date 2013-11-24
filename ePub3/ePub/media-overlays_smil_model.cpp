@@ -28,6 +28,17 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+//     static inline FORCE_INLINE
+//     void HandleError_(EPUBError __code, const std::string& __msg)
+//     {
+// std::cerr << "HANDLE ERROR" << std::endl; 
+// 
+// //throw std::invalid_argument(std::string("parseSMILs TRACE HERE")); //std::runtime_error ///err.what()
+// 
+//         HandleError(__code, __msg);
+//     }
+    
+
 /*
         void debugTreeAudio(const SMILData::Audio *audio)
         {
@@ -322,7 +333,7 @@ EPUB3_BEGIN_NAMESPACE
         }
 
         uint32_t MediaOverlaysSmilModel::parseSMILs()
-        {
+        {       
             PackagePtr package = Owner();
 
             uint32_t accumulatedDurationMilliseconds = 0;
@@ -396,7 +407,6 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 }
 
                 xmlXPathFreeNodeSet(nodes);
-
                 nodes = xpath.Nodes("./smil:head", smil);
 
                 if (nodes->nodeNr == 0)
@@ -413,14 +423,14 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     HandleError(EPUBError::MediaOverlayHeadIncorrectlyPlaced, _Str("multiple 'head' elements found: ", item->Href().c_str()));
                 }
 
-                xmlXPathFreeNodeSet(nodes);
-
                 if (nodes->nodeNr > 1)
                 {
+                    xmlXPathFreeNodeSet(nodes);
                     xmlFreeDoc(doc);
                     return 0;
                 }
 
+                xmlXPathFreeNodeSet(nodes);
                 nodes = xpath.Nodes("./smil:body", smil);
 
                 if (nodes->nodeNr == 0)

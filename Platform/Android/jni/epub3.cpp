@@ -331,8 +331,16 @@ Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring p
 	LOGD("EPub3.openBook(): path received is '%s'", nativePath);
 
 	std::string spath = std::string(nativePath);
-	shared_ptr<ePub3::Container> _container = ePub3::Container::OpenContainer(spath);
-	LOGD("EPub3.openBook(): _container OK, version: %s\n", _container->Version().c_str());
+    
+    shared_ptr<ePub3::Container> _container = nullptr;
+    try {
+        _container = ePub3::Container::OpenContainer(spath);
+    }
+    catch (const std::invalid_argument& ex) {
+    	LOGD("OpenContainer() EXCEPTION: %s\n", ex.what());
+    }
+    
+    LOGD("EPub3.openBook(): _container OK, version: %s\n", _container->Version().c_str());
 
 	// Save container before sending it to Java
 	jni::Pointer container(_container, POINTER_GPS("container"));
