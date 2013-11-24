@@ -416,6 +416,8 @@ public class Package {
 		JSONObject o = new JSONObject();
 		try {
 			o.put("rootUrl", basePath);
+			//o.put("rootUrlMO", "http://localhost:port/PACKAGE_UUID/"); // TODO: http web server address
+			
 			o.put("rendition_layout", nativeGetProperty(__nativePtr, "layout", "rendition"));
 			JSONArray spineArray = new JSONArray();
 			for (SpineItem item : spineItems) {
@@ -425,7 +427,10 @@ public class Package {
 			spine.put("items", spineArray);
 			spine.put("direction", pageProgressionDirection);
 			o.put("spine", spine);
-			o.put("mediaOverlays", new JSONArray());
+
+			JSONObject mo = new JSONObject(smilDataJson);
+			o.put("media_overlay", mo);
+			
 //			Log.i(TAG, "JSON: " + o.toString(2));
 		} catch (JSONException e) {
 			Log.e(TAG, "" + e.getMessage(), e);

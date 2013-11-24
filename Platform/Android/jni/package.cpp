@@ -196,7 +196,7 @@ static void populateJsonWithSmilParAudio(stringstream &stream, const ePub3::SMIL
 
 	stream << "\"clipBegin\" : \"" << begin << "\"," << endl;
 	stream << "\"clipEnd\" : \"" << end << "\"" << endl;
-	stream << "}," << endl; //TODO how to delete this last comma here
+	stream << "}" << endl;
 }
 
 
@@ -237,6 +237,7 @@ static void populateJsonWithSmilPar(stringstream &stream, const ePub3::SMILData:
     }
 
     if (nullptr != par->Audio()){
+    	stream << " , " << endl;
         populateJsonWithSmilParAudio(stream, par->Audio());
     }
     stream << "]" << endl;
@@ -244,18 +245,13 @@ static void populateJsonWithSmilPar(stringstream &stream, const ePub3::SMILData:
 
 }
 
-static void populateJsonWithSmilSeq(stringstream &stream, const ePub3::SMILData::Sequence *seqq, bool wasFirstCall){
+static void populateJsonWithSmilSeq(stringstream &stream, const ePub3::SMILData::Sequence *seqq){
 	//TODO do we need this?
     //printf("CHECK SMIL DATA TREE TEXTREF FRAGID %s\n", seqq->_textref_fragmentID.c_str());
 
 	if(nullptr == seqq){
         stream << "!! NULL SMIL SEQQ" << endl;
 		return;
-	}
-
-
-	if(!wasFirstCall){
-		stream << ',';
 	}
 
     stream << "{" << endl;
@@ -281,7 +277,7 @@ static void populateJsonWithSmilSeq(stringstream &stream, const ePub3::SMILData:
         //if (nullptr != seq){
         if (container->IsSequence()){
             ePub3::SMILData::Sequence *seq = (ePub3::SMILData::Sequence *)container;
-        	populateJsonWithSmilSeq(stream, seq, i==0);
+        	populateJsonWithSmilSeq(stream, seq);
             //continue;
         }
 
@@ -354,7 +350,7 @@ static void populateJsonWithSmilDatas(stringstream &stream, std::shared_ptr<ePub
 
         ePub3::SMILData::Sequence *seq = smilData->Body();
         //ePub3::SMILData::Sequence *seq = const_cast<ePub3::SMILData::Sequence *>(smilData->Body());
-        populateJsonWithSmilSeq(stream, seq, true);
+        populateJsonWithSmilSeq(stream, seq);
         
         stream << "]" << endl;
 
@@ -411,10 +407,10 @@ static void populateJsonWithMediaOverlayContent(stringstream &stream, std::share
 
     double duration = static_cast<double>(model->DurationMilliseconds_Metadata())/1000;
 
-    stream << "\"activeClass\" : \"" << model->ActiveClass() << "\"," << endl;
-    stream << "\"duration\" : \"" << duration << "\"," << endl;
-    stream << "\"narrator\" : \"" << model->Narrator() << "\"," << endl;
-    stream << "\"playbackActiveClass\" : \"" << model->PlaybackActiveClass() << "\"," << endl;
+    stream << "activeClass: \"" << model->ActiveClass() << "\"," << endl;
+    stream << "duration: \"" << duration << "\"," << endl;
+    stream << "narrator: \"" << model->Narrator() << "\"," << endl;
+    stream << "playbackActiveClass: \"" << model->PlaybackActiveClass() << "\"," << endl;
     
     populateJsonWithEscapeables(stream, model);
     populateJsonWithSkippables(stream, model);
@@ -758,11 +754,12 @@ JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetSmilData
 	auto package = PCKG(pckgPtr);
 	auto model = package->MediaOverlaysSmilModel();
 
-	stream << "\"media_overlay\": {" << endl;
+	//stream << "\"media_overlay\": {" << endl;
+	stream << "{" << endl;
 
 	populateJsonWithMediaOverlayContent(stream, model);
 
-	stream << '}'; // media_overlay {
+	stream << '}'; // media_overlay
 
 	std::string result {stream.str()};
 	jni::StringUTF str(env, result);
