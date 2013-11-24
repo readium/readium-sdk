@@ -186,7 +186,7 @@ public class Package {
 		Log.i(TAG, "subjects: "+subjects);
 		Log.i(TAG, "spineItems: "+spineItems.size());
 		Log.i(TAG, "manifestTable: "+manifestTable.size());
-		Log.i(TAG, "smilDataJson: "+ smilDataJson);
+		//Log.i(TAG, "smilDataJson: "+ smilDataJson);
 	}
 
 	public long getNativePtr() {
@@ -416,7 +416,9 @@ public class Package {
 		JSONObject o = new JSONObject();
 		try {
 			o.put("rootUrl", basePath);
-			//o.put("rootUrlMO", "http://localhost:port/PACKAGE_UUID/"); // TODO: http web server address
+			
+			//EpubServer.HTTP_HOST /// EpubServer.HTTP_PORT
+			o.put("rootUrlMO", "http://localhost:8080/");
 			
 			o.put("rendition_layout", nativeGetProperty(__nativePtr, "layout", "rendition"));
 			JSONArray spineArray = new JSONArray();
