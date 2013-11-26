@@ -26,10 +26,13 @@
 #include "error_handler.h"
 #include "xpath_wrangler.h"
 
+//#include "make_unique.h"
+//std::unique_ptr<KLASS> obj = make_unique<KLASS>(constructor_params);
+
 EPUB3_BEGIN_NAMESPACE
 
 //     static inline FORCE_INLINE
-//     void HandleError_(EPUBError __code, const std::string& __msg)
+//     void HandleError_(EPUBError __code, const std::string & __msg)
 //     {
 // std::cerr << "HANDLE ERROR" << std::endl; 
 // 
@@ -40,7 +43,7 @@ EPUB3_BEGIN_NAMESPACE
     
 
 /*
-        void debugTreeAudio(const SMILData::Audio *audio)
+        void debugTreeAudio(const SMILData::Audio * audio)
         {
             printf("-- DEBUG TREE AUDIO\n");
 
@@ -49,7 +52,7 @@ EPUB3_BEGIN_NAMESPACE
             printf("CHECK SMIL DATA TREE AUDIO: %ld --> %ld\n", (long) audio->_clipBeginMilliseconds, (long) audio->_clipEndMilliseconds);
         }
 
-        void debugTreeText(const SMILData::Text *text)
+        void debugTreeText(const SMILData::Text * text)
         {
             printf("-- DEBUG TREE TEXT\n");
 
@@ -59,7 +62,7 @@ EPUB3_BEGIN_NAMESPACE
             printf("CHECK SMIL DATA TREE TEXT\n");
         }
 
-        void debugTreePar(const SMILData::Parallel *par)
+        void debugTreePar(const SMILData::Parallel * par)
         {
             printf("-- DEBUG TREE PAR\n");
 
@@ -78,7 +81,7 @@ EPUB3_BEGIN_NAMESPACE
             }
         }
 
-        void debugTreeSeq(const SMILData::Sequence *seqq)
+        void debugTreeSeq(const SMILData::Sequence * seqq)
         {
             printf("-- DEBUG TREE SEQ\n");
 
@@ -88,16 +91,16 @@ EPUB3_BEGIN_NAMESPACE
 
             for (int i = 0; i < seqq->_children.size(); i++)
             {
-                SMILData::TimeContainer *container = seqq->_children[i];
+                SMILData::TimeContainer * container = seqq->_children[i];
 
-                const SMILData::Sequence *seq = dynamic_cast<const SMILData::Sequence *>(container);
+                const SMILData::Sequence * seq = dynamic_cast<const SMILData::Sequence *>(container);
                 if (seq != nullptr)
                 {
                     debugTreeSeq(seq);
                     continue;
                 }
 
-                const SMILData::Parallel *par = dynamic_cast<const SMILData::Parallel *>(container);
+                const SMILData::Parallel * par = dynamic_cast<const SMILData::Parallel *>(container);
                 if (par != nullptr)
                 {
                     debugTreePar(par);
@@ -108,11 +111,11 @@ EPUB3_BEGIN_NAMESPACE
             }
         }
 
-        void debugSmilData(std::vector<shared_ptr<SMILData>> smilDatas)
+        void debugSmilData(std::vector<std::shared_ptr<SMILData>> & smilDatas)
         {
             for (int i = 0; i < smilDatas.size(); i++)
             {
-                shared_ptr<SMILData> smilData = smilDatas[i];
+                const std::shared_ptr<SMILData> smilData = smilDatas.at(i);
 
                 printf("}}}}}}} CHECK SMIL DATA TREE %s duration (milliseconds): %ld\n", smilData->ManifestItem()->Identifier().c_str(), (long) smilData->DurationMilliseconds());
 
@@ -126,8 +129,7 @@ EPUB3_BEGIN_NAMESPACE
             //printf("~MediaOverlaysSmilModel()\n");
         }
 
-        MediaOverlaysSmilModel::MediaOverlaysSmilModel(const PackagePtr package) //shared_ptr<Package>
-        : OwnedBy(package), _totalDuration(0), _smilDatas(std::vector<shared_ptr<SMILData>>())
+        MediaOverlaysSmilModel::MediaOverlaysSmilModel(const std::shared_ptr<Package> & package) : OwnedBy(package), _totalDuration(0), _smilDatas(std::vector<std::shared_ptr<SMILData>>())
         {
         }
 
@@ -141,11 +143,7 @@ EPUB3_BEGIN_NAMESPACE
         {
             _totalDuration = 0;
 
-            for (int i = 0; i < _smilDatas.size(); i++)
-            {
-                shared_ptr<SMILData> o = _smilDatas[i];
-                //TODO: o->releaseMemory() ?
-            }
+            // std::vector automatically releases the contained smart shared pointers (reference count--)
 
             //_smilDatas.erase(_smilDatas.begin(), _smilDatas.end());
             _smilDatas.clear();
@@ -178,18 +176,22 @@ EPUB3_BEGIN_NAMESPACE
 
         void MediaOverlaysSmilModel::parseMetadata()
         {
-            //const string& _narrator = Narrator();
+            //const string & _narrator = Narrator();
             //printf("Media Overlays NARRATOR: %s\n", _narrator.c_str());
 
-            //const string& _activeClass = ActiveClass();
+            //const string & _activeClass = ActiveClass();
             //printf("Media Overlays ACTIVE CLASS: %s\n", _activeClass.c_str());
 
-            //const string& _playbackActiveClass = PlaybackActiveClass();
+            //const string & _playbackActiveClass = PlaybackActiveClass();
             //printf("Media Overlays PLAYBACK ACTIVE CLASS: %s\n", _playbackActiveClass.c_str());
 
-            PackagePtr package = Owner();
+            std::shared_ptr<Package> package = Owner(); // internally: std::weak_ptr<Package>.lock()
+            if (package == nullptr)
+            {
+                return;
+            }
 
-            const string& durationStr = package->MediaOverlays_DurationTotal();
+            const string & durationStr = package->MediaOverlays_DurationTotal();
             //printf("Media Overlays TOTAL DURATION (string): %s\n", durationStr.c_str());
 
             _totalDuration = 0;
@@ -200,7 +202,7 @@ EPUB3_BEGIN_NAMESPACE
                     _totalDuration = SmilClockValuesParser::ToWholeMilliseconds(durationStr);
                     //printf("Media Overlays TOTAL DURATION (milliseconds): %ld\n", (long) _totalDuration);
                 }
-                catch (const std::invalid_argument& exc)
+                catch (const std::invalid_argument & exc)
                 {
                     HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str("OPF package -- media:duration=", durationStr, " => invalid SMIL Clock Value syntax"));
                 }
@@ -209,23 +211,24 @@ EPUB3_BEGIN_NAMESPACE
                 //}
             }
 
-            MediaOverlaysSmilModelPtr sharedMe = std::enable_shared_from_this<MediaOverlaysSmilModel>::shared_from_this();
-
+            std::shared_ptr<MediaOverlaysSmilModel> sharedMe = std::enable_shared_from_this<MediaOverlaysSmilModel>::shared_from_this();
+            //std::weak_ptr<MediaOverlaysSmilModel> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy()
+            
             uint32_t accumulatedDurationMilliseconds = 0;
 
-            // const ManifestTable& manifestTable = package->Manifest();
+            // const ManifestTable & manifestTable = package->Manifest();
             // for (ManifestTable::const_iterator iter = manifestTable.begin(); iter != manifestTable.end(); iter++)
-            // ManifestItemPtr item = iter->second; //shared_ptr<ManifestItem>
+            // std::shared_ptr<ManifestItem> item = iter->second;
 
             bool allFake = true;
 
-            shared_ptr<SpineItem> spineItem = package->FirstSpineItem();
+            std::shared_ptr<SpineItem> spineItem = package->FirstSpineItem();
             while (spineItem != nullptr)
             {
-                ManifestItemPtr item = spineItem->ManifestItem();
+                std::shared_ptr<ManifestItem> item = spineItem->ManifestItem();
 
                 //string
-                //const ManifestItem::MimeType& mediaType = item->MediaType();
+                //const ManifestItem::MimeType & mediaType = item->MediaType();
                 //if (mediaType != "application/smil+xml")
 
                 //const string & mediaOverlayID = item->MediaOverlayID();
@@ -233,8 +236,9 @@ EPUB3_BEGIN_NAMESPACE
                 item = item->MediaOverlay();
                 if (item == nullptr)
                 {
-                    SMILDataPtr smilData = std::make_shared<class SMILData>(sharedMe, nullptr, spineItem, 0);
-                    _smilDatas.push_back(smilData);
+                    const std::shared_ptr<SMILData> smilData = std::make_shared<class SMILData>(sharedMe, nullptr, spineItem, 0);
+                    _smilDatas.push_back(smilData); // creates a *copy* of the shared smart pointer (reference count++) 
+                    smilData = nullptr; // not really needed, as the variable goes out of scope anyway (reference count--) 
 
                     spineItem = spineItem->Next();
                     continue;
@@ -242,7 +246,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 //printf("Media Overlays SMIL HREF: %s\n", item->Href().c_str());
 
-                const string& itemDurationStr = package->MediaOverlays_DurationItem(item);
+                const string & itemDurationStr = package->MediaOverlays_DurationItem(item);
                 //printf("Media Overlays SMIL DURATION (string): %s\n", itemDurationStr.c_str());
 
                 if (itemDurationStr.empty())
@@ -259,15 +263,17 @@ EPUB3_BEGIN_NAMESPACE
 
                         allFake = false;
 
-                        SMILDataPtr smilData = std::make_shared<class SMILData>(sharedMe, item, spineItem, durationWholeMilliseconds);
-                        _smilDatas.push_back(smilData);
+                        const std::shared_ptr<SMILData> smilData = std::make_shared<class SMILData>(sharedMe, item, spineItem, durationWholeMilliseconds);
+                        _smilDatas.push_back(smilData); // creates a *copy* of the shared smart pointer (reference count++) 
+                        smilData = nullptr; // not really needed, as the variable goes out of scope anyway (reference count--) 
 
                         accumulatedDurationMilliseconds += durationWholeMilliseconds;
                     }
-                    catch (const std::invalid_argument& exc)
+                    catch (const std::invalid_argument & exc)
                     {
-                        SMILDataPtr smilData = std::make_shared<class SMILData>(sharedMe, nullptr, spineItem, 0);
-                        _smilDatas.push_back(smilData);
+                        const std::shared_ptr<SMILData> smilData = std::make_shared<class SMILData>(sharedMe, nullptr, spineItem, 0);
+                        _smilDatas.push_back(smilData); // creates a *copy* of the shared smart pointer (reference count++) 
+                        smilData = nullptr; // not really needed, as the variable goes out of scope anyway (reference count--) 
 
                         HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str(item->Href(), " -- media:duration=", itemDurationStr, " => invalid SMIL Clock Value syntax"));
                     }
@@ -301,50 +307,51 @@ EPUB3_BEGIN_NAMESPACE
 
             if (allFake)
             {
-                for (int i = 0; i < _smilDatas.size(); i++)
-                {
-                    shared_ptr<SMILData> o = _smilDatas[i];
-                    //TODO: o->releaseMemory() ?
-                }
-
+                // std::vector automatically releases the contained smart shared pointers (reference count--)
+                
                 //_smilDatas.erase(_smilDatas.begin(), _smilDatas.end());
                 _smilDatas.clear();
             }
             else
             {
-                for (int i = 0; i < _smilDatas.size(); i++)
+                ForEachSmilData([](const std::shared_ptr<SMILData> & data)
                 {
-                    shared_ptr<SMILData> data = _smilDatas.at(i);
                     if (data->SmilManifestItem() != nullptr)
                     {
-                        continue;
+                        return;
                     }
-                    printf("SMIL placeholder for blank page: %s\n", data->XhtmlSpineItem()->ManifestItem()->Href().c_str());
+                    
+                    printf("SMIL placeholder for 'blank' MO page: %s\n", data->XhtmlSpineItem()->ManifestItem()->Href().c_str());
 
                     data->_root = new SMILData::Sequence(nullptr, "", "", nullptr, "", data);
 
                     SMILData::Sequence * sequence = const_cast<SMILData::Sequence *>(data->Body());
 
-                    SMILData::Parallel *par = new SMILData::Parallel(sequence, "", data);
+                    SMILData::Parallel * par = new SMILData::Parallel(sequence, "", data);
 
-                    SMILData::Text *text = new SMILData::Text(par, data->XhtmlSpineItem()->ManifestItem()->Href(), "", nullptr, data);
-                }
+                    SMILData::Text * text = new SMILData::Text(par, data->XhtmlSpineItem()->ManifestItem()->Href(), "", nullptr, data);
+                });
             }
         }
 
         uint32_t MediaOverlaysSmilModel::parseSMILs()
         {       
-            PackagePtr package = Owner();
+            std::shared_ptr<Package> package = Owner(); // internally: std::weak_ptr<Package>.lock()
+            if (package == nullptr)
+            {
+                return 0;
+            }
+
 
             uint32_t accumulatedDurationMilliseconds = 0;
 
-            shared_ptr<SpineItem> spineItem = package->FirstSpineItem();
+            std::shared_ptr<SpineItem> spineItem = package->FirstSpineItem();
             while (spineItem != nullptr)
             {
-                ManifestItemPtr item = spineItem->ManifestItem();
+                std::shared_ptr<ManifestItem> item = spineItem->ManifestItem();
 
                 //string
-                //const ManifestItem::MimeType& mediaType = item->MediaType();
+                //const ManifestItem::MimeType & mediaType = item->MediaType();
                 //if (mediaType != "application/smil+xml")
 
                 //const string & mediaOverlayID = item->MediaOverlayID();
@@ -449,11 +456,11 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     return 0;
                 }
 
-                shared_ptr<SMILData> smilData = nullptr;
+                std::shared_ptr<SMILData> smilData = nullptr;
                 string id = item->Identifier();
                 for (int i = 0; i < _smilDatas.size(); i++)
                 {
-                    shared_ptr<SMILData> data = _smilDatas.at(i);
+                    const std::shared_ptr<SMILData> data = _smilDatas.at(i); // does not make a copy of the smart pointer (NO reference count++)
 
                     if (data->SmilManifestItem() == nullptr)
                     {
@@ -506,7 +513,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             return accumulatedDurationMilliseconds;
         }
 
-        std::vector<string> splitIriFileFragmentID(const string& iri)
+        std::vector<string> splitIriFileFragmentID(const string & iri)
         {
             //printf("=========== IRI: %s\n", iri.c_str());
 
@@ -538,10 +545,11 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             //printf("=========== IRI FILE: %s\n", split.at(0).c_str());
             //printf("=========== IRI FRAGID: %s\n", split.at(1).c_str());
 
+            // RVO Return Value Optimisation should take care of moving the object reference from the local stack that of the callee's context?
             return split;
         }
 
-        ManifestItemPtr getReferencedManifestItem(PackagePtr package, string filepathInSmil, ManifestItemPtr smilItem)
+        std::shared_ptr<ManifestItem> getReferencedManifestItem(const std::shared_ptr<Package> & package, string filepathInSmil, const std::shared_ptr<ManifestItem> & smilItem)
         {
             if (filepathInSmil.empty())
             {
@@ -561,9 +569,9 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
 
             std::string refOPFPath = _Str(smilParentFolder, filepathInSmil);
 
-            //std::string refOPFPath = _Str("/.././void1/../", smilParentFolder, "./void2/.././", filepathInSmil);
-            //std::string refOPFPath = _Str(smilParentFolder, "void/../", filepathInSmil);
-            //std::string refOPFPath = _Str("../", smilParentFolder, filepathInSmil);
+            //std::string & refOPFPath = _Str("/.././void1/../", smilParentFolder, "./void2/.././", filepathInSmil);
+            //std::string & refOPFPath = _Str(smilParentFolder, "void/../", filepathInSmil);
+            //std::string & refOPFPath = _Str("../", smilParentFolder, filepathInSmil);
 
             //printf("=========== refOPFPath BEFORE: %s\n", refOPFPath.c_str());
 
@@ -595,16 +603,17 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
 
             //printf("=========== refOPFPath AFTER: %s\n", refOPFPath.c_str());
 
-            const ManifestTable& manifestTable = package->Manifest();
+            const ManifestTable & manifestTable = package->Manifest();
             for (ManifestTable::const_iterator iter = manifestTable.begin(); iter != manifestTable.end(); iter++)
             {
-                ManifestItemPtr manItem = iter->second; //shared_ptr<ManifestItem>
+                std::shared_ptr<ManifestItem> manItem = iter->second;
 
                 const string abs = manItem->AbsolutePath();
                 if (abs.compare(refOPFPath) == 0)
                 {
                     //printf("------> manifest item path: %s\n", abs.c_str());
-                    return manItem;
+                    
+                    return manItem; //unless RVO (Return Value Optimization), creates a copy of the smart pointer (reference count++), and deallocates the local variable (reference count--)
                 }
             }
 
@@ -612,7 +621,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             return nullptr;
         }
 
-        uint32_t MediaOverlaysSmilModel::parseSMIL(SMILDataPtr smilData, SMILData::Sequence *sequence, SMILData::Parallel *parallel, const ManifestItemPtr item, const xmlNodePtr element)
+        uint32_t MediaOverlaysSmilModel::parseSMIL(const std::shared_ptr<SMILData> & smilData, SMILData::Sequence * sequence, SMILData::Parallel * parallel, const std::shared_ptr<ManifestItem> & item, const xmlNodePtr element)
         {
             if (element == nullptr || element->type != XML_ELEMENT_NODE)
             {
@@ -655,11 +664,15 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 //printf("=========== SRC FRAGID: %s\n", src_fragmentID.c_str());
             }
 
-            PackagePtr package = Owner();
+            std::shared_ptr<Package> package = Owner(); // internally: std::weak_ptr<Package>.lock()
+            if (package == nullptr)
+            {
+                return 0;
+            }
 
-            ManifestItemPtr srcManifestItem = getReferencedManifestItem(package, src_file, item);
+            std::shared_ptr<ManifestItem> srcManifestItem = getReferencedManifestItem(package, src_file, item);
 
-            ManifestItemPtr textrefManifestItem = getReferencedManifestItem(package, textref_file, item);
+            std::shared_ptr<ManifestItem> textrefManifestItem = getReferencedManifestItem(package, textref_file, item);
 
             string type = string(_getProp(element, "type", ePub3NamespaceURI));
 
@@ -673,8 +686,6 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
 
                 smilData->_root = new SMILData::Sequence(nullptr, textref_file, textref_fragmentID, textrefManifestItem, type, smilData);
 
-                //sequence = smilData->Body();
-                //sequence = smilData->_root; // because of const qualifier
                 sequence = const_cast<SMILData::Sequence *>(smilData->Body());
 
                 parallel = nullptr;
@@ -692,7 +703,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     HandleError(EPUBError::MediaOverlaySMILSequenceSequenceParent, _Str(item->Href().c_str(), " => parent of sequence time container must be sequence"));
                 }
 
-                SMILData::Sequence *seq = new SMILData::Sequence(sequence, textref_file, textref_fragmentID, textrefManifestItem, type, smilData);
+                SMILData::Sequence * seq = new SMILData::Sequence(sequence, textref_file, textref_fragmentID, textrefManifestItem, type, smilData);
 
                 sequence = seq;
                 parallel = nullptr;
@@ -710,7 +721,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     HandleError(EPUBError::MediaOverlaySMILParallelSequenceParent, _Str(item->Href().c_str(), " => parent of parallel time container must be sequence"));
                 }
 
-                SMILData::Parallel *par = new SMILData::Parallel(sequence, type, smilData);
+                SMILData::Parallel * par = new SMILData::Parallel(sequence, type, smilData);
 
                 sequence = nullptr;
                 parallel = par;
@@ -746,7 +757,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     {
                         clipBeginMilliseconds = SmilClockValuesParser::ToWholeMilliseconds(clipBeginStr);
                     }
-                    catch (const std::invalid_argument& exc)
+                    catch (const std::invalid_argument & exc)
                     {
                         HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str(item->Href().c_str(), " -- clipBegin=", clipBeginStr, " => invalid SMIL Clock Value syntax"));
                     }
@@ -763,7 +774,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     {
                         clipEndMilliseconds = SmilClockValuesParser::ToWholeMilliseconds(clipEndStr);
                     }
-                    catch (const std::invalid_argument& exc)
+                    catch (const std::invalid_argument & exc)
                     {
                         HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str(item->Href().c_str(), " -- clipEnd=", clipEndStr, " => invalid SMIL Clock Value syntax"));
                     }
@@ -789,7 +800,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     accumulatedDurationMilliseconds += clipDuration;
                 }
 
-                SMILData::Audio *audio = new SMILData::Audio(parallel, src_file, srcManifestItem, clipBeginMilliseconds, clipEndMilliseconds, smilData);
+                SMILData::Audio * audio = new SMILData::Audio(parallel, src_file, srcManifestItem, clipBeginMilliseconds, clipEndMilliseconds, smilData);
                 audio = nullptr;
 
                 sequence = nullptr;
@@ -815,14 +826,14 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     HandleError(EPUBError::MediaOverlayTextSrcFragmentMissing, _Str(item->Href().c_str(), " [", src_file.c_str(), "] => text source fragment identifier is empty"));
                 }
 
-                ManifestItemPtr spineManifestItem = smilData->_spineItem->ManifestItem();
+                std::shared_ptr<ManifestItem> spineManifestItem = smilData->_spineItem->ManifestItem();
                 if (srcManifestItem != spineManifestItem)
                 {
                     printf("Media Overlays TEXT SRC mismatch (SMIL[1] with XHTML[1+]): %s (%s) [%s]\n", srcManifestItem->Href().c_str(), spineManifestItem->Href().c_str(), item->Href().c_str());
                     _excludeAudioDuration = true;
                 }
 
-                SMILData::Text *text = new SMILData::Text(parallel, src_file, src_fragmentID, srcManifestItem, smilData);
+                SMILData::Text * text = new SMILData::Text(parallel, src_file, src_fragmentID, srcManifestItem, smilData);
                 text = nullptr;
 
                 sequence = nullptr;
@@ -880,45 +891,58 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
         }
 
 
-        const string& MediaOverlaysSmilModel::Narrator() const
+        const string & MediaOverlaysSmilModel::Narrator() const
         {
-            return Owner()->MediaOverlays_Narrator(false);
+            std::shared_ptr<Package> pack = Owner(); // internally: std::weak_ptr<Package>.lock()
+            if (pack == nullptr)
+            {
+                return "";
+            }
+            return pack->MediaOverlays_Narrator(false);
         }
 
-        const string& MediaOverlaysSmilModel::ActiveClass() const
+        const string & MediaOverlaysSmilModel::ActiveClass() const
         {
-            return Owner()->MediaOverlays_ActiveClass();
+            std::shared_ptr<Package> pack = Owner(); // internally: std::weak_ptr<Package>.lock()
+            if (pack == nullptr)
+            {
+                return "";
+            }
+            return pack->MediaOverlays_ActiveClass();
         }
 
-        const string& MediaOverlaysSmilModel::PlaybackActiveClass() const
+        const string & MediaOverlaysSmilModel::PlaybackActiveClass() const
         {
-            return Owner()->MediaOverlays_PlaybackActiveClass();
+            std::shared_ptr<Package> pack = Owner(); // internally: std::weak_ptr<Package>.lock()
+            if (pack == nullptr)
+            {
+                return "";
+            }
+            return pack->MediaOverlays_PlaybackActiveClass();
         }
 
         const uint32_t MediaOverlaysSmilModel::DurationMilliseconds_Calculated() const
         {
             uint32_t total = 0;
 
-            for (int i = 0; i < _smilDatas.size(); i++)
+            ForEachSmilData([&total](const std::shared_ptr<SMILData> & data)
             {
-                shared_ptr<SMILData> data = _smilDatas.at(i);
                 total += data->DurationMilliseconds_Calculated();
-            }
+            });
 
             return total;
         }
 
-        const SMILData::Parallel *MediaOverlaysSmilModel::ParallelAt(uint32_t timeMilliseconds) const
+        const SMILData::Parallel * MediaOverlaysSmilModel::ParallelAt(uint32_t timeMilliseconds) const
         {
             uint32_t offset = 0;
 
             for (int i = 0; i < _smilDatas.size(); i++)
             {
-                shared_ptr<SMILData> data = _smilDatas.at(i);
-
+                const std::shared_ptr<SMILData> data = _smilDatas.at(i); // does not make a copy of the smart pointer (NO reference count++)
                 uint32_t timeAdjusted = timeMilliseconds - offset;
 
-                const SMILData::Parallel *para = data->ParallelAt(timeAdjusted);
+                const SMILData::Parallel * para = data->ParallelAt(timeAdjusted);
                 if (para != nullptr)
                 {
                     return para;
@@ -930,7 +954,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             return nullptr;
         }
 
-        const void MediaOverlaysSmilModel::PercentToPosition(double percent, SMILDataPtr & smilData, uint32_t & smilIndex, const SMILData::Parallel *& par, uint32_t & parIndex, uint32_t & milliseconds) const
+        const void MediaOverlaysSmilModel::PercentToPosition(double percent, const std::shared_ptr<SMILData> & smilData, uint32_t & smilIndex, const SMILData::Parallel * par, uint32_t & parIndex, uint32_t & milliseconds) const
         {
             if (percent < 0.0 || percent > 100.0)
             {
@@ -949,11 +973,17 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 return;
             }
 
+            std::shared_ptr<SMILData> smilDataPar = par->Owner(); // internally: std::weak_ptr<SMILData>.lock()
+            if (smilDataPar == nullptr)
+            {
+                return;
+            }
+            
             uint32_t smilDataOffset = 0;
-            for (std::vector<SMILDataPtr>::size_type i = 0; i < GetSmilCount(); i++)
+            for (std::vector<std::shared_ptr<SMILData>>::size_type i = 0; i < GetSmilCount(); i++)
             {
                 smilData = GetSmil(i);
-                if (smilData == par->SmilData())
+                if (smilData == smilDataPar) // smart shared pointer comparison operator overloaded
                 {
                     break;
                 }
@@ -963,7 +993,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             milliseconds = timeMs - (smilDataOffset + smilData->ClipOffset(par));
         }
 
-        const double MediaOverlaysSmilModel::PositionToPercent(std::vector<SMILDataPtr>::size_type smilIndex, uint32_t parIndex, uint32_t milliseconds) const
+        const double MediaOverlaysSmilModel::PositionToPercent(std::vector<std::shared_ptr<SMILData>>::size_type smilIndex, uint32_t parIndex, uint32_t milliseconds) const
         {
             if (smilIndex >= GetSmilCount())
             {
@@ -971,15 +1001,15 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             }
 
             uint32_t smilDataOffset = 0;
-            for (std::vector<SMILDataPtr>::size_type i = 0; i < smilIndex; i++)
+            for (std::vector<std::shared_ptr<SMILData>>::size_type i = 0; i < smilIndex; i++)
             {
-                SMILDataPtr sd = GetSmil(i);
+                const std::shared_ptr<SMILData> sd = GetSmil(i);
                 smilDataOffset += sd->DurationMilliseconds_Calculated();
             }
 
-            SMILDataPtr smilData = GetSmil(smilIndex);
+            const std::shared_ptr<SMILData> smilData = GetSmil(smilIndex);
 
-            const SMILData::Parallel *par = smilData->NthParallel(parIndex);
+            const SMILData::Parallel * par = smilData->NthParallel(parIndex);
             if (par == nullptr)
             {
                 return -1.0;

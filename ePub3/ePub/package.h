@@ -279,9 +279,10 @@ protected:
     }
 
 protected:
-    shared_ptr<MediaOverlaysSmilModel> _mediaOverlays;      ///< The Media Overlays SMIL model
+    std::shared_ptr<MediaOverlaysSmilModel> _mediaOverlays;      ///< The Media Overlays SMIL model
 public:
-    shared_ptr<MediaOverlaysSmilModel>    MediaOverlaysSmilModel()      const       { return _mediaOverlays; }
+    // returns a copy of the smart shared pointer (reference count++)
+    std::shared_ptr<MediaOverlaysSmilModel>    MediaOverlaysSmilModel()      const       { return _mediaOverlays; }
 
     shared_ptr<Archive> Archive() const { return _archive; }
 };
@@ -656,7 +657,7 @@ public:
      @result The publication's Media Overlays media:duration
      */
     EPUB3_EXPORT
-    const string& MediaOverlays_DurationItem(const std::shared_ptr<ManifestItem> manifestItem);
+    const string& MediaOverlays_DurationItem(const std::shared_ptr<ManifestItem> & manifestItem);
 
     /**
      Retrieves a the Media Overlays media:narrator (may be empty string, if unspecified in the OPF package)

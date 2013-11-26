@@ -23,9 +23,21 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-SMILData::TimeContainer::~TimeContainer()
+SMILData::~SMILData()
 {
-    //printf("~TimeContainer()\n");
+    //printf("~SMILData(%s)\n", _manifestItem->Href().c_str());
+    //printf("~SMILData()\n");
+    // 
+    if (_root != nullptr)
+    {
+        delete _root;
+    }
+}
+
+const string & SMILData::TimeNode::Name() const
+{
+    throw std::runtime_error("TimeNode Name()");
+    //return string::EmptyString;
 }
 
 SMILData::TimeNode::~TimeNode()
@@ -33,18 +45,16 @@ SMILData::TimeNode::~TimeNode()
     //printf("~TimeNode()\n");
 }
 
-SMILData::Sequence::~Sequence()
+const bool SMILData::Media::IsAudio() const
 {
-    //printf("~Sequence()\n");
+    throw std::runtime_error("Media IsAudio()");
+    //return Name() == @"audio";
+}
 
-    for (int i = 0; i < _children.size(); i++)
-    {
-        const TimeContainer *o = _children[i];
-        if (o != nullptr)
-        {
-            delete o;
-        }
-    }
+const bool SMILData::Media::IsText() const
+{
+    throw std::runtime_error("Media IsText()");
+    //return Name() == @"text";
 }
 
 SMILData::Media::~Media()
@@ -62,10 +72,41 @@ SMILData::Text::~Text()
     //printf("~Text()\n");
 }
 
+const bool SMILData::TimeContainer::IsParallel() const
+{
+    throw std::runtime_error("TimeContainer IsParallel()");
+    //return Name() == @"par";
+}
+
+const bool SMILData::TimeContainer::IsSequence() const
+{
+    throw std::runtime_error("TimeContainer IsSequence()");
+    //return Name() == @"seq";
+}
+
+SMILData::TimeContainer::~TimeContainer()
+{
+    //printf("~TimeContainer()\n");
+}
+
+SMILData::Sequence::~Sequence()
+{
+    //printf("~Sequence()\n");
+    // 
+    for (int i = 0; i < _children.size(); i++)
+    {
+        const TimeContainer * child = _children[i];
+        if (child != nullptr)
+        {
+            delete child;
+        }
+    }
+}
+
 SMILData::Parallel::~Parallel()
 {
     //printf("~Parallel()\n");
-
+    // 
     if (_audio != nullptr)
     {
         delete _audio;

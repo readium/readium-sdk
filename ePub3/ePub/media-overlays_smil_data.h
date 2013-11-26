@@ -33,9 +33,7 @@ EPUB3_BEGIN_NAMESPACE
 
         class SMILData;
 
-        typedef shared_ptr<SMILData> SMILDataPtr;
-
-        class SMILData : public std::enable_shared_from_this<SMILData>, public OwnedBy<MediaOverlaysSmilModel>
+        class SMILData : public OwnedBy<MediaOverlaysSmilModel> //public std::enable_shared_from_this<SMILData>
         {
             friend class MediaOverlaysSmilModel; // _root
 
@@ -51,46 +49,34 @@ EPUB3_BEGIN_NAMESPACE
 
             class Text;
 
-            class TimeNode
+            class TimeNode : public OwnedBy<SMILData> 
             {
             private:
                 TimeNode() _DELETED_;
 
-                TimeNode(const TimeNode&) _DELETED_;
+                TimeNode(const TimeNode &) _DELETED_;
 
-                TimeNode(TimeNode&&) _DELETED_;
+                TimeNode(TimeNode &&) _DELETED_;
 
             protected:
-                TimeContainer *_parent;
-                SMILDataPtr _smilData;
+                TimeContainer * _parent;
 
             public:
-                virtual const string& Name() const
-                {
-                    throw std::runtime_error("TimeNode Name()");
-                    //return string::EmptyString;
-                }
+                virtual const string & Name() const;
 
                 virtual ~TimeNode();
 
                 EPUB3_EXPORT
 
-                TimeNode(TimeContainer *parent, SMILDataPtr smilData):_parent(parent), _smilData(smilData)
+                TimeNode(TimeContainer * parent, const std::shared_ptr<SMILData> & smilData) : _parent(parent), OwnedBy(smilData)
                 {
                 }
 
                 EPUB3_EXPORT
 
-                const TimeContainer *Parent() const
+                const TimeContainer * Parent() const
                 {
                     return _parent;
-                }
-
-                EPUB3_EXPORT
-
-                const SMILDataPtr SmilData() const
-                {
-                    return _smilData;
                 }
             };
 
@@ -99,9 +85,9 @@ EPUB3_BEGIN_NAMESPACE
             private:
                 TimeContainer() _DELETED_;
 
-                TimeContainer(const TimeContainer&) _DELETED_;
+                TimeContainer(const TimeContainer &) _DELETED_;
 
-                TimeContainer(TimeContainer&&) _DELETED_;
+                TimeContainer(TimeContainer &&) _DELETED_;
 
             protected:
                 string _type; // space-separated
@@ -111,7 +97,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                TimeContainer(Sequence *parent, string type, SMILDataPtr smilData):TimeNode(parent, smilData), _type(type)
+                TimeContainer(Sequence * parent, string type, const std::shared_ptr<SMILData> & smilData) : TimeNode(parent, smilData), _type(type)
                 {
                     if (parent != nullptr)
                     {
@@ -121,7 +107,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                const Sequence *ParentSequence() const
+                const Sequence * ParentSequence() const
                 {
                     return dynamic_cast<const Sequence *>(_parent);
                 }
@@ -135,19 +121,11 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                virtual const bool IsParallel() const
-                {
-                    throw std::runtime_error("TimeContainer IsParallel()");
-                    //return Name() == @"par";
-                }
+                virtual const bool IsParallel() const;
 
                 EPUB3_EXPORT
 
-                virtual const bool IsSequence() const
-                {
-                    throw std::runtime_error("TimeContainer IsSequence()");
-                    //return Name() == @"seq";
-                }
+                virtual const bool IsSequence() const;
             };
 
             class Sequence : public TimeContainer
@@ -159,9 +137,9 @@ EPUB3_BEGIN_NAMESPACE
             private:
                 Sequence() _DELETED_;
 
-                Sequence(const Sequence&) _DELETED_;
+                Sequence(const Sequence &) _DELETED_;
 
-                Sequence(Sequence&&) _DELETED_;
+                Sequence(Sequence &&) _DELETED_;
 
                 static const string _Name;
 
@@ -169,18 +147,24 @@ EPUB3_BEGIN_NAMESPACE
                 string _textref_file;
                 string _textref_fragmentID;
 
-                ManifestItemPtr _textrefManifestItem;
+                const std::shared_ptr<ManifestItem> _textrefManifestItem;
 
                 std::vector<const TimeContainer *> _children;
 
-                const bool ClipOffset(uint32_t & offset, const Parallel *par) const
+                const bool ClipOffset(uint32_t & offset, const Parallel * par) const
                 {
+                    std::shared_ptr<SMILData> smilData = Owner(); // internally: std::weak_ptr<SMILData>.lock()
+                    if (smilData == nullptr)
+                    {
+                        return false;
+                    }
+                    
                     for (int i = 0; i < _children.size(); i++)
                     {
-                        const TimeContainer *container = _children[i];
+                        const TimeContainer * container = _children[i];
                         if (container->IsParallel())
                         {
-                            const Parallel *para = dynamic_cast<const Parallel *>(container);
+                            const Parallel * para = dynamic_cast<const Parallel *>(container);
                             if (para == par)
                             {
                                 return true;
@@ -191,7 +175,7 @@ EPUB3_BEGIN_NAMESPACE
                                 continue;
                             }
 
-                            if (para->Text() != nullptr && para->Text()->SrcManifestItem() != nullptr && para->Text()->SrcManifestItem() != SmilData()->XhtmlSpineItem()->ManifestItem())
+                            if (para->Text() != nullptr && para->Text()->SrcManifestItem() != nullptr && para->Text()->SrcManifestItem() != smilData->XhtmlSpineItem()->ManifestItem())
                             {
                                 continue;
                             }
@@ -201,7 +185,7 @@ EPUB3_BEGIN_NAMESPACE
                         }
                         else if (container->IsSequence())
                         {
-                            const Sequence *sequence = dynamic_cast<const Sequence *>(container);
+                            const Sequence * sequence = dynamic_cast<const Sequence *>(container);
 
                             bool found = sequence->ClipOffset(offset, par);
                             if (found)
@@ -214,25 +198,31 @@ EPUB3_BEGIN_NAMESPACE
                     return false;
                 }
 
-                const Parallel *ParallelAt(uint32_t timeMilliseconds) const
+                const Parallel * ParallelAt(uint32_t timeMilliseconds) const
                 {
+                    std::shared_ptr<SMILData> smilData = Owner(); // internally: std::weak_ptr<SMILData>.lock()
+                    if (smilData == nullptr)
+                    {
+                        return nullptr;
+                    }
+                    
                     uint32_t offset = 0;
 
                     for (int i = 0; i < _children.size(); i++)
                     {
                         uint32_t timeAdjusted = timeMilliseconds - offset;
 
-                        const TimeContainer *container = _children[i];
+                        const TimeContainer * container = _children[i];
                         if (container->IsParallel())
                         {
-                            const Parallel *para = dynamic_cast<const Parallel *>(container);
+                            const Parallel * para = dynamic_cast<const Parallel *>(container);
 
                             if (para->Audio() == nullptr)
                             {
                                 continue;
                             }
 
-                            if (para->Text() != nullptr && para->Text()->SrcManifestItem() != nullptr && para->Text()->SrcManifestItem() != SmilData()->XhtmlSpineItem()->ManifestItem())
+                            if (para->Text() != nullptr && para->Text()->SrcManifestItem() != nullptr && para->Text()->SrcManifestItem() != smilData->XhtmlSpineItem()->ManifestItem())
                             {
                                 continue;
                             }
@@ -248,9 +238,9 @@ EPUB3_BEGIN_NAMESPACE
                         }
                         else if (container->IsSequence())
                         {
-                            const Sequence *sequence = dynamic_cast<const Sequence *>(container);
+                            const Sequence * sequence = dynamic_cast<const Sequence *>(container);
 
-                            const Parallel *para = sequence->ParallelAt(timeAdjusted);
+                            const Parallel * para = sequence->ParallelAt(timeAdjusted);
                             if (para != nullptr)
                             {
                                 return para;
@@ -263,26 +253,26 @@ EPUB3_BEGIN_NAMESPACE
                     return nullptr;
                 }
 
-                const Parallel *NthParallel(uint32_t index, uint32_t & count) const
+                const Parallel * NthParallel(uint32_t index, uint32_t & count) const
                 {
                     for (int i = 0; i < _children.size(); i++)
                     {
-                        const TimeContainer *container = _children[i];
+                        const TimeContainer * container = _children[i];
                         if (container->IsParallel())
                         {
                             count++;
 
                             if (count == index)
                             {
-                                const Parallel *para = dynamic_cast<const Parallel *>(container);
+                                const Parallel * para = dynamic_cast<const Parallel *>(container);
                                 return para;
                             }
                         }
                         else if (container->IsSequence())
                         {
-                            const Sequence *sequence = dynamic_cast<const Sequence *>(container);
+                            const Sequence * sequence = dynamic_cast<const Sequence *>(container);
 
-                            const Parallel *para = sequence->NthParallel(index, count);
+                            const Parallel * para = sequence->NthParallel(index, count);
                             if (para != nullptr)
                             {
                                 return para;
@@ -296,7 +286,7 @@ EPUB3_BEGIN_NAMESPACE
             public:
                 EPUB3_EXPORT
 
-                const string& Name() const
+                const string & Name() const
                 {
                     return _Name;
                 }
@@ -305,7 +295,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                Sequence(Sequence *parent, string textref_file, string textref_fragmentID, ManifestItemPtr textrefManifestItem, string type, SMILDataPtr smilData):TimeContainer(parent, type, smilData), _textref_file(textref_file), _textref_fragmentID(textref_fragmentID), _textrefManifestItem(textrefManifestItem)
+                Sequence(Sequence * parent, string textref_file, string textref_fragmentID, const std::shared_ptr<ManifestItem> textrefManifestItem, string type, const std::shared_ptr<SMILData> & smilData) : TimeContainer(parent, type, smilData), _textref_file(textref_file), _textref_fragmentID(textref_fragmentID), _textrefManifestItem(textrefManifestItem)
                 {
                     _children = std::vector<const TimeContainer *>();
                 }
@@ -326,7 +316,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                const ManifestItemPtr TextRefManifestItem() const
+                const std::shared_ptr<ManifestItem> TextRefManifestItem() const
                 {
                     return _textrefManifestItem;
                 }
@@ -340,7 +330,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                const TimeContainer *GetChild(std::vector<const TimeContainer *>::size_type i) const
+                const TimeContainer * GetChild(std::vector<const TimeContainer *>::size_type i) const
                 {
                     if (i >= _children.size())
                     {
@@ -368,21 +358,27 @@ EPUB3_BEGIN_NAMESPACE
 
                 const uint32_t DurationMilliseconds() const
                 {
+                    std::shared_ptr<SMILData> smilData = Owner(); // internally: std::weak_ptr<SMILData>.lock()
+                    if (smilData == nullptr)
+                    {
+                        return 0;
+                    }
+                    
                     uint32_t total = 0;
 
                     for (int i = 0; i < _children.size(); i++)
                     {
-                        const TimeContainer *container = _children[i];
+                        const TimeContainer * container = _children[i];
                         if (container->IsParallel())
                         {
-                            const Parallel *para = dynamic_cast<const Parallel *>(container);
+                            const Parallel * para = dynamic_cast<const Parallel *>(container);
 
                             if (para->Audio() == nullptr)
                             {
                                 continue;
                             }
 
-                            if (para->Text() != nullptr && para->Text()->SrcManifestItem() != nullptr && para->Text()->SrcManifestItem() != SmilData()->XhtmlSpineItem()->ManifestItem())
+                            if (para->Text() != nullptr && para->Text()->SrcManifestItem() != nullptr && para->Text()->SrcManifestItem() != smilData->XhtmlSpineItem()->ManifestItem())
                             {
                                 continue;
                             }
@@ -392,7 +388,7 @@ EPUB3_BEGIN_NAMESPACE
                         }
                         else if (container->IsSequence())
                         {
-                            const Sequence *sequence = dynamic_cast<const Sequence *>(container);
+                            const Sequence * sequence = dynamic_cast<const Sequence *>(container);
 
                             total += sequence->DurationMilliseconds();
                         }
@@ -407,27 +403,27 @@ EPUB3_BEGIN_NAMESPACE
             private:
                 Media() _DELETED_;
 
-                Media(const Media&) _DELETED_;
+                Media(const Media &) _DELETED_;
 
-                Media(Media&&) _DELETED_;
+                Media(Media &&) _DELETED_;
 
             protected:
                 string _src_file;
                 string _src_fragmentID;
-                ManifestItemPtr _srcManifestItem;
+                const std::shared_ptr<ManifestItem> _srcManifestItem;
 
             public:
                 virtual ~Media();
 
                 EPUB3_EXPORT
 
-                Media(Parallel *parent, string src_file, string src_fragmentID, ManifestItemPtr srcManifestItem, SMILDataPtr smilData):TimeNode(parent, smilData), _src_file(src_file), _src_fragmentID(src_fragmentID), _srcManifestItem(srcManifestItem)
+                Media(Parallel * parent, string src_file, string src_fragmentID, const std::shared_ptr<ManifestItem> srcManifestItem, const std::shared_ptr<SMILData> & smilData) : TimeNode(parent, smilData), _src_file(src_file), _src_fragmentID(src_fragmentID), _srcManifestItem(srcManifestItem)
                 {
                 }
 
                 EPUB3_EXPORT
 
-                const Parallel *ParentParallel() const
+                const Parallel * ParentParallel() const
                 {
                     return dynamic_cast<const Parallel *>(_parent);
                 }
@@ -448,26 +444,18 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                const ManifestItemPtr SrcManifestItem() const
+                const std::shared_ptr<ManifestItem> SrcManifestItem() const
                 {
                     return _srcManifestItem;
                 }
 
                 EPUB3_EXPORT
 
-                virtual const bool IsAudio() const
-                {
-                    throw std::runtime_error("Media IsAudio()");
-                    //return Name() == @"audio";
-                }
+                virtual const bool IsAudio() const;
 
                 EPUB3_EXPORT
 
-                virtual const bool IsText() const
-                {
-                    throw std::runtime_error("Media IsText()");
-                    //return Name() == @"text";
-                }
+                virtual const bool IsText() const;
             };
 
             class Audio : public Media
@@ -475,9 +463,9 @@ EPUB3_BEGIN_NAMESPACE
             private:
                 Audio() _DELETED_;
 
-                Audio(const Audio&) _DELETED_;
+                Audio(const Audio &) _DELETED_;
 
-                Audio(Audio&&) _DELETED_;
+                Audio(Audio &&) _DELETED_;
 
                 static const string _Name;
 
@@ -488,7 +476,7 @@ EPUB3_BEGIN_NAMESPACE
             public:
                 EPUB3_EXPORT
 
-                const string& Name() const
+                const string & Name() const
                 {
                     return _Name;
                 }
@@ -497,7 +485,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                Audio(Parallel *parent, string src, ManifestItemPtr srcManifestItem, uint32_t clipBeginMilliseconds, uint32_t clipEndMilliseconds, SMILDataPtr smilData):Media(parent, src, "", srcManifestItem, smilData), _clipBeginMilliseconds(clipBeginMilliseconds), _clipEndMilliseconds(clipEndMilliseconds)
+                Audio(Parallel * parent, string src, const std::shared_ptr<ManifestItem> srcManifestItem, uint32_t clipBeginMilliseconds, uint32_t clipEndMilliseconds, const std::shared_ptr<SMILData> & smilData) : Media(parent, src, "", srcManifestItem, smilData), _clipBeginMilliseconds(clipBeginMilliseconds), _clipEndMilliseconds(clipEndMilliseconds)
                 {
                     parent->_audio = this;
                 }
@@ -548,16 +536,16 @@ EPUB3_BEGIN_NAMESPACE
             private:
                 Text() _DELETED_;
 
-                Text(const Text&) _DELETED_;
+                Text(const Text &) _DELETED_;
 
-                Text(Text&&) _DELETED_;
+                Text(Text &&) _DELETED_;
 
                 static const string _Name;
 
             public:
                 EPUB3_EXPORT
 
-                const string& Name() const
+                const string & Name() const
                 {
                     return _Name;
                 }
@@ -566,7 +554,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                Text(Parallel *parent, string src_file, string src_fragmentID, ManifestItemPtr srcManifestItem, SMILDataPtr smilData):Media(parent, src_file, src_fragmentID, srcManifestItem, smilData)
+                Text(Parallel * parent, string src_file, string src_fragmentID, const std::shared_ptr<ManifestItem> srcManifestItem, const std::shared_ptr<SMILData> & smilData) : Media(parent, src_file, src_fragmentID, srcManifestItem, smilData)
                 {
                     parent->_text = this;
                 }
@@ -595,21 +583,21 @@ EPUB3_BEGIN_NAMESPACE
             private:
                 Parallel() _DELETED_;
 
-                Parallel(const Parallel&) _DELETED_;
+                Parallel(const Parallel &) _DELETED_;
 
-                Parallel(Parallel&&) _DELETED_;
+                Parallel(Parallel &&) _DELETED_;
 
                 static const string _Name;
 
             protected:
-                Audio *_audio;
-                Text *_text;
+                Audio * _audio;
+                Text * _text;
 
             public:
 
                 EPUB3_EXPORT
 
-                const string& Name() const
+                const string & Name() const
                 {
                     return _Name;
                 }
@@ -618,20 +606,20 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                Parallel(Sequence *parent, string type, SMILDataPtr smilData):TimeContainer(parent, type, smilData), _audio(nullptr), _text(nullptr)
+                Parallel(Sequence * parent, string type, const std::shared_ptr<SMILData> & smilData):TimeContainer(parent, type, smilData), _audio(nullptr), _text(nullptr)
                 {
                 }
 
                 EPUB3_EXPORT
 
-                const Audio *Audio() const
+                const Audio * Audio() const
                 {
                     return _audio;
                 }
 
                 EPUB3_EXPORT
 
-                const Text *Text() const
+                const Text * Text() const
                 {
                     return _text;
                 }
@@ -654,20 +642,20 @@ EPUB3_BEGIN_NAMESPACE
         private :
             SMILData() _DELETED_;
 
-            SMILData(const SMILData&) _DELETED_;
+            SMILData(const SMILData &) _DELETED_;
 
-            SMILData(SMILData&&) _DELETED_;
+            SMILData(SMILData &&) _DELETED_;
 
         protected:
             uint32_t _duration; //whole milliseconds (resolution = 1ms)
 
-            ManifestItemPtr _manifestItem;
+            const std::shared_ptr<ManifestItem> _manifestItem;
 
-            SpineItemPtr _spineItem;
+            const std::shared_ptr<SpineItem> _spineItem;
 
-            Sequence *_root;
+            Sequence * _root;
 
-            const Parallel *ParallelAt(uint32_t timeMilliseconds) const
+            const Parallel * ParallelAt(uint32_t timeMilliseconds) const
             {
                 if (_root == nullptr)
                 {
@@ -677,7 +665,7 @@ EPUB3_BEGIN_NAMESPACE
                 return _root->ParallelAt(timeMilliseconds);
             }
 
-            const Parallel *NthParallel(uint32_t index) const
+            const Parallel * NthParallel(uint32_t index) const
             {
                 if (_root == nullptr)
                 {
@@ -707,40 +695,37 @@ EPUB3_BEGIN_NAMESPACE
         public:
             EPUB3_EXPORT
 
-            SMILData(const shared_ptr<MediaOverlaysSmilModel> smilModel, ManifestItemPtr manifestItem, SpineItemPtr spineItem, uint32_t duration): OwnedBy(smilModel), _manifestItem(manifestItem), _spineItem(spineItem), _duration(duration), _root(nullptr)
+            SMILData(const std::shared_ptr<MediaOverlaysSmilModel> & smilModel, const std::shared_ptr<ManifestItem> manifestItem, const std::shared_ptr<SpineItem> spineItem, uint32_t duration) : OwnedBy(smilModel), _manifestItem(manifestItem), _spineItem(spineItem), _duration(duration), _root(nullptr)
             {
                 //printf("SMILData(%s)\n", manifestItem->Href().c_str());
             }
 
-            virtual ~SMILData()
-            {
-                //printf("~SMILData(%s)\n", _manifestItem->Href().c_str());
-                //printf("~SMILData()\n");
-
-                if (_root != nullptr)
-                {
-                    delete _root;
-                }
-            }
+            virtual ~SMILData();
 
             EPUB3_EXPORT
 
-            const SpineItemPtr XhtmlSpineItem() const
+            const std::shared_ptr<SpineItem> XhtmlSpineItem() const
             {
                 return _spineItem;
             }
 
             EPUB3_EXPORT
 
-            const ManifestItemPtr SmilManifestItem() const
+            const std::shared_ptr<ManifestItem> SmilManifestItem() const
             {
                 return _manifestItem;
             }
 
             EPUB3_EXPORT
 
-            const Sequence *Body() const
+            const Sequence * Body() const
             {
+                if (_root == nullptr)
+                {
+                    return nullptr;
+                }
+                
+                //return _root.get();
                 return _root;
             }
 

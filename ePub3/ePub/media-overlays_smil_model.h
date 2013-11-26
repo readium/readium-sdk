@@ -29,14 +29,14 @@
 #include "media-overlays_smil_data.h"
 #include "package.h"
 
+//#include <ePub3/utilities/make_unique.h>
+//std::unique_ptr<KLASS> obj = make_unique<KLASS>(constructor_params);
+
 EPUB3_BEGIN_NAMESPACE
 
         class Package;
 
         class MediaOverlaysSmilModel;
-
-        typedef shared_ptr<MediaOverlaysSmilModel> MediaOverlaysSmilModelPtr;
-
 
         /**
 Parser that reads SMIL XML files into an in-memory data model
@@ -53,17 +53,27 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
         private:
             MediaOverlaysSmilModel() _DELETED_;
 
-            MediaOverlaysSmilModel(const MediaOverlaysSmilModel&) _DELETED_;
+            MediaOverlaysSmilModel(const MediaOverlaysSmilModel &) _DELETED_;
 
-            MediaOverlaysSmilModel(MediaOverlaysSmilModel&&) _DELETED_;
+            MediaOverlaysSmilModel(MediaOverlaysSmilModel &&) _DELETED_;
 
             uint32_t _totalDuration; //whole milliseconds (resolution = 1ms)
 
-            std::vector<shared_ptr<SMILData>> _smilDatas;
+            std::vector<std::shared_ptr<SMILData>> _smilDatas;
+    
+            template <class _Function>
+            inline FORCE_INLINE
+            _Function ForEachSmilData(_Function __f) const
+            {
+                // the _smilDatas vector iterator does not make a copy of the smart pointer (NO reference count++),
+                // the std::shared_ptr<SMILData> object is not passed as value, but as reference &
+                return std::for_each(_smilDatas.begin(), _smilDatas.end(), __f);
+            }
+    
         public:
             EPUB3_EXPORT
 
-            MediaOverlaysSmilModel(const shared_ptr<Package> package); //PackagePtr
+            MediaOverlaysSmilModel(const std::shared_ptr<Package> & package);
 
             virtual ~MediaOverlaysSmilModel();
 
@@ -73,15 +83,15 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             EPUB3_EXPORT
 
-            const string& Narrator() const;
+            const string & Narrator() const;
 
             EPUB3_EXPORT
 
-            const string& ActiveClass() const;
+            const string & ActiveClass() const;
 
             EPUB3_EXPORT
 
-            const string& PlaybackActiveClass() const;
+            const string & PlaybackActiveClass() const;
 
             EPUB3_EXPORT
 
@@ -96,31 +106,31 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             EPUB3_EXPORT
 
-            std::vector<SMILDataPtr>::size_type GetSmilCount() const
+            std::vector<std::shared_ptr<SMILData>>::size_type GetSmilCount() const
             {
                 return _smilDatas.size();
             }
 
             EPUB3_EXPORT
 
-            SMILDataPtr GetSmil(std::vector<SMILDataPtr>::size_type i) const
+            const std::shared_ptr<SMILData> GetSmil(std::vector<std::shared_ptr<SMILData>>::size_type i) const
             {
                 if (i >= _smilDatas.size())
                 {
                     return nullptr;
                 }
 
-                SMILDataPtr smilData = _smilDatas.at(i);
+                const std::shared_ptr<SMILData> smilData = _smilDatas.at(i); // does not make a copy of the smart pointer (NO reference count++)
                 return smilData;
             }
 
             EPUB3_EXPORT
 
-            const double PositionToPercent(std::vector<SMILDataPtr>::size_type  smilIndex, uint32_t parIndex, uint32_t milliseconds) const;
+            const double PositionToPercent(std::vector<std::shared_ptr<SMILData>>::size_type  smilIndex, uint32_t parIndex, uint32_t milliseconds) const;
 
             EPUB3_EXPORT
 
-            const void PercentToPosition(double percent, SMILDataPtr & smilData, uint32_t & smilIndex, const SMILData::Parallel* & par, uint32_t & parIndex, uint32_t & milliseconds) const;
+            const void PercentToPosition(double percent, const std::shared_ptr<SMILData> & smilData, uint32_t & smilIndex, const SMILData::Parallel * par, uint32_t & parIndex, uint32_t & milliseconds) const;
 
             //EPUB3_EXPORT
 
@@ -176,10 +186,10 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             uint32_t parseSMILs();
 
-            uint32_t parseSMIL(SMILDataPtr smilData, SMILData::Sequence *sequence, SMILData::Parallel *parallel, const ManifestItemPtr item, const xmlNodePtr element); // recursive
+            uint32_t parseSMIL(const std::shared_ptr<SMILData> & smilData, SMILData::Sequence * sequence, SMILData::Parallel * parallel, const std::shared_ptr<ManifestItem> & item, const xmlNodePtr element); // recursive
 
         protected:
-            const SMILData::Parallel *ParallelAt(uint32_t timeMilliseconds) const;
+            const SMILData::Parallel * ParallelAt(uint32_t timeMilliseconds) const;
         };
 
         EPUB3_END_NAMESPACE
