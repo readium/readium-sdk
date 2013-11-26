@@ -130,7 +130,7 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             EPUB3_EXPORT
 
-            const void PercentToPosition(double percent, const std::shared_ptr<SMILData> & smilData, uint32_t & smilIndex, const SMILData::Parallel * par, uint32_t & parIndex, uint32_t & milliseconds) const;
+            const void PercentToPosition(double percent, std::shared_ptr<SMILData> & smilData, uint32_t & smilIndex, const SMILData::Parallel *& par, uint32_t & parIndex, uint32_t & milliseconds) const;
 
             //EPUB3_EXPORT
 

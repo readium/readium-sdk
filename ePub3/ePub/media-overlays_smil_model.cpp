@@ -237,8 +237,7 @@ EPUB3_BEGIN_NAMESPACE
                 if (item == nullptr)
                 {
                     const std::shared_ptr<SMILData> smilData = std::make_shared<class SMILData>(sharedMe, nullptr, spineItem, 0);
-                    _smilDatas.push_back(smilData); // creates a *copy* of the shared smart pointer (reference count++) 
-                    smilData = nullptr; // not really needed, as the variable goes out of scope anyway (reference count--) 
+                    _smilDatas.push_back(smilData); // creates a *copy* of the shared smart pointer (reference count++)
 
                     spineItem = spineItem->Next();
                     continue;
@@ -264,16 +263,14 @@ EPUB3_BEGIN_NAMESPACE
                         allFake = false;
 
                         const std::shared_ptr<SMILData> smilData = std::make_shared<class SMILData>(sharedMe, item, spineItem, durationWholeMilliseconds);
-                        _smilDatas.push_back(smilData); // creates a *copy* of the shared smart pointer (reference count++) 
-                        smilData = nullptr; // not really needed, as the variable goes out of scope anyway (reference count--) 
+                        _smilDatas.push_back(smilData); // creates a *copy* of the shared smart pointer (reference count++)
 
                         accumulatedDurationMilliseconds += durationWholeMilliseconds;
                     }
                     catch (const std::invalid_argument & exc)
                     {
                         const std::shared_ptr<SMILData> smilData = std::make_shared<class SMILData>(sharedMe, nullptr, spineItem, 0);
-                        _smilDatas.push_back(smilData); // creates a *copy* of the shared smart pointer (reference count++) 
-                        smilData = nullptr; // not really needed, as the variable goes out of scope anyway (reference count--) 
+                        _smilDatas.push_back(smilData); // creates a *copy* of the shared smart pointer (reference count++)
 
                         HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str(item->Href(), " -- media:duration=", itemDurationStr, " => invalid SMIL Clock Value syntax"));
                     }
@@ -896,7 +893,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             std::shared_ptr<Package> pack = Owner(); // internally: std::weak_ptr<Package>.lock()
             if (pack == nullptr)
             {
-                return "";
+                return string::EmptyString;
             }
             return pack->MediaOverlays_Narrator(false);
         }
@@ -906,7 +903,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             std::shared_ptr<Package> pack = Owner(); // internally: std::weak_ptr<Package>.lock()
             if (pack == nullptr)
             {
-                return "";
+                return string::EmptyString;
             }
             return pack->MediaOverlays_ActiveClass();
         }
@@ -916,7 +913,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             std::shared_ptr<Package> pack = Owner(); // internally: std::weak_ptr<Package>.lock()
             if (pack == nullptr)
             {
-                return "";
+                return string::EmptyString;
             }
             return pack->MediaOverlays_PlaybackActiveClass();
         }
@@ -954,7 +951,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             return nullptr;
         }
 
-        const void MediaOverlaysSmilModel::PercentToPosition(double percent, const std::shared_ptr<SMILData> & smilData, uint32_t & smilIndex, const SMILData::Parallel * par, uint32_t & parIndex, uint32_t & milliseconds) const
+        const void MediaOverlaysSmilModel::PercentToPosition(double percent, std::shared_ptr<SMILData> & smilData, uint32_t & smilIndex, const SMILData::Parallel *& par, uint32_t & parIndex, uint32_t & milliseconds) const
         {
             if (percent < 0.0 || percent > 100.0)
             {
