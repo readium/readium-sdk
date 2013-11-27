@@ -40,8 +40,8 @@ public abstract class JavaObjectsFactory {
 	 */
 	@SuppressWarnings("unused")
 	private static SpineItem createSpineItem(String idRef, String href,
-			String pageSpread, String renditionLayout) {
-		return new SpineItem(idRef, href, pageSpread, renditionLayout);
+			String pageSpread, String renditionLayout, String media_overlay_id) {
+		return new SpineItem(idRef, href, pageSpread, renditionLayout, media_overlay_id);
 	}
 
 	/**
