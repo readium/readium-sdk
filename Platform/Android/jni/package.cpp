@@ -194,8 +194,8 @@ static void populateJsonWithSmilParAudio(stringstream &stream, const ePub3::SMIL
 	double begin = (static_cast<double>(audio->ClipBeginMilliseconds())) / 1000;
 	double end = (static_cast<double>(audio->ClipEndMilliseconds())) / 1000;
 
-	stream << "\"clipBegin\" : \"" << begin << "\"," << endl;
-	stream << "\"clipEnd\" : \"" << end << "\"" << endl;
+	stream << "\"clipBegin\" : " << begin << "," << endl;
+	stream << "\"clipEnd\" : " << end << "" << endl;
 	stream << "}" << endl;
 }
 
@@ -326,7 +326,7 @@ static void populateJsonWithSmilDatas(stringstream &stream, std::shared_ptr<ePub
 
         //issue duration
         double duration = static_cast<double>(smilData->DurationMilliseconds_Metadata())/1000;
-        stream << "\"duration\" : \"" << duration  << "\"," << endl;
+        stream << "\"duration\" : " << duration  << "," << endl;
 
 
         auto item = smilData->SmilManifestItem();
@@ -407,10 +407,10 @@ static void populateJsonWithMediaOverlayContent(stringstream &stream, std::share
 
     double duration = static_cast<double>(model->DurationMilliseconds_Metadata())/1000;
 
-    stream << "activeClass: \"" << model->ActiveClass() << "\"," << endl;
-    stream << "duration: \"" << duration << "\"," << endl;
-    stream << "narrator: \"" << model->Narrator() << "\"," << endl;
-    stream << "playbackActiveClass: \"" << model->PlaybackActiveClass() << "\"," << endl;
+    stream << "\"activeClass\": \"" << model->ActiveClass() << "\"," << endl;
+    stream << "\"duration\": " << duration << "," << endl;
+    stream << "\"narrator\": \"" << model->Narrator() << "\"," << endl;
+    stream << "\"playbackActiveClass\": \"" << model->PlaybackActiveClass() << "\"," << endl;
     
     populateJsonWithEscapeables(stream, model);
     populateJsonWithSkippables(stream, model);
