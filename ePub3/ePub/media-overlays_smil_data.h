@@ -32,6 +32,7 @@ EPUB3_BEGIN_NAMESPACE
         class MediaOverlaysSmilModel;
 
         class SMILData;
+        typedef std::shared_ptr<SMILData> SMILDataPtr;
 
         class SMILData : public OwnedBy<MediaOverlaysSmilModel> //public std::enable_shared_from_this<SMILData>
 #if EPUB_PLATFORM(WINRT)
@@ -74,7 +75,10 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                TimeNode(TimeContainer * parent, const std::shared_ptr<SMILData> & smilData) : _parent(parent), OwnedBy(smilData), NativeBridge()
+                TimeNode(shared_ptr<TimeContainer> parent, const std::shared_ptr<SMILData> & smilData) : _parent(parent), OwnedBy(smilData)
+#if EPUB_PLATFORM(WINRT)
+                    , NativeBridge()
+#endif
                 {
                 }
 
@@ -703,7 +707,11 @@ EPUB3_BEGIN_NAMESPACE
         public:
             EPUB3_EXPORT
 
-            SMILData(const shared_ptr<MediaOverlaysSmilModel> & smilModel, const ManifestItemPtr manifestItem, const SpineItemPtr spineItem, uint32_t duration): OwnedBy(smilModel), NativeBridge(), _manifestItem(manifestItem), _spineItem(spineItem), _duration(duration), _root(nullptr)
+            SMILData(const shared_ptr<MediaOverlaysSmilModel> & smilModel, const ManifestItemPtr manifestItem, const SpineItemPtr spineItem, uint32_t duration): OwnedBy(smilModel),
+#if EPUB_PLATFORM(WINRT)
+                NativeBridge(),
+#endif
+                _manifestItem(manifestItem), _spineItem(spineItem), _duration(duration), _root(nullptr)
             {
                 //printf("SMILData(%s)\n", manifestItem->Href().c_str());
             }

@@ -328,7 +328,7 @@ EPUB3_BEGIN_NAMESPACE
 					sequence->_children.push_back(par);
 
                     par->_text = std::make_shared<SMILData::Text>(par, data->XhtmlSpineItem()->ManifestItem()->Href(), "", nullptr, data);
-                }
+                });
             }
         }
 

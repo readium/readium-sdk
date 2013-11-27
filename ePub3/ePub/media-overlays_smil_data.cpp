@@ -27,11 +27,7 @@ SMILData::~SMILData()
 {
     //printf("~SMILData(%s)\n", _manifestItem->Href().c_str());
     //printf("~SMILData()\n");
-    // 
-    if (_root != nullptr)
-    {
-        delete _root;
-    }
+    //
 }
 
 const string & SMILData::TimeNode::Name() const
@@ -92,29 +88,11 @@ SMILData::TimeContainer::~TimeContainer()
 SMILData::Sequence::~Sequence()
 {
     //printf("~Sequence()\n");
-    // 
-    for (int i = 0; i < _children.size(); i++)
-    {
-        const TimeContainer * child = _children[i];
-        if (child != nullptr)
-        {
-            delete child;
-        }
-    }
 }
 
 SMILData::Parallel::~Parallel()
 {
     //printf("~Parallel()\n");
-    // 
-    if (_audio != nullptr)
-    {
-        delete _audio;
-    }
-    if (_text != nullptr)
-    {
-        delete _text;
-    }
 }
 
 const string SMILData::Sequence::_Name = string("seq");
