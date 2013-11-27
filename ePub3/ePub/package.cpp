@@ -148,7 +148,7 @@ string PackageBase::CFISubpathForManifestItemWithID(const string &ident) const
     if ( sz == size_t(-1) )
         throw std::invalid_argument(_Str("Identifier '", ident, "' was not found in the spine."));
     
-    return _Str(_spineCFIIndex, "/", sz*2, "[", ident, "]!");
+    return _Str(_spineCFIIndex, "/", (sz+1)*2, "[", ident, "]!");
 }
 const shared_vector<ManifestItem> PackageBase::ManifestItemsWithProperties(PropertyIRIList properties) const
 {
@@ -806,6 +806,7 @@ bool Package::Unpack()
         }
     }
 
+    //std::weak_ptr<Package> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy()
     _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
     _mediaOverlays->Initialize();
 
@@ -1325,7 +1326,7 @@ const string& Package::MediaOverlays_DurationTotal() const
         return string::EmptyString;
     }
 }
-const string& Package::MediaOverlays_DurationItem(const std::shared_ptr<ManifestItem> manifestItem)
+const string& Package::MediaOverlays_DurationItem(const std::shared_ptr<ManifestItem> & manifestItem)
 {
     // See:
     // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata

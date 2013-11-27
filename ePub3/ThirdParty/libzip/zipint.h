@@ -37,7 +37,7 @@
 #include <zlib.h>
 
 #include "zip.h"
-#include "config.h"
+#include "Config.h"
 
 #ifndef HAVE_MKSTEMP
 int _zip_mkstemp(char *);

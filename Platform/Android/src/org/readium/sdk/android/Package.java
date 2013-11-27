@@ -73,6 +73,7 @@ public class Package {
 	private String authors;
 	private String modificationDate;
 	private String pageProgressionDirection;
+	private String smilDataJson;
 	private List<String> authorList;
 	private List<String> subjects;
 	private List<SpineItem> spineItems;
@@ -159,6 +160,7 @@ public class Package {
 		subjects = nativeGetSubjects(__nativePtr);
 		spineItems = nativeGetSpineItems(__nativePtr);
 		manifestTable = nativeGetManifestTable(__nativePtr);
+		smilDataJson = nativeGetSmilDataAsJson(__nativePtr);
 		Log.i(TAG, "package nativePtr: " + __nativePtr);
 		Log.i(TAG, "title: "+title);
 		Log.i(TAG, "subtitle: "+subtitle);
@@ -184,6 +186,7 @@ public class Package {
 		Log.i(TAG, "subjects: "+subjects);
 		Log.i(TAG, "spineItems: "+spineItems.size());
 		Log.i(TAG, "manifestTable: "+manifestTable.size());
+		//Log.i(TAG, "smilDataJson: "+ smilDataJson);
 	}
 
 	public long getNativePtr() {
@@ -413,6 +416,10 @@ public class Package {
 		JSONObject o = new JSONObject();
 		try {
 			o.put("rootUrl", basePath);
+			
+			//EpubServer.HTTP_HOST /// EpubServer.HTTP_PORT
+			o.put("rootUrlMO", "http://localhost:8080/");
+			
 			o.put("rendition_layout", nativeGetProperty(__nativePtr, "layout", "rendition"));
 			JSONArray spineArray = new JSONArray();
 			for (SpineItem item : spineItems) {
@@ -422,7 +429,10 @@ public class Package {
 			spine.put("items", spineArray);
 			spine.put("direction", pageProgressionDirection);
 			o.put("spine", spine);
-			o.put("mediaOverlays", new JSONArray());
+
+			JSONObject mo = new JSONObject(smilDataJson);
+			o.put("media_overlay", mo);
+			
 //			Log.i(TAG, "JSON: " + o.toString(2));
 		} catch (JSONException e) {
 			Log.e(TAG, "" + e.getMessage(), e);
@@ -477,4 +487,8 @@ public class Package {
 	private native int nativeGetArchiveInfoSize(long nativePtr, 
 			long containerPtr, String relativePath);
 
+	/*
+	 * SMIL
+	 */
+	private native String nativeGetSmilDataAsJson(long nativePtr);
 }
