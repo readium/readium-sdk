@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Resources">
@@ -64,6 +64,9 @@
     </Filter>
     <Filter Include="ePub3\ThirdParty\libzip">
       <UniqueIdentifier>{8277a60a-510e-49f2-b440-9d1b0ac8679c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ePub3\ePub\Components\MediaOverlays">
+      <UniqueIdentifier>{17aa3309-42e1-416f-a330-67c0737405ef}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -686,6 +689,21 @@
     <ClInclude Include="..\..\..\..\ePub3\utilities\path_help.h">
       <Filter>ePub3\utilities</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\media-overlays_smil_data.h">
+      <Filter>ePub3\ePub\Components\MediaOverlays</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\media-overlays_smil_model.h">
+      <Filter>ePub3\ePub\Components\MediaOverlays</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\media-overlays_smil_utils.h">
+      <Filter>ePub3\ePub\Components\MediaOverlays</Filter>
+    </ClInclude>
+    <ClInclude Include="WinSMILModel.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="WinSMILData.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ThreadEmulation.cpp" />
@@ -1279,6 +1297,18 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\utilities\path_help.cpp">
       <Filter>ePub3\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media-overlays_smil_data.cpp">
+      <Filter>ePub3\ePub\Components\MediaOverlays</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media-overlays_smil_model.cpp">
+      <Filter>ePub3\ePub\Components\MediaOverlays</Filter>
+    </ClCompile>
+    <ClCompile Include="WinSMILData.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="WinSMILModel.cpp">
+      <Filter>Public Interface</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

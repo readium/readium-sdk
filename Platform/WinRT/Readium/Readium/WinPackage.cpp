@@ -30,6 +30,7 @@
 #include "PluginMaps.h"
 #include "WinMediaHandler.h"
 #include "WinFilterChain.h"
+#include "WinSMILModel.h"
 
 #include <iomanip>
 
@@ -215,6 +216,11 @@ ManifestItem^ Package::ManifestItemForCFI(CFI^ cfi, CFI^* remainingCFI)
 	if (remainingCFI != nullptr)
 		*remainingCFI = CFI::Wrapper(remainder);
 	return item;
+}
+
+MediaOverlaysSMILModel^ Package::SMILModel::get()
+{
+	return MediaOverlaysSMILModel::Wrapper(_native->MediaOverlaysSmilModel());
 }
 
 IClosableStream^ Package::ReadStreamForRelativePath(String^ relativePath)

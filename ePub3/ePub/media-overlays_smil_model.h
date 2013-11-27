@@ -49,6 +49,9 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 @ingroup epub-model
 */
         class MediaOverlaysSmilModel : public std::enable_shared_from_this<MediaOverlaysSmilModel>, public OwnedBy<Package>
+#if EPUB_PLATFORM(WINRT)
+			, public NativeBridge
+#endif
         {
         private:
             MediaOverlaysSmilModel() _DELETED_;
@@ -59,7 +62,7 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             uint32_t _totalDuration; //whole milliseconds (resolution = 1ms)
 
-            std::vector<std::shared_ptr<SMILData>> _smilDatas;
+            shared_vector<SMILData> _smilDatas;
     
             template <class _Function>
             inline FORCE_INLINE
@@ -130,7 +133,7 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             EPUB3_EXPORT
 
-            const void PercentToPosition(double percent, std::shared_ptr<SMILData> & smilData, uint32_t & smilIndex, const SMILData::Parallel *& par, uint32_t & parIndex, uint32_t & milliseconds) const;
+            const void PercentToPosition(double percent, SMILDataPtr & smilData, uint32_t & smilIndex, shared_ptr<const SMILData::Parallel>& par, uint32_t & parIndex, uint32_t & milliseconds) const;
 
             //EPUB3_EXPORT
 
@@ -186,10 +189,10 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             uint32_t parseSMILs();
 
-            uint32_t parseSMIL(const SMILDataPtr smilData, SMILData::Sequence *sequence, SMILData::Parallel *parallel, const ManifestItemPtr item, shared_ptr<xml::Node> element); // recursive
+            uint32_t parseSMIL(SMILDataPtr smilData, shared_ptr<SMILData::Sequence> sequence, shared_ptr<SMILData::Parallel> parallel, const ManifestItemPtr item, shared_ptr<xml::Node> element); // recursive
 
         protected:
-            const SMILData::Parallel * ParallelAt(uint32_t timeMilliseconds) const;
+            shared_ptr<const SMILData::Parallel> ParallelAt(uint32_t timeMilliseconds) const;
         };
 
         EPUB3_END_NAMESPACE

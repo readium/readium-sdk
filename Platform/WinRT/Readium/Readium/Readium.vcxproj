@@ -48,6 +48,9 @@
     <ClInclude Include="..\..\..\..\ePub3\ePub\initialization.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\library.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\manifest.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\media-overlays_smil_data.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\media-overlays_smil_model.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\media-overlays_smil_utils.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\media_support_info.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\nav_element.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\nav_point.h" />
@@ -151,6 +154,8 @@
     <ClInclude Include="WinPackage.h" />
     <ClInclude Include="WinProperty.h" />
     <ClInclude Include="WinPropertyExtension.h" />
+    <ClInclude Include="WinSMILData.h" />
+    <ClInclude Include="WinSMILModel.h" />
     <ClInclude Include="WinSpine.h" />
   </ItemGroup>
   <ItemGroup>
@@ -170,6 +175,8 @@
     <ClCompile Include="..\..\..\..\ePub3\ePub\initialization.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\library.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\manifest.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media-overlays_smil_data.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media-overlays_smil_model.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\media_support_info.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\nav_point.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\nav_table.cpp" />
@@ -686,6 +693,8 @@
     <ClCompile Include="WinPackage.cpp" />
     <ClCompile Include="WinProperty.cpp" />
     <ClCompile Include="WinPropertyExtension.cpp" />
+    <ClCompile Include="WinSMILData.cpp" />
+    <ClCompile Include="WinSMILModel.cpp" />
     <ClCompile Include="WinSpine.cpp" />
   </ItemGroup>
   <ItemGroup>

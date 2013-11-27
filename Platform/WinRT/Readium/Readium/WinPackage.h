@@ -38,6 +38,7 @@ ref class CFI;
 interface class IContentHandler;
 ref class MediaHandler;
 ref class FilterChain;
+ref class MediaOverlaysSMILModel;
 
 using ::Platform::String;
 using ::Windows::Foundation::DateTime;
@@ -80,6 +81,8 @@ public:
 	IClosableStream^ ReadStreamForItemAtPath(String^ path);
 
 	property unsigned int SpineCFIIndex { unsigned int get(); }
+
+	property MediaOverlaysSMILModel^ SMILModel { MediaOverlaysSMILModel^ get(); }
 
 	// from Package:
 
