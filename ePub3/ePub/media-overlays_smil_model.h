@@ -25,7 +25,7 @@
 #include <ePub3/epub3.h>
 #include <ePub3/utilities/owned_by.h>
 #include <ePub3/manifest.h>
-#include <libxml/xpath.h> // xmlNodePtr
+#include <ePub3/xml/node.h>
 #include "media-overlays_smil_data.h"
 #include "package.h"
 
@@ -186,7 +186,7 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             uint32_t parseSMILs();
 
-            uint32_t parseSMIL(const std::shared_ptr<SMILData> & smilData, SMILData::Sequence * sequence, SMILData::Parallel * parallel, const std::shared_ptr<ManifestItem> & item, const xmlNodePtr element); // recursive
+            uint32_t parseSMIL(const SMILDataPtr smilData, SMILData::Sequence *sequence, SMILData::Parallel *parallel, const ManifestItemPtr item, shared_ptr<xml::Node> element); // recursive
 
         protected:
             const SMILData::Parallel * ParallelAt(uint32_t timeMilliseconds) const;

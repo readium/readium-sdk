@@ -605,6 +605,10 @@ public:
 protected:
     struct zip_file*        _file;      ///< The underlying Zip file stream.
 	std::ios::openmode		_mode;		///< The mode used to open the file (used by Clone()).
+    
+    ///
+    /// B
+    string Sanitized(const string& path) const;
 };
 
 /**

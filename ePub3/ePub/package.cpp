@@ -31,6 +31,7 @@
 #include "byte_stream.h"
 #include "filter_chain.h"
 #include "filter_manager.h"
+#include "media-overlays_smil_model.h"
 #include <ePub3/utilities/error_handler.h>
 #include <sstream>
 #include <list>

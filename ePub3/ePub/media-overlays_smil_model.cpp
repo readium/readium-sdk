@@ -339,7 +339,6 @@ EPUB3_BEGIN_NAMESPACE
                 return 0;
             }
 
-
             uint32_t accumulatedDurationMilliseconds = 0;
 
             std::shared_ptr<SpineItem> spineItem = package->FirstSpineItem();
@@ -363,7 +362,7 @@ EPUB3_BEGIN_NAMESPACE
                 //printf("Media Overlays SMIL PARSING: %s\n", item->Href().c_str());
 
                 //unique_ptr<ArchiveXmlReader> xmlReader = package->XmlReaderForRelativePath(item->Href());
-                xmlDocPtr doc = item->ReferencedDocument();
+                shared_ptr<xml::Document> doc = item->ReferencedDocument();
 
                 if (doc == nullptr)
                 {
@@ -371,7 +370,7 @@ EPUB3_BEGIN_NAMESPACE
                 }
 
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI}});
+                XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI}});
 #else
                 XPathWrangler::NamespaceList __ns;
                 __ns["epub"] = ePub3NamespaceURI;
@@ -380,25 +379,21 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
 #endif
                 xpath.NameDefaultNamespace("smil");
 
-                xmlNodeSetPtr nodes = xpath.Nodes("/smil:smil");
+                xml::NodeSet nodes = xpath.Nodes("/smil:smil");
 
-                if (nodes->nodeNr == 0)
+                if (nodes.empty())
                 {
                     HandleError(EPUBError::MediaOverlayInvalidRootElement, _Str("'smil' root element not found: ", item->Href().c_str()));
                 }
-                else if (nodes->nodeNr > 1)
+                else if (nodes.size() > 1)
                 {
                     HandleError(EPUBError::MediaOverlayInvalidRootElement, _Str("Multiple 'smil' root elements found: ", item->Href().c_str()));
                 }
 
-                if (nodes->nodeNr != 1)
-                {
-                    xmlXPathFreeNodeSet(nodes);
-                    xmlFreeDoc(doc);
+                if (nodes.size() != 1)
                     return 0;
-                }
 
-                const xmlNodePtr smil = nodes->nodeTab[0];
+                shared_ptr<xml::Node> smil = nodes[0];
 
                 string version = _getProp(smil, "version", SMILNamespaceURI);
                 if (version.empty())
@@ -410,46 +405,36 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     HandleError(EPUBError::MediaOverlayInvalidVersion, _Str("Invalid SMIL version (", version, "): ", item->Href().c_str()));
                 }
 
-                xmlXPathFreeNodeSet(nodes);
                 nodes = xpath.Nodes("./smil:head", smil);
 
-                if (nodes->nodeNr == 0)
+                if (nodes.empty())
                 {
                     // OKAY
                 }
-                else if (nodes->nodeNr == 1)
+                else if (nodes.size() == 1)
                 {
                     //TODO: check head placement
                     //HandleError(EPUBError::MediaOverlayHeadIncorrectlyPlaced, _Str("'head' element incorrectly placed: ", item->Href().c_str()));
                 }
-                else if (nodes->nodeNr > 1)
+                else if (nodes.size() > 1)
                 {
                     HandleError(EPUBError::MediaOverlayHeadIncorrectlyPlaced, _Str("multiple 'head' elements found: ", item->Href().c_str()));
-                }
-
-                if (nodes->nodeNr > 1)
-                {
-                    xmlXPathFreeNodeSet(nodes);
-                    xmlFreeDoc(doc);
                     return 0;
                 }
 
-                xmlXPathFreeNodeSet(nodes);
                 nodes = xpath.Nodes("./smil:body", smil);
 
-                if (nodes->nodeNr == 0)
+                if (nodes.empty())
                 {
                     HandleError(EPUBError::MediaOverlayNoBody, _Str("'body' element not found: ", item->Href().c_str()));
                 }
-                else if (nodes->nodeNr > 1)
+                else if (nodes.size() > 1)
                 {
                     HandleError(EPUBError::MediaOverlayMultipleBodies, _Str("multiple 'body' elements found: ", item->Href().c_str()));
                 }
 
-                if (nodes->nodeNr != 1)
+                if (nodes.size() != 1)
                 {
-                    xmlXPathFreeNodeSet(nodes);
-                    xmlFreeDoc(doc);
                     return 0;
                 }
 
@@ -481,7 +466,7 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                     }
                 }
 
-                const xmlNodePtr body = nodes->nodeTab[0];
+                shared_ptr<xml::Node> body = nodes[0];
 
                 uint32_t smilDur = parseSMIL(smilData, nullptr, nullptr, item, body);
                 //printf("Media Overlays SMIL DURATION (milliseconds): %ld\n", (long) smilDur);
@@ -500,9 +485,6 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 }
 
                 accumulatedDurationMilliseconds += smilDur;
-
-                xmlXPathFreeNodeSet(nodes);
-                xmlFreeDoc(doc);
 
                 spineItem = spineItem->Next();
             }
@@ -618,16 +600,16 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
             return nullptr;
         }
 
-        uint32_t MediaOverlaysSmilModel::parseSMIL(const std::shared_ptr<SMILData> & smilData, SMILData::Sequence * sequence, SMILData::Parallel * parallel, const std::shared_ptr<ManifestItem> & item, const xmlNodePtr element)
+uint32_t MediaOverlaysSmilModel::parseSMIL(const SMILDataPtr smilData, SMILData::Sequence *sequence, SMILData::Parallel *parallel, const ManifestItemPtr item, shared_ptr<xml::Node> element)
         {
-            if (element == nullptr || element->type != XML_ELEMENT_NODE)
+            if (!bool(element) || !element->IsElementNode())
             {
                 return 0;
             }
 
             uint32_t accumulatedDurationMilliseconds = 0;
 
-            std::string elementName(reinterpret_cast<const char *>(element->name));
+            string elementName = element->Name();
 
             string textref_ = string(_getProp(element, "textref", ePub3NamespaceURI));
             string textref_file;
@@ -841,19 +823,14 @@ XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"smil", SMILNamespaceURI
                 HandleError(EPUBError::MediaOverlayUnknownSMILElement, _Str(item->Href().c_str(), "[", elementName.c_str(), "] => unknown SMIL element"));
             }
 
-            xmlNodePtr linkedChildrenList = element->children;
-            if (linkedChildrenList != nullptr)
+            shared_ptr<xml::Node> childNode = element->FirstElementChild();
+            if (bool(childNode))
             {
                 _excludeAudioDuration = false;
 
-                for (; linkedChildrenList != nullptr; linkedChildrenList = linkedChildrenList->next)
+                for (; bool(childNode); childNode = childNode->NextElementSibling())
                 {
-                    if (linkedChildrenList->type != XML_ELEMENT_NODE)
-                    {
-                        continue;
-                    }
-
-                    uint32_t time = parseSMIL(smilData, sequence, parallel, item, linkedChildrenList);
+                    uint32_t time = parseSMIL(smilData, sequence, parallel, item, childNode);
 
                     if (elementName != "par" || !_excludeAudioDuration)
                     {
