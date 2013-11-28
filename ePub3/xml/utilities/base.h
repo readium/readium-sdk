@@ -51,6 +51,14 @@ typedef struct xmlError* xmlErrorPtr;
 
 EPUB3_XML_BEGIN_NAMESPACE
 
+#ifdef __cplusplus
+                extern "C" {
+#endif
+                extern void __resetLibXMLOverrides(void);
+#ifdef __cplusplus
+                }
+#endif
+
 #if !EPUB_PLATFORM(WINRT)
 // generic 'get me a wrapper' template
 /**

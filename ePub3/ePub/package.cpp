@@ -41,6 +41,14 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+#ifdef __cplusplus
+        extern "C" {
+#endif
+        extern void __resetLibXMLOverrides(void);
+#ifdef __cplusplus
+        }
+#endif
+
 void PrintNodeSet(xml::NodeSet& nodeSet)
 {
 	for (decltype(nodeSet.size()) i = 0; i < nodeSet.size(); i++)
@@ -364,8 +372,9 @@ bool Package::Unpack()
 		if (version < 3)
 			isEPUB3 = false;
 	}
-    
-    InstallPrefixesFromAttributeValue(_getProp(root, "prefix", ePub3NamespaceURI));
+
+    auto val = _getProp(root, "prefix", ePub3NamespaceURI);
+    InstallPrefixesFromAttributeValue(val);
     
     // go through children to determine the CFI index of the <spine> tag
     static xml::string kSpineName((const char*)"spine");
@@ -861,13 +870,6 @@ bool Package::Unpack()
 		{
 			try
 			{
-                _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
-                _mediaOverlays->Initialize();
-
-                //std::weak_ptr<Package> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy()
-                _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
-                _mediaOverlays->Initialize();
-                
 				ManifestItemPtr tocItem = ManifestItemWithID(tocNames[0]);
 				if (!bool(tocItem))
 					throw EPUBError::OPFNoNavDocument;
@@ -907,7 +909,13 @@ bool Package::Unpack()
     
     // lastly, let's set the media support information
     InitMediaSupport();
-    
+
+    //std::weak_ptr<Package> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy() which maintains its own weak pointer
+    _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
+    _mediaOverlays->Initialize();
+
+    __resetLibXMLOverrides();
+
     return true;
 }
 void Package::InstallPrefixesFromAttributeValue(const string& attrValue)

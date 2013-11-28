@@ -179,8 +179,8 @@ int _zip_fseek_to_start(struct zip_file* zf)
 
 int _zip_fseek_by_reading(struct zip_file* zf, size_t toread)
 {
+    char bytes[1024];
     while (toread > 0) {
-        char bytes[1024];
         ssize_t numRead = zip_fread(zf, bytes, (toread < 1024 ? toread : 1024));
         if (numRead < 0 )
             return -1;      /* error already set */
@@ -191,7 +191,6 @@ int _zip_fseek_by_reading(struct zip_file* zf, size_t toread)
         }
         
         toread -= numRead;
-        
     }
     
     /* zf has been updated for us by zip_fread() already */
