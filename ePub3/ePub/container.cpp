@@ -113,9 +113,11 @@ bool Container::Open(const string& path)
 			_packages.push_back(pkg);
 	}
 
-	for (auto& pkg : _packages)
+    auto fm = FilterManager::Instance();
+	for (auto pkg : _packages)
 	{
-		pkg->SetFilterChain(FilterManager::Instance()->BuildFilterChainForPackage(pkg));
+        auto fc = fm->BuildFilterChainForPackage(pkg);
+		pkg->SetFilterChain(fc);
 	}
 
 	return true;

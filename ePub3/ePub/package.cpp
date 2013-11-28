@@ -364,8 +364,9 @@ bool Package::Unpack()
 		if (version < 3)
 			isEPUB3 = false;
 	}
-    
-    InstallPrefixesFromAttributeValue(_getProp(root, "prefix", ePub3NamespaceURI));
+
+    auto val = _getProp(root, "prefix", ePub3NamespaceURI);
+    InstallPrefixesFromAttributeValue(val);
     
     // go through children to determine the CFI index of the <spine> tag
     static xml::string kSpineName((const char*)"spine");
@@ -901,7 +902,7 @@ bool Package::Unpack()
     // lastly, let's set the media support information
     InitMediaSupport();
 
-    //std::weak_ptr<Package> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy()
+    //std::weak_ptr<Package> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy() which maintains its own weak pointer
     _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
     _mediaOverlays->Initialize();
 
