@@ -861,13 +861,6 @@ bool Package::Unpack()
 		{
 			try
 			{
-                _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
-                _mediaOverlays->Initialize();
-
-                //std::weak_ptr<Package> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy()
-                _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
-                _mediaOverlays->Initialize();
-                
 				ManifestItemPtr tocItem = ManifestItemWithID(tocNames[0]);
 				if (!bool(tocItem))
 					throw EPUBError::OPFNoNavDocument;
@@ -907,7 +900,11 @@ bool Package::Unpack()
     
     // lastly, let's set the media support information
     InitMediaSupport();
-    
+
+    //std::weak_ptr<Package> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy()
+    _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
+    _mediaOverlays->Initialize();
+
     return true;
 }
 void Package::InstallPrefixesFromAttributeValue(const string& attrValue)

@@ -113,10 +113,10 @@ bool Container::Open(const string& path)
 			_packages.push_back(pkg);
 	}
 
-	for (auto& pkg : _packages)
-	{
-		pkg->SetFilterChain(FilterManager::Instance()->BuildFilterChainForPackage(pkg));
-	}
+//	for (auto& pkg : _packages)
+//	{
+//		pkg->SetFilterChain(FilterManager::Instance()->BuildFilterChainForPackage(pkg));
+//	}
 
 	return true;
 }
