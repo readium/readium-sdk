@@ -150,11 +150,12 @@ TEST_CASE("thread_pool concurrency", "a thread_pool with multiple threads should
     pool.add([&]() {
         std::unique_lock<std::mutex> lock(mut);
         wait_result = cv.wait_for(lock, std::chrono::seconds(2));
+        lock.unlock();
+        complete.notify_all();
     });
     pool.add([&]() {
         std::unique_lock<std::mutex> lock(mut);
         cv.notify_all();
-        complete.notify_all();
     });
     
     // let the threads run while we wait for the condition
