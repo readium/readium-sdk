@@ -39,11 +39,29 @@ static xmlDeregisterNodeFunc defThrNodeDeregister = nullptr;
 static void __registerNode(xmlNodePtr aNode)
 {
     Node::Wrap(aNode);
+    if (defNodeRegister != nullptr)
+        defNodeRegister(aNode);
 }
 
 static void __deregisterNode(xmlNodePtr aNode)
 {
     Node::Unwrap(aNode);
+    if (defNodeDeregister != nullptr)
+        defNodeDeregister(aNode);
+}
+
+static void __registerNodeThr(xmlNodePtr aNode)
+{
+    Node::Wrap(aNode);
+    if (defThrNodeRegister != nullptr)
+        defThrNodeRegister(aNode);
+}
+
+static void __deregisterNodeThr(xmlNodePtr aNode)
+{
+    Node::Unwrap(aNode);
+    if (defThrNodeDeregister != nullptr)
+        defThrNodeDeregister(aNode);
 }
 
 #if !EPUB_COMPILER(MSVC)
@@ -64,9 +82,9 @@ INITIALIZER(__setupLibXML)
 {
     xmlInitGlobals();
     defNodeRegister = xmlRegisterNodeDefault(&__registerNode);
-    defThrNodeDeregister = xmlThrDefRegisterNodeDefault(&__registerNode);
+    defThrNodeDeregister = xmlThrDefRegisterNodeDefault(&__registerNodeThr);
     defNodeDeregister = xmlDeregisterNodeDefault(&__deregisterNode);
-    defThrNodeDeregister = xmlThrDefDeregisterNodeDefault(&__deregisterNode);
+    defThrNodeDeregister = xmlThrDefDeregisterNodeDefault(&__deregisterNodeThr);
 
     xmlSubstituteEntitiesDefault(1);
     xmlLoadExtDtdDefaultValue = 1;
