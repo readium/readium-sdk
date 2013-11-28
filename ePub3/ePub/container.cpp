@@ -114,7 +114,7 @@ bool Container::Open(const string& path)
 	}
 
     auto fm = FilterManager::Instance();
-	for (auto pkg : _packages)
+	for (auto& pkg : _packages)
 	{
         auto fc = fm->BuildFilterChainForPackage(pkg);
 		pkg->SetFilterChain(fc);

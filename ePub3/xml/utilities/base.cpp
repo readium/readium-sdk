@@ -49,7 +49,7 @@ static void __deregisterNode(xmlNodePtr aNode)
 #if !EPUB_COMPILER(MSVC)
 __attribute__((destructor))
 #endif
-static void __resetLibXMLOverrides(void)
+void __resetLibXMLOverrides(void)
 {
     xmlRegisterNodeDefault(defNodeRegister);
     xmlThrDefRegisterNodeDefault(defThrNodeRegister);

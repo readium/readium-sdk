@@ -41,6 +41,14 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+#ifdef __cplusplus
+        extern "C" {
+#endif
+        extern void __resetLibXMLOverrides(void);
+#ifdef __cplusplus
+        }
+#endif
+
 void PrintNodeSet(xml::NodeSet& nodeSet)
 {
 	for (decltype(nodeSet.size()) i = 0; i < nodeSet.size(); i++)
@@ -905,6 +913,8 @@ bool Package::Unpack()
     //std::weak_ptr<Package> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy() which maintains its own weak pointer
     _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
     _mediaOverlays->Initialize();
+
+    __resetLibXMLOverrides();
 
     return true;
 }
