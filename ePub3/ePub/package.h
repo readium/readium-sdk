@@ -40,7 +40,9 @@
 #include <ePub3/content_handler.h>
 #include <ePub3/media_support_info.h>
 #include <ePub3/property_holder.h>
+#include <ePub3/collection.h>
 #include <ePub3/utilities/xml_identifiable.h>
+#include <ePub3/utilities/string_view.h>
 //#include "media-overlays_smil_model.h"
 
 EPUB3_BEGIN_NAMESPACE
@@ -207,7 +209,7 @@ public:
 	 @result A ManifestItem pointer, or `nullptr` if no manifest item matches the path.
 	 */
 	EPUB3_EXPORT
-	ConstManifestItemPtr	ManifestItemAtRelativePath(const string& path) const;
+	ConstManifestItemPtr    ManifestItemAtRelativePath(const string& path) const;
     
     /// @}
     
@@ -219,6 +221,21 @@ public:
      */
     EPUB3_EXPORT
     shared_ptr<NavigationTable> NavigationTable(const string& type)            const;
+    
+    /**
+     Returns the list of collections by reference.
+     */
+    EPUB3_EXPORT FORCE_INLINE
+    const CollectionList& Collections() const
+        { return _collections; }
+    
+    /**
+     Returns a Collection by role.
+     @param role The role of the collection to retrieve, such as `"index"` or `"preview"`.
+     @result A pointer to the relevant collection, or `nullptr` if none was found.
+     */
+    EPUB3_EXPORT
+    CollectionPtr CollectionWithRole(string_view role)                          const;
     
     /**
      Returns a ByteStream for reading from the specified file in the package's Archive.
@@ -243,6 +260,7 @@ protected:
     ContentHandlerMap			_contentHandlers;   ///< All installed content handlers, indexed by media-type.
     shared_ptr<SpineItem>		_spine;             ///< The first item in the spine (SpineItems are a linked list).
     XMLIDLookup					_xmlIDLookup;       ///< Lookup table for all items with XML ID values.
+    CollectionList              _collections;       ///< List of all parsed <collection> elements.
 
 protected:
     // used to verify/correct CFIs
@@ -516,6 +534,18 @@ public:
     ///
     /// Returns the page list, if any exists.
     shared_ptr<class NavigationTable>   PageList()              const       { return NavigationTable("page-list"); }
+    
+    /// @}
+    
+    /// @{
+    /// @name Collections
+    
+    ///
+    /// Returns the publication's Index collection, if any.
+    CollectionPtr                   IndexCollection()           const       { return CollectionWithRole(Collection::IndexRole); }
+    ///
+    /// Returns the publication's Preview collection, if any.
+    CollectionPtr                   PreviewCollection()         const       { return CollectionWithRole(Collection::PreviewRole); }
     
     /// @}
     
