@@ -55,6 +55,7 @@ EPUB3_XML_BEGIN_NAMESPACE
                 extern "C" {
 #endif
                 extern void __resetLibXMLOverrides(void);
+                extern void __setupLibXML(void);
 #ifdef __cplusplus
                 }
 #endif

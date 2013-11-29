@@ -64,9 +64,9 @@ static void __deregisterNodeThr(xmlNodePtr aNode)
         defThrNodeDeregister(aNode);
 }
 
-#if !EPUB_COMPILER(MSVC)
-__attribute__((destructor))
-#endif
+//#if !EPUB_COMPILER(MSVC)
+//__attribute__((destructor))
+//#endif
 void __resetLibXMLOverrides(void)
 {
     xmlRegisterNodeDefault(defNodeRegister);
@@ -78,7 +78,8 @@ void __resetLibXMLOverrides(void)
     xmlLoadExtDtdDefaultValue = 0;
 }
 
-INITIALIZER(__setupLibXML)
+//INITIALIZER(__setupLibXML)
+void __setupLibXML(void)
 {
     xmlInitGlobals();
     defNodeRegister = xmlRegisterNodeDefault(&__registerNode);
@@ -88,9 +89,9 @@ INITIALIZER(__setupLibXML)
 
     xmlSubstituteEntitiesDefault(1);
     xmlLoadExtDtdDefaultValue = 1;
-#if EPUB_COMPILER(MSVC)
-    atexit(__resetLibXMLOverrides);
-#endif
+//#if EPUB_COMPILER(MSVC)
+//    atexit(__resetLibXMLOverrides);
+//#endif
 }
 
 EPUB3_XML_END_NAMESPACE

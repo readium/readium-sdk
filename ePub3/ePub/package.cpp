@@ -45,6 +45,7 @@ EPUB3_BEGIN_NAMESPACE
         extern "C" {
 #endif
         extern void __resetLibXMLOverrides(void);
+        extern void __setupLibXML(void);
 #ifdef __cplusplus
         }
 #endif
@@ -328,13 +329,25 @@ Package::Package(const shared_ptr<Container>& owner, const string& type) : Prope
 }
 bool Package::Open(const string& path)
 {
-    return PackageBase::Open(path) && Unpack();
+    __setupLibXML();
+
+    auto status = PackageBase::Open(path) && Unpack();
+
+    __resetLibXMLOverrides();
+
+    return status;
 }
 bool Package::_OpenForTest(shared_ptr<xml::Document> doc, const string& basePath)
 {
+    __setupLibXML();
+
     _opf = doc;
     _pathBase = basePath;
-    return Unpack();
+    auto status = Unpack();
+
+    __resetLibXMLOverrides();
+
+    return status;
 }
 
 unique_ptr<ArchiveReader> Package::ReaderForRelativePath(const string& path)       const
@@ -913,8 +926,6 @@ bool Package::Unpack()
     //std::weak_ptr<Package> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy() which maintains its own weak pointer
     _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
     _mediaOverlays->Initialize();
-
-    __resetLibXMLOverrides();
 
     return true;
 }
