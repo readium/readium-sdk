@@ -184,6 +184,13 @@ shared_ptr<NavigationTable> PackageBase::NavigationTable(const string &title) co
         return nullptr;
     return found->second;
 }
+shared_ptr<Collection> PackageBase::CollectionWithRole(string_view role) const
+{
+    auto found = _collections.find(role);
+    if (found == _collections.end())
+        return nullptr;
+    return found->second;
+}
 unique_ptr<ByteStream> PackageBase::ReadStreamForItemAtPath(const string &path) const
 {
     return _archive->ByteStreamAtPath(path.stl_str());
@@ -550,10 +557,6 @@ bool Package::Unpack()
         
         return false;
     }
-    catch(const std::exception &ex)
-    {
-        return false;
-    }
     catch (...)
     {
         return false;
@@ -561,6 +564,38 @@ bool Package::Unpack()
     
     manifestNodes.clear();
     spineNodes.clear();
+    
+    // collections
+    xml::NodeSet collectionNodes;
+    
+    try
+    {
+        PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
+        collectionNodes = xpath.Nodes("/opf:package/opf:collection");
+        
+        for (auto& node : collectionNodes)
+        {
+            CollectionPtr collection = Collection::New(Ptr(), nullptr);
+            if (collection->ParseXML(node))
+            {
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+                _collections.emplace(collection->Role(), collection);
+#else
+                _collections[collection->Role()] = collection;
+#endif
+            }
+        }
+    }
+    catch (const std::system_error& exc)
+    {
+        if (exc.code().category() == epub_spec_category())
+            throw;
+        return false;
+    }
+    catch (...)
+    {
+        return false;
+    }
     
     // now the metadata, which is slightly more involved due to extensions
     xml::NodeSet metadataNodes;

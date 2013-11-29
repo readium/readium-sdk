@@ -172,6 +172,7 @@ enum class EPUBError
     
     // § 3.4.9
     OPFLinkReferencesManifestItem,          ///< <link> 'href' attribute MUST NOT identify an object in the manifest. Medium.
+    OPFLinkMissingHref,                     ///< <link> 'href' attribute is empty or not present. Medium.
     
     // § 3.4.10
     OPFNoManifest,                          ///< Package MUST contain a <manifest> element as the second child of <package>. Critical.
@@ -196,6 +197,16 @@ enum class EPUBError
     OPFBindingHandlerInvalidType,           ///< <mediaType> handler resources MUST be XHTML content documents. Critical.
     OPFBindingHandlerNotScripted,           ///< <mediaType> handler resources MUST have the scripted property. Major.
     OPFBindingHandlerNoMediaType,           ///< <mediaType> elements MUST have a 'media-type' attribute. Critical.
+    
+    // $ 3.4.17
+    OPFCollectionMissingRole,               ///< A <collection> element MUST have a 'role' attribute. Major.
+    OPFCollectionMetadataOutOfOrder,        ///< A <metadata> element within a <collection> MUST be the first child element of its parent <collection>. Minor.
+    OPFCollectionSubcollectionOutOfOrder,   ///< A <collection> within another <collection> MUST be placed before any <link> child elements. Minor.
+    OPFCollectionNoLinks,                   ///< A <collection> element MUST have one or more <link> child elements. Major.
+    OPFCollectionRoleInvalid,               ///< A <collection>'s 'role' attribute MUST be either a full IRI or an NMTOKEN which resolves to an IRI known to the IDPF Collection Role registry. Medium.
+    OPFCollectionRefinesInvalid,            ///< The 'refines' attribute MUST NOT reference an item outside the collection. Major.
+    OPFCollectionIllegalMetaElement,        ///< The OPF2 <meta> element MUST NOT be used. Minor.
+    OPFCollectionLinkIncludesRefinement,    ///< The 'refines' attribute MUST NOT be attached to a <link> within a <collection>. Medium.
     
     // § 4.1.1
     OPFPackageUniqueIDInvalid,              ///< The <package> tag's unique-identifier attribute MUST reference a <dc:identifier> element in the package's <metadata>. Major.
