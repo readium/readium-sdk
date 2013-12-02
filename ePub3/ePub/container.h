@@ -150,6 +150,13 @@ public:
      @result Returns the encryption information, or `nullptr` if none was found.
      */
     virtual EncryptionInfoPtr       EncryptionInfoForPath(const string& path)   const;
+
+	/**
+	 Determines whether a given file is present in the container.
+	 @param path The absolute path of the item.
+	 @result `true` if the item exists, `false` otherwise.
+	 */
+	virtual bool					FileExistsAtPath(const string& path)		const;
     
     /**
      Obtains a pointer to a ReadStream for a specific file within the container.

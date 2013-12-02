@@ -110,6 +110,11 @@ EncryptionInfo^ ManifestItem::Encryption::get()
 	return EncryptionInfo::Wrapper(_native->GetEncryptionInfo());
 }
 
+bool ManifestItem::CanLoadDocument::get()
+{
+	return _native->CanLoadDocument();
+}
+
 ::Windows::Data::Xml::Dom::XmlDocument^ ManifestItem::LoadDocument()
 {
 	return _native->ReferencedDocument()->xml();

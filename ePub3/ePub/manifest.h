@@ -300,6 +300,8 @@ public:
     
     // fetch any relevant encryption information
     EncryptionInfoPtr           GetEncryptionInfo()                 const;
+
+	bool						CanLoadDocument()					const;
     
     // one-shot XML document loader
     EPUB3_EXPORT
