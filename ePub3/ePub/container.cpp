@@ -266,6 +266,10 @@ shared_ptr<EncryptionInfo> Container::EncryptionInfoForPath(const string &path) 
     
     return nullptr;
 }
+bool Container::FileExistsAtPath(const string& path) const
+{
+	return _archive->ContainsItem(path.stl_str());
+}
 unique_ptr<ByteStream> Container::ReadStreamAtPath(const string &path) const
 {
     return _archive->ByteStreamAtPath(path.stl_str());

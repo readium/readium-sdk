@@ -93,6 +93,11 @@ EncryptionInfo^ Container::EncryptionInfoForPath(String^ path)
 	return EncryptionInfo::Wrapper(_native->EncryptionInfoForPath(StringToNative(path)));
 }
 
+bool Container::FileExistsAtPath(String^ path)
+{
+	return _native->FileExistsAtPath(StringToNative(path));
+}
+
 IClosableStream^ Container::ReadStreamAtPath(String^ path)
 {
 	return ref new Stream(_native->ReadStreamAtPath(StringToNative(path)));

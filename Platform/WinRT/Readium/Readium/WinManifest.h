@@ -103,6 +103,8 @@ public:
 	bool HasProperty(IVectorView<Uri^>^ prop);
 
 	property EncryptionInfo^ Encryption { EncryptionInfo^ get(); }
+
+	property bool CanLoadDocument { bool get(); }
 	
 	::Windows::Data::Xml::Dom::XmlDocument^ LoadDocument();
 

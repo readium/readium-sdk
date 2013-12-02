@@ -220,6 +220,10 @@ EncryptionInfoPtr ManifestItem::GetEncryptionInfo() const
     ContainerPtr container = GetPackage()->GetContainer();
     return container->EncryptionInfoForPath(AbsolutePath());
 }
+bool ManifestItem::CanLoadDocument() const
+{
+	return GetPackage()->GetContainer()->FileExistsAtPath(AbsolutePath());
+}
 shared_ptr<xml::Document> ManifestItem::ReferencedDocument() const
 {
     // TODO: handle remote URLs

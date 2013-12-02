@@ -89,6 +89,18 @@ public:
 
 	/**
 	<summary>
+		Determines whether a given file is present in the container.
+	</summary>
+	<param name="path">
+		The absolute path of the item.
+	</param>
+	<result>
+		<c>true</c> if the item is present, <c>false</c> otherwise.
+	*/
+	bool FileExistsAtPath(::Platform::String^ path);
+
+	/**
+	<summary>
 		Obtains a pointer to a ReadStream for a specific file within the container.
 	</summary>
 	<param name="path">
