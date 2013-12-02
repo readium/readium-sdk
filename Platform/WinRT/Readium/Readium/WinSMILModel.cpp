@@ -25,7 +25,7 @@ BEGIN_READIUM_API
 
 using ::Platform::String;
 
-_BRIDGE_API_IMPL_(::ePub3::MediaOverlaysSmilModelPtr, MediaOverlaysSMILModel)
+_BRIDGE_API_IMPL_(std::shared_ptr<::ePub3::MediaOverlaysSmilModel>, MediaOverlaysSMILModel)
 
 String^ MediaOverlaysSMILModel::Narrator::get()
 {

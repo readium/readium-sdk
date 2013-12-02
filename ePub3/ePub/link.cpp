@@ -7,7 +7,7 @@
 //
 
 #include "link.h"
-#include "collection.h"
+#include "epub_collection.h"
 #include "package.h"
 #include "manifest.h"
 #include <ePub3/utilities/error_handler.h>

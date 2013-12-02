@@ -39,10 +39,10 @@ public:
 public ref class MediaOverlaysSMILModel sealed
 {
 public:
-	_DECLARE_BRIDGE_API_(::ePub3::MediaOverlaysSmilModelPtr, MediaOverlaysSMILModel^);
+	_DECLARE_BRIDGE_API_(std::shared_ptr<::ePub3::MediaOverlaysSmilModel>, MediaOverlaysSMILModel^);
 
 internal:
-	MediaOverlaysSMILModel(::ePub3::MediaOverlaysSmilModelPtr native) : _native(native) {}
+	MediaOverlaysSMILModel(std::shared_ptr<::ePub3::MediaOverlaysSmilModel> native) : _native(native) {}
 
 public:
 	virtual ~MediaOverlaysSMILModel() {}

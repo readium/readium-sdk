@@ -284,7 +284,7 @@ void __thread_pool_impl_winrt::add(executor::closure_type closure)
 			closure();
 	}));
 }
-void __thread_pool_impl_winrt::add_after(std::chrono::system_clock::duration rel_time&, executor::closure_type closure)
+void __thread_pool_impl_winrt::add_after(std::chrono::system_clock::duration& rel_time, executor::closure_type closure)
 {
 	using namespace ::Windows::System::Threading;
 	std::lock_guard<std::mutex> _(_mutex);
@@ -401,7 +401,7 @@ void __main_thread_executor::add_after(std::chrono::system_clock::duration& rel_
 	add_at(abs_time, closure);
 }
 #elif EPUB_PLATFORM(WINRT)
-::Windows::UI::Core::CoreDispatcher^ main_thread_executor::_mainDispatcher = nullptr;
+::Windows::UI::Core::CoreDispatcher^ __main_thread_executor::_mainDispatcher = nullptr;
 void __main_thread_executor::SetMainDispatcher(::Windows::UI::Core::CoreDispatcher^ dispatcher)
 {
 	_mainDispatcher = dispatcher;
@@ -420,24 +420,24 @@ void __main_thread_executor::add(closure_type closure)
 	}
 	else
 	{
-		auto self = shared_from_this();
+		auto self = std::dynamic_pointer_cast<__main_thread_executor>(shared_from_this());
 		dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([self, closure]() {
 			closure();
 			self->_num_closures--;
 		}));
 	}
 }
-size_t __main_thread_executor::num_pending_closures() const
+size_t __main_thread_executor::uninitiated_task_count() const
 {
 	return _num_closures;
 }
-void __main_thread_executor::add_at(std::chrono::system_clock::time_point abs_time, closure_type closure)
+void __main_thread_executor::add_at(std::chrono::system_clock::time_point& abs_time, closure_type closure)
 {
 	using namespace std::chrono;
     auto rel_time = abs_time - system_clock::now();
 	add_after(rel_time, closure);
 }
-void __main_thread_executor::add_after(std::chrono::system_clock::duration rel_time, closure_type closure)
+void __main_thread_executor::add_after(std::chrono::system_clock::duration& rel_time, closure_type closure)
 {
 	using namespace ::Windows::System::Threading;
 	using namespace std::chrono;

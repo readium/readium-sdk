@@ -44,7 +44,6 @@ public interface class ISMILTimeNode
 {
 	property ::Platform::String^ Name { ::Platform::String^ get(); }
 	property ISMILTimeContainer^ Parent { ISMILTimeContainer^ get(); }
-	property SMILData^ SmilData { SMILData^ get(); }
 };
 
 public interface class ISMILTimeContainer : ISMILTimeNode

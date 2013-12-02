@@ -48,7 +48,7 @@ public:
 	virtual ~NativeBridge() {}
 
 	NativeBridge& operator=(const NativeBridge&) = default;
-	NativeBridge& operator=(NativeBridge&& o) { _weakRef = std::move(o._weakRef); }
+	NativeBridge& operator=(NativeBridge&& o) { _weakRef = std::move(o._weakRef); return *this; }
 
 	template <typename _Tp>
 	_Tp^ GetBridge() const {

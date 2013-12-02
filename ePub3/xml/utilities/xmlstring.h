@@ -78,6 +78,11 @@ public:
 		return reinterpret_cast<const unsigned char*>(_utf8.c_str());
 	}
 
+	bool operator==(const char* str) {
+		std::wstring w = UTF8Converter().from_bytes(str);
+		return *this == w;
+	}
+
 };
 #endif
 

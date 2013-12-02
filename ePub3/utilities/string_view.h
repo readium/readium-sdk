@@ -15,6 +15,13 @@
 #include <iostream>
 #include "__strhash.h"
 
+#ifdef min
+# undef min
+#endif
+#ifdef max
+# undef max
+#endif
+
 /*
  
         string_view synopsis
@@ -252,7 +259,7 @@ public:
 #else
     CONSTEXPR FORCE_INLINE
     basic_string_view(const basic_string_view& __o) _NOEXCEPT
-        : __data_(o.__data_), __size_(__o.__size_)
+        : __data_(__o.__data_), __size_(__o.__size_)
         {}
     
     FORCE_INLINE

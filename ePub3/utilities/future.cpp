@@ -71,8 +71,21 @@ __shared_state_base::__at_thread_exit()
     static thread_local _VecType __vec;
     return __vec;
 #elif EPUB_COMPILER(MSVC)
-    static __declspec(thread) _VecType __vec;
-    return __vec;
+    // grumbles something about having to use internal API...
+	static _Tss_t __key;
+	static std::once_flag __once;
+	std::call_once(__once, [&]() {
+		_Tss_create(&__key, &__KillVectorPtr);
+	});
+
+	void* __p = _Tss_get(__key);
+	if (__p == nullptr) {
+		__p = new _VecType();
+		_Tss_set(__key, __p);
+	}
+
+	_VecType* __pv = reinterpret_cast<_VecType*>(__p);
+	return *__pv;
 #elif EPUB_OS(UNIX)
     static pthread_key_t __key;
     static std::once_flag __once;

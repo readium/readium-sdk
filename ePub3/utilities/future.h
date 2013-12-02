@@ -60,10 +60,10 @@ enum class future_status
 };
 
 template <> struct is_error_code_enum<future_errc> : public true_type { };
-error_code make_error_code(future_errc e) noexcept;
-error_condition make_error_condition(future_errc e) noexcept;
+error_code make_error_code(future_errc e) _NOEXCEPT;
+error_condition make_error_condition(future_errc e) _NOEXCEPT;
 
-const error_category& future_category() noexcept;
+const error_category& future_category() _NOEXCEPT;
 
 class future_error
     : public logic_error
@@ -71,8 +71,8 @@ class future_error
 public:
     future_error(error_code ec);  // exposition only
 
-    const error_code& code() const noexcept;
-    const char*       what() const noexcept;
+    const error_code& code() const _NOEXCEPT;
+    const char*       what() const _NOEXCEPT;
 };
 
 template <class R>
@@ -82,14 +82,14 @@ public:
     promise();
     template <class Allocator>
         promise(allocator_arg_t, const Allocator& a);
-    promise(promise&& rhs) noexcept;
+    promise(promise&& rhs) _NOEXCEPT;
     promise(const promise& rhs) = delete;
     ~promise();
 
     // assignment
-    promise& operator=(promise&& rhs) noexcept;
+    promise& operator=(promise&& rhs) _NOEXCEPT;
     promise& operator=(const promise& rhs) = delete;
-    void swap(promise& other) noexcept;
+    void swap(promise& other) _NOEXCEPT;
 
     // retrieving the result
     future<R> get_future();
@@ -112,14 +112,14 @@ public:
     promise();
     template <class Allocator>
         promise(allocator_arg_t, const Allocator& a);
-    promise(promise&& rhs) noexcept;
+    promise(promise&& rhs) _NOEXCEPT;
     promise(const promise& rhs) = delete;
     ~promise();
 
     // assignment
-    promise& operator=(promise&& rhs) noexcept;
+    promise& operator=(promise&& rhs) _NOEXCEPT;
     promise& operator=(const promise& rhs) = delete;
-    void swap(promise& other) noexcept;
+    void swap(promise& other) _NOEXCEPT;
 
     // retrieving the result
     future<R&> get_future();
@@ -140,14 +140,14 @@ public:
     promise();
     template <class Allocator>
         promise(allocator_arg_t, const Allocator& a);
-    promise(promise&& rhs) noexcept;
+    promise(promise&& rhs) _NOEXCEPT;
     promise(const promise& rhs) = delete;
     ~promise();
 
     // assignment
-    promise& operator=(promise&& rhs) noexcept;
+    promise& operator=(promise&& rhs) _NOEXCEPT;
     promise& operator=(const promise& rhs) = delete;
-    void swap(promise& other) noexcept;
+    void swap(promise& other) _NOEXCEPT;
 
     // retrieving the result
     future<void> get_future();
@@ -161,7 +161,7 @@ public:
     void set_exception_at_thread_exit(exception_ptr p);
 };
 
-template <class R> void swap(promise<R>& x, promise<R>& y) noexcept;
+template <class R> void swap(promise<R>& x, promise<R>& y) _NOEXCEPT;
 
 template <class R, class Alloc>
     struct uses_allocator<promise<R>, Alloc> : public true_type {};
@@ -170,20 +170,20 @@ template <class R>
 class future
 {
 public:
-    future() noexcept;
-    future(future&&) noexcept;
-    future(future<future<R>>&& rhs) noexcept;
+    future() _NOEXCEPT;
+    future(future&&) _NOEXCEPT;
+    future(future<future<R>>&& rhs) _NOEXCEPT;
     future(const future& rhs) = delete;
     ~future();
     future& operator=(const future& rhs) = delete;
-    future& operator=(future&&) noexcept;
+    future& operator=(future&&) _NOEXCEPT;
     shared_future<R> share();
 
     // retrieving the value
     R get();
 
     // functions to check state
-    bool valid() const noexcept;
+    bool valid() const _NOEXCEPT;
 
     void wait() const;
     template <class Rep, class Period>
@@ -209,19 +209,19 @@ template <class R>
 class future<R&>
 {
 public:
-    future() noexcept;
-    future(future&&) noexcept;
+    future() _NOEXCEPT;
+    future(future&&) _NOEXCEPT;
     future(const future& rhs) = delete;
     ~future();
     future& operator=(const future& rhs) = delete;
-    future& operator=(future&&) noexcept;
+    future& operator=(future&&) _NOEXCEPT;
     shared_future<R&> share();
 
     // retrieving the value
     R& get();
 
     // functions to check state
-    bool valid() const noexcept;
+    bool valid() const _NOEXCEPT;
 
     void wait() const;
     template <class Rep, class Period>
@@ -236,19 +236,19 @@ template <>
 class future<void>
 {
 public:
-    future() noexcept;
-    future(future&&) noexcept;
+    future() _NOEXCEPT;
+    future(future&&) _NOEXCEPT;
     future(const future& rhs) = delete;
     ~future();
     future& operator=(const future& rhs) = delete;
-    future& operator=(future&&) noexcept;
+    future& operator=(future&&) _NOEXCEPT;
     shared_future<void> share();
 
     // retrieving the value
     void get();
 
     // functions to check state
-    bool valid() const noexcept;
+    bool valid() const _NOEXCEPT;
 
     void wait() const;
     template <class Rep, class Period>
@@ -263,19 +263,19 @@ template <class R>
 class shared_future
 {
 public:
-    shared_future() noexcept;
+    shared_future() _NOEXCEPT;
     shared_future(const shared_future& rhs);
-    shared_future(future<R>&&) noexcept;
-    shared_future(shared_future&& rhs) noexcept;
+    shared_future(future<R>&&) _NOEXCEPT;
+    shared_future(shared_future&& rhs) _NOEXCEPT;
     ~shared_future();
     shared_future& operator=(const shared_future& rhs);
-    shared_future& operator=(shared_future&& rhs) noexcept;
+    shared_future& operator=(shared_future&& rhs) _NOEXCEPT;
 
     // retrieving the value
     const R& get() const;
 
     // functions to check state
-    bool valid() const noexcept;
+    bool valid() const _NOEXCEPT;
 
     void wait() const;
     template <class Rep, class Period>
@@ -290,19 +290,19 @@ template <class R>
 class shared_future<R&>
 {
 public:
-    shared_future() noexcept;
+    shared_future() _NOEXCEPT;
     shared_future(const shared_future& rhs);
-    shared_future(future<R&>&&) noexcept;
-    shared_future(shared_future&& rhs) noexcept;
+    shared_future(future<R&>&&) _NOEXCEPT;
+    shared_future(shared_future&& rhs) _NOEXCEPT;
     ~shared_future();
     shared_future& operator=(const shared_future& rhs);
-    shared_future& operator=(shared_future&& rhs) noexcept;
+    shared_future& operator=(shared_future&& rhs) _NOEXCEPT;
 
     // retrieving the value
     R& get() const;
 
     // functions to check state
-    bool valid() const noexcept;
+    bool valid() const _NOEXCEPT;
 
     void wait() const;
     template <class Rep, class Period>
@@ -317,19 +317,19 @@ template <>
 class shared_future<void>
 {
 public:
-    shared_future() noexcept;
+    shared_future() _NOEXCEPT;
     shared_future(const shared_future& rhs);
-    shared_future(future<void>&&) noexcept;
-    shared_future(shared_future&& rhs) noexcept;
+    shared_future(future<void>&&) _NOEXCEPT;
+    shared_future(shared_future&& rhs) _NOEXCEPT;
     ~shared_future();
     shared_future& operator=(const shared_future& rhs);
-    shared_future& operator=(shared_future&& rhs) noexcept;
+    shared_future& operator=(shared_future&& rhs) _NOEXCEPT;
 
     // retrieving the value
     void get() const;
 
     // functions to check state
-    bool valid() const noexcept;
+    bool valid() const _NOEXCEPT;
 
     void wait() const;
     template <class Rep, class Period>
@@ -357,7 +357,7 @@ public:
     typedef R result_type;
 
     // construction and destruction
-    packaged_task() noexcept;
+    packaged_task() _NOEXCEPT;
     template <class F>
         explicit packaged_task(F&& f);
     template <class F, class Allocator>
@@ -369,11 +369,11 @@ public:
     packaged_task& operator=(const packaged_task&) = delete;
 
     // move support
-    packaged_task(packaged_task&& other) noexcept;
-    packaged_task& operator=(packaged_task&& other) noexcept;
-    void swap(packaged_task& other) noexcept;
+    packaged_task(packaged_task&& other) _NOEXCEPT;
+    packaged_task& operator=(packaged_task&& other) _NOEXCEPT;
+    void swap(packaged_task& other) _NOEXCEPT;
 
-    bool valid() const noexcept;
+    bool valid() const _NOEXCEPT;
 
     // result retrieval
     future<R> get_future();
@@ -386,7 +386,7 @@ public:
 };
 
 template <class R>
-  void swap(packaged_task<R(ArgTypes...)&, packaged_task<R(ArgTypes...)>&) noexcept;
+  void swap(packaged_task<R(ArgTypes...)&, packaged_task<R(ArgTypes...)>&) _NOEXCEPT;
 
 template <class R, class Alloc> struct uses_allocator<packaged_task<R>, Alloc>;
 
@@ -2241,7 +2241,7 @@ public:
     
     // These are all implemented by __basic_future
     /*
-    bool valid() const noexcept;
+    bool valid() const _NOEXCEPT;
     void wait() const
     
     template <class Rep, class Period>
@@ -2357,7 +2357,7 @@ public:
         {}
     
     FORCE_INLINE
-    future(future&& __o) noexcept
+    future(future&& __o) _NOEXCEPT
         : _Base(std::move(static_cast<_Base&>(__o)))
         {}
     
@@ -2366,7 +2366,7 @@ public:
         {}
     
     FORCE_INLINE
-    future& operator=(future&& __o) noexcept
+    future& operator=(future&& __o) _NOEXCEPT
         {
             this->_Base::operator=(std::move(static_cast<_Base&>(__o)));
             return *this;
@@ -2447,7 +2447,7 @@ public:
     
     // These are all implemented by __basic_future
     /*
-    bool valid() const noexcept;
+    bool valid() const _NOEXCEPT;
     void wait() const
     
     template <class Rep, class Period>
@@ -2550,14 +2550,14 @@ public:
         {}
     
     FORCE_INLINE
-    shared_future(shared_future&& __o) noexcept
+    shared_future(shared_future&& __o) _NOEXCEPT
         : _Base(std::move(__o))
         {
             __o.__future_.reset();
         }
     
     FORCE_INLINE
-    shared_future(future<_Rp>&& __o) noexcept
+    shared_future(future<_Rp>&& __o) _NOEXCEPT
         : _Base(std::move(__o))
         {}
     
@@ -2571,7 +2571,7 @@ public:
             return *this;
         }
     
-    shared_future& operator=(shared_future&& __o) noexcept
+    shared_future& operator=(shared_future&& __o) _NOEXCEPT
         {
             this->_Base::operator=(std::move(static_cast<_Base&>(__o)));
             return *this;
@@ -2614,7 +2614,7 @@ public:
     
     // These are all implemented by __basic_future
     /*
-    bool valid() const noexcept;
+    bool valid() const _NOEXCEPT;
     void wait() const
     
     template <class Rep, class Period>
@@ -2710,13 +2710,13 @@ public:
     // assignment
     
     FORCE_INLINE
-    promise(promise&& __o) noexcept
+    promise(promise&& __o) _NOEXCEPT
         : __future_(std::move(__o.__future_)), __future_obtained_(__o.__future_obtained_)
         {
             __o.__future_obtained_ = false;
         }
     
-    promise& operator=(promise&& __o) noexcept
+    promise& operator=(promise&& __o) _NOEXCEPT
         {
             __future_ = std::move(__o.__future_);
             __future_obtained_ = __o.__future_obtained_;
@@ -2881,13 +2881,13 @@ public:
     // assignment
     
     FORCE_INLINE
-    promise(promise&& __o) noexcept
+    promise(promise&& __o) _NOEXCEPT
         : __future_(std::move(__o.__future_)), __future_obtained_(__o.__future_obtained_)
         {
             __o.__future_obtained_ = false;
         }
     
-    promise& operator=(promise&& __o) noexcept
+    promise& operator=(promise&& __o) _NOEXCEPT
         {
             __future_ = std::move(__o.__future_);
             __future_obtained_ = __o.__future_obtained_;
@@ -3034,13 +3034,13 @@ public:
     // assignment
     
     FORCE_INLINE
-    promise(promise&& __o) noexcept
+    promise(promise&& __o) _NOEXCEPT
         : __future_(std::move(__o.__future_)), __future_obtained_(__o.__future_obtained_)
         {
             __o.__future_obtained_ = false;
         }
     
-    promise& operator=(promise&& __o) noexcept
+    promise& operator=(promise&& __o) _NOEXCEPT
         {
             __future_ = std::move(__o.__future_);
             __future_obtained_ = __o.__future_obtained_;
@@ -3140,7 +3140,7 @@ namespace std
 {
     
     template <class _Rp>
-    void swap(EPUB3_NAMESPACE::promise<_Rp>& __x, EPUB3_NAMESPACE::promise<_Rp>& __y) noexcept
+    void swap(EPUB3_NAMESPACE::promise<_Rp>& __x, EPUB3_NAMESPACE::promise<_Rp>& __y) _NOEXCEPT
         {
             __x.swap(__y);
         }
@@ -3253,7 +3253,7 @@ public:
     // assignment
     
     FORCE_INLINE
-    packaged_task(packaged_task&& __o) noexcept
+    packaged_task(packaged_task&& __o) _NOEXCEPT
         : __future_obtained_(__o.__future_obtained_)
         {
             __task_.swap(__o.__task_);
@@ -3285,7 +3285,7 @@ public:
         }
     
     FORCE_INLINE
-    bool valid() const noexcept
+    bool valid() const _NOEXCEPT
         {
             return bool(__task_);
         }
@@ -3434,7 +3434,11 @@ inline FORCE_INLINE
 future<void>
 make_ready_future()
 {
+#if EPUB_COMPILER(MSVC)
+	typedef future<void>::future_ptr _F;
+#else
     typedef typename future<void>::future_ptr _F;
+#endif
     _F __state(new __shared_state<void>);
     __state->mark_finished_with_result();
     return future<void>(__state);
@@ -3480,7 +3484,11 @@ inline FORCE_INLINE
 shared_future<void>
 make_ready_shared_future()
 {
+#if EPUB_COMPILER(MSVC)
+	typedef shared_future<void>::future_ptr _F;
+#else
     typedef typename shared_future<void>::future_ptr _F;
+#endif
     _F __state(new __shared_state<void>);
     __state->mark_finished_with_result();
     return shared_future<void>(__state);

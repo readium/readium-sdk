@@ -65,13 +65,6 @@ public:
 	{
 		virtual ISMILTimeContainer^ get();
 	}
-	property SMILData^ SmilData
-	{
-		virtual SMILData^ get()
-		{
-			return SMILData::Wrapper(_native->SmilData());
-		}
-	}
 };
 
 ref class TimeContainer : public TimeNode, ISMILTimeContainer
@@ -118,10 +111,6 @@ public:
 	property ISMILTimeContainer^ Parent
 	{
 		virtual ISMILTimeContainer^ get() override { return TimeNode::Parent; }
-	}
-	property SMILData^ SmilData
-	{
-		virtual SMILData^ get() override { return TimeNode::SmilData; }
 	}
 };
 
@@ -204,10 +193,6 @@ public:
 	{
 		virtual ISMILTimeContainer^ get() override { return TimeNode::Parent; }
 	}
-	property SMILData^ SmilData
-	{
-		virtual SMILData^ get() override { return TimeNode::SmilData; }
-	}
 };
 
 ref class Media : public TimeNode, ISMILMedia
@@ -268,10 +253,6 @@ public:
 	property ISMILTimeContainer^ Parent
 	{
 		virtual ISMILTimeContainer^ get() override { return TimeNode::Parent; }
-	}
-	property SMILData^ SmilData
-	{
-		virtual SMILData^ get() override { return TimeNode::SmilData; }
 	}
 };
 
@@ -342,10 +323,6 @@ public:
 	{
 		virtual ISMILTimeContainer^ get() override { return TimeNode::Parent; }
 	}
-	property SMILData^ SmilData
-	{
-		virtual SMILData^ get() override { return TimeNode::SmilData; }
-	}
 };
 
 ref class Text : public Media, ISMILText
@@ -392,10 +369,6 @@ public:
 	property ISMILTimeContainer^ Parent
 	{
 		virtual ISMILTimeContainer^ get() override { return TimeNode::Parent; }
-	}
-	property SMILData^ SmilData
-	{
-		virtual SMILData^ get() override { return TimeNode::SmilData; }
 	}
 };
 
@@ -452,10 +425,6 @@ public:
 	property ISMILTimeContainer^ Parent
 	{
 		virtual ISMILTimeContainer^ get() override { return TimeNode::Parent; }
-	}
-	property SMILData^ SmilData
-	{
-		virtual SMILData^ get() override { return TimeNode::SmilData; }
 	}
 };
 

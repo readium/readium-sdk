@@ -19,7 +19,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "collection.h"
+#include "epub_collection.h"
 #include "package.h"
 #include <ePub3/epub3.h>
 #include <ePub3/utilities/error_handler.h>
@@ -42,7 +42,7 @@ bool Collection::ParseXML(shared_ptr<xml::Node> node)
 {
     try
     {
-        SetXMLIdentifier(node->AttributeValue("id", string::EmptyString));
+        SetXMLIdentifier(_getProp(node, "id"));
         
         _role = _getProp(node, "role", ePub3NamespaceURI);
         if (_role.empty())

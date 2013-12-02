@@ -80,18 +80,18 @@ namespace experimental {
     constexpr bool operator>=(const optional<_Tp>&, const optional<_Tp>&);
 
   // X.Y.9, Comparison with nullopt
-  template <class _Tp> constexpr bool operator==(const optional<_Tp>&, nullopt_t) noexcept;
-  template <class _Tp> constexpr bool operator==(nullopt_t, const optional<_Tp>&) noexcept;
-  template <class _Tp> constexpr bool operator!=(const optional<_Tp>&, nullopt_t) noexcept;
-  template <class _Tp> constexpr bool operator!=(nullopt_t, const optional<_Tp>&) noexcept;
-  template <class _Tp> constexpr bool operator<(const optional<_Tp>&, nullopt_t) noexcept;
-  template <class _Tp> constexpr bool operator<(nullopt_t, const optional<_Tp>&) noexcept;
-  template <class _Tp> constexpr bool operator<=(const optional<_Tp>&, nullopt_t) noexcept;
-  template <class _Tp> constexpr bool operator<=(nullopt_t, const optional<_Tp>&) noexcept;
-  template <class _Tp> constexpr bool operator>(const optional<_Tp>&, nullopt_t) noexcept;
-  template <class _Tp> constexpr bool operator>(nullopt_t, const optional<_Tp>&) noexcept;
-  template <class _Tp> constexpr bool operator>=(const optional<_Tp>&, nullopt_t) noexcept;
-  template <class _Tp> constexpr bool operator>=(nullopt_t, const optional<_Tp>&) noexcept;
+  template <class _Tp> constexpr bool operator==(const optional<_Tp>&, nullopt_t) _NOEXCEPT;
+  template <class _Tp> constexpr bool operator==(nullopt_t, const optional<_Tp>&) _NOEXCEPT;
+  template <class _Tp> constexpr bool operator!=(const optional<_Tp>&, nullopt_t) _NOEXCEPT;
+  template <class _Tp> constexpr bool operator!=(nullopt_t, const optional<_Tp>&) _NOEXCEPT;
+  template <class _Tp> constexpr bool operator<(const optional<_Tp>&, nullopt_t) _NOEXCEPT;
+  template <class _Tp> constexpr bool operator<(nullopt_t, const optional<_Tp>&) _NOEXCEPT;
+  template <class _Tp> constexpr bool operator<=(const optional<_Tp>&, nullopt_t) _NOEXCEPT;
+  template <class _Tp> constexpr bool operator<=(nullopt_t, const optional<_Tp>&) _NOEXCEPT;
+  template <class _Tp> constexpr bool operator>(const optional<_Tp>&, nullopt_t) _NOEXCEPT;
+  template <class _Tp> constexpr bool operator>(nullopt_t, const optional<_Tp>&) _NOEXCEPT;
+  template <class _Tp> constexpr bool operator>=(const optional<_Tp>&, nullopt_t) _NOEXCEPT;
+  template <class _Tp> constexpr bool operator>=(nullopt_t, const optional<_Tp>&) _NOEXCEPT;
 
   // X.Y.10, Comparison with T
   template <class _Tp> constexpr bool operator==(const optional<_Tp>&, const T&);
@@ -108,7 +108,7 @@ namespace experimental {
   template <class _Tp> constexpr bool operator>=(const T&, const optional<_Tp>&);
 
   // X.Y.11, Specialized algorithms
-  template <class _Tp> void swap(optional<_Tp>&, optional<_Tp>&) noexcept(see below);
+  template <class _Tp> void swap(optional<_Tp>&, optional<_Tp>&) _NOEXCEPT(see below);
   template <class _Tp> constexpr optional<see below> make_optional(T&&);
 
   // X.Y.12, hash support
@@ -122,10 +122,10 @@ namespace experimental {
     typedef T value_type;
 
     // X.Y.4.1, constructors
-    constexpr optional() noexcept;
-    constexpr optional(nullopt_t) noexcept;
+    constexpr optional() _NOEXCEPT;
+    constexpr optional(nullopt_t) _NOEXCEPT;
     optional(const optional&);
-    optional(optional&&) noexcept(see below);
+    optional(optional&&) _NOEXCEPT(see below);
     constexpr optional(const T&);
     constexpr optional(T&&);
     template <class... Args> constexpr explicit optional(in_place_t, Args&&...);
@@ -136,23 +136,23 @@ namespace experimental {
     ~optional();
 
     // X.Y.4.3, assignment
-    optional& operator=(nullopt_t) noexcept;
+    optional& operator=(nullopt_t) _NOEXCEPT;
     optional& operator=(const optional&);
-    optional& operator=(optional&&) noexcept(see below);
+    optional& operator=(optional&&) _NOEXCEPT(see below);
     template <class U> optional& operator=(U&&);
     template <class... Args> void emplace(Args&&...);
     template <class U, class... Args>
       void emplace(initializer_list<U>, Args&&...);
 
     // X.Y.4.4, swap
-    void swap(optional&) noexcept(see below);
+    void swap(optional&) _NOEXCEPT(see below);
 
     // X.Y.4.5, observers
     constexpr T const* operator ->() const;
     T* operator ->();
     constexpr T const& operator *() const;
     T& operator *();
-    constexpr explicit operator bool() const noexcept;
+    constexpr explicit operator bool() const _NOEXCEPT;
     constexpr T const& value() const;
     T& value();
     template <class U> constexpr T value_or(U&&) const&;
@@ -187,7 +187,7 @@ template <class _Tp> class optional;
 template <class _Tp>
 inline CONSTEXPR
 _Tp&&
-__constexpr_forward(typename std::remove_reference<_Tp>::type& __t) noexcept
+__constexpr_forward(typename std::remove_reference<_Tp>::type& __t) _NOEXCEPT
 {
     return static_cast<_Tp&&>(__t);
 }
@@ -195,7 +195,7 @@ __constexpr_forward(typename std::remove_reference<_Tp>::type& __t) noexcept
 template <class _Tp>
 inline CONSTEXPR
 _Tp&&
-__constexpr_forward(typename std::remove_reference<_Tp>::type&& __t) noexcept
+__constexpr_forward(typename std::remove_reference<_Tp>::type&& __t) _NOEXCEPT
 {
     static_assert(!std::is_lvalue_reference<_Tp>::value, "Can not forward an rvalue as an lvalue");
     return static_cast<_Tp&&>(__t);
@@ -204,7 +204,7 @@ __constexpr_forward(typename std::remove_reference<_Tp>::type&& __t) noexcept
 template <class _Tp>
 inline CONSTEXPR
 typename std::remove_reference<_Tp>::type&&
-__constexpr_move(_Tp&& __t) noexcept
+__constexpr_move(_Tp&& __t) _NOEXCEPT
 {
     typedef typename std::remove_reference<_Tp>::type _Up;
     return static_cast<_Up&&>(__t);
@@ -245,7 +245,7 @@ struct __has_overloaded_addressof
     static CONSTEXPR FORCE_INLINE
     bool has_overload(bool) { return true; }
     
-    CONSTEXPR static bool value = has_overload<_Tp>(true);
+    CONSTEXPR static const bool value = has_overload<_Tp>(true);
 };
 
 template <typename _Tp, typename std::enable_if<!__has_overloaded_addressof<_Tp>::value, bool>::type = false>
@@ -300,8 +300,8 @@ struct nullopt_t
 private:
     nullopt_t();
 public:
-    struct init {}
-    FORCE_INLINE
+	struct init {};
+	FORCE_INLINE
     nullopt_t(init) {};
 };
 extern nullopt_t nullopt;
@@ -503,7 +503,7 @@ class optional : private __optional_base_impl<_Tp>
     typedef __optional_base_impl<_Tp>   _Base;
     
     CONSTEXPR FORCE_INLINE
-    bool __initialized() const noexcept
+    bool __initialized() const _NOEXCEPT
         { return _Base::__inited_; }
 
     FORCE_INLINE
@@ -533,7 +533,7 @@ class optional : private __optional_base_impl<_Tp>
 #endif
     
     FORCE_INLINE
-    void __clear() noexcept
+    void __clear() _NOEXCEPT
         {
             if (__initialized())
                 __ptr()->_Tp::~_Tp();
@@ -864,73 +864,73 @@ bool operator>=(const optional<_Tp>& __x, const optional<_Tp>& __y)
 // X.Y.9, Comparison with nullopt
 template <class _Tp>
 CONSTEXPR FORCE_INLINE
-bool operator==(const optional<_Tp>& __x, nullopt_t) noexcept
+bool operator==(const optional<_Tp>& __x, nullopt_t) _NOEXCEPT
 {
     return !bool(__x);
 }
 template <class _Tp>
 CONSTEXPR FORCE_INLINE
-bool operator==(nullopt_t, const optional<_Tp>& __y) noexcept
+bool operator==(nullopt_t, const optional<_Tp>& __y) _NOEXCEPT
 {
     return !bool(__y);
 }
 template <class _Tp>
 CONSTEXPR FORCE_INLINE
-bool operator!=(const optional<_Tp>& __x, nullopt_t) noexcept
+bool operator!=(const optional<_Tp>& __x, nullopt_t) _NOEXCEPT
 {
     return bool(__x);
 }
 template <class _Tp>
 CONSTEXPR FORCE_INLINE
-bool operator!=(nullopt_t, const optional<_Tp>& __y) noexcept
+bool operator!=(nullopt_t, const optional<_Tp>& __y) _NOEXCEPT
 {
     return bool(__y);
 }
 template <class _Tp>
 CONSTEXPR FORCE_INLINE
-bool operator<(const optional<_Tp>&, nullopt_t) noexcept
+bool operator<(const optional<_Tp>&, nullopt_t) _NOEXCEPT
 {
     return false;
 }
 template <class _Tp>
 CONSTEXPR FORCE_INLINE
-bool operator<(nullopt_t, const optional<_Tp>& __y) noexcept
+bool operator<(nullopt_t, const optional<_Tp>& __y) _NOEXCEPT
 {
     return bool(__y);
 }
 template <class _Tp>
 CONSTEXPR FORCE_INLINE
-bool operator<=(const optional<_Tp>& __x, nullopt_t) noexcept
+bool operator<=(const optional<_Tp>& __x, nullopt_t) _NOEXCEPT
 {
     return !bool(__x);
 }
 template <class _Tp>
 CONSTEXPR FORCE_INLINE
-bool operator<=(nullopt_t, const optional<_Tp>&) noexcept
+bool operator<=(nullopt_t, const optional<_Tp>&) _NOEXCEPT
 {
     return true;
 }
 template <class _Tp>
 CONSTEXPR FORCE_INLINE
-bool operator>(const optional<_Tp>& __x, nullopt_t) noexcept
+bool operator>(const optional<_Tp>& __x, nullopt_t) _NOEXCEPT
 {
     return bool(__x);
 }
 template <class _Tp>
 CONSTEXPR FORCE_INLINE
-bool operator>(nullopt_t, const optional<_Tp>&) noexcept
+bool operator>(nullopt_t, const optional<_Tp>&) _NOEXCEPT
 {
     return false;
 }
 template <class _Tp>
 CONSTEXPR FORCE_INLINE
-bool operator>=(const optional<_Tp>&, nullopt_t) noexcept
+bool operator>=(const optional<_Tp>&, nullopt_t) _NOEXCEPT
 {
     return true;
 }
 template <class _Tp>
 CONSTEXPR FORCE_INLINE
-bool operator>=(nullopt_t, const optional<_Tp>& __y) noexcept
+bool operator>=(nullopt_t, const optional<_Tp>& __y) _NOEXCEPT
 {
     return !bool(__y);
 }
