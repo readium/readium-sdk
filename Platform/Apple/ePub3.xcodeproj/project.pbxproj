@@ -69,6 +69,7 @@
 		AB6AC736169225E3000DE924 /* signatures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB6AC734169225E2000DE924 /* signatures.cpp */; };
 		AB6AC737169225E3000DE924 /* signatures.h in Headers */ = {isa = PBXBuildFile; fileRef = AB6AC735169225E3000DE924 /* signatures.h */; };
 		AB6EEE0617466CAD007E951E /* compressed_pair.h in Headers */ = {isa = PBXBuildFile; fileRef = AB6EEE0317466CAD007E951E /* compressed_pair.h */; };
+		AB718C04184CEEA900F86C6B /* xml_bridge_dtrace_probes.d in Sources */ = {isa = PBXBuildFile; fileRef = AB718C03184CEEA900F86C6B /* xml_bridge_dtrace_probes.d */; };
 		AB8C796F182191A20013054F /* content_module_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB8C796E182191A20013054F /* content_module_manager.cpp */; };
 		AB8C7970182191A20013054F /* content_module_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB8C796E182191A20013054F /* content_module_manager.cpp */; };
 		AB8C79741821A2160013054F /* credential_request.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB8C79731821A2160013054F /* credential_request.cpp */; };
@@ -367,9 +368,9 @@
 		ABB39516183D21AC00F19CA7 /* path_help.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB39515183D21AC00F19CA7 /* path_help.cpp */; };
 		ABB39517183D21AC00F19CA7 /* path_help.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB39515183D21AC00F19CA7 /* path_help.cpp */; };
 		ABB3951918455C7B00F19CA7 /* media-overlays_smil_utils_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB3951818455C7B00F19CA7 /* media-overlays_smil_utils_tests.cpp */; };
-		ABB3951C1847E5FD00F19CA7 /* collection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB3951A1847E5FD00F19CA7 /* collection.cpp */; };
-		ABB3951D1847E5FD00F19CA7 /* collection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB3951A1847E5FD00F19CA7 /* collection.cpp */; };
-		ABB3951E1847E5FD00F19CA7 /* collection.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB3951B1847E5FD00F19CA7 /* collection.h */; };
+		ABB3951C1847E5FD00F19CA7 /* epub_collection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB3951A1847E5FD00F19CA7 /* epub_collection.cpp */; };
+		ABB3951D1847E5FD00F19CA7 /* epub_collection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB3951A1847E5FD00F19CA7 /* epub_collection.cpp */; };
+		ABB3951E1847E5FD00F19CA7 /* epub_collection.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB3951B1847E5FD00F19CA7 /* epub_collection.h */; };
 		ABB395211847FBAA00F19CA7 /* link.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB3951F1847FBAA00F19CA7 /* link.cpp */; };
 		ABB395221847FBAA00F19CA7 /* link.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB3951F1847FBAA00F19CA7 /* link.cpp */; };
 		ABB395231847FBAA00F19CA7 /* link.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB395201847FBAA00F19CA7 /* link.h */; };
@@ -487,6 +488,7 @@
 		AB6AC735169225E3000DE924 /* signatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = signatures.h; sourceTree = "<group>"; };
 		AB6EEE0317466CAD007E951E /* compressed_pair.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = compressed_pair.h; sourceTree = "<group>"; };
 		AB6EEE0717467A00007E951E /* swap_traits.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swap_traits.h; sourceTree = "<group>"; };
+		AB718C03184CEEA900F86C6B /* xml_bridge_dtrace_probes.d */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.dtrace; path = xml_bridge_dtrace_probes.d; sourceTree = "<group>"; };
 		AB8C796C182190F10013054F /* content_module.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = content_module.h; sourceTree = "<group>"; };
 		AB8C796D1821917F0013054F /* content_module_manager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = content_module_manager.h; sourceTree = "<group>"; };
 		AB8C796E182191A20013054F /* content_module_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = content_module_manager.cpp; sourceTree = "<group>"; };
@@ -878,8 +880,8 @@
 		ABB39514183D21A100F19CA7 /* path_help.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = path_help.h; sourceTree = "<group>"; };
 		ABB39515183D21AC00F19CA7 /* path_help.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = path_help.cpp; sourceTree = "<group>"; };
 		ABB3951818455C7B00F19CA7 /* media-overlays_smil_utils_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "media-overlays_smil_utils_tests.cpp"; sourceTree = "<group>"; };
-		ABB3951A1847E5FD00F19CA7 /* collection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = collection.cpp; sourceTree = "<group>"; };
-		ABB3951B1847E5FD00F19CA7 /* collection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = collection.h; sourceTree = "<group>"; };
+		ABB3951A1847E5FD00F19CA7 /* epub_collection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = epub_collection.cpp; sourceTree = "<group>"; };
+		ABB3951B1847E5FD00F19CA7 /* epub_collection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = epub_collection.h; sourceTree = "<group>"; };
 		ABB3951F1847FBAA00F19CA7 /* link.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = link.cpp; sourceTree = "<group>"; };
 		ABB395201847FBAA00F19CA7 /* link.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = link.h; sourceTree = "<group>"; };
 		ABCF0B73181C073300EEA270 /* node_traits.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = node_traits.h; sourceTree = "<group>"; };
@@ -1602,8 +1604,8 @@
 				ABF2D9A616682E1E0036B8CA /* spine.h */,
 				ABF2D9AA1668301D0036B8CA /* manifest.cpp */,
 				ABF2D9AB1668301D0036B8CA /* manifest.h */,
-				ABB3951A1847E5FD00F19CA7 /* collection.cpp */,
-				ABB3951B1847E5FD00F19CA7 /* collection.h */,
+				ABB3951A1847E5FD00F19CA7 /* epub_collection.cpp */,
+				ABB3951B1847E5FD00F19CA7 /* epub_collection.h */,
 				ABB3951F1847FBAA00F19CA7 /* link.cpp */,
 				ABB395201847FBAA00F19CA7 /* link.h */,
 				ABF2D99D1667F7860036B8CA /* xpath_wrangler.cpp */,
@@ -1738,6 +1740,7 @@
 				ABB1902E1656DD9000CFC651 /* base.h */,
 				ABB190331656E82100CFC651 /* io.cpp */,
 				ABB190341656E82100CFC651 /* io.h */,
+				AB718C03184CEEA900F86C6B /* xml_bridge_dtrace_probes.d */,
 			);
 			path = utilities;
 			sourceTree = "<group>";
@@ -1783,7 +1786,7 @@
 				ABAB94D31667B6FD0018D451 /* archive_xml.h in Headers */,
 				ABF2D9A01667F7860036B8CA /* xpath_wrangler.h in Headers */,
 				ABF2D9A816682E1E0036B8CA /* spine.h in Headers */,
-				ABB3951E1847E5FD00F19CA7 /* collection.h in Headers */,
+				ABB3951E1847E5FD00F19CA7 /* epub_collection.h in Headers */,
 				ABF2D9AD1668301D0036B8CA /* manifest.h in Headers */,
 				ABA38A9016767CA400CB8EDB /* cfi.h in Headers */,
 				AB52850217CE6EE2003D7BBF /* executor.h in Headers */,
@@ -2109,7 +2112,7 @@
 				ABA88FBF16C062BF00F2014B /* media_support_info.cpp in Sources */,
 				ABA88FC416C1534900F2014B /* byte_stream.cpp in Sources */,
 				3418BA7D16C4151E009AA7EF /* ring_buffer.cpp in Sources */,
-				ABB3951D1847E5FD00F19CA7 /* collection.cpp in Sources */,
+				ABB3951D1847E5FD00F19CA7 /* epub_collection.cpp in Sources */,
 				AB8C7970182191A20013054F /* content_module_manager.cpp in Sources */,
 				ABA88FD916C4415D00F2014B /* ios_get_progname.m in Sources */,
 				AB17B29F171301C800FD5917 /* run_loop_cf.cpp in Sources */,
@@ -2134,6 +2137,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				ABB18FE61656863300CFC651 /* mkstemp.c in Sources */,
+				AB718C04184CEEA900F86C6B /* xml_bridge_dtrace_probes.d in Sources */,
 				ABB18FE81656863300CFC651 /* zip_add.c in Sources */,
 				ABB18FE91656863300CFC651 /* zip_add_dir.c in Sources */,
 				ABB18FEA1656863300CFC651 /* zip_close.c in Sources */,
@@ -2159,7 +2163,7 @@
 				ABB18FFD1656863300CFC651 /* zip_fopen_index.c in Sources */,
 				ABB395211847FBAA00F19CA7 /* link.cpp in Sources */,
 				ABB18FFE1656863300CFC651 /* zip_fread.c in Sources */,
-				ABB3951C1847E5FD00F19CA7 /* collection.cpp in Sources */,
+				ABB3951C1847E5FD00F19CA7 /* epub_collection.cpp in Sources */,
 				ABB18FFF1656863300CFC651 /* zip_free.c in Sources */,
 				AB8C79741821A2160013054F /* credential_request.cpp in Sources */,
 				ABB190001656863300CFC651 /* zip_get_archive_comment.c in Sources */,

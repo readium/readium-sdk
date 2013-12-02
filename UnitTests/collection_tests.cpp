@@ -19,7 +19,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "../ePub3/ePub/collection.h"
+#include "../ePub3/ePub/epub_collection.h"
 #include "../ePub3/ePub/package.h"
 #include "../ePub3/ePub/container.h"
 #include <array>

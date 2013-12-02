@@ -80,7 +80,7 @@ void prune_unchanged_wrappers(xmlNodePtr node, NodeMap & nmap)
             if ( pos->second == node->type )
                 nmap.erase(pos);
             else
-                node->_private = nullptr;
+                ePub3::xml::Node::Unwrap(node);
         }
     }
     
@@ -112,7 +112,7 @@ Document::Document(xmlDocPtr doc) : Node(reinterpret_cast<xmlNodePtr>(doc))
     if ( _xml == nullptr )
         throw InternalError("Failed to create new document");
     // ensure the right polymorphic type ptr is installed
-    _xml->_private = this;
+    //_xml->_private = this;
 }
 Document::Document(std::shared_ptr<Element> rootElement) : Node(reinterpret_cast<xmlNodePtr>(xmlNewDoc(BAD_CAST "1.0")))
 {

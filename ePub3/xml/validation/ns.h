@@ -63,6 +63,10 @@ public:
     _xmlNs * xml() { return _xml; }
     const _xmlNs * xml() const { return _xml; }
     
+    virtual
+    void release()
+        { _xml = nullptr; }
+    
 protected:
     _xmlNs *    _xml;
     

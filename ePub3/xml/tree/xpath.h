@@ -109,6 +109,10 @@ public:
     
     bool RegisterVariable(const string & name, void * data, ObjectType type, const string & namespaceURI = string());
 #endif
+    
+    virtual
+    void release() OVERRIDE
+        {}
 protected:
 #if EPUB_USE(LIBXML2)
     typedef std::map<string, XPathFunction>    FunctionLookup;

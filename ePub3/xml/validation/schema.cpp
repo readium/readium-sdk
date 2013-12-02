@@ -28,7 +28,7 @@ EPUB3_XML_BEGIN_NAMESPACE
 
 Schema::Schema(_xmlSchema * xml) : _xml(xml), _owns_document(false)
 {
-    _xml->_private = this;
+    //_xml->_private = this;
 }
 Schema::Schema(std::shared_ptr<class Document> document, bool assume_ownership) : _xml(NULL), _owns_document(false)
 {
@@ -56,15 +56,22 @@ void Schema::SetDocument(std::shared_ptr<class Document> document, bool assume_o
         throw ParserError("Failed to parse schema: ", xmlGetLastError());
     }
     
+    if (_xml != nullptr)
+    {
+        Node::Unwrap((xmlNodePtr)_xml);
+        xmlFreeNode((xmlNodePtr)_xml);
+        _xml = nullptr;
+    }
+    
     _xml = xmlSchemaParse(ctx);
     xmlSchemaFreeParserCtxt(ctx);
     
-    if ( _xml == NULL )
+    if ( _xml == nullptr )
     {
         throw ParserError("Schema could not be parsed: ", xmlGetLastError());
     }
     
-    _xml->_private = this;
+    Rewrap(_xml, shared_from_this());
     _owns_document = assume_ownership || created;
 }
 string Schema::Name() const
@@ -89,8 +96,8 @@ void Schema::releaseDocument()
 {
     if ( _owns_document && _xml != NULL && _xml->doc != NULL && _xml->doc->_private != NULL )
     {
-        // delete the document's associated C++ object
-        delete reinterpret_cast<class Document *>(_xml->doc->_private);
+        // unwrap the associated document
+        Node::Unwrap((xmlNodePtr)_xml->doc);
         _owns_document = false;
     }
     

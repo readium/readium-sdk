@@ -198,6 +198,10 @@ public:
 	static std::shared_ptr<Node> NewNode(NativePtr ptr);
 #endif
     
+    virtual
+    void release() OVERRIDE
+        { _xml = nullptr; }
+
 protected:
     NativePtr _xml;
 #if EPUB_ENABLE(XML_BUILDER)

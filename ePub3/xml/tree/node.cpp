@@ -30,6 +30,8 @@
 #include <sstream>
 #include <cstdlib>
 
+#include "xml_bridge_dtrace_probes.h"
+
 #ifndef NDEBUG
 extern "C" void DebugPrintNode(std::shared_ptr<ePub3::xml::Node> aNode)
 {
@@ -114,7 +116,7 @@ std::string TypeString(NodeType type)
 
 Node::Node(_xmlNode *xml) : _xml(xml)
 {
-    _xml->_private = this;
+    //_xml->_private = this;
 }
 Node::Node(const string & name, NodeType type, const string & content, const class Namespace & ns)
 {
@@ -162,24 +164,30 @@ Node::Node(const string & name, NodeType type, const string & content, const cla
         throw InvalidNodeType(std::string("NodeType '") + TypeString(type) + "' is not supported");
     
     _xml = newNode;
-    _xml->_private = this;
+    _xml->_private = new LibXML2Private<Node>(this);
 }
 Node::Node(Node && o) : _xml(o._xml) {
-    _xml->_private = this;
+    typedef LibXML2Private<Node> _Private;
+    _Private* priv = reinterpret_cast<_Private*>(_xml->_private);
+    priv->__ptr.reset(this);
     o._xml = NULL;
 }
 Node::~Node()
 {
+    typedef LibXML2Private<Node> _Private;
+    
     if (_xml == nullptr)
         return;
     
-    if ( _xml->_private != this )
+    _Private* priv = reinterpret_cast<_Private*>(_xml->_private);
+    if ( priv->__sig != _READIUM_XML_SIGNATURE || priv->__ptr.get() != this )
         return;
     
     // free the underlying node if *and only if* it is detached
     if ( _xml->parent == nullptr && _xml->prev == nullptr && _xml->next == nullptr )
     {
         _xml->_private = nullptr;
+        delete priv;
         xmlFreeNode(_xml);
     }
 }
@@ -580,16 +588,16 @@ void Node::Wrap(_xmlNode *aNode)
         case XML_DOCUMENT_FRAG_NODE:
         case XML_HTML_DOCUMENT_NODE:
         {
-            wrapper = new std::shared_ptr<class Document>(new class Document(reinterpret_cast<xmlDocPtr>(aNode)));
+            wrapper = new LibXML2Private<class Document>(new class Document(reinterpret_cast<xmlDocPtr>(aNode)));
             break;
         }
             
         case XML_DTD_NODE:
-            wrapper = new std::shared_ptr<DTD>(new DTD(reinterpret_cast<xmlDtdPtr>(aNode)));
+            wrapper = new LibXML2Private<DTD>(new DTD(reinterpret_cast<xmlDtdPtr>(aNode)));
             break;
             
         case XML_NAMESPACE_DECL:
-            wrapper = new std::shared_ptr<class Namespace>(new class Namespace(reinterpret_cast<xmlNsPtr>(aNode)));
+            wrapper = new LibXML2Private<class Namespace>(new class Namespace(reinterpret_cast<xmlNsPtr>(aNode)));
             break;
             
         case XML_ATTRIBUTE_NODE:
@@ -597,24 +605,24 @@ void Node::Wrap(_xmlNode *aNode)
             break;
             
         case XML_ELEMENT_NODE:
-            wrapper = new std::shared_ptr<Element>(new Element(aNode));
+            wrapper = new LibXML2Private<Element>(new Element(aNode));
             break;
             
         default:
-            wrapper = new std::shared_ptr<Node>(new Node(aNode));
+            wrapper = new LibXML2Private<Node>(new Node(aNode));
             break;
     }
     
-    // The _private ptr in the xmlNodePtr is a POINTER TO a shared_ptr
+    // The _private ptr in the xmlNodePtr is a POINTER TO a LibXML2Private
     // object. This means that the allocated object is shared, and the
-    // xmlNodePtr has a strong reference, released when the xmlNodePtr
+    // xmlNodePtr holds a strong reference, released when the xmlNodePtr
     // is deallocated.
     aNode->_private = wrapper;
 }
 void Node::Unwrap(_xmlNode *aNode)
 {
-    typedef std::shared_ptr<class Namespace> NsPtr;
-    typedef std::shared_ptr<Node> NodePtr;
+    typedef LibXML2Private<class Namespace> NsPrivate;
+    typedef LibXML2Private<Node> NodePrivate;
     
     if (aNode->type == XML_NAMESPACE_DECL)
     {
@@ -622,15 +630,23 @@ void Node::Unwrap(_xmlNode *aNode)
         xmlNsPtr __ns = reinterpret_cast<xmlNsPtr>(aNode);
         if (__ns->_private != nullptr)
         {
-            NsPtr* ptr = reinterpret_cast<NsPtr*>(__ns->_private);
-            delete ptr;
+            NsPrivate* ptr = reinterpret_cast<NsPrivate*>(__ns->_private);
+            if (ptr->__sig == _READIUM_XML_SIGNATURE)
+            {
+                ptr->__ptr->release();
+                delete ptr;
+            }
             __ns->_private = nullptr;
         }
     }
     else if (aNode->_private != nullptr)
     {
-        NodePtr* ptr = reinterpret_cast<NodePtr*>(aNode->_private);
-        delete ptr;
+        NodePrivate* ptr = reinterpret_cast<NodePrivate*>(aNode->_private);
+        if (ptr->__sig == _READIUM_XML_SIGNATURE)
+        {
+            ptr->__ptr->release();
+            delete ptr;
+        }
         aNode->_private = nullptr;
     }
 }
@@ -659,27 +675,31 @@ void Node::rebind(_xmlNode *newNode)
     if ( _xml == newNode )
         return;
     
+    typedef LibXML2Private<Node> _Private;
+    
     if ( _xml != nullptr )
     {
         if ( _xml->parent == nullptr && _xml->next == nullptr && _xml->prev == nullptr )
         {
-            _xml = nullptr;
-            xmlFreeNode(_xml); // releases libxml's reference to this object
+            xmlNodePtr __n = _xml;
+            this->release();
+            xmlFreeNode(__n); // releases libxml's reference to this object
         }
     }
     
     _xml = newNode;
     
     typedef std::shared_ptr<Node> NodePtr;
-    if (_xml->_private != nullptr)
+    if (_xml->_private != nullptr && *((unsigned int*)(_xml->_private)) == _READIUM_XML_SIGNATURE)
     {
         // reassign the bridge ptr on the libxml node
-        NodePtr* ptr = reinterpret_cast<NodePtr*>(newNode->_private);
-        *ptr = shared_from_this();
+        _Private* ptr = reinterpret_cast<_Private*>(newNode->_private);
+        ptr->__ptr = shared_from_this();
     }
-    else
+    else if (_xml->_private != nullptr)
     {
-        _xml->_private = new NodePtr(shared_from_this());
+        auto ptr = shared_from_this();
+        _xml->_private = new _Private(ptr);
     }
 }
 

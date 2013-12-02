@@ -41,15 +41,13 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-#if EPUB_USE(LIBXML2)
-#ifdef __cplusplus
-        extern "C" {
-#endif
+#define _XML_OVERRIDE_SWITCHES (EPUB_USE(LIBXML2) && PROMISCUOUS_LIBXML_OVERRIDES == 0)
+
+#if _XML_OVERRIDE_SWITCHES
+    extern "C" {
         extern void __resetLibXMLOverrides(void);
         extern void __setupLibXML(void);
-#ifdef __cplusplus
-        }
-#endif
+    }
 #endif
 
 void PrintNodeSet(xml::NodeSet& nodeSet)
@@ -338,24 +336,24 @@ Package::Package(const shared_ptr<Container>& owner, const string& type) : Prope
 }
 bool Package::Open(const string& path)
 {
-#if EPUB_USE(LIBXML2)
+#if _XML_OVERRIDE_SWITCHES
     __setupLibXML();
 #endif
     auto status = PackageBase::Open(path) && Unpack();
-#if EPUB_USE(LIBCML2)
+#if _XML_OVERRIDE_SWITCHES
     __resetLibXMLOverrides();
 #endif
     return status;
 }
 bool Package::_OpenForTest(shared_ptr<xml::Document> doc, const string& basePath)
 {
-#if EPUB_USE(LIBXML2)
+#if _XML_OVERRIDE_SWITCHES
     __setupLibXML();
 #endif
     _opf = doc;
     _pathBase = basePath;
     auto status = Unpack();
-#if EPUB_USE(LIBXML2)
+#if _XML_OVERRIDE_SWITCHES
     __resetLibXMLOverrides();
 #endif
     return status;

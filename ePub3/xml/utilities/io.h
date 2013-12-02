@@ -69,6 +69,10 @@ public:
 
 	virtual size_t size() const = 0;
 	virtual size_t offset() const = 0;
+    
+    virtual
+    void release() OVERRIDE
+        {}
 
 protected:
 #if EPUB_USE(LIBXML2)
@@ -116,6 +120,10 @@ public:
 	virtual size_t size() const = 0;
 	virtual size_t offset() const = 0;
     
+    virtual
+    void release() OVERRIDE
+        {}
+
 protected:
 #if EPUB_USE(LIBXML2)
     xmlOutputBufferPtr  _buf;
