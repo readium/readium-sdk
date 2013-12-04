@@ -24,7 +24,9 @@
 
 #include <ePub3/xml/base.h>
 #include <string>
+#if EPUB_USE(WIN_XML)
 #include <codecvt>
+#endif
 
 #if EPUB_USE(LIBXML2)
 #include <libxml/xmlstring.h>
