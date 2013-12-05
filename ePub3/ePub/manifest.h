@@ -301,6 +301,12 @@ public:
     // fetch any relevant encryption information
     EncryptionInfoPtr           GetEncryptionInfo()                 const;
 
+	///
+	/// Obtain the uncompressed size of the resource.
+	/// @note that this isn't necessarily accurate: it's only what the zip file knows.
+	/// It's possible that the file was already compressed prior to inclusion in the ZIP.
+	size_t						GetResourceSize()					const;
+
 	bool						CanLoadDocument()					const;
     
     // one-shot XML document loader

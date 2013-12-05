@@ -105,6 +105,7 @@ public:
 	property EncryptionInfo^ Encryption { EncryptionInfo^ get(); }
 
 	property bool CanLoadDocument { bool get(); }
+	property UINT ResourceSize { UINT get(); }
 	
 	::Windows::Data::Xml::Dom::XmlDocument^ LoadDocument();
 

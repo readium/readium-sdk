@@ -115,6 +115,11 @@ bool ManifestItem::CanLoadDocument::get()
 	return _native->CanLoadDocument();
 }
 
+UINT ManifestItem::ResourceSize::get()
+{
+	return _native->GetResourceSize();
+}
+
 ::Windows::Data::Xml::Dom::XmlDocument^ ManifestItem::LoadDocument()
 {
 	return _native->ReferencedDocument()->xml();

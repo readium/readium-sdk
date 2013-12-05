@@ -224,6 +224,19 @@ bool ManifestItem::CanLoadDocument() const
 {
 	return GetPackage()->GetContainer()->FileExistsAtPath(AbsolutePath());
 }
+size_t ManifestItem::GetResourceSize() const
+{
+	auto package = GetPackage();
+	if (!package)
+		return 0;
+
+	auto container = package->GetContainer();
+	if (!container)
+		return 0;
+
+	ArchiveItemInfo info = container->GetArchive()->InfoAtPath(AbsolutePath());
+	return info.UncompressedSize();
+}
 shared_ptr<xml::Document> ManifestItem::ReferencedDocument() const
 {
     // TODO: handle remote URLs
