@@ -11,17 +11,17 @@
 
 #include <ePub3/ePub3.h>
 #include <ePub3/user_action.h>
-#include <future>
+#include <ePub3/utilities/future.h>
 #include <memory>
 
 EPUB3_BEGIN_NAMESPACE
 
 #if EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES)
 template <typename _Tp>
-using async_result = std::future<_Tp>;
+using async_result = future<_Tp>;
 
 template <typename _Tp>
-using promised_result = std::promise<_Tp>;
+using promised_result = promise<_Tp>;
 #else
 # define async_result std::future
 # define promised_result std::promise
@@ -48,7 +48,7 @@ public:
     virtual
     async_result<ContainerPtr>
     ProcessFile(const string& path,
-                std::launch policy=std::launch::any)        = 0;
+                launch policy=launch::any)                  = 0;
     
     //////////////////////////////////////////////
     // Content Filters

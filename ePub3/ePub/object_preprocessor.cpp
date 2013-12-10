@@ -65,7 +65,8 @@ ObjectPreprocessor::ObjectPreprocessor(ConstPackagePtr pkg, const string& button
     while ( pos != end )
     {
         auto here = pos++;
-        std::string str = REGEX_NS::regex_replace(here->stl_str(), reEscaper, "$`\\\\$&$'");    // yes, double-backslash, so it doesn't escape whatever '$&' is (i.e. the character which needs to be escaped)
+        std::string regstr("$`\\\\$&$'");
+        std::string str = REGEX_NS::regex_replace(here->stl_str(), reEscaper, regstr);    // yes, double-backslash, so it doesn't escape whatever '$&' is (i.e. the character which needs to be escaped)
         if ( pos == end )
             ss << str;
         else

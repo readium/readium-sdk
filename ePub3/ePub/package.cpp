@@ -389,7 +389,12 @@ bool Package::Unpack()
     }
 	else
 	{
+        // GNU libstdc++ seems to not want to let us use these C++11 routines...
+#ifndef _LIBCPP_VERSION
+        version = (int)strtol(versionStr.c_str(), nullptr, 10);
+#else
 		version = std::stoi(versionStr.stl_str());
+#endif
 
 		if (version < 3)
 			isEPUB3 = false;

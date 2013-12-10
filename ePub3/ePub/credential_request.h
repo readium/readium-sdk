@@ -50,7 +50,7 @@ public:
 		{
 			m_components = o.m_components;
 			m_credentials = o.m_credentials;
-			m_promise = std::promise<Credentials>();
+			m_promise = promise<Credentials>();
             return *this;
 		}
     CredentialRequest& operator=(CredentialRequest&& o)

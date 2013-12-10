@@ -64,7 +64,8 @@ void * SwitchPreprocessor::FilterData(FilterContext* context, void *data, size_t
     
     // handle partially-commented switch statements
     std::string inputStr(reinterpret_cast<const char*>(data));
-    std::string str = REGEX_NS::regex_replace(inputStr, CommentedSwitchIdentifier, "$1$2$3");
+    std::string replacement("$1$2$3");
+    std::string str = REGEX_NS::regex_replace(inputStr, CommentedSwitchIdentifier, replacement);
     
     // str now contains a non-commented value (or the input if no switch statements were commented out)
     auto pos = REGEX_NS::sregex_iterator(str.begin(), str.end(), SwitchContentExtractor);

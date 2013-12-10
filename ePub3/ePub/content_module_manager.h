@@ -65,7 +65,7 @@ private:
     friend class Container;
     
     // for the use of Container::OpenContainer(path)
-    async_result<ContainerPtr> LoadContentAtPath(const string& path, std::launch policy);
+    async_result<ContainerPtr> LoadContentAtPath(const string& path, launch policy);
     
 };
 

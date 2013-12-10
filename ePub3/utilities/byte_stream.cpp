@@ -31,6 +31,10 @@
 #if EPUB_OS(WINDOWS)
 # include <io.h>
 #endif
+#if EPUB_OS(UNIX)
+# include <unistd.h>    // for dup()
+#endif
+
 #include <ePub3/utilities/make_unique.h>
 
 // I'm putting this here because it's the AsyncFileByteStream class that needs it

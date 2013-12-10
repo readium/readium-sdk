@@ -64,6 +64,8 @@ include $(PREBUILT_STATIC_LIBRARY)
 ###########################################################
 # Prebuilt libraries for Boost
 
+# As of GCC 4.8, we no longer need boost::regex !
+
 BOOST_LIB_PATH := ePub3/ThirdParty/boost/lib
 BOOST_INCLUDE_PATH := $(THIRD_PARTY)/boost/include
 
@@ -189,6 +191,8 @@ LOCAL_SRC_FILES := \
 		ePub3/ThirdParty/libzip/zip_fopen_index.c \
 		ePub3/ThirdParty/libzip/zip_fread.c \
 		ePub3/ThirdParty/libzip/zip_free.c \
+		ePub3/ThirdParty/libzip/zip_fseek.c \
+		ePub3/ThirdParty/libzip/zip_ftell.c \
 		ePub3/ThirdParty/libzip/zip_get_archive_comment.c \
 		ePub3/ThirdParty/libzip/zip_get_archive_flag.c \
 		ePub3/ThirdParty/libzip/zip_get_file_comment.c \
@@ -218,35 +222,64 @@ LOCAL_SRC_FILES := \
 		ePub3/ThirdParty/libzip/zip_unchange_all.c \
 		ePub3/ThirdParty/libzip/zip_unchange_archive.c \
 		ePub3/ThirdParty/libzip/zip_unchange_data.c \
+		ePub3/xml/utilities/base.cpp \
 		ePub3/xml/utilities/io.cpp \
 		ePub3/xml/validation/schema.cpp \
+		ePub3/xml/validation/ns.cpp \
+		ePub3/xml/validation/c14n.cpp \
+		ePub3/xml/tree/document.cpp \
+		ePub3/xml/tree/element.cpp \
 		ePub3/xml/tree/node.cpp \
 		ePub3/xml/tree/xpath.cpp \
-		ePub3/xml/validation/ns.cpp \
-		ePub3/xml/utilities/base.cpp \
-		ePub3/xml/tree/document.cpp \
-		ePub3/xml/validation/c14n.cpp \
-		ePub3/xml/tree/element.cpp \
-		ePub3/ePub/zip_archive.cpp \
+		ePub3/utilities/byte_buffer.cpp \
+		ePub3/utilities/byte_stream.cpp \
+		ePub3/utilities/CPUCacheUtils_arm.S \
+		ePub3/utilities/CPUCacheUtils_i386.S \
+		ePub3/utilities/CPUCacheUtils_x64.S \
+		ePub3/utilities/CPUCacheUtils.c \
+		ePub3/utilities/epub_locale.cpp \
+		ePub3/utilities/error_handler.cpp \
+		ePub3/utilities/executor.cpp \
+		ePub3/utilities/future.cpp \
+		ePub3/utilities/iri.cpp \
+		ePub3/utilities/optional.cpp \
+		ePub3/utilities/path_help.cpp \
+		ePub3/utilities/ring_buffer.cpp \
+		ePub3/utilities/run_loop_android.cpp \
+		ePub3/utilities/utfstring.cpp \
+		ePub3/ePub/archive_xml.cpp \
 		ePub3/ePub/archive.cpp \
+		ePub3/ePub/cfi.cpp \
 		ePub3/ePub/container.cpp \
-		ePub3/ePub/package.cpp \
+		ePub3/ePub/content_handler.cpp \
+		ePub3/ePub/content_module_manager.cpp \
+		ePub3/ePub/credential_request.cpp \
+		ePub3/ePub/encryption.cpp \
+		ePub3/ePub/epub_collection.cpp \
+		ePub3/ePub/filter_chain.cpp \
+		ePub3/ePub/filter_manager_impl.cpp \
+		ePub3/ePub/filter_manager.cpp \
+		ePub3/ePub/font_obfuscation.cpp \
+		ePub3/ePub/glossary.cpp \
+		ePub3/ePub/initialization.cpp \
+		ePub3/ePub/library.cpp \
+		ePub3/ePub/link.cpp \
+		ePub3/ePub/manifest.cpp \
+		ePub3/ePub/media_support_info.cpp \
 		ePub3/ePub/media-overlays_smil_data.cpp \
 		ePub3/ePub/media-overlays_smil_model.cpp \
-		ePub3/ePub/archive_xml.cpp \
-		ePub3/ePub/xpath_wrangler.cpp \
-		ePub3/ePub/spine.cpp \
-		ePub3/ePub/manifest.cpp \
-		ePub3/ePub/cfi.cpp \
 		ePub3/ePub/nav_point.cpp \
 		ePub3/ePub/nav_table.cpp \
-		ePub3/ePub/glossary.cpp \
-		ePub3/ePub/library.cpp \
-		ePub3/ePub/font_obfuscation.cpp \
-		ePub3/ePub/encryption.cpp \
+		ePub3/ePub/object_preprocessor.cpp \
+		ePub3/ePub/package.cpp \
+		ePub3/ePub/property_extension.cpp \
+		ePub3/ePub/property_holder.cpp \
+		ePub3/ePub/property.cpp \
 		ePub3/ePub/signatures.cpp \
-		ePub3/utilities/iri.cpp \
-		ePub3/utilities/utfstring.cpp \
+		ePub3/ePub/spine.cpp \
+		ePub3/ePub/switch_preprocessor.cpp \
+		ePub3/ePub/xpath_wrangler.cpp \
+		ePub3/ePub/zip_archive.cpp \
 		ePub3/ThirdParty/google-url/base/string16.cc \
 		ePub3/ThirdParty/google-url/src/gurl.cc \
 		ePub3/ThirdParty/google-url/src/url_canon_etc.cc \
@@ -265,20 +298,6 @@ LOCAL_SRC_FILES := \
 		ePub3/ThirdParty/google-url/src/url_parse_file.cc \
 		ePub3/ThirdParty/google-url/src/url_util.cc \
 		ePub3/ThirdParty/google-url/src/url_canon_cpp11.cc \
-		ePub3/ThirdParty/google-url/base/logging.cc \
-		ePub3/ePub/content_handler.cpp \
-		ePub3/ePub/switch_preprocessor.cpp \
-		ePub3/ePub/object_preprocessor.cpp \
-		ePub3/ePub/media_support_info.cpp \
-		ePub3/utilities/byte_stream.cpp \
-		ePub3/utilities/ring_buffer.cpp \
-		ePub3/utilities/ref_counted.cpp \
-		ePub3/utilities/run_loop_android.cpp \
-		ePub3/utilities/epub_locale.cpp \
-		ePub3/utilities/error_handler.cpp \
-		ePub3/ePub/property_holder.cpp \
-		ePub3/ePub/property.cpp \
-		ePub3/ePub/property_extension.cpp \
 		Platform/Android/jni/android/backup_atomics.cpp \
 		Platform/Android/jni/jni/jni_ptr.cpp \
 		Platform/Android/jni/epub3.cpp \

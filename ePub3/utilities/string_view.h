@@ -13,6 +13,7 @@
 #include <string>
 #include <limits>
 #include <iostream>
+#include <algorithm>
 #include "__strhash.h"
 
 #ifdef min
@@ -461,7 +462,7 @@ basic_string_view<_CharT, _Traits>::find(const_pointer __s, size_type __pos, siz
     if (__n == 0)
         return __pos;
     const_pointer __p = data();
-    const_pointer __r = _VSTD::search(__p + __pos, __p + __sz, __s, __s + __n,
+    const_pointer __r = std::search(__p + __pos, __p + __sz, __s, __s + __n,
                                       __traits_eq<traits_type>());
     if (__r == __p + __sz)
         return npos;

@@ -20,6 +20,64 @@
 #include <system_error>
 #include "future.h"
 
+#if EPUB_PLATFORM(ANDROID)
+namespace std
+{
+    
+    static const std::size_t __sp_mut_count = 16;
+    static pthread_mutex_t mut_back_imp[__sp_mut_count] =
+    {
+        PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER,
+        PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER,
+        PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER,
+        PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER
+    };
+    
+    static mutex* mut_back = reinterpret_cast<std::mutex*>(mut_back_imp);
+    
+    CONSTEXPR __sp_mut::__sp_mut(void* p) _NOEXCEPT
+    : __lx(p)
+    {
+    }
+    
+    void
+    __sp_mut::lock() _NOEXCEPT
+    {
+        mutex& m = *static_cast<mutex*>(__lx);
+        unsigned count = 0;
+        while (!m.try_lock())
+        {
+            if (++count > 16)
+            {
+                m.lock();
+                break;
+            }
+            this_thread::yield();
+        }
+    }
+    
+    void
+    __sp_mut::unlock() _NOEXCEPT
+    {
+        static_cast<mutex*>(__lx)->unlock();
+    }
+    
+    __sp_mut&
+    __get_sp_mut(const void* p)
+    {
+        static __sp_mut muts[__sp_mut_count]
+        {
+            &mut_back[ 0], &mut_back[ 1], &mut_back[ 2], &mut_back[ 3],
+            &mut_back[ 4], &mut_back[ 5], &mut_back[ 6], &mut_back[ 7],
+            &mut_back[ 8], &mut_back[ 9], &mut_back[10], &mut_back[11],
+            &mut_back[12], &mut_back[13], &mut_back[14], &mut_back[15]
+        };
+        return muts[hash<const void*>()(p) & (__sp_mut_count-1)];
+    }
+    
+}
+#endif
+
 EPUB3_BEGIN_NAMESPACE
 
 class _LIBCPP_HIDDEN __future_category

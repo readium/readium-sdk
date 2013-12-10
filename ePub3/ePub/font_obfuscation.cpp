@@ -80,7 +80,8 @@ bool FontObfuscator::BuildKey(ConstContainerPtr container)
             ss << ' ';
         
         // we use a C++11 regex to remove all whitespace in the value
-        ss << REGEX_NS::regex_replace(pkg->PackageID().stl_str(), re, "");
+        std::string replacement;
+        ss << REGEX_NS::regex_replace(pkg->PackageID().stl_str(), re, replacement);
     }
 
     auto str = ss.str();

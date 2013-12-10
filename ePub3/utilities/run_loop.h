@@ -79,7 +79,12 @@ public:
     typedef std::shared_ptr<Timer>          TimerPtr;
     
 protected:
-    class _SourceBase {};
+    class _SourceBase
+    {
+    public:
+        _SourceBase() {}
+        virtual ~_SourceBase() {}
+    };
     typedef std::shared_ptr<_SourceBase>    _SourceBasePtr;
     
 public:

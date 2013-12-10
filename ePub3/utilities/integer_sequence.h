@@ -24,8 +24,8 @@ struct integer_sequence
 #if EPUB_COMPILER_SUPPORTS(CXX_CONSTEXPR)
     static constexpr _Int size = sizeof...(_I);
     
-    template <_Int _N>
-    using append = integer_sequence<_Int, _I..., _N>;
+    template <_Int _Num>
+    using append = integer_sequence<_Int, _I..., _Num>;
     
     typedef append<size> next;
 #endif

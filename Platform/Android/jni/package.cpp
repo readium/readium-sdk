@@ -185,7 +185,7 @@ static jobject loadNavigationTable(JNIEnv* env, shared_ptr<class ePub3::Navigati
 			name, name, NULL);
 }
 
-static void populateJsonWithSmilParAudio(stringstream &stream, const ePub3::SMILData::Audio *audio){
+static void populateJsonWithSmilParAudio(stringstream &stream, std::shared_ptr<const ePub3::SMILData::Audio> audio){
 	
 	stream << "{" << endl;
 	stream << "\"nodeType\" : \"audio\"," << endl;
@@ -200,7 +200,7 @@ static void populateJsonWithSmilParAudio(stringstream &stream, const ePub3::SMIL
 }
 
 
-static void populateJsonWithSmilParText(stringstream &stream, const ePub3::SMILData::Text *text){
+static void populateJsonWithSmilParText(stringstream &stream, std::shared_ptr<const ePub3::SMILData::Text> text){
     
     auto srcFragmentId = text->SrcFragmentId();
     auto srcFile = text->SrcFile();
@@ -219,7 +219,7 @@ static void populateJsonWithSmilParText(stringstream &stream, const ePub3::SMILD
     stream << "}" << endl;
 }
 
-static void populateJsonWithSmilPar(stringstream &stream, const ePub3::SMILData::Parallel *par){
+static void populateJsonWithSmilPar(stringstream &stream, std::shared_ptr<const ePub3::SMILData::Parallel> par){
 	//TODO do we need this?
     //printf("CHECK SMIL DATA TREE TEXTREF FRAGID %s\n", par->_textref_fragmentID.c_str());
 
@@ -245,7 +245,7 @@ static void populateJsonWithSmilPar(stringstream &stream, const ePub3::SMILData:
 
 }
 
-static void populateJsonWithSmilSeq(stringstream &stream, const ePub3::SMILData::Sequence *seqq){
+static void populateJsonWithSmilSeq(stringstream &stream, std::shared_ptr<const ePub3::SMILData::Sequence> seqq){
 	//TODO do we need this?
     //printf("CHECK SMIL DATA TREE TEXTREF FRAGID %s\n", seqq->_textref_fragmentID.c_str());
 
@@ -265,7 +265,7 @@ static void populateJsonWithSmilSeq(stringstream &stream, const ePub3::SMILData:
 
     for (int i = 0; i < childrenCount; ++i){
 
-        const ePub3::SMILData::TimeContainer *container = seqq->GetChild(i);
+        std::shared_ptr<const ePub3::SMILData::TimeContainer> container = seqq->GetChild(i);
 
         if(nullptr == container){
             stream << "!! NULL SMIL CONTAINER" << endl;
@@ -276,7 +276,7 @@ static void populateJsonWithSmilSeq(stringstream &stream, const ePub3::SMILData:
         //const ePub3::SMILData::Sequence *seq = dynamic_cast<const ePub3::SMILData::Sequence *>(container);
         //if (nullptr != seq){
         if (container->IsSequence()){
-            ePub3::SMILData::Sequence *seq = (ePub3::SMILData::Sequence *)container;
+            auto seq = std::dynamic_pointer_cast<const ePub3::SMILData::Sequence>(container);
         	populateJsonWithSmilSeq(stream, seq);
             //continue;
         }
@@ -284,7 +284,7 @@ static void populateJsonWithSmilSeq(stringstream &stream, const ePub3::SMILData:
         //const ePub3::SMILData::Parallel *par = dynamic_cast<const ePub3::SMILData::Parallel *>(container);
         //if (nullptr != par){
         else if (container->IsParallel()){
-            ePub3::SMILData::Parallel *par = (ePub3::SMILData::Parallel *)container;
+            auto par = std::dynamic_pointer_cast<const ePub3::SMILData::Parallel>(container);
         	populateJsonWithSmilPar(stream, par);
             //continue;
         }
@@ -348,7 +348,7 @@ static void populateJsonWithSmilDatas(stringstream &stream, std::shared_ptr<ePub
 
         stream << "\"children\":[" << endl;
 
-        ePub3::SMILData::Sequence *seq = smilData->Body();
+        auto seq = smilData->Body();
         //ePub3::SMILData::Sequence *seq = const_cast<ePub3::SMILData::Sequence *>(smilData->Body());
         populateJsonWithSmilSeq(stream, seq);
         

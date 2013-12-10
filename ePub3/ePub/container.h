@@ -30,7 +30,7 @@
 #include <ePub3/content_module.h>
 #include <ePub3/xml/node.h>
 #include <vector>
-#include <future>
+#include <ePub3/utilities/future.h>
 
 ///////////////////////////////////////////////////////////////////////////////////
 // Bit of a hack -- make the WinRT Container class available so we can befriend it.
@@ -108,8 +108,8 @@ public:
     
     ///
     /// Asynchronously returns a new Container instance.
-    static std::future<ContainerPtr>
-        OpenContainerAsync(const string& path, std::launch policy = std::launch::any);
+    static future<ContainerPtr>
+        OpenContainerAsync(const string& path, launch policy = launch::any);
 
 	///
 	/// Synchronously creates a new container. Available for the use of ContentModule implementations only.

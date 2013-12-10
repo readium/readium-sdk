@@ -30,7 +30,9 @@
 #include <sstream>
 #include <cstdlib>
 
+#if EPUB_PLATFORM(MAC)
 #include "xml_bridge_dtrace_probes.h"
+#endif
 
 #ifndef NDEBUG
 extern "C" void DebugPrintNode(std::shared_ptr<ePub3::xml::Node> aNode)

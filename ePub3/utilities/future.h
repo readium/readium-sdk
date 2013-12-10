@@ -22,13 +22,15 @@
 #include <ePub3/base.h>
 #include <list>
 #include <string>
+#include <stdexcept>
+#include <exception>
 #include <system_error>
 #include <thread>
 #include <memory>
+#include <atomic>
 #include <ePub3/utilities/invoke.h>
 #include <ePub3/utilities/executor.h>
 #include <ePub3/utilities/condition_variable_any.h>
-
 
 
 /*
@@ -433,6 +435,139 @@ namespace std
     error_condition make_error_condition(ePub3::future_errc e) _NOEXCEPT;
     
 }
+
+#if EPUB_PLATFORM(ANDROID) && !defined(_LIBCPP_VERSION)
+// some gubbins that doesn't appear to be implemented in GNU libstdc++
+namespace std
+{
+    
+    class __sp_mut
+    {
+        void* __lx;
+    public:
+        void lock() _NOEXCEPT;
+        void unlock() _NOEXCEPT;
+        
+    private:
+        CONSTEXPR __sp_mut(void*) _NOEXCEPT;
+        __sp_mut(const __sp_mut&);
+        __sp_mut& operator=(const __sp_mut&);
+        
+        friend __attribute__((__visibility__("default")))
+            __sp_mut& __get_sp_mut(const void*);
+    };
+    
+    __attribute__((__visibility__("default")))
+    __sp_mut& __get_sp_mut(const void*);
+    
+    template <class _Tp>
+    inline FORCE_INLINE
+    bool
+    atomic_is_lock_free(const shared_ptr<_Tp>*)
+        {
+            return false;
+        }
+    
+    template <class _Tp>
+    shared_ptr<_Tp>
+    atomic_load(const shared_ptr<_Tp>* __p)
+        {
+            __sp_mut& __m = __get_sp_mut(__p);
+            __m.lock();
+            shared_ptr<_Tp> __q = *__p;
+            __m.unlock();
+            return __q;
+        }
+    
+    template <class _Tp>
+    inline FORCE_INLINE
+    shared_ptr<_Tp>
+    atomic_load_explicit(const shared_ptr<_Tp>* __p, memory_order)
+        {
+            return atomic_load(__p);
+        }
+    
+    template <class _Tp>
+    void
+    atomic_store(shared_ptr<_Tp>* __p, shared_ptr<_Tp> __r)
+        {
+            __sp_mut& __m = __get_sp_mut(__p);
+            __m.lock();
+            __p->swap(__r);
+            __m.unlock();
+        }
+    
+    template <class _Tp>
+    inline FORCE_INLINE
+    void
+    atomic_store_explicit(shared_ptr<_Tp>* __p, shared_ptr<_Tp> __r, memory_order)
+        {
+            atomic_store(__p, __r);
+        }
+    
+    template <class _Tp>
+    shared_ptr<_Tp>
+    atomic_exchange(shared_ptr<_Tp>* __p, shared_ptr<_Tp> __r)
+        {
+            __sp_mut& __m = __get_sp_mut(__p);
+            __m.lock();
+            __p->swap(__r);
+            __m.unlock();
+            return __r;
+        }
+    
+    template <class _Tp>
+    shared_ptr<_Tp>
+    atomic_exchange_explicit(shared_ptr<_Tp>* __p, shared_ptr<_Tp> __r, memory_order)
+        {
+            return atomic_exchange(__p, __r);
+        }
+    
+    template <class _Tp>
+    bool
+    atomic_compare_exchange_strong(shared_ptr<_Tp>* __p, shared_ptr<_Tp>* __v, shared_ptr<_Tp> __w)
+        {
+            __sp_mut& __m = __get_sp_mut(__p);
+            __m.lock();
+            if (__p->owner_before(*__v) == false && __v->owner_before(*__p) == false)
+            {
+                *__p = __w;
+                __m.unlock();
+                return true;
+            }
+            *__v = *__p;
+            __m.unlock();
+            return false;
+        }
+    
+    template <class _Tp>
+    inline FORCE_INLINE
+    bool
+    atomic_compare_exchange_weak(shared_ptr<_Tp>* __p, shared_ptr<_Tp>* __v, shared_ptr<_Tp> __w)
+        {
+            return atomic_compare_exchange_strong(__p, __v, __w);
+        }
+    
+    template <class _Tp>
+    inline FORCE_INLINE
+    bool
+    atomic_compare_exchange_strong_explicit(shared_ptr<_Tp>* __p, shared_ptr<_Tp>* __v,
+                                            shared_ptr<_Tp> __w, memory_order, memory_order)
+        {
+            return atomic_compare_exchange_strong(__p, __v, __w);
+        }
+    
+    template <class _Tp>
+    inline FORCE_INLINE
+    bool
+    atomic_compare_exchange_weak_explicit(shared_ptr<_Tp>* __p, shared_ptr<_Tp>* __v,
+                                          shared_ptr<_Tp> __w, memory_order, memory_order)
+        {
+            return atomic_compare_exchange_weak(__p, __v, __w);
+        }
+    
+}
+#endif
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -841,7 +976,7 @@ struct __future_traits
     typedef std::unique_ptr<_Tp>    storage_type;
     struct dummy;
     
-    typedef _Tp const&  source_reference_type;
+    typedef _Tp&        source_reference_type;
     typedef _Tp&&       rvalue_source_type;
     typedef _Tp         move_dest_type;
     
@@ -1786,11 +1921,18 @@ public:
     
 private:
     template <typename _Tp>
-        friend future<typename std::decay<_Tp>::type> make_ready_future(_Tp&&);
+        friend future<typename std::decay<_Tp>::type>
+        make_ready_future(_Tp&&);
     template <typename _Tp>
-        friend future<_Tp> make_ready_future(std::exception_ptr);
-    template <typename _Tp, typename _E>
-        friend future<_Tp> make_ready_future(_E);
+        friend future<_Tp>
+        make_ready_future(std::exception_ptr);
+    template <typename _Tp, typename _Exc>
+        friend typename std::enable_if
+            <
+                !std::is_same<_Tp, _Exc>::value,
+                future<_Tp>
+            >::type
+        make_ready_future(_Exc);
     
 };
 
@@ -2126,7 +2268,11 @@ private:
         friend future<_Tp>
         make_ready_future(std::exception_ptr);
     template <typename _Tp, typename _Exc>
-        friend future<_Tp>
+        friend typename std::enable_if
+            <
+                !std::is_same<_Tp, _Exc>::value,
+                future<_Tp>
+            >::type
         make_ready_future(_Exc);
     
     typedef typename __future_traits<_Rp>::move_dest_type move_dest_type;
@@ -2336,7 +2482,11 @@ private:
         friend future<_Tp>
         make_ready_future(std::exception_ptr);
     template <typename _Tp, typename _Exc>
-        friend future<_Tp>
+        friend typename std::enable_if
+            <
+                !std::is_same<_Tp, _Exc>::value,
+                future<_Tp>
+            >::type
         make_ready_future(_Exc);
     
     typedef typename __future_traits<_Rp>::move_dest_type move_dest_type;
@@ -2525,7 +2675,11 @@ class shared_future
         friend shared_future<_Tp>
         make_ready_shared_future(std::exception_ptr);
     template <typename _Tp, typename _Exc>
-        friend shared_future<_Tp>
+        friend typename std::enable_if
+            <
+                !std::is_same<_Tp, _Exc>::value,
+                shared_future<_Tp>
+            >::type
         make_ready_shared_future(_Exc);
     
     template <class>
@@ -3224,7 +3378,7 @@ public:
             typedef typename std::remove_cv<typename std::remove_reference<_Fp>::type>::type _FR;
             typedef __task_shared_state<_FR, _Rp(_Args...)> _State;
             
-            __task_ = task_ptr(new _State<std::forward<_Fp>(__f));
+            __task_ = task_ptr(new _State(std::forward<_Fp>(__f)));
             __future_obtained_ = false;
         }
     
@@ -3427,7 +3581,7 @@ make_ready_future(_Tp&& __v)
     typedef typename future<_T2>::future_ptr _F;
     _F __state(new __shared_state<_T2>);
     __state->mark_finished_with_result(std::move(__v));
-    return future<_T2>(__state);
+    return std::move(future<_T2>(__state));
 }
 
 inline FORCE_INLINE
@@ -3458,7 +3612,11 @@ make_ready_future(std::exception_ptr __exc)
 
 template <typename _Tp, typename _E>
 FORCE_INLINE
-future<_Tp>
+typename std::enable_if
+<
+    !std::is_same<_Tp, _E>::value,
+    future<_Tp>
+>::type
 make_ready_future(_E __exc)
 {
     typedef typename future<_Tp>::future_ptr _F;
@@ -3508,7 +3666,11 @@ make_ready_shared_future(std::exception_ptr __exc)
 
 template <typename _Tp, typename _E>
 FORCE_INLINE
-shared_future<_Tp>
+typename std::enable_if
+<
+    !std::is_same<_Tp, _E>::value,
+    shared_future<_Tp>
+>::type
 make_ready_shared_future(_E __e)
 {
     typedef typename shared_future<_Tp>::future_ptr _F;

@@ -31,6 +31,8 @@
 #endif
 
 #include <android/looper.h>
+#include <unistd.h>
+#include <stdio.h>
 
 enum
 {
@@ -72,7 +74,7 @@ RunLoop::~RunLoop()
 }
 void RunLoop::PerformFunction(std::function<void ()> fn)
 {
-    RefCounted<EventSource> ev(new EventSource([fn](EventSource& __e){fn();}), adopt_ref);
+    shared_ptr<EventSource> ev(new EventSource([fn](EventSource& __e){fn();}));
     AddEventSource(ev);
     ev->Signal();
 }
@@ -285,21 +287,19 @@ int RunLoop::_ReceiveLoopEvent(int fd, int events, void* data)
     if (pTimer != nullptr)
     {
         // it's a Timer!
-        // keep the timer around past any Cancel() or Remove() calls made by the callout
-        RefCounted<Timer> timer(pTimer);
         if ( (events & ALOOPER_EVENT_HANGUP) == ALOOPER_EVENT_HANGUP )
         {
             // remove it from the runloop
-            p->RemoveTimer(timer);
+            p->RemoveTimer(pTimer);
             return 0;
         }
         
-        timer->_fn(*timer);                 ///////// DO CALLOUT
+        pTimer->_fn(*pTimer);                 ///////// DO CALLOUT
         
-        if ( !timer->Repeats() || timer->IsCancelled() )
+        if ( !pTimer->Repeats() || pTimer->IsCancelled() )
         {
             // the underlying Linux timer_t is already disarmed
-            p->RemoveTimer(timer);
+            p->RemoveTimer(pTimer);
             return 0;
         }
         
@@ -312,21 +312,19 @@ int RunLoop::_ReceiveLoopEvent(int fd, int events, void* data)
     if ( pSource != nullptr )
     {
         // it *is* an EventSource!
-        // keep it around so we can check even if the callout removes it from the runloop
-        RefCounted<EventSource> source(pSource);
         if ( (events & ALOOPER_EVENT_HANGUP) == ALOOPER_EVENT_HANGUP )
         {
             // calcelled, so remove it from the runloop
-            p->RemoveEventSource(source);
+            p->RemoveEventSource(pSource);
             return 0;
         }
         
-        source->_fn(*source);               /////////// DO CALLOUT
+        pSource->_fn(*pSource);               /////////// DO CALLOUT
         
-        if ( source->IsCancelled() )
+        if ( pSource->IsCancelled() )
         {
             // now we want to remove it
-            p->RemoveEventSource(source);
+            p->RemoveEventSource(pSource);
             return 0;
         }
         

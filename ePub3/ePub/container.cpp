@@ -38,14 +38,6 @@ static const char * gRootfilesXPath = "/ocf:container/ocf:rootfiles/ocf:rootfile
 static const char * gRootfilePathsXPath = "/ocf:container/ocf:rootfiles/ocf:rootfile/@full-path";
 static const char * gVersionXPath = "/ocf:container/@version";
 
-template <typename _Tp>
-std::future<_Tp> __make_ready_future(_Tp& value)
-{
-	std::promise<_Tp> __p;
-	__p.set_value(value);
-	return __p.get_future();
-}
-
 Container::Container() :
 #if EPUB_PLATFORM(WINRT)
 	NativeBridge(),
@@ -124,14 +116,15 @@ bool Container::Open(const string& path)
 }
 ContainerPtr Container::OpenContainer(const string &path)
 {
-	auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, std::launch::any);
+	auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, launch::any);
 	ContainerPtr result;
 
 	// see if it's complete with a nil value
-	if (future.wait_for(std::chrono::system_clock::duration(0)) == std::future_status::ready)
+	if (future.wait_for(std::chrono::system_clock::duration(0)) == future_status::ready)
 	{
-		if (future.get().get() == nullptr)
-			result = OpenContainerForContentModule(path);
+        result = future.get();
+		if (!bool(result))
+			return OpenContainerForContentModule(path);
 	}
 
 	if (!bool(result))
@@ -139,18 +132,18 @@ ContainerPtr Container::OpenContainer(const string &path)
 
 	return result;
 }
-std::future<ContainerPtr> Container::OpenContainerAsync(const string& path, std::launch policy)
+future<ContainerPtr> Container::OpenContainerAsync(const string& path, launch policy)
 {
     auto result = ContentModuleManager::Instance()->LoadContentAtPath(path, policy);
     
     // see if it's complete with a nil value
-    if (result.wait_for(std::chrono::system_clock::duration(0)) == std::future_status::ready)
+    if (result.wait_for(std::chrono::system_clock::duration(0)) == future_status::ready)
     {
 		ContainerPtr container = result.get();
 		if (container)
-			result = __make_ready_future(container);
+			result = make_ready_future<ContainerPtr>(std::move(container));
 		else
-            result = std::async(policy, &Container::OpenContainerForContentModule, path);
+            result = async(policy, &Container::OpenContainerForContentModule, path);
     }
     
     return result;

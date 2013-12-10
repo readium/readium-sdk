@@ -10,6 +10,7 @@
 
 #include "byte_buffer.h"
 #include <stdexcept>
+#include <system_error>
 #include "CPUCacheUtils.h"
 
 #if EPUB_OS(BSD)

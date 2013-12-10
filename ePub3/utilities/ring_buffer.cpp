@@ -20,6 +20,8 @@
 //
 
 #include "ring_buffer.h"
+#include <cstring>
+#include <cstdlib>
 
 EPUB3_BEGIN_NAMESPACE
 RingBuffer::RingBuffer(std::size_t size) : _capacity(size), _numBytes(0), _readPos(0), _writePos(0), _lock()

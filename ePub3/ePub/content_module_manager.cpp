@@ -41,7 +41,7 @@ void ContentModuleManager::DisplayMessage(const string& title, const string& mes
 {
     // nothing at the moment...
 }
-std::future<Credentials>
+future<Credentials>
 ContentModuleManager::RequestCredentialInput(const CredentialRequest &request)
 {
     // nothing yet...
@@ -49,46 +49,42 @@ ContentModuleManager::RequestCredentialInput(const CredentialRequest &request)
     std::promise<Credentials> promise;
     
     Credentials none;
-    promise.set_value(std::move(none));
-    return promise.get_future();
+    return make_ready_future(none);
 }
 
-std::future<ContainerPtr>
-ContentModuleManager::LoadContentAtPath(const string& path, std::launch policy)
+future<ContainerPtr>
+ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
 {
     std::unique_lock<std::mutex>(_mutex);
     
     if (_known_modules.empty())
     {
         // special case for when we don't have any Content Modules to rely on for an initialized result
-        std::promise<ContainerPtr> promise;
-        promise.set_value(nullptr);
-        return promise.get_future();
+        return make_ready_future<ContainerPtr>(ContainerPtr(nullptr));
     }
     
-    std::future<ContainerPtr> result;
+    future<ContainerPtr> result;
     for (auto& item : _known_modules)
     {
         auto modulePtr = item.second;
         result = modulePtr->ProcessFile(path, policy);
         
         // check the state of the future -- has it already been set?
-        std::future_status status = result.wait_for(std::chrono::system_clock::duration(0));
+        future_status status = result.wait_for(std::chrono::system_clock::duration(0));
         
         // if it's ready, the call to get() will never block
-        if (status == std::future_status::ready) {
+        if (status == future_status::ready) {
 			// unpack the future
 			ContainerPtr container = result.get();
 
             if (bool(container)) {
                 // we have a valid container already
-				std::promise<ContainerPtr> p;
-				p.set_value(container);
-				result = p.get_future();
-//				result = make_ready_future(container);
-//                result.then([modulePtr]() {
+				result = make_ready_future(container);
+                result = result.then([modulePtr](future<ContainerPtr> fut) {
+                    ContainerPtr ptr = fut.get();
                     modulePtr->RegisterContentFilters();
-//                });
+                    return ptr;
+                });
                 break;
             } else {
                 continue;       // no container, so try the next module
@@ -96,9 +92,11 @@ ContentModuleManager::LoadContentAtPath(const string& path, std::launch policy)
         } else {
             // it must be 'timeout' or 'deferred', which means the module is attempting to process the file
             // we take this to mean that we stop looking and return the result
-//            result.then([modulePtr]() {
+            result = result.then([modulePtr](future<ContainerPtr> fut) {
+                ContainerPtr ptr = fut.get();
                 modulePtr->RegisterContentFilters();
-//            });
+                return ptr;
+            });
             break;
         }
     }

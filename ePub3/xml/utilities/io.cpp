@@ -107,7 +107,7 @@ bool StreamInputBuffer::close()
 size_t StreamInputBuffer::size() const
 {
     std::istream::pos_type pos = _input.tellg();
-    size_t result = _input.seekg(0, std::ios::seekdir::end).tellg();
+    size_t result = _input.seekg(0, std::ios::end).tellg();
     _input.seekg(pos);
     return result;
 }
@@ -127,7 +127,7 @@ bool StreamOutputBuffer::close()
 size_t StreamOutputBuffer::size() const
 {
     std::ostream::pos_type pos = _output.tellp();
-    size_t result = _output.seekp(0, std::ios::seekdir::end).tellp();
+    size_t result = _output.seekp(0, std::ios::end).tellp();
     _output.seekp(pos);
     return result;
 }
