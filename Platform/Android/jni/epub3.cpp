@@ -26,6 +26,7 @@
 
 #include <ePub3/archive.h>
 #include <ePub3/container.h>
+#include <ePub3/initialization.h>
 
 #include "jni/jni.h"
 
@@ -211,7 +212,9 @@ static int onLoad_cacheJavaElements_epub3(JNIEnv *env) {
 static void initializeReadiumSDK()
 {
 	LOGD("initializeReadiumSDK(): initializing Readium SDK...");
-    ePub3::Archive::Initialize();
+    //ePub3::Archive::Initialize();
+    ePub3::InitializeSdk();
+    ePub3::PopulateFilterManager();
 	LOGD("initializeReadiumSDK(): initialization of Readium SDK finished");
 }
 
