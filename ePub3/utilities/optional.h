@@ -42,11 +42,7 @@
 #ifndef ePub3_optional_h
 #define ePub3_optional_h
 
-#include <ePub3/base.h>
-
-#if EPUB_COMPILER(GCC) || EPUB_PLATFORM(ANDROID)
-#include <assert.h>
-#endif
+#include "__config.h"
 
 /*
 
@@ -180,49 +176,49 @@ namespace experimental {
 #include <string>
 #include <stdexcept>
 
-#define HAS_CONSTEXPR_OPTIONAL (EPUB_COMPILER_SUPPORTS(CXX_CONSTEXPR) && EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES))
+#define HAS_CONSTEXPR_OPTIONAL (!defined(_LIBCPP_HAS_NO_CONSTEXPR) && !defined(_LIBCPP_HAS_NO_TEMPLATE_ALIASES))
 
-EPUB3_BEGIN_NAMESPACE
+OPEN_EXPERIMENTAL
 
 // X.Y.4, optional for object types
 template <class _Tp> class optional;
 
 // workaround: std utility functions aren't constexpr yet
 template <class _Tp>
-inline CONSTEXPR
+inline _LIBCPP_CONSTEXPR
 _Tp&&
-__constexpr_forward(typename std::remove_reference<_Tp>::type& __t) _NOEXCEPT
+__constexpr_forward(typename remove_reference<_Tp>::type& __t) _NOEXCEPT
 {
     return static_cast<_Tp&&>(__t);
 }
 
 template <class _Tp>
-inline CONSTEXPR
+inline _LIBCPP_CONSTEXPR
 _Tp&&
-__constexpr_forward(typename std::remove_reference<_Tp>::type&& __t) _NOEXCEPT
+__constexpr_forward(typename remove_reference<_Tp>::type&& __t) _NOEXCEPT
 {
-    static_assert(!std::is_lvalue_reference<_Tp>::value, "Can not forward an rvalue as an lvalue");
+    static_assert(!is_lvalue_reference<_Tp>::value, "Can not forward an rvalue as an lvalue");
     return static_cast<_Tp&&>(__t);
 }
 
 template <class _Tp>
-inline CONSTEXPR
-typename std::remove_reference<_Tp>::type&&
+inline _LIBCPP_CONSTEXPR
+typename remove_reference<_Tp>::type&&
 __constexpr_move(_Tp&& __t) _NOEXCEPT
 {
-    typedef typename std::remove_reference<_Tp>::type _Up;
+    typedef typename remove_reference<_Tp>::type _Up;
     return static_cast<_Up&&>(__t);
 }
 
 template <class _Tp>
-inline CONSTEXPR _Tp*
+inline _LIBCPP_CONSTEXPR _Tp*
 __constexpr_addressof(_Tp& __t)
 {
     return ((_Tp*)&reinterpret_cast<const volatile char&>(__t));
 }
 
 #ifndef NDEBUG
-# define ASSERTED_EXPRESSION(chk, expr)
+# define ASSERTED_EXPRESSION(chk, expr) (expr)
 #else
 # define ASSERTED_EXPRESSION(chk, expr) ((chk) ? (expr) : (fail(#chk, __FILE__, __LINE__), (expr)))
 static inline
@@ -242,63 +238,55 @@ template <typename _Tp>
 struct __has_overloaded_addressof
 {
     template <class _Obj>
-    static CONSTEXPR FORCE_INLINE
+    static _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     bool has_overload(...) { return false; }
     
-    template <class _Obj, std::size_t _Sz = sizeof(std::declval<_Obj&>().operator&())>
-    static CONSTEXPR FORCE_INLINE
+    template <class _Obj, size_t _Sz = sizeof(declval<_Obj&>().operator&())>
+    static _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     bool has_overload(bool) { return true; }
     
-    CONSTEXPR static const bool value = has_overload<_Tp>(true);
+    _LIBCPP_CONSTEXPR static const bool value = has_overload<_Tp>(true);
 };
 
-template <typename _Tp, typename std::enable_if<!__has_overloaded_addressof<_Tp>::value, bool>::type = false>
-CONSTEXPR FORCE_INLINE
+template <typename _Tp, typename enable_if<!__has_overloaded_addressof<_Tp>::value, bool>::type = false>
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 _Tp* __static_addressof(_Tp& __t)
 {
     return &__t;
 }
-template <typename _Tp, typename std::enable_if<__has_overloaded_addressof<_Tp>::value, bool>::type = false>
-FORCE_INLINE
+template <typename _Tp, typename enable_if<__has_overloaded_addressof<_Tp>::value, bool>::type = false>
+_LIBCPP_INLINE_VISIBILITY
 _Tp* __static_addressof(_Tp& __t)
 {
-#if EPUB_COMPILER(CLANG)
+#if __clang__
     return __builtin_addressof(__t);
 #else
-    return std::addressof(__t);
+    return addressof(__t);
 #endif
 }
 
 template <class _Up>
-struct is_not_optional : public std::true_type {};
+struct is_not_optional : public true_type {};
 
 template <class _Tp>
-struct is_not_optional<optional<_Tp>> : public std::false_type {};
+struct is_not_optional<optional<_Tp>> : public false_type {};
 
 struct __trivial_init_t {};
-#if EPUB_COMPILER_SUPPORTS(CXX_CONSTEXPR)
-constexpr __trivial_init_t __trivial_init{};
-#else
+#ifdef _LIBCPP_HAS_NO_CONSTEXPR
 extern __trivial_init_t __trivial_init;
+#else
+constexpr __trivial_init_t __trivial_init{};
 #endif
 
 struct in_place_t {};
 
-#if EPUB_COMPILER_SUPPORTS(CXX_CONSTEXPR)
-constexpr in_place_t in_place{};
-#else
+#ifdef _LIBCPP_HAS_NO_CONSTEXPR
 extern in_place_t in_place;
+#else
+constexpr in_place_t in_place{};
 #endif
 
-#if EPUB_COMPILER_SUPPORTS(CXX_CONSTEXPR)
-struct nullopt_t
-{
-    nullopt_t() = delete;
-    struct init {};
-    constexpr nullopt_t(init) {};
-};
-constexpr nullopt_t nullopt(nullopt_t::init);
-#else
+#ifdef _LIBCPP_HAS_NO_CONSTEXPR
 struct nullopt_t
 {
 private:
@@ -309,13 +297,21 @@ public:
     nullopt_t(init) {};
 };
 extern nullopt_t nullopt;
+#else
+struct nullopt_t
+{
+    nullopt_t() = delete;
+    struct init {};
+    constexpr nullopt_t(init) {};
+};
+constexpr nullopt_t nullopt{nullopt_t::init{}};
 #endif
 
-class bad_optional_access : public std::logic_error
+class bad_optional_access : public logic_error
 {
 public:
-    explicit bad_optional_access(const std::string& what_arg) : std::logic_error{what_arg} {}
-    explicit bad_optional_access(const char* what_arg) : std::logic_error{what_arg} {}
+    _LIBCPP_EXPLICIT bad_optional_access(const string& what_arg) : logic_error{what_arg} {}
+    _LIBCPP_EXPLICIT bad_optional_access(const char* what_arg) : logic_error{what_arg} {}
 };
 
 template <class _Tp>
@@ -324,13 +320,13 @@ union __optional_storage
     unsigned char   __dummy_;
     _Tp             __value_;
     
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     __optional_storage(__trivial_init_t) _NOEXCEPT
         : __dummy_()
         {}
     
     template <class... _Args>
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     __optional_storage(_Args&&... __args)
         : __value_(__constexpr_forward<_Args>(__args)...)
         {}
@@ -346,18 +342,18 @@ union __constexpr_optional_storage
     unsigned char   __dummy_;
     _Tp             __value_;
     
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     __constexpr_optional_storage(__trivial_init_t) _NOEXCEPT
         : __dummy_()
         {}
     
     template <class... _Args>
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     __constexpr_optional_storage(_Args&&... __args)
         : __value_(__constexpr_forward<_Args>(__args)...)
         {}
     
-#if EPUB_COMPILER_SUPPORTS(CXX_DEFAULTED_FUNCTIONS)
+#ifndef _LIBCPP_HAS_NO_DEFAULTED_FUNCTIONS
     ~__constexpr_optional_storage() = default;
 #else
     ~__constexpr_optional_storage() {}
@@ -366,7 +362,7 @@ union __constexpr_optional_storage
 #endif
 
 struct __only_set_initialized_t {};
-#if EPUB_COMPILER_SUPPORTS(CXX_CONSTEXPR)
+#ifndef _LIBCPP_HAS_NO_CONSTEXPR
 constexpr __only_set_initialized_t __only_set_initialized{};
 #else
 extern __only_set_initialized_t only_set_initialized;
@@ -378,47 +374,47 @@ struct __optional_base
     bool                    __inited_;
     __optional_storage<_Tp> __storage_;
     
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     __optional_base() _NOEXCEPT
         : __inited_(false), __storage_(__trivial_init)
         {}
     
-    CONSTEXPR FORCE_INLINE
-    explicit
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
+    _LIBCPP_EXPLICIT
     __optional_base(__only_set_initialized_t, bool __init) _NOEXCEPT
         : __inited_(__init), __storage_(__trivial_init)
         {}
     
-    CONSTEXPR FORCE_INLINE
-    explicit
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
+    _LIBCPP_EXPLICIT
     __optional_base(const _Tp& __v)
         : __inited_(true), __storage_(__v)
         {}
     
-    CONSTEXPR FORCE_INLINE
-    explicit
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
+    _LIBCPP_EXPLICIT
     __optional_base(_Tp&& __v)
         : __inited_(true), __storage_(__constexpr_move(__v))
         {}
     
     template <class ..._Args>
-    FORCE_INLINE
-    explicit
+    _LIBCPP_INLINE_VISIBILITY
+    _LIBCPP_EXPLICIT
     __optional_base(in_place_t, _Args&&... __args)
         : __inited_(true), __storage_(__constexpr_forward<_Args>(__args)...)
         {}
     
     template <class _Up, class ..._Args,
-                typename std::enable_if
+                typename enable_if
                 <
-                    std::is_constructible<_Tp, std::initializer_list<_Tp>>::value,
+                    is_constructible<_Tp, initializer_list<_Tp>>::value,
                     bool
                 >::type = false
              >
-    FORCE_INLINE
-    explicit
-    __optional_base(in_place_t, std::initializer_list<_Up> __il, _Args&&... __args)
-        : __inited_(true), __storage_(__il, std::forward<_Args>(__args)...)
+    _LIBCPP_INLINE_VISIBILITY
+    _LIBCPP_EXPLICIT
+    __optional_base(in_place_t, initializer_list<_Up> __il, _Args&&... __args)
+        : __inited_(true), __storage_(__il, forward<_Args>(__args)...)
         {}
     
     ~__optional_base()
@@ -436,50 +432,49 @@ struct __constexpr_optional_base
     bool                                __inited_;
     __constexpr_optional_storage<_Tp>   __storage_;
     
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     __constexpr_optional_base() _NOEXCEPT
         : __inited_(false), __storage_(__trivial_init)
         {}
     
-    CONSTEXPR FORCE_INLINE
-    explicit
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
+    _LIBCPP_EXPLICIT
     __constexpr_optional_base(__only_set_initialized_t, bool __init) _NOEXCEPT
         : __inited_(__init), __storage_(__trivial_init)
         {}
     
-    CONSTEXPR FORCE_INLINE
-    explicit
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
+    _LIBCPP_EXPLICIT
     __constexpr_optional_base(const _Tp& __v)
         : __inited_(true), __storage_(__v)
         {}
     
-    CONSTEXPR FORCE_INLINE
-    explicit
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
+    _LIBCPP_EXPLICIT
     __constexpr_optional_base(_Tp&& __v)
         : __inited_(true), __storage_(__constexpr_move(__v))
         {}
     
     template <class ..._Args>
-    FORCE_INLINE
-    explicit
+    _LIBCPP_INLINE_VISIBILITY
+    _LIBCPP_EXPLICIT
     __constexpr_optional_base(in_place_t, _Args&&... __args)
         : __inited_(true), __storage_(__constexpr_forward<_Args>(__args)...)
         {}
     
     template <class _Up, class ..._Args,
-                typename std::enable_if
+                class = typename enable_if
                 <
-                    std::is_constructible<_Tp, std::initializer_list<_Tp>>::value,
-                    bool
-                >::type = false
+                    is_constructible<_Tp, initializer_list<_Tp>>::value
+                >::type
              >
-    FORCE_INLINE
-    explicit
-    __constexpr_optional_base(in_place_t, std::initializer_list<_Up> __il, _Args&&... __args)
-        : __inited_(true), __storage_(__il, std::forward<_Args>(__args)...)
+    _LIBCPP_INLINE_VISIBILITY
+    _LIBCPP_EXPLICIT
+    __constexpr_optional_base(in_place_t, initializer_list<_Up> __il, _Args&&... __args)
+        : __inited_(true), __storage_(__il, forward<_Args>(__args)...)
         {}
     
-#if EPUB_COMPILER_SUPPORTS(CXX_DEFAULTED_FUNCTIONS)
+#ifndef _LIBCPP_HAS_NO_DEFAULTED_FUNCTIONS
     ~__constexpr_optional_base() = default;
 #else
     ~__constexpr_optional_base() {}
@@ -488,55 +483,55 @@ struct __constexpr_optional_base
 };
 
 template <class _Tp>
-using __optional_base_impl = typename std::conditional
+using __optional_base_impl = typename conditional
     <
-        std::is_trivially_destructible<_Tp>::value,
+        is_trivially_destructible<_Tp>::value,
         __constexpr_optional_base<_Tp>,
         __optional_base<_Tp>
     >::type;
 #else
 template <class _Tp> class __optional_base_impl : __optional_base<_Tp> {};
-#endif
+#endif // HAS_CONSTEXPR_OPTIONAL
 
 template <class _Tp>
 class optional : private __optional_base_impl<_Tp>
 {
-    static_assert(!std::is_same<typename std::decay<_Tp>::type, nullopt_t>::value, "optional<nullopt_t> is invalid");
-    static_assert(!std::is_same<typename std::decay<_Tp>::type, in_place_t>::value, "optional<in_place_t> is invalid");
+    static_assert(!is_same<typename decay<_Tp>::type, nullopt_t>::value, "optional<nullopt_t> is invalid");
+    static_assert(!is_same<typename decay<_Tp>::type, in_place_t>::value, "optional<in_place_t> is invalid");
     
     typedef __optional_base_impl<_Tp>   _Base;
     
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     bool __initialized() const _NOEXCEPT
         { return _Base::__inited_; }
 
-    FORCE_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     _Tp* __ptr()
-        { return std::addressof(_Base::__storage_.__value_); }
-    CONSTEXPR FORCE_INLINE
+        { return addressof(_Base::__storage_.__value_); }
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     const _Tp* __ptr() const
         { return __static_addressof(_Base::__storage_.__value_); }
     
-#if EPUB_COMPILER_SUPPORTS(CXX_REFERENCE_QUALIFIED_FUNCTIONS)
-    CONSTEXPR FORCE_INLINE
+#ifndef _LIBCPP_HAS_NO_REFERENCE_QUALIFIED_FUNCTIONS
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     const _Tp& __val() const &
         { return _Base::__storage_.__value_; }
-    FORCE_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     _Tp& __val() &
         { return _Base::__storage_.__value_; }
-    FORCE_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     _Tp&& __val() &&
-        { return std::move(_Base::__storage_.__value_); }
+        { return move(_Base::__storage_.__value_); }
 #else
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     const _Tp& __val() const
         { return _Base::__storage_.__value_; }
-    FORCE_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     _Tp& __val()
         { return _Base::__storage_.__value_; }
 #endif
     
-    FORCE_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     void __clear() _NOEXCEPT
         {
             if (__initialized())
@@ -544,23 +539,23 @@ class optional : private __optional_base_impl<_Tp>
             _Base::__inited_ = false;
         }
     
-    template <class ..._Args>
-    FORCE_INLINE
+    template <class... _Args>
+    _LIBCPP_INLINE_VISIBILITY
     void __initialize(_Args&&... __args)
-        _NOEXCEPT_(_NOEXCEPT_(_Tp(std::forward<_Args>(__args)...)))
+        _NOEXCEPT_(_NOEXCEPT_(_Tp(forward<_Args>(__args)...)))
         {
             assert(!_Base::__inited_);
-            new (__ptr()) _Tp(std::forward<_Args>(__args)...);
+            new (__ptr()) _Tp(forward<_Args>(__args)...);
             _Base::__inited_ = true;
         }
     
     template <class _Up, class ..._Args>
-    FORCE_INLINE
-    void __initialize(std::initializer_list<_Up> __il, _Args&&... __args)
-        _NOEXCEPT_(_NOEXCEPT_(_Tp(__il, std::forward<_Args>(__args)...)))
+    _LIBCPP_INLINE_VISIBILITY
+    void __initialize(initializer_list<_Up> __il, _Args&&... __args)
+        _NOEXCEPT_(_NOEXCEPT_(_Tp(__il, forward<_Args>(__args)...)))
         {
             assert(!_Base::__inited_);
-            new (__ptr()) _Tp(__il, std::forward<_Args>(__args)...);
+            new (__ptr()) _Tp(__il, forward<_Args>(__args)...);
             _Base::__inited_ = true;
         }
     
@@ -568,17 +563,17 @@ public:
     typedef _Tp                     value_type;
     
     // X.Y.4.1, constructors
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     optional() _NOEXCEPT
         : _Base()
         {}
     
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     optional(nullopt_t) _NOEXCEPT
         : _Base()
         {}
     
-    FORCE_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     optional(const optional& __rhs)
         : _Base(__only_set_initialized, __rhs.__initialized())
         {
@@ -586,46 +581,46 @@ public:
                 new (__ptr()) _Tp(*__rhs);
         }
     
-    FORCE_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     optional(optional&& __rhs)
         : _Base(__only_set_initialized, __rhs.__initialized())
         {
             if (__rhs.__initialized())
-                new (__ptr()) _Tp(std::move(*__rhs));
+                new (__ptr()) _Tp(move(*__rhs));
         }
     
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     optional(const _Tp& __v)
         : _Base(__v)
         {}
     
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     optional(_Tp&& __v)
         : _Base(__constexpr_move(__v))
         {}
     
     template <class ..._Args>
-    CONSTEXPR FORCE_INLINE
-    explicit
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
+    _LIBCPP_EXPLICIT
     optional(in_place_t, _Args&&... __args)
         : _Base(in_place, __constexpr_forward<_Args>(__args)...)
         {}
     
     template <class _Up, class ..._Args,
-                typename std::enable_if
+                typename enable_if
                 <
-                    std::is_constructible<_Tp, std::initializer_list<_Up>, _Args...>::value,
+                    is_constructible<_Tp, initializer_list<_Up>, _Args...>::value,
                     bool
                 >::type = false
              >
-    CONSTEXPR FORCE_INLINE
-    explicit
-    optional(in_place_t, std::initializer_list<_Up> __il, _Args&&... __args)
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
+    _LIBCPP_EXPLICIT
+    optional(in_place_t, initializer_list<_Up> __il, _Args&&... __args)
         : _Base(in_place, __il, __constexpr_forward<_Args>(__args)...)
         {}
     
     // X.Y.4.2, destructor
-#if EPUB_COMPILER_SUPPORTS(CXX_DEFAULTED_FUNCTIONS)
+#ifndef _LIBCPP_HAS_NO_DEFAULTED_FUNCTIONS
     ~optional() = default;
 #else
     ~optional() {}
@@ -644,74 +639,74 @@ public:
             return *this;
         }
     
-    optional& operator=(optional&& __rhs) _NOEXCEPT_(std::is_nothrow_move_assignable<_Tp>::value)
+    optional& operator=(optional&& __rhs) _NOEXCEPT_(is_nothrow_move_assignable<_Tp>::value)
         {
             if (__initialized() && !__rhs.__initialized()) {
                 __clear();
             } else if (!__initialized() && __rhs.__initialized()) {
-                __initialize(std::move(*__rhs));
+                __initialize(move(*__rhs));
             } else if (__initialized() && __rhs.__initialized()) {
-                __val() = std::move(*__rhs);
+                __val() = move(*__rhs);
             }
             return *this;
         }
     
-#if EPUB_COMPILER_SUPPORTS(CXX_TRAILING_RETURN)
+#ifndef _LIBCPP_HAS_NO_TRAILING_RETURN
     template <class _Up>
-    FORCE_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     auto operator=(_Up&& __rhs)
-        -> typename std::enable_if
+        -> typename enable_if
                     <
-                        std::is_same<typename std::remove_reference<_Up>::type, _Tp>::value,
+                        is_same<typename remove_reference<_Up>::type, _Tp>::value,
                         optional&
                     >::type
 #else
     template <class _Up>
-    FORCE_INLINE
-    typename std::enable_if
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if
              <
-                 std::is_same<typename std::remove_reference<_Up>::type, _Tp>::value,
+                 is_same<typename remove_reference<_Up>::type, _Tp>::value,
                  optional&
              >::type
     operator=(_Up&& __rhs)
 #endif
         {
             if (__initialized()) {
-                __val() = std::forward<_Up>(__rhs);
+                __val() = forward<_Up>(__rhs);
             } else {
-                __initialize(std::forward<_Up>(__rhs));
+                __initialize(forward<_Up>(__rhs));
             }
             return *this;
         }
     
     template <class ..._Args>
-    FORCE_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     void emplace(_Args&&... __args)
         {
             __clear();
-            __initialize(std::forward<_Args>(__args)...);
+            __initialize(forward<_Args>(__args)...);
         }
     
     template <class _Up, class ..._Args>
-    FORCE_INLINE
-    void emplace(std::initializer_list<_Up> __il, _Args&&... __args)
+    _LIBCPP_INLINE_VISIBILITY
+    void emplace(initializer_list<_Up> __il, _Args&&... __args)
         {
             __clear();
-            __initialize<_Up, _Args...>(__il, std::forward<_Args>(__args)...);
+            __initialize<_Up, _Args...>(__il, forward<_Args>(__args)...);
         }
     
     // X.Y.4.4, swap
-    FORCE_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     void swap(optional& __rhs)
-        _NOEXCEPT_(std::is_nothrow_move_constructible<_Tp>::value &&
-                   _NOEXCEPT_(std::swap(std::declval<_Tp&>(), std::declval<_Tp&>())))
+        _NOEXCEPT_(is_nothrow_move_constructible<_Tp>::value &&
+                   _NOEXCEPT_(swap(declval<_Tp&>(), declval<_Tp&>())))
         {
             if (__initialized() && !__rhs.__initialized()) {
-                __rhs.__initialize(std::move(*this));
+                __rhs.__initialize(move(**this));
                 __clear();
             } else if (!__initialized() && __rhs.__initialized()) {
-                __initialize(std::move(*__rhs));
-                __rhs.clear();
+                __initialize(move(*__rhs));
+                __rhs.__clear();
             } else {
                 using std::swap;
                 swap(**this, *__rhs);
@@ -719,38 +714,38 @@ public:
         }
     
     // X.Y.4.5, observers
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     _Tp const* operator ->() const
         {
             return ASSERTED_EXPRESSION(__initialized(), __ptr());
         }
     
-    FORCE_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     _Tp* operator ->()
         {
             assert(__initialized());
             return __ptr();
         }
     
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     _Tp const& operator *() const
         {
             return ASSERTED_EXPRESSION(__initialized(), __val());
         }
     
-    FORCE_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     _Tp& operator *()
         {
             assert(__initialized());
             return __val();
         }
     
-    CONSTEXPR FORCE_INLINE
-    explicit
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
+    _LIBCPP_EXPLICIT
     operator bool() const _NOEXCEPT
         { return __initialized(); }
     
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     _Tp const& value() const
         {
             return (__initialized()
@@ -758,7 +753,7 @@ public:
                     : throw bad_optional_access("bad optional access"));
         }
     
-    FORCE_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     _Tp& value()
         {
             return (__initialized()
@@ -766,9 +761,9 @@ public:
                     : (throw bad_optional_access("bad optional access"), __val()));
         }
     
-#if EPUB_COMPILER_SUPPORTS(CXX_REFERENCE_QUALIFIED_FUNCTIONS)
+#ifndef _LIBCPP_HAS_NO_REFERENCE_QUALIFIED_FUNCTIONS
     template <class _Up>
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     _Tp value_or(_Up&& __v) const &
         {
             return (bool(*this)
@@ -777,16 +772,16 @@ public:
         }
     
     template <class _Up>
-    FORCE_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     _Tp value_or(_Up&& __v) &&
         {
             return (bool(*this)
-                    ? std::move(const_cast<optional<_Tp>&>(*this).__val())
-                    : static_cast<_Tp>(std::forward<_Tp>(__v)));
+                    ? move(const_cast<optional<_Tp>&>(*this).__val())
+                    : static_cast<_Tp>(forward<_Tp>(__v)));
         }
 #else
     template <class _Up>
-    CONSTEXPR FORCE_INLINE
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
     _Tp value_or(_Up&& __v) const
     {
         return (bool(*this)
@@ -795,12 +790,12 @@ public:
     }
     
     template <class _Up>
-    FORCE_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     _Tp value_or(_Up&& __v)
     {
         return (bool(*this)
                 ? **this
-                : static_cast<_Tp>(std::forward<_Tp>(__v)));
+                : static_cast<_Tp>(forward<_Tp>(__v)));
     }
 #endif
 
@@ -821,7 +816,7 @@ class optional<_Tp&&>
 
 // X.Y.8, Relational operators
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator==(const optional<_Tp>& __x, const optional<_Tp>& __y)
 {
     return (bool(__x) != bool(__y)
@@ -831,13 +826,13 @@ bool operator==(const optional<_Tp>& __x, const optional<_Tp>& __y)
                : *__x == *__y));
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator!=(const optional<_Tp>& __x, const optional<_Tp>& __y)
 {
     return !(__x == __y);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator<(const optional<_Tp>& __x, const optional<_Tp>& __y)
 {
     return !(bool(__y)
@@ -847,19 +842,19 @@ bool operator<(const optional<_Tp>& __x, const optional<_Tp>& __y)
                 : *__x < *__y));
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator>(const optional<_Tp>& __x, const optional<_Tp>& __y)
 {
     return (__y < __x);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator<=(const optional<_Tp>& __x, const optional<_Tp>& __y)
 {
     return !(__y < __x);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator>=(const optional<_Tp>& __x, const optional<_Tp>& __y)
 {
     return !(__x < __y);
@@ -867,73 +862,73 @@ bool operator>=(const optional<_Tp>& __x, const optional<_Tp>& __y)
 
 // X.Y.9, Comparison with nullopt
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator==(const optional<_Tp>& __x, nullopt_t) _NOEXCEPT
 {
     return !bool(__x);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator==(nullopt_t, const optional<_Tp>& __y) _NOEXCEPT
 {
     return !bool(__y);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator!=(const optional<_Tp>& __x, nullopt_t) _NOEXCEPT
 {
     return bool(__x);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator!=(nullopt_t, const optional<_Tp>& __y) _NOEXCEPT
 {
     return bool(__y);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator<(const optional<_Tp>&, nullopt_t) _NOEXCEPT
 {
     return false;
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator<(nullopt_t, const optional<_Tp>& __y) _NOEXCEPT
 {
     return bool(__y);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator<=(const optional<_Tp>& __x, nullopt_t) _NOEXCEPT
 {
     return !bool(__x);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator<=(nullopt_t, const optional<_Tp>&) _NOEXCEPT
 {
     return true;
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator>(const optional<_Tp>& __x, nullopt_t) _NOEXCEPT
 {
     return bool(__x);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator>(nullopt_t, const optional<_Tp>&) _NOEXCEPT
 {
     return false;
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator>=(const optional<_Tp>&, nullopt_t) _NOEXCEPT
 {
     return true;
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator>=(nullopt_t, const optional<_Tp>& __y) _NOEXCEPT
 {
     return !bool(__y);
@@ -941,7 +936,7 @@ bool operator>=(nullopt_t, const optional<_Tp>& __y) _NOEXCEPT
 
 // X.Y.10, Comparison with T
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator==(const optional<_Tp>& __x, const _Tp& __y)
 {
     return (bool(__x)
@@ -949,7 +944,7 @@ bool operator==(const optional<_Tp>& __x, const _Tp& __y)
             : false);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator==(const _Tp& __x, const optional<_Tp>& __y)
 {
     return (bool(__y)
@@ -957,19 +952,19 @@ bool operator==(const _Tp& __x, const optional<_Tp>& __y)
             : false);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator!=(const optional<_Tp>& __x, const _Tp& __y)
 {
     return !(__x == __y);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator!=(const _Tp& __x, const optional<_Tp>& __y)
 {
     return !(__x == __y);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator<(const optional<_Tp>& __x, const _Tp& __y)
 {
     return (bool(__x)
@@ -977,7 +972,7 @@ bool operator<(const optional<_Tp>& __x, const _Tp& __y)
             : true);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator<(const _Tp& __x, const optional<_Tp>& __y)
 {
     return (bool(__y)
@@ -985,7 +980,7 @@ bool operator<(const _Tp& __x, const optional<_Tp>& __y)
             : false);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator<=(const optional<_Tp>& __x, const _Tp& __y)
 {
     return (bool(__x)
@@ -993,7 +988,7 @@ bool operator<=(const optional<_Tp>& __x, const _Tp& __y)
             : true);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator<=(const _Tp& __x, const optional<_Tp>& __y)
 {
     return (bool(__y)
@@ -1001,7 +996,7 @@ bool operator<=(const _Tp& __x, const optional<_Tp>& __y)
             : false);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator>(const optional<_Tp>& __x, const _Tp& __y)
 {
     return (bool(__x)
@@ -1009,7 +1004,7 @@ bool operator>(const optional<_Tp>& __x, const _Tp& __y)
             : false);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator>(const _Tp& __x, const optional<_Tp>& __y)
 {
     return (bool(__y)
@@ -1017,7 +1012,7 @@ bool operator>(const _Tp& __x, const optional<_Tp>& __y)
             : true);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator>=(const optional<_Tp>& __x, const _Tp& __y)
 {
     return (bool(__x)
@@ -1025,7 +1020,7 @@ bool operator>=(const optional<_Tp>& __x, const _Tp& __y)
             : false);
 }
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
 bool operator>=(const _Tp& __x, const optional<_Tp>& __y)
 {
     return (bool(__y)
@@ -1035,41 +1030,40 @@ bool operator>=(const _Tp& __x, const optional<_Tp>& __y)
 
 // X.Y.11, Specialized algorithms
 template <class _Tp>
-FORCE_INLINE
+_LIBCPP_INLINE_VISIBILITY
 void swap(optional<_Tp>& __x, optional<_Tp>& __y) _NOEXCEPT_(_NOEXCEPT_(__x.swap(__y)))
 {
     __x.swap(__y);
 }
 
 template <class _Tp>
-CONSTEXPR FORCE_INLINE
-optional<typename std::decay<_Tp>::type>
+_LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
+optional<typename decay<_Tp>::type>
 make_optional(_Tp&& __v)
 {
-    return optional<typename std::decay<_Tp>::type>(__constexpr_forward<_Tp>(__v));
+    return optional<typename decay<_Tp>::type>(__constexpr_forward<_Tp>(__v));
 }
 
-EPUB3_END_NAMESPACE
+CLOSE_EXPERIMENTAL
 
-namespace std
+OPEN_NAMESPACE_STD
+
+// X.Y.12, hash support
+template <class _Tp>
+struct hash<experimental::optional<_Tp>>
 {
+    typedef typename hash<_Tp>::result_type result_type;
+    typedef experimental::optional<_Tp>  argument_type;
     
-    // X.Y.12, hash support
-    template <class _Tp>
-    struct hash<EPUB3_NAMESPACE::optional<_Tp>>
+    _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
+    result_type operator()(argument_type const& __arg) const
     {
-        typedef typename hash<_Tp>::result_type result_type;
-        typedef EPUB3_NAMESPACE::optional<_Tp>  argument_type;
-        
-        CONSTEXPR FORCE_INLINE
-        result_type operator()(argument_type const& __arg) const
-            {
-                return (__arg
-                        ? std::hash<_Tp>{}(*__arg)
-                        : result_type{});
-            }
-    };
-    
-}
+        return (__arg
+                ? hash<_Tp>{}(*__arg)
+                : result_type{});
+    }
+};
+
+CLOSE_NAMESPACE_STD
 
 #endif
