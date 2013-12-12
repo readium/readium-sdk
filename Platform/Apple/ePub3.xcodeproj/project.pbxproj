@@ -376,6 +376,7 @@
 		ABB395221847FBAA00F19CA7 /* link.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB3951F1847FBAA00F19CA7 /* link.cpp */; };
 		ABB395231847FBAA00F19CA7 /* link.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB395201847FBAA00F19CA7 /* link.h */; };
 		ABD2041518491CE8009DEB1C /* collection_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABD2041418491CE8009DEB1C /* collection_tests.cpp */; };
+		ABDA7578185A0C53009DB2A1 /* optional_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABDA7577185A0C53009DB2A1 /* optional_tests.cpp */; };
 		ABE1252A17D7B5B300342D59 /* iri_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABE1252917D7B5B300342D59 /* iri_tests.cpp */; };
 		ABF2D99F1667F7860036B8CA /* xpath_wrangler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABF2D99D1667F7860036B8CA /* xpath_wrangler.cpp */; };
 		ABF2D9A01667F7860036B8CA /* xpath_wrangler.h in Headers */ = {isa = PBXBuildFile; fileRef = ABF2D99E1667F7860036B8CA /* xpath_wrangler.h */; };
@@ -887,6 +888,7 @@
 		ABB395201847FBAA00F19CA7 /* link.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = link.h; sourceTree = "<group>"; };
 		ABCF0B73181C073300EEA270 /* node_traits.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = node_traits.h; sourceTree = "<group>"; };
 		ABD2041418491CE8009DEB1C /* collection_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = collection_tests.cpp; sourceTree = "<group>"; };
+		ABDA7577185A0C53009DB2A1 /* optional_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = optional_tests.cpp; sourceTree = "<group>"; };
 		ABE1252917D7B5B300342D59 /* iri_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = iri_tests.cpp; sourceTree = "<group>"; };
 		ABF2D99D1667F7860036B8CA /* xpath_wrangler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = xpath_wrangler.cpp; sourceTree = "<group>"; };
 		ABF2D99E1667F7860036B8CA /* xpath_wrangler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xpath_wrangler.h; sourceTree = "<group>"; };
@@ -1003,6 +1005,7 @@
 				ABB39512183D1FEE00F19CA7 /* spine_title_tests.cpp */,
 				ABB394BF18366DA300F19CA7 /* future_tests.cpp */,
 				ABD2041418491CE8009DEB1C /* collection_tests.cpp */,
+				ABDA7577185A0C53009DB2A1 /* optional_tests.cpp */,
 			);
 			name = UnitTests;
 			path = ../../UnitTests;
@@ -1982,6 +1985,7 @@
 				ABA4BB6016B1942100161B77 /* metadata_tests.cpp in Sources */,
 				AB95448C16BC28F300EFD2FD /* switch_preproc_tests.cpp in Sources */,
 				AB95448E16BC539200EFD2FD /* object_preproc_tests.cpp in Sources */,
+				ABDA7578185A0C53009DB2A1 /* optional_tests.cpp in Sources */,
 				ABFCE19E182D6BBE00A63C4A /* nav_tests.cpp in Sources */,
 				AB17B29B170C872E00FD5917 /* font_obfuscation_tests.cpp in Sources */,
 				ABD2041518491CE8009DEB1C /* collection_tests.cpp in Sources */,
