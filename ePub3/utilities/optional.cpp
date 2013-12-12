@@ -8,15 +8,15 @@
 
 #include "optional.h"
 
-#ifdef _LIBCPP_HAS_NO_CONSTEXPR
+#if !EPUB_COMPILER_SUPPORTS(CXX_CONSTEXPR)
 // well hello there Microsoft!
 
-OPEN_EXPERIMENTAL
+EPUB3_BEGIN_NAMESPACE
 
 __trivial_init_t __trivial_init();
 in_place_t in_place();
 nullopt_t nullopt(nullopt_t::init);
 
-CLOSE_EXPERIMENTAL
+EPUB3_END_NAMESPACE
 
 #endif
