@@ -5,19 +5,19 @@
 	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
 	<false/>
 	<key>IDESourceControlProjectIdentifier</key>
-	<string>C9C44E17-787C-406D-A44D-36431DEF0CC9</string>
+	<string>D8449377-6A59-4CA5-A88E-F76DDA4D2B8E</string>
 	<key>IDESourceControlProjectName</key>
 	<string>ePub3</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>FDF780DF-9097-4637-9EA8-F6326F879D64</key>
+		<key>4866EE45-0DDD-4574-9690-AABE23701645</key>
 		<string>ssh://github.com/readium/readium-sdk.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>Platform/Apple/ePub3.xcodeproj/project.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>FDF780DF-9097-4637-9EA8-F6326F879D64</key>
+		<key>4866EE45-0DDD-4574-9690-AABE23701645</key>
 		<string>../../../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
@@ -25,14 +25,14 @@
 	<key>IDESourceControlProjectVersion</key>
 	<integer>110</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>FDF780DF-9097-4637-9EA8-F6326F879D64</string>
+	<string>4866EE45-0DDD-4574-9690-AABE23701645</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>FDF780DF-9097-4637-9EA8-F6326F879D64</string>
+			<string>4866EE45-0DDD-4574-9690-AABE23701645</string>
 			<key>IDESourceControlWCCName</key>
 			<string>ePub3</string>
 		</dict>

@@ -405,11 +405,11 @@ struct __optional_base
         {}
     
     template <class _Up, class ..._Args,
-                typename std::enable_if
+                class = typename std::enable_if
                 <
                     std::is_constructible<_Tp, std::initializer_list<_Tp>>::value,
                     bool
-                >::type = false
+                >::type
              >
     FORCE_INLINE
     explicit
@@ -507,7 +507,7 @@ class optional : private __optional_base_impl<_Tp>
 
     FORCE_INLINE
     _Tp* __ptr()
-        { return addressof(_Base::__storage_.__value_); }
+        { return std::addressof(_Base::__storage_.__value_); }
     CONSTEXPR FORCE_INLINE
     const _Tp* __ptr() const
         { return __static_addressof(_Base::__storage_.__value_); }
@@ -607,11 +607,11 @@ public:
         {}
     
     template <class _Up, class ..._Args,
-                typename std::enable_if
+                class = typename std::enable_if
                 <
                     std::is_constructible<_Tp, std::initializer_list<_Up>, _Args...>::value,
                     bool
-                >::type = false
+                >::type
              >
     CONSTEXPR FORCE_INLINE
     explicit
