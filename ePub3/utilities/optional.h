@@ -217,7 +217,7 @@ __constexpr_addressof(_Tp& __t)
     return ((_Tp*)&reinterpret_cast<const volatile char&>(__t));
 }
 
-#ifndef NDEBUG
+#ifdef NDEBUG
 # define ASSERTED_EXPRESSION(chk, expr) (expr)
 #else
 # define ASSERTED_EXPRESSION(chk, expr) ((chk) ? (expr) : (fail(#chk, __file__, __line__), (expr)))
