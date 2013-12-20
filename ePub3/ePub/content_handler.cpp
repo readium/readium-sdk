@@ -30,10 +30,10 @@ MediaHandler::MediaHandler(shared_ptr<Package>& owner, const string& mediaType, 
 }
 void MediaHandler::operator()(const string& src, const ParameterList& parameters) const
 {
-    if ( _owner == nullptr )
+    if ( Owner() == nullptr )
         return;
     
-    _owner->FireLoadEvent(Target(src, parameters));
+    Owner()->FireLoadEvent(Target(src, parameters));
 }
 IRI MediaHandler::Target(const string& src, const ParameterList& parameters) const
 {

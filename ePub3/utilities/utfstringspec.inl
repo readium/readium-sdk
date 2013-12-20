@@ -24,6 +24,13 @@
 
 #define UTFSTRING_SPECIALIZATIONS_INLINED
 
+#ifdef min
+# undef min
+#endif
+#ifdef max
+# undef max
+#endif
+
 template <>
 FORCE_INLINE string & string::assign(iterator first, iterator last)
 {

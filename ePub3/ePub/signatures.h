@@ -40,6 +40,9 @@ class SignatureReference {};
  @ingroup epub-model
  */
 class DigitalSignature
+#if EPUB_PLATFORM(WINRT)
+	: public NativeBridge
+#endif
 {
 public:
     ///
@@ -54,7 +57,7 @@ public:
      XML-DSig.
      @see http://www.w3.org/TR/xmldsig-core1/#sec-Signature
      */
-    EPUB3_EXPORT    DigitalSignature(xmlNodePtr signatureNode);
+    EPUB3_EXPORT    DigitalSignature(shared_ptr<xml::Node> signatureNode);
     ///
     /// Move constructor.
                     DigitalSignature(DigitalSignature&& o) : _signedInfo(std::move(o._signedInfo)), _keyInfo(std::move(o._keyInfo)), _object(std::move(o._object)) {}

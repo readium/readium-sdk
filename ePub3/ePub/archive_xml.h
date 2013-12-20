@@ -23,6 +23,7 @@
 #define __ePub3__archive_xml__
 
 #include <ePub3/epub3.h>
+
 #include <ePub3/archive.h>
 #include <ePub3/xml/io.h>
 
@@ -40,7 +41,12 @@ public:
     virtual ~ArchiveXmlReader();
     
     operator ArchiveReader* () { return _reader.get(); }
-    operator const ArchiveReader* () const { return _reader.get(); }
+	operator const ArchiveReader* () const { return _reader.get(); }
+
+	virtual size_t size() const { return _reader->total_size(); }
+	virtual size_t offset() const { return _reader->position(); }
+    
+    bool operator !() const { return !bool(_reader); }
     
 protected:
     std::unique_ptr<ArchiveReader>  _reader;
@@ -63,7 +69,10 @@ public:
     virtual ~ArchiveXmlWriter();
     
     operator ArchiveWriter* () { return _writer.get(); }
-    operator const ArchiveWriter* () { return _writer.get(); }
+	operator const ArchiveWriter* () { return _writer.get(); }
+
+	virtual size_t size() const { return _writer->total_size(); }
+	virtual size_t offset() const { return _writer->position(); }
     
 protected:
     unique_ptr<ArchiveWriter>   _writer;

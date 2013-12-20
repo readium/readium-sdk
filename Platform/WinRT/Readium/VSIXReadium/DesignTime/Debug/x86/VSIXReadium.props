@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VSIXReadiumPath>$(FrameworkSDKRoot)\..\v8.1\ExtensionSDKs\VSIXReadium\1.0\</VSIXReadiumPath>
+    <IncludePath>$(VSIXReadiumPath)DesignTime\CommonConfiguration\Neutral\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VSIXReadiumPath)DesignTime\Debug\x86;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Link>
+      <AdditionalDependencies>Readium.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>

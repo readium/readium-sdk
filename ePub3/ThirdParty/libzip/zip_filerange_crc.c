@@ -70,7 +70,7 @@ _zip_filerange_crc(FILE *fp, off_t start, off_t len, uLong *crcp,
 
 	*crcp = crc32(*crcp, buf, (unsigned int)n);
 
-	len-= n;
+	len-= (off_t)n;
     }
 
     return 0;

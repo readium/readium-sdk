@@ -27,7 +27,7 @@
 #include <ePub3/utilities/utfstring.h>
 #include <ePub3/utilities/iri.h>
 #include <ePub3/utilities/xml_identifiable.h>
-#include <libxml/tree.h>
+#include <ePub3/xml/node.h>
 #include <memory>
 
 EPUB3_BEGIN_NAMESPACE
@@ -39,7 +39,10 @@ typedef shared_ptr<PropertyExtension>   PropertyExtensionPtr;
 
 ///
 /// An extension to an existing property, providing additional related metadata.
-class PropertyExtension : public std::enable_shared_from_this<PropertyExtension>, public OwnedBy<Property>, public XMLIdentifiable
+class PropertyExtension : public PointerType<PropertyExtension>, public OwnedBy<Property>, public XMLIdentifiable
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 private:
     ///
@@ -63,7 +66,7 @@ public:
     virtual         ~PropertyExtension() {}
     
     EPUB3_EXPORT
-    bool            ParseMetaElement(xmlNodePtr node);
+    bool            ParseMetaElement(shared_ptr<xml::Node> node);
     
     ///
     /// Retrieves the extension's property IRI, declaring its type.

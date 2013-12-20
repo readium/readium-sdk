@@ -33,7 +33,7 @@
 
 #include <ePub3/utilities/utfstring.h>
 
-#if EPUB_PLATFORM(WIN)
+#if EPUB_OS(WINDOWS)
 typedef unsigned short mode_t;
 #endif
 
@@ -43,6 +43,7 @@ class ArchiveItemInfo;
 class ArchiveReader;
 class ArchiveWriter;
 class ByteStream;
+class AsyncByteStream;
 
 /**
  An abstract class representing a generic archive.
@@ -170,6 +171,13 @@ public:
     virtual unique_ptr<ByteStream> ByteStreamAtPath(const string& path) const = 0;
     
     /**
+     Obtains a stream to asynchronously read or write to a file within the archive.
+     @param path The path of the item to access.
+     @result Returns a (managed) pointer to the resulting byte stream, or `nullptr`.
+     */
+    virtual unique_ptr<AsyncByteStream> AsyncByteStreamAtPath(const string& path) const = 0;
+    
+    /**
      Obtain an object used to read data from a file within the archive.
      @param path The path of the item to read.
      @result A pointer (unmanaged) to a reader object, or `nullptr`.
@@ -265,7 +273,11 @@ class ArchiveItemInfo
 public:
     ///
     /// Default constructor
-    ArchiveItemInfo() : _path(""), _isCompressed(false), _compressedSize(0), _uncompressedSize(0), _posix(0) {}
+    ArchiveItemInfo() : _path(""), _isCompressed(false), _compressedSize(0), _uncompressedSize(0), _posix(0)
+#if EPUB_HAVE(ACL)
+    , _acl(nullptr)
+#endif
+    {}
     ///
     /// Copy constructor
     ArchiveItemInfo(const ArchiveItemInfo & o) : _path(o._path), _isCompressed(o._isCompressed), _compressedSize(o._compressedSize), _uncompressedSize(o._uncompressedSize), _posix(o._posix) {
@@ -355,7 +367,10 @@ public:
      be read from the archive during this call.
      @result Returns the number of bytes read, or `-1` in case of error.
      */
-    virtual ssize_t read(void *p, size_t len) const { return 0; }
+	virtual ssize_t read(void *p, size_t len) const { return 0; }
+
+	virtual size_t total_size() const { return 0; }
+	virtual size_t position() const { return 0; }
     
 protected:
     ArchiveReader() {}
@@ -383,7 +398,10 @@ public:
      be written to the archive during this call.
      @result Returns the number of bytes written, or `-1` in case of error.
      */
-    virtual ssize_t write(const void *p, size_t len) { return 0; }
+	virtual ssize_t write(const void *p, size_t len) { return 0; }
+
+	virtual size_t total_size() const { return 0; }
+	virtual size_t position() const { return 0; }
     
 protected:
     ArchiveWriter() {}

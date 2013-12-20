@@ -180,11 +180,12 @@ TEST_CASE("Normal object tags are left unchanged", "")
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = c->DefaultPackage();
     
-    ObjectPreprocessor proc(pkg.get());
+    ObjectPreprocessor proc(pkg);
+    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext(nullptr));
     
     size_t outLen = 0;
     char* input = strdup(gNormalObject);
-    char* output = reinterpret_cast<char*>(proc.FilterData(input, sizeof(gNormalObject), &outLen));
+    char* output = reinterpret_cast<char*>(proc.FilterData(ctx.get(), input, sizeof(gNormalObject), &outLen));
     
     INFO("Unaltered output:\n" << string(output, outLen));
     REQUIRE(outLen == sizeof(gNormalObject));
@@ -200,11 +201,12 @@ TEST_CASE("Object tags for bound media should be replaced by iframes and buttons
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = c->DefaultPackage();
     
-    ObjectPreprocessor proc(pkg.get());
+    ObjectPreprocessor proc(pkg);
+    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext(nullptr));
     
     size_t outLen = 0;
     char* input = strdup(gGalleryObject);
-    char* output = reinterpret_cast<char*>(proc.FilterData(input, sizeof(gGalleryObject), &outLen));
+    char* output = reinterpret_cast<char*>(proc.FilterData(ctx.get(), input, sizeof(gGalleryObject), &outLen));
     
     INFO("IFrame output:\n" << string(output, outLen));
     REQUIRE(outLen == sizeof(gGalleryIFrame));
@@ -216,11 +218,12 @@ TEST_CASE("The title of the 'Open Fullscreen' button may be replaced", "")
     ContainerPtr c = Container::OpenContainer(EPUB_PATH);
     PackagePtr pkg = c->DefaultPackage();
     
-    ObjectPreprocessor proc(pkg.get(), "Ouvrir");
+    ObjectPreprocessor proc(pkg, "Ouvrir");
+    std::unique_ptr<FilterContext> ctx(proc.MakeFilterContext(nullptr));
     
     size_t outLen = 0;
     char* input = strdup(gGalleryObject);
-    char* output = reinterpret_cast<char*>(proc.FilterData(input, sizeof(gGalleryObject), &outLen));
+    char* output = reinterpret_cast<char*>(proc.FilterData(ctx.get(), input, sizeof(gGalleryObject), &outLen));
     
     INFO("IFrame output:\n" << string(output, outLen));
     REQUIRE(outLen == sizeof(gGalleryIFrameFrench));

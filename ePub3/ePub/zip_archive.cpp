@@ -22,6 +22,7 @@
 #include "zip_archive.h"
 #include <libzip/zipint.h>
 #include "byte_stream.h"
+#include "make_unique.h"
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -29,7 +30,7 @@
 #include <unistd.h>
 #endif
 #include <fcntl.h>
-#if EPUB_PLATFORM(WIN)
+#if EPUB_OS(WINDOWS)
 #include <windows.h>
 #endif
 
@@ -55,6 +56,20 @@ static string GetTempFilePath(const string& ext)
 
     string r(tmpFile);
     return r;
+#elif EPUB_PLATFORM(WINRT)
+	using ToUTF8 = std::wstring_convert<std::codecvt_utf8<wchar_t>>;
+
+	auto tempFolder = ::Windows::Storage::ApplicationData::Current->TemporaryFolder;
+	std::wstring tempFolderPath(tempFolder->Path->Data(), tempFolder->Path->Length());
+	std::wstringstream ss;
+
+	ss << tempFolderPath;
+	ss << TEXT("\\epub3.");
+	ss << Windows::Security::Cryptography::CryptographicBuffer::GenerateRandomNumber();
+	ss << TEXT(".");
+	ss << ToUTF8().from_bytes(ext.stl_str());
+	
+	return ToUTF8().to_bytes(ss.str());
 #else
     std::stringstream ss;
 #if EPUB_OS(ANDROID)
@@ -69,8 +84,6 @@ static string GetTempFilePath(const string& ext)
 
 #if EPUB_OS(ANDROID)
     int fd = ::mkstemp(buf);
-#elif EPUB_PLATFORM(WIN)
-    
 #else
     int fd = ::mkstemps(buf, static_cast<int>(ext.size()+1));
 #endif
@@ -85,15 +98,19 @@ static string GetTempFilePath(const string& ext)
 class ZipReader : public ArchiveReader
 {
 public:
-    ZipReader(struct zip_file* file) : _file(file) {}
+    ZipReader(struct zip_file* file) : _file(file), _total_size(_file->bytes_left) {}
     ZipReader(ZipReader&& o) : _file(o._file) { o._file = nullptr; }
     virtual ~ZipReader() { if (_file != nullptr) zip_fclose(_file); }
     
     virtual bool operator !() const { return _file == nullptr || _file->bytes_left == 0; }
-    virtual ssize_t read(void* p, size_t len) const { return zip_fread(_file, p, len); }
+	virtual ssize_t read(void* p, size_t len) const { return zip_fread(_file, p, len); }
+
+	virtual size_t total_size() const { return _total_size; }
+	virtual size_t position() const { return _total_size - _file->bytes_left; }
     
 private:
     struct zip_file * _file;
+	size_t _total_size;
 };
 
 class ZipWriter : public ArchiveWriter
@@ -105,7 +122,7 @@ class ZipWriter : public ArchiveWriter
         DataBlob(DataBlob&& o) : _tmpPath(std::move(o._tmpPath)), _fs(_tmpPath.c_str(), std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc) {}
         ~DataBlob() {
             _fs.close();
-#if EPUB_PLATFORM(WIN)
+#if EPUB_OS(WINDOWS)
             ::_unlink(_tmpPath.c_str());
 #else
             ::unlink(_tmpPath.c_str());
@@ -136,7 +153,10 @@ public:
     virtual ssize_t write(const void *p, size_t len) { _data.Append(p, len); return static_cast<ssize_t>(len); }
     
     struct zip_source* ZipSource() { return _zsrc; }
-    const struct zip_source* ZipSource() const { return _zsrc; }
+	const struct zip_source* ZipSource() const { return _zsrc; }
+
+	virtual size_t total_size() const { return _data.Size(); }
+	virtual size_t position() const { return _data.Size(); }
     
 protected:
     bool                _compressed;
@@ -147,7 +167,7 @@ protected:
     
 };
 
-ZipArchive::ZipItemInfo::ZipItemInfo(struct zip_stat & info)
+ZipArchive::ZipItemInfo::ZipItemInfo(struct zip_stat & info) : ArchiveItemInfo()
 {
     SetPath(info.name);
     SetIsCompressed(info.comp_method == ZIP_CM_STORE);
@@ -197,7 +217,11 @@ bool ZipArchive::CreateFolder(const string & path)
 }
 unique_ptr<ByteStream> ZipArchive::ByteStreamAtPath(const string &path) const
 {
-    return unique_ptr<ByteStream>(new ZipFileByteStream(_zip, path));
+    return make_unique<ZipFileByteStream>(_zip, path);
+}
+unique_ptr<AsyncByteStream> ZipArchive::AsyncByteStreamAtPath(const string& path) const
+{
+    return make_unique<AsyncZipFileByteStream>(_zip, path);
 }
 unique_ptr<ArchiveReader> ZipArchive::ReaderAtPath(const string & path) const
 {
@@ -205,6 +229,7 @@ unique_ptr<ArchiveReader> ZipArchive::ReaderAtPath(const string & path) const
         return nullptr;
     
     struct zip_file* file = zip_fopen(_zip, Sanitized(path).c_str(), 0);
+
     if (file == nullptr)
         return nullptr;
     
@@ -287,7 +312,7 @@ ssize_t ZipWriter::_source_callback(void *state, void *data, size_t len, enum zi
             struct zip_stat *st = reinterpret_cast<struct zip_stat*>(data);
             zip_stat_init(st);
             st->mtime = ::time(NULL);
-            st->size = writer->_data.Size();
+            st->size = static_cast<off_t>(writer->_data.Size());
             st->comp_method = (writer->_compressed ? ZIP_CM_DEFLATE : ZIP_CM_STORE);
             r = sizeof(struct zip_stat);
             break;
@@ -304,7 +329,7 @@ ssize_t ZipWriter::_source_callback(void *state, void *data, size_t len, enum zi
         }
         case ZIP_SOURCE_READ:
         {
-            r = writer->_data.Read(data, len);
+            r = static_cast<ssize_t>(writer->_data.Read(data, len));
             break;
         }
         case ZIP_SOURCE_FREE:

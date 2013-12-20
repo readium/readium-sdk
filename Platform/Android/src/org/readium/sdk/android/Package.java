@@ -21,8 +21,8 @@
 
 package org.readium.sdk.android;
 
-
-import java.nio.ByteBuffer;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -73,6 +73,7 @@ public class Package {
 	private String authors;
 	private String modificationDate;
 	private String pageProgressionDirection;
+	private String smilDataJson;
 	private List<String> authorList;
 	private List<String> subjects;
 	private List<SpineItem> spineItems;
@@ -81,6 +82,8 @@ public class Package {
 	private NavigationTable listOfIllustrations;
 	private NavigationTable listOfTables;
 	private NavigationTable pageList;
+
+	private List<ManifestItem> manifestTable;
 
 
 	private Package(long nativePtr) {
@@ -118,6 +121,9 @@ public class Package {
 			
 			// Release the native package
 			EPub3.releaseNativePointer(__nativePtr);
+			
+			// Set closed
+			mClosed = true;
 		} else {
 			// Log error
 			Log.e(TAG, "Closing already closed package [ptr:" + String.format("%X", __nativePtr) + "]");
@@ -153,11 +159,8 @@ public class Package {
 		authorList = nativeGetAuthorList(__nativePtr);
 		subjects = nativeGetSubjects(__nativePtr);
 		spineItems = nativeGetSpineItems(__nativePtr);
-		tableOfContents = nativeGetTableOfContents(__nativePtr);
-		listOfFigures = nativeGetListOfFigures(__nativePtr);
-		listOfIllustrations = nativeGetListOfIllustrations(__nativePtr);
-		listOfTables = nativeGetListOfTables(__nativePtr);
-		pageList = nativeGetPageList(__nativePtr);
+		manifestTable = nativeGetManifestTable(__nativePtr);
+		smilDataJson = nativeGetSmilDataAsJson(__nativePtr);
 		Log.i(TAG, "package nativePtr: " + __nativePtr);
 		Log.i(TAG, "title: "+title);
 		Log.i(TAG, "subtitle: "+subtitle);
@@ -182,11 +185,8 @@ public class Package {
 		Log.i(TAG, "pageProgressionDirection: "+pageProgressionDirection);
 		Log.i(TAG, "subjects: "+subjects);
 		Log.i(TAG, "spineItems: "+spineItems.size());
-		Log.i(TAG, "tableOfContents: "+tableOfContents);
-		Log.i(TAG, "listOfFigures: "+listOfFigures);
-		Log.i(TAG, "listOfIllustrations: "+listOfIllustrations);
-		Log.i(TAG, "listOfTables: "+listOfTables);
-		Log.i(TAG, "pageList: "+pageList);
+		Log.i(TAG, "manifestTable: "+manifestTable.size());
+		//Log.i(TAG, "smilDataJson: "+ smilDataJson);
 	}
 
 	public long getNativePtr() {
@@ -284,42 +284,142 @@ public class Package {
 	public List<SpineItem> getSpineItems() {
 		return spineItems;
 	}
+	
+	public SpineItem getSpineItem(String idref) {
+		for (SpineItem si : spineItems) {
+			if (si.getIdRef().equals(idref)) {
+				return si;
+			}
+		}
+		return null;
+	}
 
 	public NavigationTable getTableOfContents() {
+		if (tableOfContents == null) {
+			tableOfContents = nativeGetTableOfContents(__nativePtr);
+			Log.i(TAG, "tableOfContents: "+tableOfContents);
+		}
 		return tableOfContents;
 	}
 
 	public NavigationTable getListOfFigures() {
+		if (listOfFigures == null) {
+			listOfFigures = nativeGetListOfFigures(__nativePtr);
+			Log.i(TAG, "listOfFigures: "+listOfFigures);
+		}
 		return listOfFigures;
 	}
 
 	public NavigationTable getListOfIllustrations() {
+		if (listOfIllustrations == null) {
+			listOfIllustrations = nativeGetListOfIllustrations(__nativePtr);
+			Log.i(TAG, "listOfIllustrations: "+listOfIllustrations);
+		}
 		return listOfIllustrations;
 	}
 
 	public NavigationTable getListOfTables() {
+		if (listOfTables == null) {
+			listOfTables = nativeGetListOfTables(__nativePtr);
+			Log.i(TAG, "listOfTables: "+listOfTables);
+		}
 		return listOfTables;
 	}
 
 	public NavigationTable getPageList() {
+		if (pageList == null) {
+			pageList = nativeGetPageList(__nativePtr);
+			Log.i(TAG, "pageList: "+pageList);
+		}
 		return pageList;
 	}
 
-	public byte[] getContent(String relativePath) {
-//		Log.i(TAG, "getContent-nativePtr: "+Integer.toHexString(nativePtr));
-		ByteBuffer buffer = nativeReadStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath);
-		if (buffer == null) {
-			return new byte[0];
+	/**
+	 * Returns true if a manifest item is found AND its media type is "application/xhtml+xml".
+	 * Returns false otherwise.
+	 * @param relativePath needed to find a manifest item
+	 * @return
+	 */
+	public boolean isHtml(String relativePath) {
+		ManifestItem manifestItem = getManifestItem(relativePath);
+		if (manifestItem != null) {
+			return manifestItem.isHtml();
 		}
-		byte[] content = new byte[buffer.limit()];
-		System.arraycopy(buffer.array(), 0, content, 0, content.length);
-		return content;
+		return false;
 	}
-	
-	public String toJSON() {
+
+	/**
+	 * Returns a manifest item if one is found.
+	 * Returns null if not found.
+	 * @param relativePath needed to find a manifest item
+	 * @return a manifest item or null
+	 */
+	public ManifestItem getManifestItem(String relativePath) {
+		for (ManifestItem item : manifestTable) {
+			if (relativePath.equals(item.getHref())) {
+				return item;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Fetch the whole file into a byte array.
+	 * @param relativePath the location of the resource to load
+	 * @return the resource as a byte array. If no data is retrieved, the byte array length is 0.
+	 */
+	public byte[] getContent(String relativePath) {
+		InputStream in = getInputStream(relativePath);
+		if (in == null) {
+			return null;
+		}
+		try {
+			byte[] content = new byte[in.available()];
+			in.read(content);
+			return content;
+		} catch (IOException ex) {
+			Log.e(TAG, ""+ex.getMessage(), ex);
+		} finally {
+			try {
+				in.close();
+			} catch (IOException ex) {
+				Log.e(TAG, ""+ex.getMessage(), ex);
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Create an InputStream that .
+	 * @param relativePath the location of the resource to load
+	 * @return the InputStream. If no data is retrieved, the InputStream is null.
+	 */
+	public InputStream getInputStream(String relativePath) {
+		return nativeInputStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath);
+	}
+
+	/**
+	 * This method is useful to know the size of a specific resource 
+	 * without having to actually load that resource.
+	 * @param relativePath the location of the resource
+	 * @return the size of the file or -1 if no resource match the path
+	 */
+	public int getArchiveInfoSize(String relativePath) {
+		return nativeGetArchiveInfoSize(__nativePtr, container.getNativePtr(), relativePath);
+	}
+
+	/**
+	 * Convert the package to JSON object.
+	 * @return representation of the package to be consumed by the Readium JS library.
+	 */
+	public JSONObject toJSON() {
 		JSONObject o = new JSONObject();
 		try {
 			o.put("rootUrl", basePath);
+			
+			//EpubServer.HTTP_HOST /// EpubServer.HTTP_PORT
+			o.put("rootUrlMO", "http://localhost:8080/");
+			
 			o.put("rendition_layout", nativeGetProperty(__nativePtr, "layout", "rendition"));
 			JSONArray spineArray = new JSONArray();
 			for (SpineItem item : spineItems) {
@@ -329,11 +429,15 @@ public class Package {
 			spine.put("items", spineArray);
 			spine.put("direction", pageProgressionDirection);
 			o.put("spine", spine);
+
+			JSONObject mo = new JSONObject(smilDataJson);
+			o.put("media_overlay", mo);
+			
 //			Log.i(TAG, "JSON: " + o.toString(2));
 		} catch (JSONException e) {
 			Log.e(TAG, "" + e.getMessage(), e);
 		}
-		return o.toString();
+		return o;
 	}
 
 	/*
@@ -372,11 +476,19 @@ public class Package {
 	private native NavigationTable nativeGetListOfIllustrations(long nativePtr);
 	private native NavigationTable nativeGetListOfTables(long nativePtr);
 	private native NavigationTable nativeGetPageList(long nativePtr);
+	private native List<ManifestItem> nativeGetManifestTable(long nativePtr);
 	
 	/*
 	 * Content 
 	 */
-	private native ByteBuffer nativeReadStreamForRelativePath(long nativePtr, 
+	private native InputStream nativeInputStreamForRelativePath(long nativePtr, 
+			long containerPtr, String relativePath);
+	
+	private native int nativeGetArchiveInfoSize(long nativePtr, 
 			long containerPtr, String relativePath);
 
+	/*
+	 * SMIL
+	 */
+	private native String nativeGetSmilDataAsJson(long nativePtr);
 }

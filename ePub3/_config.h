@@ -85,7 +85,18 @@
 # endif
 #endif
 
+#if EPUB_COMPILER(MSVC)
+# define _NORETURN_		__declspec(noreturn)
+#else
+# define _NORETURN_		__attribute__((noreturn))
+#endif
+
 #if EPUB_OS(WINDOWS)
+// Windows doesn't define ssize_t it seems
+typedef signed long ssize_t;
+#endif
+
+#if EPUB_PLATFORM(WIN)
 # ifndef EPUB3_EXPORT
 #  ifdef BUILDING_EPUB3
 #   define EPUB3_EXPORT __declspec(dllexport)
@@ -93,8 +104,6 @@
 #   define EPUB3_EXPORT __declspec(dllimport)
 #  endif
 # endif
-// Windows doesn't define ssize_t it seems
-typedef signed long ssize_t;
 #else
 # define EPUB3_EXPORT
 #endif
@@ -149,6 +158,7 @@ typedef signed long ssize_t;
 # endif
 #endif
 
+#if !EPUB_PLATFORM(WINRT)
 #if EPUB_COMPILER(MSVC)
 # pragma section(".CRT$XCU",read)
 # define INITIALIZER(f) \
@@ -160,15 +170,27 @@ typedef signed long ssize_t;
     static void f(void) __attribute__((constructor)); \
     static void f(void)
 #endif
-
+#endif
 // MSVC doesn't have this macro
 #ifndef __PRETTY_FUNCTION__
 # define __PRETTY_FUNCTION__ __FUNCTION__
 #endif
 
-#if EPUB_PLATFORM(WIN)
+#if EPUB_PLATFORM(WIN) || EPUB_PLATFORM(WINRT)
 # define strncasecmp _strnicmp
 # define snprintf(buf,count,fmt,...) _snprintf_s(buf, count, count, fmt, __VA_ARGS__)
+#endif
+
+#if EPUB_PLATFORM(WINRT)
+# define EPUB_USE_LIBXML2 0
+# define EPUB_USE_WIN_XML 1
+# define EPUB_ENABLE_XML_BUILDER 0
+# define EPUB_ENABLE_XML_C14N 0
+#else
+# define EPUB_USE_LIBXML2 1
+# define EPUB_USE_WIN_XML 0
+# define EPUB_ENABLE_XML_BUILDER 1
+# define EPUB_ENABLE_XML_C14N 0
 #endif
 
 #if EPUB_COMPILER_SUPPORTS(CXX_DELETED_FUNCTIONS)

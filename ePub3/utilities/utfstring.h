@@ -23,6 +23,8 @@
 #define __ePub3_xml_string__
 
 #include <ePub3/utilities/basic.h>
+#include <ePub3/utilities/integer_sequence.h>
+#include <ePub3/utilities/string_view.h>
 #include <string>
 #include <iterator>
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
@@ -33,9 +35,20 @@
 #include REGEX_INCLUDE
 #include <map>
 #include <stdexcept>
-#include <libxml/xmlstring.h>
+#include <limits>
 
-#if EPUB_PLATFORM(WIN)
+#if EPUB_USE(LIBXML2)
+#include <libxml/xmlstring.h>
+#else
+typedef unsigned char xmlChar;
+#define xmlStrlen(s) ::strlen(reinterpret_cast<const char*>(s))
+#endif
+
+#if EPUB_USE(WIN_XML)
+#include <ePub3/xml/xmlstring.h>
+#endif
+
+#if EPUB_OS(WINDOWS)
 # include <codecvt>
 #endif
 
@@ -124,8 +137,13 @@ public:
     EPUB3_EXPORT string(const wchar_t* s);    // NUL-delimited
     EPUB3_EXPORT string(const wchar_t* s, size_type n);
     EPUB3_EXPORT string(size_type n, wchar_t c);
+	EPUB3_EXPORT string(const std::wstring& s);
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     string(std::initializer_list<wchar_t> __il) : string(__il.begin(), __il.end()) {}
+#endif
+
+#if EPUB_USE(WIN_XML)
+	EPUB3_EXPORT string(const xml::string& s);
 #endif
     
     // From std::string
@@ -142,6 +160,17 @@ public:
     string(const xmlChar * s) : _base(reinterpret_cast<const char *>(s)) {}
     string(const xmlChar * s, size_type n) : _base(reinterpret_cast<const char *>(s)) {}
     string(size_type n, xmlChar c) : _base(n, static_cast<char>(c)) {}
+
+#if 0//EPUB_PLATFORM(WINRT)
+	string(::Platform::String^ s) : string(s->Data(), s->Length()) {}
+	string(const ::Platform::StringReference& s) : string(s.Data(), s.Length()) {}
+#endif
+    
+    // From string_view, u16string_view, u32string_view, wstring_view
+    string(const string_view& view) : _base(view.begin(), view.end()) {}
+    string(const u16string_view& view);
+    string(const u32string_view& view);
+    string(const wstring_view& view);
     
     template <class InputIterator>
     EPUB3_EXPORT string(InputIterator begin, InputIterator end);
@@ -524,11 +553,22 @@ public:
     
     EPUB3_EXPORT std::u16string utf16string() const;
     inline const char16_t* utf16() const { return utf16string().c_str(); }
+
+	EPUB3_EXPORT std::wstring wchar_string() const;
+	inline const wchar_t* wchar_str() const { return wchar_string().c_str(); }
     
     __base::const_pointer c_str() const _NOEXCEPT { return _base.c_str(); }
     __base::const_pointer data() const _NOEXCEPT { return _base.data(); }
     
     const __base& stl_str() const { return _base; }
+    
+    string_view view() const { return string_view(_base); }
+    operator string_view() const { return view(); }
+
+#if 0//EPUB_PLATFORM(WINRT)
+	::Platform::String^ winrt_str() const;
+	operator ::Platform::String^() const { return winrt_str(); }
+#endif
     
     const xmlChar * utf8() const { return reinterpret_cast<const xmlChar *>(c_str()); }
     const xmlChar * xml_str() const { return reinterpret_cast<const xmlChar*>(c_str()); }

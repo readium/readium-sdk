@@ -19,6 +19,8 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <ePub3/base.h>
+
 // OpenSSL APIs are deprecated on OS X and iOS
 #if EPUB_OS(DARWIN)
 #define COMMON_DIGEST_FOR_OPENSSL
@@ -26,6 +28,11 @@
 #elif EPUB_PLATFORM(WIN)
 #include <windows.h>
 #include <Wincrypt.h>
+#elif EPUB_PLATFORM(WINRT)
+using namespace ::Platform;
+using namespace ::Windows::Security::Cryptography;
+using namespace ::Windows::Security::Cryptography::Core;
+//using namespace ::Windows::Storage::Streams;
 #else
 #include <openssl/sha.h>
 #endif
@@ -33,29 +40,36 @@
 #include "font_obfuscation.h"
 #include "container.h"
 #include "package.h"
+#include "filter_manager.h"
 
 EPUB3_BEGIN_NAMESPACE
 
-#if !EPUB_COMPILER_SUPPORTS(CXX_NONSTATIC_MEMBER_INIT)
+#if !EPUB_COMPILER_SUPPORTS(CXX_NONSTATIC_MEMBER_INIT) || EPUB_COMPILER(MSVC)
 const char * const FontObfuscator::FontObfuscationAlgorithmID = "http://www.idpf.org/2008/embedding";
 #endif
 
+const char * const kBytesFiltered = "FontObfuscator::bytesFiltered";
+
 const REGEX_NS::regex FontObfuscator::TypeCheck("(?:font/.*|application/(?:x-font-.*|vnd.ms-(?:opentype|fontobject)))");
 
-void * FontObfuscator::FilterData(void *data, size_t len, size_t *outputLen)
+void * FontObfuscator::FilterData(FilterContext* context, void *data, size_t len, size_t *outputLen)
 {
+    FontObfuscationContext* p = dynamic_cast<FontObfuscationContext*>(context);
+    size_t bytesFiltered = p->ProcessedCount();
+    
     uint8_t *buf = static_cast<uint8_t*>(data);
-    for ( size_t i = 0; i < len && (i + _bytesFiltered) < 1040; i++)
+    for ( size_t i = 0; i < len && (i + bytesFiltered) < 1040; i++)
     {
         // XOR each of the first 1040 bytes of the font with the key, circling around the keybuf
-        buf[i] ^= _key[(i+_bytesFiltered)%20];
+        buf[i] ^= _key[(i+bytesFiltered)%20];
     }
     
-    _bytesFiltered += len;
+    bytesFiltered += len;
+    p->SetProcessedCount(bytesFiltered);
     *outputLen = len;
     return buf;
 }
-bool FontObfuscator::BuildKey(const Container* container)
+bool FontObfuscator::BuildKey(ConstContainerPtr container)
 {
     REGEX_NS::regex re("\\s+");
     std::stringstream ss;
@@ -66,7 +80,8 @@ bool FontObfuscator::BuildKey(const Container* container)
             ss << ' ';
         
         // we use a C++11 regex to remove all whitespace in the value
-        ss << REGEX_NS::regex_replace(pkg->PackageID().stl_str(), re, "");
+        std::string replacement;
+        ss << REGEX_NS::regex_replace(pkg->PackageID().stl_str(), re, replacement);
     }
 
     auto str = ss.str();
@@ -102,6 +117,14 @@ bool FontObfuscator::BuildKey(const Container* container)
 
     if ( winerr != NO_ERROR )
         _THROW_WIN_ERROR_(winerr);
+#elif EPUB_PLATFORM(WINRT)
+	auto byteArray = ArrayReference<byte>(reinterpret_cast<byte*>(const_cast<char*>(str.data())), str.length());
+	auto inBuf = CryptographicBuffer::CreateFromByteArray(byteArray);
+	auto keyBuf = HashAlgorithmProvider::OpenAlgorithm(HashAlgorithmNames::Sha1)->HashData(inBuf);
+
+	Array<byte>^ outArray = nullptr;
+	CryptographicBuffer::CopyToByteArray(keyBuf, &outArray);	// creates a new Array<byte>^ and returns it by reference
+	memcpy_s(_key, KeySize, outArray->Data, outArray->Length);
 #else
     // hash the accumulated string (using OpenSSL syntax for portability)
     SHA_CTX ctx;
@@ -110,6 +133,26 @@ bool FontObfuscator::BuildKey(const Container* container)
     SHA1_Final(_key, &ctx);
 #endif
     return true;
+}
+
+ContentFilterPtr FontObfuscator::FontObfuscatorFactory(ConstPackagePtr package)
+{
+    ConstContainerPtr container = package->GetContainer();
+    for ( auto& encInfo : container->EncryptionData() )
+    {
+        if ( encInfo->Algorithm() == FontObfuscationAlgorithmID )
+        {
+            return New(container);
+        }
+    }
+    
+    // opted out, nothing for us to do here
+    return nullptr;
+}
+
+void FontObfuscator::Register()
+{
+    FilterManager::Instance()->RegisterFilter("FontObfuscator", EPUBDecryption, FontObfuscatorFactory);
 }
 
 EPUB3_END_NAMESPACE

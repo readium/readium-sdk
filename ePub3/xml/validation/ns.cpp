@@ -24,15 +24,28 @@
 
 EPUB3_XML_BEGIN_NAMESPACE
 
-Namespace::Namespace(Document * doc, const string &prefix, const string &uri)
+Namespace::Namespace(std::shared_ptr<Document> doc, const string &prefix, const string &uri)
 {
     xmlDocPtr d = doc->xml();
     _xml = xmlNewNs(reinterpret_cast<xmlNodePtr>(d), uri.utf8(), prefix.utf8());
+    if (_xml->_private != nullptr)
+        Node::Unwrap((xmlNodePtr)_xml);
+    
+    _xml->_private = new LibXML2Private<Namespace>(this);
 }
 Namespace::~Namespace()
 {
-    if ( _xml != nullptr )
-        xmlFreeNs(_xml);
+    if (_xml == nullptr)
+        return;
+    
+    LibXML2Private<Namespace>* priv = reinterpret_cast<LibXML2Private<Namespace>*>(_xml->_private);
+    if (priv->__sig == _READIUM_XML_SIGNATURE && priv->__ptr.get() == this)
+    {
+        delete priv;
+        _xml->_private = nullptr;
+    }
+    
+    xmlFreeNs(_xml);
 }
 
 EPUB3_XML_END_NAMESPACE

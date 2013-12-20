@@ -25,20 +25,23 @@
 #include <ePub3/utilities/basic.h>
 #include <array>
 #include <system_error>
+#include <functional>
 
 EPUB3_BEGIN_NAMESPACE
+
+class error_details;
 
 /**
  Error handler function type.
  @param err The error code being raised.
  @result Return `true` to continue, ignoring the error, `false` to throw the error.
  */
-typedef std::function<bool(const std::runtime_error& err)>   ErrorHandlerFn;
+typedef std::function<bool(const error_details& err)>   ErrorHandlerFn;
 
 ///
 /// The default error handler. Always returns `false` except for Critical spec violations.
 EPUB3_EXPORT
-bool            DefaultErrorHandler(const std::runtime_error& err);
+bool            DefaultErrorHandler(const error_details& err);
 
 ///
 /// Retrieves the current error handler function.
@@ -57,8 +60,9 @@ enum class EPUBSpec
     ContentDocuments,                           // 0x02
     MediaOverlays,                              // 0x03
     CanonicalFragmentIdentifiers,           
-    
-    NUM_SPECS
+
+	UnknownSpec,
+    NUM_SPECS = UnknownSpec
 };
 
 enum class ViolationSeverity
@@ -168,6 +172,7 @@ enum class EPUBError
     
     // § 3.4.9
     OPFLinkReferencesManifestItem,          ///< <link> 'href' attribute MUST NOT identify an object in the manifest. Medium.
+    OPFLinkMissingHref,                     ///< <link> 'href' attribute is empty or not present. Medium.
     
     // § 3.4.10
     OPFNoManifest,                          ///< Package MUST contain a <manifest> element as the second child of <package>. Critical.
@@ -192,6 +197,16 @@ enum class EPUBError
     OPFBindingHandlerInvalidType,           ///< <mediaType> handler resources MUST be XHTML content documents. Critical.
     OPFBindingHandlerNotScripted,           ///< <mediaType> handler resources MUST have the scripted property. Major.
     OPFBindingHandlerNoMediaType,           ///< <mediaType> elements MUST have a 'media-type' attribute. Critical.
+    
+    // $ 3.4.17
+    OPFCollectionMissingRole,               ///< A <collection> element MUST have a 'role' attribute. Major.
+    OPFCollectionMetadataOutOfOrder,        ///< A <metadata> element within a <collection> MUST be the first child element of its parent <collection>. Minor.
+    OPFCollectionSubcollectionOutOfOrder,   ///< A <collection> within another <collection> MUST be placed before any <link> child elements. Minor.
+    OPFCollectionNoLinks,                   ///< A <collection> element MUST have one or more <link> child elements. Major.
+    OPFCollectionRoleInvalid,               ///< A <collection>'s 'role' attribute MUST be either a full IRI or an NMTOKEN which resolves to an IRI known to the IDPF Collection Role registry. Medium.
+    OPFCollectionRefinesInvalid,            ///< The 'refines' attribute MUST NOT reference an item outside the collection. Major.
+    OPFCollectionIllegalMetaElement,        ///< The OPF2 <meta> element MUST NOT be used. Minor.
+    OPFCollectionLinkIncludesRefinement,    ///< The 'refines' attribute MUST NOT be attached to a <link> within a <collection>. Medium.
     
     // § 4.1.1
     OPFPackageUniqueIDInvalid,              ///< The <package> tag's unique-identifier attribute MUST reference a <dc:identifier> element in the package's <metadata>. Major.
@@ -299,14 +314,26 @@ enum class EPUBError
     
     // § 2.4.7
     MediaOverlayInvalidText,                ///< A <text> element MUST have a 'src' attribute. Critical.
-    MediaOverlayInvalidTextSource,          ///< A <text> element's 'src' attribute MUST reference an item in the publication's <manifest>. Medium.
-    MediaOverlayTextSrcFragmentMissing,     ///< A <text> element's 'src' attribute MUST contain a fragment identifier. Major.
+    MediaOverlayInvalidTextSource,          ///< A <text> element's 'src' attribute MUST reference an item in the publication's <manifest>. Major.
+    MediaOverlayTextSrcFragmentMissing,     ///< A <text> element's 'src' attribute MUST contain a fragment identifier. Medium.
     
     // § 2.4.8
     MediaOverlayInvalidAudio,               ///< An <audio> element MUST have a 'src' attribute. Critical.
     MediaOverlayInvalidAudioSource,         ///< An <audio> element's 'src' attribute MUST reference an item in the publication's <manifest>. Major.
     MediaOverlayInvalidAudioType,           ///< An <audio> element's 'src' attribute MUST reference an item which is a member of the EPUB 3 Core Media Types. Medium.
-    
+
+    MediaOverlayMissingDurationMetadata,           ///< A SMIL manifest item has no corresponding media:duration metadata. Medium.
+    MediaOverlayMismatchDurationMetadata,           ///< A SMIL / metadata duration mismatch. Medium.
+    MediaOverlayInvalidSmilClockValue,           ///< A given SMIL Clock Value (media:duration, clipBegin or clipEnd) has an invalid syntax. Medium.
+    MediaOverlayCannotParseSMILXML,           ///< A given SMIL XML file fails to parse. Major.
+    MediaOverlayUnknownSMILElement,           ///< A given SMIL file contains an unknown XML element. Major.
+    MediaOverlaySMILTextParallelParent,           ///< A given SMIL file contains a text XML element that does not have a parallel parent time container. Major.
+    MediaOverlaySMILAudioParallelParent,           ///< A given SMIL file contains an audio XML element that does not have a parallel parent time container. Major.
+    MediaOverlaySMILParallelSequenceParent,           ///< A given SMIL file contains a parallel time container XML element that does not have a sequence parent time container. Major.
+    MediaOverlaySMILSequenceSequenceParent,           ///< A given SMIL file contains a sequence time container XML element that does not have a sequence parent time container. Major.
+    MediaOverlayInvalidTextRefSource,          ///< A <body> <seq> or <par> element's 'epub:textref' attribute MUST reference an item in the publication's <manifest>. Medium.
+
+
     MediaOverlayErrorMax,
     
     
@@ -384,7 +411,13 @@ public:
     const std::error_code&  code()      const   _NOEXCEPT   { return __ec; }
     
     EPUB3_EXPORT
-    ViolationSeverity       Severity()  const;
+	ViolationSeverity       Severity()  const;
+
+	EPUB3_EXPORT
+	EPUBError				SpecErrorCode()	const _NOEXCEPT { return EPUBError(__ec.value()); }
+
+	EPUB3_EXPORT
+	EPUBSpec				Specification()	const;
     
 private:
     static std::string __init(const std::error_code& code, std::string what);
@@ -395,17 +428,102 @@ EPUB3_EXPORT const std::string&         SeverityString(ViolationSeverity __s);
 EPUB3_EXPORT const std::error_code      ErrorCodeForEPUBError(EPUBError ev)  _NOEXCEPT;
 EPUB3_EXPORT const std::string          DetailedErrorMessage(EPUBError ev);
 EPUB3_EXPORT const std::error_category& epub_spec_category() _NOEXCEPT;
+EPUB3_EXPORT       EPUBSpec				SpecFromEPUBError(EPUBError ev);
+
+// Lo, the std::system:error class's code() method was not marked virtual,
+// and there was much fannying about.
+class error_details
+{
+private:
+	bool __is_spec_error_;
+	union
+	{
+		const std::system_error*		__system_error_;
+		const epub_spec_error*			__spec_error_;
+	};
+
+public:
+	error_details(const std::system_error& __sysErr)
+		: __is_spec_error_(false), __system_error_(&__sysErr)
+		{}
+	error_details(const epub_spec_error& __specErr)
+		: __is_spec_error_(true), __spec_error_(&__specErr)
+		{}
+	~error_details() {}
+
+private:
+	error_details(const error_details&) _DELETED_;
+	error_details& operator=(const error_details&) _DELETED_;
+
+public:
+	bool is_spec_error() const {
+		return __is_spec_error_;
+	}
+	bool is_system_error() const {
+		return !__is_spec_error_;
+	}
+
+	int code() const {
+		if (__is_spec_error_)
+			return __spec_error_->code().value();
+		else
+			return __system_error_->code().value();
+	}
+	const char* message() const {
+		if (__is_spec_error_)
+			return __spec_error_->what();
+		else
+			return __system_error_->what();
+	}
+
+	const std::error_category& category() const {
+		if (__is_spec_error_)
+			return __spec_error_->code().category();
+		else 
+			return __system_error_->code().category();
+	}
+	
+	EPUBSpec epub_spec() const {
+		if (__is_spec_error_)
+			return __spec_error_->Specification();
+		else
+			throw std::logic_error("Attempt to get an EPUBSpec from a non-epub_spec_error exception");
+	}
+
+	ViolationSeverity severity() const {
+		if (__is_spec_error_)
+			return __spec_error_->Severity();
+		else
+			throw std::logic_error("Attempt to get a ViolationSeverity from a non-epub_spec_error exception");
+	}
+
+	EPUBError epub_error_code() const {
+		if (__is_spec_error_)
+			return __spec_error_->SpecErrorCode();
+		else
+			throw std::logic_error("Attempt to get an EPUBError from a non-epub_spec_error exception");
+	}
+
+	_NORETURN_
+	void throw_error() const {
+		if (__is_spec_error_)
+			throw *__spec_error_;
+		else
+			throw *__system_error_;
+	}
+
+};
 
 static inline FORCE_INLINE
-void __DispatchError(const std::runtime_error& __err)
+void __DispatchError(const std::system_error& __err)
 {
-    if ( ErrorHandler()(__err) == false )
+    if ( ErrorHandler()(error_details(__err)) == false )
         throw __err;
 }
 static inline FORCE_INLINE
 void __DispatchError(const epub_spec_error& __err)
 {
-    if ( ErrorHandler()(__err) == false )
+    if ( ErrorHandler()(error_details(__err)) == false )
         throw __err;
 }
 

@@ -51,6 +51,9 @@ EPUB3_BEGIN_NAMESPACE
  @ingroup utilities
  */
 class Library
+#if EPUB_PLATFORM(WINRT)
+	: public NativeBridge
+#endif
 {
 public:
     typedef string      EPubIdentifier;
@@ -68,6 +71,7 @@ public:
     // access a singleton instance managed by the class
     EPUB3_EXPORT
     static Library*     MainLibrary(const string& path = "");
+	EPUB3_EXPORT
     virtual             ~Library();
 
     EPUB3_EXPORT

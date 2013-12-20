@@ -27,17 +27,28 @@
 #include <ePub3/package.h>
 #include <ePub3/utilities/utfstring.h>
 #include <ePub3/utilities/owned_by.h>
-#include <libxml/tree.h>
-#include <libxml/xpath.h>
+#include <ePub3/content_module.h>
+#include <ePub3/xml/node.h>
 #include <vector>
+#include <ePub3/utilities/future.h>
+
+///////////////////////////////////////////////////////////////////////////////////
+// Bit of a hack -- make the WinRT Container class available so we can befriend it.
+
+#if EPUB_PLATFORM(WINRT)
+namespace Readium
+{
+	ref class Container;
+}
+#endif
+
+// End hack
+///////////////////////////////////////////////////////////////////////////////////
 
 EPUB3_BEGIN_NAMESPACE
 
 class Archive;
 class ByteStream;
-
-class Container;
-typedef shared_ptr<Container>   ContainerPtr;
 
 /**
  The Container class provides an interface for interacting with an EPUB container,
@@ -54,7 +65,10 @@ typedef shared_ptr<Container>   ContainerPtr;
  
  @ingroup epub-model
  */
-class Container : public std::enable_shared_from_this<Container>
+class Container : public PointerType<Container>
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 public:
     ///
@@ -88,8 +102,19 @@ public:
     bool            Open(const string& path);
     
     ///
-    /// Creates and returns a new Container instance.
-    static shared_ptr<Container>    OpenContainer(const string& path);
+    /// Creates and returns a new Container instance by calling OpenContainerAsync() and blocking.
+    static ContainerPtr
+        OpenContainer(const string& path);
+    
+    ///
+    /// Asynchronously returns a new Container instance.
+    static future<ContainerPtr>
+        OpenContainerAsync(const string& path, launch policy = launch::any);
+
+	///
+	/// Synchronously creates a new container. Available for the use of ContentModule implementations only.
+	static ContainerPtr
+		OpenContainerForContentModule(const string& path);
     
     virtual         ~Container();
     
@@ -101,16 +126,18 @@ public:
     /// Retrieves the list of all instantiated packages within the container.
     virtual const PackageList&      Packages()              const   { return _packages; }
     
-    /**pack
+    /**
      Retrieves the default Package instance.
      
      Equivalent to `this->Packages().at(0)`.
      */
-    virtual shared_ptr<Package>     DefaultPackage()        const;
+    virtual PackagePtr              DefaultPackage()        const;
     
     ///
     /// The OCF version of the container document.
     virtual string                  Version()               const;
+
+	const string&                   Path()                  const   { return _path; }
     
     ///
     /// Retrieves the encryption information embedded in the container.
@@ -122,7 +149,14 @@ public:
      to retrieve.
      @result Returns the encryption information, or `nullptr` if none was found.
      */
-    virtual shared_ptr<EncryptionInfo>    EncryptionInfoForPath(const string& path)   const;
+    virtual EncryptionInfoPtr       EncryptionInfoForPath(const string& path)   const;
+
+	/**
+	 Determines whether a given file is present in the container.
+	 @param path The absolute path of the item.
+	 @result `true` if the item exists, `false` otherwise.
+	 */
+	virtual bool					FileExistsAtPath(const string& path)		const;
     
     /**
      Obtains a pointer to a ReadStream for a specific file within the container.
@@ -134,18 +168,47 @@ public:
     
     ///
     /// The underlying archive.
-    shared_ptr<Archive>             GetArchive()            const   { return _archive; }
-    
+    ArchivePtr                      GetArchive()            const   { return _archive; }
+
+	///
+	/// Returns the ContentModule which created this container, if any.
+	std::shared_ptr<ContentModule>	Creator()				const	{ return _creator; }
+
+	///
+	/// Asserts ownership of a Container from a ContentModule.
+	void							SetCreator(std::shared_ptr<ContentModule> creator)
+	{
+		if (bool(_creator))
+			throw std::runtime_error("Attempt to set a second Creator on a Container instance");
+		_creator = creator;
+	}
     
 protected:
-    shared_ptr<Archive> _archive;
-    xmlDocPtr           _ocf;
-    PackageList         _packages;
-    EncryptionList      _encryption;
+    ArchivePtr						_archive;
+    shared_ptr<xml::Document>		_ocf;
+    PackageList						_packages;
+    EncryptionList					_encryption;
+	std::shared_ptr<ContentModule>	_creator;
+	string							_path;
     
     ///
     /// Parses the file META-INF/encryption.xml into an EncryptionList.
-    void            LoadEncryption();
+    void							LoadEncryption();
+
+	//////////////////////////////////////////////////////////////////////////////
+	// BLATANT HACK!
+	//
+	// This is here because we're seeing weird stuff happen with nested IAsyncAction()
+	// stuff on WinRT, and we've got 2 days to make it work. Proper solution forthcoming.
+
+#if EPUB_PLATFORM(WINRT)
+	friend ref class ::Readium::Container;
+	static ContainerPtr OpenSynchronouslyForWinRT(const string& path);
+#endif
+
+	// End hack
+	//////////////////////////////////////////////////////////////////////////////
+
 };
 
 EPUB3_END_NAMESPACE

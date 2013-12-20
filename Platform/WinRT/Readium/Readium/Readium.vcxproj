@@ -1,0 +1,970 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\ePub3\base.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\archive.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\archive_xml.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\cfi.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\container.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\content_handler.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\content_module.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\content_module_manager.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\credential_request.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\encryption.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\epub3.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\epub_collection.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\filter.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\filter_chain.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\filter_manager.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\filter_manager_impl.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\font_obfuscation.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\Forward.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\glossary.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\initialization.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\library.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\link.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\manifest.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\media-overlays_smil_data.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\media-overlays_smil_model.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\media-overlays_smil_utils.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\media_support_info.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\nav_element.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\nav_point.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\nav_table.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\object_preprocessor.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\package.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\property.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\property_extension.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\property_holder.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\signatures.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\spine.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\switch_preprocessor.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\user_action.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\xpath_wrangler.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\zip_archive.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\base\basictypes.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\base\logging.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\base\scoped_ptr.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\base\string16.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\src\gurl.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_cpp11.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_internal.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_internal_file.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_ip.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_stdstring.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_common.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_file.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_parse.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_parse_internal.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_util.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_util_internal.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\libzip\Config.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\libzip\zip.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\libzip\zipint.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\basic.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\byte_buffer.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\byte_stream.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\compressed_pair.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\condition_variable_any.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\CPUCacheUtils.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\epub_locale.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\error_handler.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\executor.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\future.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\integer_sequence.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\invoke.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\iri.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\make_unique.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\NativeBridge.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\optional.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\owned_by.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\path_help.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\pointer_type.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\ring_buffer.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\run_loop.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\string_view.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\swap_traits.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\utfstring.h" />
+    <ClInclude Include="..\..\..\..\ePub3\utilities\xml_identifiable.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\document.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\element.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\node.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\xpath.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\utilities\base.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\utilities\io.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\utilities\xmlstring.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\validation\c14n.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\validation\dtd.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\validation\ns.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\validation\schema.h" />
+    <ClInclude Include="..\..\..\..\ePub3\_compiler.h" />
+    <ClInclude Include="..\..\..\..\ePub3\_config.h" />
+    <ClInclude Include="..\..\..\..\ePub3\_platform.h" />
+    <ClInclude Include="BufferBridge.h" />
+    <ClInclude Include="CollectionBridges.h" />
+    <ClInclude Include="ExceptionWrapper.h" />
+    <ClInclude Include="IContentFilter.h" />
+    <ClInclude Include="IContentHandler.h" />
+    <ClInclude Include="IContentModule.h" />
+    <ClInclude Include="INavigationElement.h" />
+    <ClInclude Include="IPropertyHolder.h" />
+    <ClInclude Include="NavElementList.h" />
+    <ClInclude Include="PluginMaps.h" />
+    <ClInclude Include="PropertyHolderImpl.h" />
+    <ClInclude Include="PropertyHolderSubclassDecl.h" />
+    <ClInclude Include="PropertyHolderSubclassImpl.h" />
+    <ClInclude Include="PropertyTypes.h" />
+    <ClInclude Include="Readium.h" />
+    <ClInclude Include="Streams.h" />
+    <ClInclude Include="ThreadEmulation.h" />
+    <ClInclude Include="WinCFI.h" />
+    <ClInclude Include="WinContainer.h" />
+    <ClInclude Include="WinContentModuleManager.h" />
+    <ClInclude Include="WinCredentialRequest.h" />
+    <ClInclude Include="WinEncryptionInfo.h" />
+    <ClInclude Include="WinEpubCollection.h" />
+    <ClInclude Include="WinErrorHandler.h" />
+    <ClInclude Include="WinFilterChain.h" />
+    <ClInclude Include="WinFilterManager.h" />
+    <ClInclude Include="WinInitialization.h" />
+    <ClInclude Include="WinLibrary.h" />
+    <ClInclude Include="WinLink.h" />
+    <ClInclude Include="WinManifest.h" />
+    <ClInclude Include="WinMediaHandler.h" />
+    <ClInclude Include="WinMediaSupport.h" />
+    <ClInclude Include="WinNavPoint.h" />
+    <ClInclude Include="WinNavTable.h" />
+    <ClInclude Include="WinPackage.h" />
+    <ClInclude Include="WinProperty.h" />
+    <ClInclude Include="WinPropertyExtension.h" />
+    <ClInclude Include="WinSMILData.h" />
+    <ClInclude Include="WinSMILModel.h" />
+    <ClInclude Include="WinSpine.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\archive.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\archive_xml.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\cfi.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\container.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\content_handler.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\content_module_manager.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\credential_request.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\encryption.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\epub_collection.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_chain.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager_impl.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\font_obfuscation.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\glossary.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\initialization.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\library.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\link.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\manifest.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media-overlays_smil_data.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media-overlays_smil_model.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media_support_info.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\nav_point.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\nav_table.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\object_preprocessor.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\package.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\property.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\property_extension.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\property_holder.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\signatures.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\spine.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\switch_preprocessor.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\xpath_wrangler.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\zip_archive.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\base\string16.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\gurl.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_cpp11.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_etc.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_filesystemurl.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_fileurl.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_host.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_internal.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_ip.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_mailtourl.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_path.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_pathurl.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_query.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_relative.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_canon_stdurl.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_parse.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_parse_file.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_util.cc" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\mkstemp.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_add.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_add_dir.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_close.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_delete.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_dirent.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_entry_free.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_entry_new.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error_clear.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error_get.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error_get_sys_type.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error_strerror.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error_to_str.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_err_str.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fclose.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_filerange_crc.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_error_clear.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_error_get.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_get_offset.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_strerror.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fopen.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fopen_index.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fread.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_free.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fseek.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_ftell.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_archive_comment.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_archive_flag.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_file_comment.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_name.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_num_files.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_memdup.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_name_locate.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_new.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_open.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_rename.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_replace.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_set_archive_comment.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_set_archive_flag.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_set_file_comment.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_set_name.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_buffer.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_file.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_filep.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_free.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_function.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_zip.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_stat.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_stat_index.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_stat_init.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_strerror.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange_all.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange_archive.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange_data.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\byte_buffer.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\byte_stream.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\CPUCacheUtils_win.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\epub_locale.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\error_handler.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\executor.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\future.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\iri.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\optional.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\path_help.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\ring_buffer.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\run_loop_windows.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\utfstring.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\xml\tree\document_win.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\xml\tree\element_win.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\xml\tree\node_win.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\xml\tree\xpath_win.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\xml\utilities\io_win.cpp" />
+    <ClCompile Include="PluginMaps.cpp" />
+    <ClCompile Include="Streams.cpp" />
+    <ClCompile Include="ThreadEmulation.cpp" />
+    <ClCompile Include="WinCFI.cpp" />
+    <ClCompile Include="WinContainer.cpp" />
+    <ClCompile Include="WinContentModuleManager.cpp" />
+    <ClCompile Include="WinCredentialRequest.cpp" />
+    <ClCompile Include="WinEncryptionInfo.cpp" />
+    <ClCompile Include="WinEpubCollection.cpp" />
+    <ClCompile Include="WinErrorHandler.cpp" />
+    <ClCompile Include="WinFilterChain.cpp" />
+    <ClCompile Include="WinFilterManager.cpp" />
+    <ClCompile Include="WinInitialization.cpp" />
+    <ClCompile Include="WinLibrary.cpp" />
+    <ClCompile Include="WinLink.cpp" />
+    <ClCompile Include="WinManifest.cpp" />
+    <ClCompile Include="WinMediaHandler.cpp" />
+    <ClCompile Include="WinMediaSupport.cpp" />
+    <ClCompile Include="WinNavPoint.cpp" />
+    <ClCompile Include="WinNavTable.cpp" />
+    <ClCompile Include="WinPackage.cpp" />
+    <ClCompile Include="WinProperty.cpp" />
+    <ClCompile Include="WinPropertyExtension.cpp" />
+    <ClCompile Include="WinSMILData.cpp" />
+    <ClCompile Include="WinSMILModel.cpp" />
+    <ClCompile Include="WinSpine.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\ePub3\utilities\utfstringspec.inl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{a6cc9e63-8351-4b12-abad-90a28d8d587d}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectName>Readium</ProjectName>
+    <RootNamespace>Readium</RootNamespace>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>true</AppContainerApplication>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>8.1</ApplicationTypeRevision>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <GenerateManifest>false</GenerateManifest>
+    <OutDir>$(SolutionDir)deploy\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
+    <IntDir>build\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <GenerateManifest>false</GenerateManifest>
+    <OutDir>$(SolutionDir)deploy\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
+    <IntDir>build\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <GenerateManifest>false</GenerateManifest>
+    <OutDir>$(SolutionDir)deploy\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
+    <IntDir>build\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <GenerateManifest>false</GenerateManifest>
+    <OutDir>$(SolutionDir)deploy\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
+    <IntDir>build\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <GenerateManifest>false</GenerateManifest>
+    <OutDir>$(SolutionDir)deploy\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
+    <IntDir>build\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <GenerateManifest>false</GenerateManifest>
+    <OutDir>$(SolutionDir)deploy\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
+    <IntDir>build\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>_WINRT_DLL;BUILDING_EPUB3;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>28204</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\include;$(MSBuildProjectDirectory)\..\..\..\..\ePub3;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\utilities;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\ePub;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\ThirdParty;$(MSBuildProjectDirectory)\..\Prebuilt\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>runtimeobject.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Prebuilt\Lib\i386</AdditionalLibraryDirectories>
+    </Link>
+    <PreBuildEvent>
+      <Command>cd $(MSBuildProjectDirectory)\..\..
+cscript MakeHeaders.js</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Create Canonical Headers</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>_WINRT_DLL;NDEBUG;BUILDING_EPUB3;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;ZIP_EXTERN=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>28204</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\include;$(MSBuildProjectDirectory)\..\..\..\..\ePub3;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\utilities;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\ePub;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\ThirdParty;$(MSBuildProjectDirectory)\..\Prebuilt\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>runtimeobject.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Prebuilt\Lib\i386</AdditionalLibraryDirectories>
+    </Link>
+    <PreBuildEvent>
+      <Command>cd $(MSBuildProjectDirectory)\..\..
+cscript MakeHeaders.js</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Create Canonical Headers</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>_WINRT_DLL;BUILDING_EPUB3;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>28204</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\include;$(MSBuildProjectDirectory)\..\..\..\..\ePub3;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\utilities;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\ePub;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\ThirdParty;$(MSBuildProjectDirectory)\..\Prebuilt\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>runtimeobject.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Prebuilt\Lib\ARMv7</AdditionalLibraryDirectories>
+    </Link>
+    <PreBuildEvent>
+      <Command>cd $(MSBuildProjectDirectory)\..\..
+cscript MakeHeaders.js</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Create Canonical Headers</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>_WINRT_DLL;NDEBUG;BUILDING_EPUB3;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>28204</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\include;$(MSBuildProjectDirectory)\..\..\..\..\ePub3;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\utilities;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\ePub;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\ThirdParty;$(MSBuildProjectDirectory)\..\Prebuilt\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>runtimeobject.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Prebuilt\Lib\ARMv7</AdditionalLibraryDirectories>
+    </Link>
+    <PreBuildEvent>
+      <Command>cd $(MSBuildProjectDirectory)\..\..
+cscript MakeHeaders.js</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Create Canonical Headers</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>_WINRT_DLL;BUILDING_EPUB3;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>28204</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\include;$(MSBuildProjectDirectory)\..\..\..\..\ePub3;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\utilities;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\ePub;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\ThirdParty;$(MSBuildProjectDirectory)\..\Prebuilt\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>runtimeobject.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Prebuilt\Lib\x86_64</AdditionalLibraryDirectories>
+    </Link>
+    <PreBuildEvent>
+      <Command>cd $(MSBuildProjectDirectory)\..\..
+cscript MakeHeaders.js</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Create Canonical Headers</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>_WINRT_DLL;NDEBUG;BUILDING_EPUB3;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>28204</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\include;$(MSBuildProjectDirectory)\..\..\..\..\ePub3;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\utilities;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\ePub;$(MSBuildProjectDirectory)\..\..\..\..\ePub3\ThirdParty;$(MSBuildProjectDirectory)\..\Prebuilt\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>runtimeobject.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Prebuilt\Lib\x86_64</AdditionalLibraryDirectories>
+    </Link>
+    <PreBuildEvent>
+      <Command>cd $(MSBuildProjectDirectory)\..\..
+cscript MakeHeaders.js</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Create Canonical Headers</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -56,7 +56,10 @@ class Package;
  @ingroup media-handlers
  @see operator()(const string&, const ParameterList&)
  */
-class ContentHandler : public std::enable_shared_from_this<ContentHandler>, public OwnedBy<Package>
+class ContentHandler : public PointerType<ContentHandler>, public OwnedBy<Package>
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 public:
     ///
@@ -77,26 +80,23 @@ public:
                             ContentHandler(shared_ptr<Package>& owner, const string& mediaType) : OwnedBy(owner), _mediaType(mediaType) {}
     ///
     /// Copy constructor.
-                            ContentHandler(const ContentHandler& o) : OwnedBy(o), _mediaType(o._mediaType), _owner(o._owner) {}
+                            ContentHandler(const ContentHandler& o) : OwnedBy(o), _mediaType(o._mediaType) {}
     ///
     /// Move constructor.
-    ContentHandler(ContentHandler&& o) : OwnedBy(std::move(o)), _mediaType(std::move(o._mediaType)), _owner(o._owner) { o._owner = nullptr; }
+    ContentHandler(ContentHandler&& o) : OwnedBy(std::move(o)), _mediaType(std::move(o._mediaType)) {}
     virtual                 ~ContentHandler() {}
     
     virtual ContentHandler& operator=(const ContentHandler& o) {
         _mediaType = o._mediaType;
-        _owner = o._owner;
+		OwnedBy::operator=(o);
         return *this;
     }
     virtual ContentHandler& operator=(ContentHandler&& o) {
         _mediaType = std::move(o._mediaType);
-        _owner = o._owner; o._owner = nullptr;
+		OwnedBy::operator=(std::move(o));
         return *this;
     }
     
-    ///
-    /// Obtains the Package to which this handler applies.
-    virtual const Package*  Owner()         const   { return _owner; }
     ///
     /// Obtains the media-type this object handles.
     virtual const string&   MediaType()     const   { return _mediaType; }
@@ -110,7 +110,6 @@ public:
                                        const ParameterList& parameters = ParameterList())   const   = 0;
     
 protected:
-    const Package*          _owner;         ///< The Package to which this handler applies.
     string                  _mediaType;     ///< The resource media-type that this object handles.
 };
 
@@ -184,7 +183,7 @@ public:
      @param src The Package-relative path to a resource.
      @param pkg The Package containing the resource.
      */
-    typedef std::function<void(const string& src, const Package* pkg)>  RendererImpl;
+    typedef std::function<void(const string& src, ConstPackagePtr pkg)>  RendererImpl;
 
 private:
     ///
