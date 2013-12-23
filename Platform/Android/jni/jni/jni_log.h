@@ -47,10 +47,14 @@
 
 #else
 
+// Make a string from value
+#define STRINGIZE2(x) #x
+#define STRINGIZE(x) STRINGIZE2(x)
 // Dummy tag and macros
 #define  LOG_TAG    ""
 #define  LOGI(...)  ((void)0)
 #define  LOGD(...)  ((void)0)
+#define  LOGW(...)  ((void)0)
 #define  LOGE(...)  ((void)0)
 
 #endif // If log enabled?

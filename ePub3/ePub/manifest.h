@@ -28,7 +28,7 @@
 #include <ePub3/property_holder.h>
 #include <ePub3/utilities/xml_identifiable.h>
 #include <map>
-#include <libxml/tree.h>
+#include <ePub3/xml/node.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -36,6 +36,9 @@ class Package;
 class ManifestItem;
 class ArchiveReader;
 class ByteStream;
+class AsyncByteStream;
+
+typedef shared_ptr<Package>         PackagePtr;
 
 typedef shared_ptr<ManifestItem>    ManifestItemPtr;
 
@@ -51,7 +54,7 @@ typedef std::map<string, shared_ptr<ManifestItem>>  ManifestTable;
  properties for a ManifestItem, as of EPUB 3.
  
  This should ideally be an `enum class`, but it seems the compiler doesn't like
- performing arithmetic or bitwose operations on those, nor does it like me defining
+ performing arithmetic or bitwise operations on those, nor does it like me defining
  those arithmetic operations as methods on an `enum class`. Therefore it's all DIY.
  
  @see http://www.idpf.org/epub/30/spec/epub30-publications.html#sec-item-property-values
@@ -59,6 +62,9 @@ typedef std::map<string, shared_ptr<ManifestItem>>  ManifestTable;
  @ingroup epub-model
  */
 class ItemProperties
+#if EPUB_PLATFORM(WINRT)
+	: public NativeBridge
+#endif
 {
 public:
     ///
@@ -248,7 +254,10 @@ private:
  
  @ingroup epub-model
  */
-class ManifestItem : public std::enable_shared_from_this<ManifestItem>, public OwnedBy<Package>, public PropertyHolder, public XMLIdentifiable
+class ManifestItem : public PointerType<ManifestItem>, public OwnedBy<Package>, public PropertyHolder, public XMLIdentifiable
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 public:
     typedef string              MimeType;
@@ -262,7 +271,10 @@ public:
     EPUB3_EXPORT                ManifestItem(ManifestItem&&);
     virtual                     ~ManifestItem();
     
-    virtual bool                ParseXML(shared_ptr<ManifestItem>& sharedMe, xmlNodePtr node);
+    FORCE_INLINE
+    PackagePtr                  GetPackage()                        const   { return Owner(); }
+    
+	virtual bool                ParseXML(shared_ptr<xml::Node> node);
 
     EPUB3_EXPORT
     string                      AbsolutePath()                      const;
@@ -286,13 +298,21 @@ public:
     EPUB3_EXPORT
     bool                        HasProperty(const std::vector<IRI>& properties)  const;
     
+    // fetch any relevant encryption information
+    EncryptionInfoPtr           GetEncryptionInfo()                 const;
+
+	bool						CanLoadDocument()					const;
+    
     // one-shot XML document loader
     EPUB3_EXPORT
-    xmlDocPtr                   ReferencedDocument()                const;
+	shared_ptr<xml::Document>	ReferencedDocument()                const;
     
     // stream the data
     EPUB3_EXPORT
     unique_ptr<ByteStream>      Reader()                            const;
+    
+    EPUB3_EXPORT
+    unique_ptr<AsyncByteStream> AsyncReader()                       const;
     
 protected:
     string                  _href;

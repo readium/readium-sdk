@@ -37,21 +37,21 @@ SpineItem::SpineItem(SpineItem&& o) : OwnedBy(std::move(o)), PropertyHolder(std:
 SpineItem::~SpineItem()
 {
 }
-bool SpineItem::ParseXML(SpineItemPtr& sharedMe, xmlNodePtr node)
+bool SpineItem::ParseXML(shared_ptr<xml::Node> node)
 {
     SetXMLIdentifier(_getProp(node, "id"));
     _idref = _getProp(node, "idref");
     if ( _getProp(node, "linear").tolower() == "false" )
         _linear = false;
     
-    auto holder = std::dynamic_pointer_cast<PropertyHolder>(sharedMe);
+    auto holder = CastPtr<PropertyHolder>();
     
     string properties = _getProp(node, "properties");
     if ( !properties.empty() )
     {
         for ( auto& property : properties.split(REGEX_NS::regex(",?\\s+")) )
         {
-            PropertyPtr prop = std::make_shared<Property>(holder);
+            PropertyPtr prop = Property::New(holder);
             prop->SetPropertyIdentifier(this->PropertyIRIFromString(property));
             this->AddProperty(prop);
         }
@@ -71,7 +71,7 @@ PageSpread SpineItem::Spread() const
         return PageSpread::Automatic;
     
     bool left = false, right = false;
-    ForEachProperty([&](shared_ptr<Property> item) {
+    ForEachProperty([&](PropertyPtr item) {
         // return early if both set
         if ( left && right )
             return;
@@ -106,7 +106,7 @@ shared_ptr<SpineItem> SpineItem::PriorStep() const
 }
 shared_ptr<SpineItem> SpineItem::at(ssize_t idx) const
 {
-    shared_ptr<SpineItem> result = std::const_pointer_cast<SpineItem>(enable_shared_from_this<SpineItem>::shared_from_this());
+    SpineItemPtr result = std::const_pointer_cast<SpineItem>(Ptr());
     
     ssize_t i = idx;
     

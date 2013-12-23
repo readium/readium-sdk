@@ -147,11 +147,11 @@ read_file(void *state, void *data, size_t len, enum zip_source_cmd cmd)
 	
     case ZIP_SOURCE_READ:
 	if (z->remain != -1)
-	    n = len > z->remain ? (size_t)z->remain : (size_t)len;
+	    n = len > (size_t)(z->remain) ? (ssize_t)z->remain : (ssize_t)len;
 	else
-	    n = len;
+	    n = (ssize_t)len;
 	
-	if ((i=fread(buf, 1, n, z->f)) < 0) {
+	if ((i=(ssize_t)fread(buf, 1, n, z->f)) < 0) {
 	    z->e[0] = ZIP_ER_READ;
 	    z->e[1] = errno;
 	    return -1;

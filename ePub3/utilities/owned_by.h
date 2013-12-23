@@ -25,13 +25,19 @@
 #include <memory>
 #include <type_traits>
 
+#if EPUB_COMPILER_SUPPORTS(CXX_STATIC_ASSERT)
+# include <ePub3/utilities/pointer_type.h>
+#endif
+
 EPUB3_BEGIN_NAMESPACE
 
 template <class _Tp>
 class OwnedBy
 {
-    // _Tp must be a subclass of _Owner
-    //static_assert(std::is_base_of<std::enable_shared_from_this, _Tp>::value, "OwnedBy's template parameter must be a subclass of std::enable_shared_from_this");
+    // _Tp must be a subclass of PointerType -- hard to assert this though (what template arg? include header, etc?)
+//#if EPUB_COMPILER_SUPPORTS(CXX_STATIC_ASSERT)
+//    static_assert(std::is_base_of<PointerType<_Tp>, _Tp>::value, "OwnedBy's template parameter must be a subclass of PointerType");
+//#endif
     
 protected:
     typedef std::shared_ptr<typename std::remove_pointer<_Tp>::type> shared_type;

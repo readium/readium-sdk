@@ -39,17 +39,35 @@ static xmlDeregisterNodeFunc defThrNodeDeregister = nullptr;
 static void __registerNode(xmlNodePtr aNode)
 {
     Node::Wrap(aNode);
+    if (defNodeRegister != nullptr)
+        defNodeRegister(aNode);
 }
 
 static void __deregisterNode(xmlNodePtr aNode)
 {
     Node::Unwrap(aNode);
+    if (defNodeDeregister != nullptr)
+        defNodeDeregister(aNode);
 }
 
-#if !EPUB_COMPILER(MSVC)
-__attribute__((destructor))
-#endif
-static void __resetLibXMLOverrides(void)
+static void __registerNodeThr(xmlNodePtr aNode)
+{
+    Node::Wrap(aNode);
+    if (defThrNodeRegister != nullptr)
+        defThrNodeRegister(aNode);
+}
+
+static void __deregisterNodeThr(xmlNodePtr aNode)
+{
+    Node::Unwrap(aNode);
+    if (defThrNodeDeregister != nullptr)
+        defThrNodeDeregister(aNode);
+}
+
+//#if !EPUB_COMPILER(MSVC)
+//__attribute__((destructor))
+//#endif
+void __resetLibXMLOverrides(void)
 {
     xmlRegisterNodeDefault(defNodeRegister);
     xmlThrDefRegisterNodeDefault(defThrNodeRegister);
@@ -60,19 +78,20 @@ static void __resetLibXMLOverrides(void)
     xmlLoadExtDtdDefaultValue = 0;
 }
 
-INITIALIZER(__setupLibXML)
+//INITIALIZER(__setupLibXML)
+void __setupLibXML(void)
 {
     xmlInitGlobals();
     defNodeRegister = xmlRegisterNodeDefault(&__registerNode);
-    defThrNodeDeregister = xmlThrDefRegisterNodeDefault(&__registerNode);
+    defThrNodeDeregister = xmlThrDefRegisterNodeDefault(&__registerNodeThr);
     defNodeDeregister = xmlDeregisterNodeDefault(&__deregisterNode);
-    defThrNodeDeregister = xmlThrDefDeregisterNodeDefault(&__deregisterNode);
+    defThrNodeDeregister = xmlThrDefDeregisterNodeDefault(&__deregisterNodeThr);
 
     xmlSubstituteEntitiesDefault(1);
     xmlLoadExtDtdDefaultValue = 1;
-#if EPUB_COMPILER(MSVC)
-    atexit(__resetLibXMLOverrides);
-#endif
+//#if EPUB_COMPILER(MSVC)
+//    atexit(__resetLibXMLOverrides);
+//#endif
 }
 
 EPUB3_XML_END_NAMESPACE

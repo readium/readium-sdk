@@ -29,7 +29,7 @@
 
 #include "gurl.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <pthread.h>
@@ -302,11 +302,11 @@ GURL GURL::ResolveWithCharsetConverter(
 GURL GURL::ReplaceComponents(
     const url_canon::Replacements<char>& replacements) const {
   GURL result;
-
+/*
   // Not allowed for invalid URLs.
   if (!is_valid_)
     return GURL();
-
+*/
   // Reserve enough room in the output for the input, plus some extra so that
   // we have room if we have to escape a few things without reallocating.
   result.spec_.reserve(spec_.size() + 32);
@@ -328,11 +328,11 @@ GURL GURL::ReplaceComponents(
 GURL GURL::ReplaceComponents(
     const url_canon::Replacements<char16>& replacements) const {
   GURL result;
-
+/*
   // Not allowed for invalid URLs.
   if (!is_valid_)
     return GURL();
-
+*/
   // Reserve enough room in the output for the input, plus some extra so that
   // we have room if we have to escape a few things without reallocating.
   result.spec_.reserve(spec_.size() + 32);
@@ -353,7 +353,7 @@ GURL GURL::ReplaceComponents(
 bool GURL::ReplaceComponentsInline(const url_canon::Replacements<char> &replacements)
 {
     GURL replacement(ReplaceComponents(replacements));
-    if ( !replacement.is_valid() )
+    if ( !replacement.is_valid() && this->is_valid() )
         return false;
     this->operator=(std::move(replacement));
     return true;

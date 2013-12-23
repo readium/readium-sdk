@@ -1,0 +1,5 @@
+*.dll
+*.winmd
+*.exp
+*.pdb
+*.lib

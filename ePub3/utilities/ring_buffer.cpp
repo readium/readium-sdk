@@ -20,6 +20,8 @@
 //
 
 #include "ring_buffer.h"
+#include <cstring>
+#include <cstdlib>
 
 EPUB3_BEGIN_NAMESPACE
 RingBuffer::RingBuffer(std::size_t size) : _capacity(size), _numBytes(0), _readPos(0), _writePos(0), _lock()
@@ -141,8 +143,9 @@ std::size_t RingBuffer::WriteBytes(const uint8_t *buf, std::size_t len)
 void RingBuffer::RemoveBytes(std::size_t len) _NOEXCEPT
 {
     _readPos += len;
-    if ( _readPos > _capacity )
+    if ( _readPos >= _capacity )
         _readPos -= _capacity;
+    _numBytes -= len;
 }
 
 EPUB3_END_NAMESPACE

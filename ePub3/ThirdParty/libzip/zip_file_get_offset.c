@@ -79,3 +79,17 @@ _zip_file_get_offset(struct zip *za, int idx)
 
     return offset;
 }
+
+/* JCD added */
+unsigned int
+_zip_file_get_offset_safe(struct zip* za, int idx)
+{
+    off_t curoff;
+    unsigned int offset;
+    
+    curoff = ftello(za->zp);
+    offset = _zip_file_get_offset(za, idx);
+    fseeko(za->zp, curoff, SEEK_SET);
+    
+    return offset;
+}

@@ -30,7 +30,10 @@ EPUB3_BEGIN_NAMESPACE
 /**
  @ingroup navigation
  */
-class Glossary : public NavigationElement
+class Glossary : public NavigationElement, public PointerType<Glossary>, public OwnedBy<Package>
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 public:
     typedef string                      Term;
@@ -45,10 +48,10 @@ protected:
     typedef std::map<Term, Entry>       LookupTable;
     
 public:
-    EPUB3_EXPORT    Glossary(xmlNodePtr node);  // must be a <dl> node with epub:type="glossary"
-                    Glossary(const string& identifier) : _ident(identifier) {}
-                    Glossary(string&& identifier) : _ident(identifier) {}
-                    Glossary(Glossary&& o) : _ident(std::move(o._ident)), _lookup(std::move(o._lookup)) {}
+	EPUB3_EXPORT    Glossary(shared_ptr<xml::Node> node, PackagePtr pkg);  // must be a <dl> node with epub:type="glossary"
+					Glossary(const string& identifier, PackagePtr pkg) : _ident(identifier), OwnedBy(pkg) {}
+					Glossary(string&& identifier, PackagePtr pkg) : _ident(identifier), OwnedBy(pkg) {}
+                    Glossary(Glossary&& o) : OwnedBy(std::move(o)), _ident(std::move(o._ident)), _lookup(std::move(o._lookup)) {}
     virtual         ~Glossary() {}
 
 private:
@@ -70,7 +73,7 @@ protected:
     string _ident;
     LookupTable _lookup;
     
-    bool                    Parse(xmlNodePtr node);
+	bool                    Parse(shared_ptr<xml::Node> node);
 };
 
 EPUB3_END_NAMESPACE

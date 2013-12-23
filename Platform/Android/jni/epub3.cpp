@@ -26,6 +26,7 @@
 
 #include <ePub3/archive.h>
 #include <ePub3/container.h>
+#include <ePub3/initialization.h>
 
 #include "jni/jni.h"
 
@@ -34,6 +35,7 @@
 #include "container.h"
 #include "package.h"
 #include "iri.h"
+#include "resource_stream.h"
 
 
 using namespace std;
@@ -85,6 +87,9 @@ jmethodID addSpineItemToList_ID;
 jmethodID createNavigationTable_ID;
 jmethodID createNavigationPoint_ID;
 jmethodID addElementToParent_ID;
+jmethodID createManifestItemList_ID;
+jmethodID createManifestItem_ID;
+jmethodID addManifestItemToList_ID;
 
 
 /*
@@ -207,7 +212,9 @@ static int onLoad_cacheJavaElements_epub3(JNIEnv *env) {
 static void initializeReadiumSDK()
 {
 	LOGD("initializeReadiumSDK(): initializing Readium SDK...");
-    ePub3::Archive::Initialize();
+    //ePub3::Archive::Initialize();
+    ePub3::InitializeSdk();
+    ePub3::PopulateFilterManager();
 	LOGD("initializeReadiumSDK(): initialization of Readium SDK finished");
 }
 
@@ -253,6 +260,12 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
     	return ONLOAD_ERROR;
     }
 
+    // Initialize the cached java elements from package
+    if(onLoad_cacheJavaElements_ResourceInputStream(env) == ONLOAD_ERROR) {
+    	LOGE("JNI_OnLoad(): failed to cache ResourceInputStream java elements");
+    	return ONLOAD_ERROR;
+    }
+
     // Initialize the rest of the cached java elements that are still in JavaObjectsFactory class
     // TODO: Move all these elements to each respective class and remove these lines
 
@@ -261,7 +274,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 	INIT_STATIC_METHOD_ID_RETVAL(createSpineItemList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
 			"createSpineItemList", "()Ljava/util/List;", ONLOAD_ERROR);
 	INIT_STATIC_METHOD_ID_RETVAL(createSpineItem_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
-			"createSpineItem", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/readium/sdk/android/SpineItem;", ONLOAD_ERROR);
+			"createSpineItem", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/readium/sdk/android/SpineItem;", ONLOAD_ERROR);
 	INIT_STATIC_METHOD_ID_RETVAL(addSpineItemToList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
 			"addSpineItemToList", "(Ljava/util/List;Lorg/readium/sdk/android/SpineItem;)V", ONLOAD_ERROR);
 
@@ -271,6 +284,13 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 			"createNavigationPoint", "(Ljava/lang/String;Ljava/lang/String;)Lorg/readium/sdk/android/components/navigation/NavigationPoint;", ONLOAD_ERROR);
 	INIT_STATIC_METHOD_ID_RETVAL(addElementToParent_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
 			"addElementToParent", "(Lorg/readium/sdk/android/components/navigation/NavigationElement;Lorg/readium/sdk/android/components/navigation/NavigationElement;)V", ONLOAD_ERROR);
+
+	INIT_STATIC_METHOD_ID_RETVAL(createManifestItemList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
+			"createManifestItemList", "()Ljava/util/List;", ONLOAD_ERROR);
+	INIT_STATIC_METHOD_ID_RETVAL(createManifestItem_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
+			"createManifestItem", "(Ljava/lang/String;Ljava/lang/String;)Lorg/readium/sdk/android/ManifestItem;", ONLOAD_ERROR);
+	INIT_STATIC_METHOD_ID_RETVAL(addManifestItemToList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
+			"addManifestItemToList", "(Ljava/util/List;Lorg/readium/sdk/android/ManifestItem;)V", ONLOAD_ERROR);
 
 	// Return the JNI version this library wants to use
     return JNI_VERSION;
@@ -314,8 +334,16 @@ Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring p
 	LOGD("EPub3.openBook(): path received is '%s'", nativePath);
 
 	std::string spath = std::string(nativePath);
-	shared_ptr<ePub3::Container> _container = ePub3::Container::OpenContainer(spath);
-	LOGD("EPub3.openBook(): _container OK, version: %s\n", _container->Version().c_str());
+    
+    shared_ptr<ePub3::Container> _container = nullptr;
+    try {
+        _container = ePub3::Container::OpenContainer(spath);
+    }
+    catch (const std::invalid_argument& ex) {
+    	LOGD("OpenContainer() EXCEPTION: %s\n", ex.what());
+    }
+    
+    LOGD("EPub3.openBook(): _container OK, version: %s\n", _container->Version().c_str());
 
 	// Save container before sending it to Java
 	jni::Pointer container(_container, POINTER_GPS("container"));

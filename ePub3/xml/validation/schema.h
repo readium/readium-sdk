@@ -23,7 +23,9 @@
 #define __ePub3_xml_schema__
 
 #include <ePub3/xml/base.h>
-#include <ePub3/utilities/utfstring.h>
+
+#if EPUB_USE(LIBXML2)
+#include <ePub3/xml/xmlstring.h>
 #include <string>
 #include <libxml/xmlschemastypes.h>
 #include <libxml/schemasInternals.h>
@@ -35,21 +37,21 @@ class Document;
 /**
  @ingroup validation
  */
-class Schema : public WrapperBase
+class Schema : public WrapperBase<Schema>
 {
 public:
     explicit Schema(_xmlSchema* schema);
-    explicit Schema(Document * document = NULL, bool assume_ownership = false);
+    explicit Schema(std::shared_ptr<Document> document = nullptr, bool assume_ownership = false);
     virtual ~Schema();
     
-    virtual void SetDocument(Document * doc = NULL, bool assume_ownership = false);
+    virtual void SetDocument(std::shared_ptr<Document> doc = nullptr, bool assume_ownership = false);
     
     string Name() const;
     string TargetNamespace() const;
     string Version() const;
     
-    Document * Document();
-    const class Document * Document() const;
+    std::shared_ptr<class Document> Document();
+    std::shared_ptr<const class Document> Document() const;
     
     _xmlSchema * xmlSchema();
     const _xmlSchema * xmlSchema() const;
@@ -64,5 +66,6 @@ private:
 };
 
 EPUB3_XML_END_NAMESPACE
+#endif	// EPUB_USE(LIBXML2)
 
 #endif /* defined(__ePub3_xml_schema__) */

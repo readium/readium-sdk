@@ -20,6 +20,9 @@
 //
 
 #include "switch_preprocessor.h"
+#include "package.h"
+#include "container.h"
+#include "filter_manager.h"
 #include REGEX_INCLUDE
 
 EPUB3_BEGIN_NAMESPACE
@@ -31,17 +34,38 @@ REGEX_NS::regex SwitchPreprocessor::SwitchContentExtractor("<(?:epub:)?switch(?:
 REGEX_NS::regex SwitchPreprocessor::CaseContentExtractor("<(?:epub:)?case\\s+required-namespace=\"(.*?)\">((?:.|\\n|\\r)*?)</(?:epub:)?case(?:.|\\n|\\r)*?>", SwitchRegexFlags);
 REGEX_NS::regex SwitchPreprocessor::DefaultContentExtractor("<(?:epub:)?default(?:.|\\n|\\r)*?>((?:.|\\n|\\r)*?)</(?:epub:)?default(?:.|\\n|\\r)*?>", SwitchRegexFlags);
 
-bool SwitchPreprocessor::SniffSwitchableContent(const ManifestItem *item, const EncryptionInfo *encInfo)
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+SwitchPreprocessor::NamespaceList SwitchPreprocessor::_supportedNamespaces{};
+#else
+static const string __default_namespaces[1] = {MathMLNamespaceURI};
+SwitchPreprocessor::NamespaceList SwitchPreprocessor::_supportedNamespaces(&__default_namespaces[0], &__default_namespaces[1]);
+#endif
+
+bool SwitchPreprocessor::SniffSwitchableContent(ConstManifestItemPtr item)
 {
     return (item->MediaType() == "application/xhtml+xml" && item->HasProperty(ItemProperties::ContainsSwitch));
 }
-void * SwitchPreprocessor::FilterData(void *data, size_t len, size_t *outputLen)
+ContentFilterPtr SwitchPreprocessor::SwitchFilterFactory(ConstPackagePtr package)
+{
+    for ( auto& item : package->Manifest() )
+    {
+        if ( item.second->HasProperty(ItemProperties::ContainsSwitch) )
+            return New();
+    }
+    return nullptr;
+}
+void SwitchPreprocessor::Register()
+{
+    FilterManager::Instance()->RegisterFilter("SwitchPreprocessor", SwitchStaticHandling, SwitchFilterFactory);
+}
+void * SwitchPreprocessor::FilterData(FilterContext* context, void *data, size_t len, size_t *outputLen)
 {
     char* input = reinterpret_cast<char*>(data);
     
     // handle partially-commented switch statements
     std::string inputStr(reinterpret_cast<const char*>(data));
-    std::string str = REGEX_NS::regex_replace(inputStr, CommentedSwitchIdentifier, "$1$2$3");
+    std::string replacement("$1$2$3");
+    std::string str = REGEX_NS::regex_replace(inputStr, CommentedSwitchIdentifier, replacement);
     
     // str now contains a non-commented value (or the input if no switch statements were commented out)
     auto pos = REGEX_NS::sregex_iterator(str.begin(), str.end(), SwitchContentExtractor);
