@@ -921,7 +921,7 @@ bool Package::Unpack()
             // otherwise, we had a valid EPUB3 nav with empty (one-level) TOC
 			HandleError(EPUBError::OPFNoNavDocument);
 		}
-		else
+		else if (!tocNames.empty())
 		{
 			try
 			{
