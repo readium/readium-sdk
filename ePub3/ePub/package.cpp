@@ -112,7 +112,7 @@ bool PackageBase::Open(const string& path)
     size_t loc = path.rfind("/");
     if ( loc == std::string::npos )
     {
-        _pathBase = '/';
+        _pathBase = "";
     }
     else
     {
