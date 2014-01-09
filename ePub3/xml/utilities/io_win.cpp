@@ -394,7 +394,17 @@ std::shared_ptr<Document> InputBuffer::ReadDocument(const char* url, const char*
 
 	this->close();
 
-	::Platform::String^ nstr = ref new String(str.data(), static_cast<unsigned int>(str.length()));
+	std::size_t found = str.find(L"\r\n");
+	while (found != std::string::npos) {
+		str.replace(found, 2, L"\n");
+
+		found = str.find(L"\r\n");
+	}
+
+	bool hasBOM = (str[0] == 0xfffe || str[0] == 0xfeff);
+	::Platform::String^ nstr = ref new String(str.data() + (hasBOM ? 1 : 0), static_cast<unsigned int>(str.length()) - (hasBOM ? 1 : 0));
+
+
 	str.clear();		// watch your memory
 	XmlDocument^ native = ref new XmlDocument;
 	XmlLoadSettings^ settings = ref new XmlLoadSettings;

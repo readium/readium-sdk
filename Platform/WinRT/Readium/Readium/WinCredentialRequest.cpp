@@ -75,9 +75,9 @@ void CredentialRequest::SignalCompletion()
 	_native.SignalCompletion();
 }
 
-void CredentialRequest::SignalException(Exception^ exc)
-{
-	_native.SignalException(std::make_exception_ptr(__WinRTException(exc)));
-}
+//void CredentialRequest::SignalException(COMException^ exc)
+//{
+//	_native.SignalException(std::make_exception_ptr(__WinRTException(exc)));
+//}
 
 END_READIUM_API

@@ -32,26 +32,23 @@ string CleanupPath(const string& path)
 
 	auto begin = components.begin();
 	auto end = components.end();
-	for (auto pos = begin; pos < end; ++pos)
+	std::vector<size_t> toRemove;
+
+	size_t idx = 0;
+	for (auto pos = begin; pos != end; ++pos, idx++)
 	{
 		if (*pos == ".." && pos != begin)
 		{
-			decltype(pos) dotDot, parent;
-
-			dotDot = pos--;
-			if (pos == begin)
-			{
-				parent = begin;
-				pos = dotDot;
-			}
-			else
-			{
-				parent = pos--;
-			}
-
-			components.erase(parent, dotDot);
-			end = components.end();
+			toRemove.push_back(idx - 1);
+			toRemove.push_back(idx);
 		}
+	}
+
+	auto ibegin = toRemove.crbegin();
+	auto iend = toRemove.rend();
+	for (auto pos = ibegin; pos != iend; ++pos)
+	{
+		components.erase(components.begin()+*pos);
 	}
 
 	std::ostringstream ss;

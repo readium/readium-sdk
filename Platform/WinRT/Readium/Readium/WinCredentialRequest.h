@@ -64,7 +64,7 @@ public:
 	::Platform::String^ GetItemTitle(size_t idx);
 
 	void SignalCompletion();
-	void SignalException(::Platform::Exception^ except);
+	//void SignalException(::Platform::COMException^ except);
 
 };
 
