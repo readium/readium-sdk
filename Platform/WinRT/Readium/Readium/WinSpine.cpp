@@ -23,6 +23,8 @@
 #include "WinManifest.h"
 #include "WinPackage.h"
 
+#include <filesystem>
+
 using namespace ::Windows::Foundation;
 
 BEGIN_READIUM_API

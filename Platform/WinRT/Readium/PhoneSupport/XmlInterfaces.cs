@@ -29,6 +29,9 @@ using Windows.Storage;
 
 namespace ReadiumPhoneSupport
 {
+
+    // These are all declared in the WinRT component PhoneSupportInterfaces now
+    /*
     [ComVisibleAttribute(true)]
     public enum NodeType
     {
@@ -463,12 +466,10 @@ namespace ReadiumPhoneSupport
         void LoadXml(string xml);
         void LoadXml(string xml, XmlLoadSettings loadSettings);
         IAsyncAction SaveToFileAsync(IStorageFile file);
-        /*
-        static IAsyncOperation<XmlDocument> LoadFromFileAsync(IStorageFile file);
-        static IAsyncOperation<XmlDocument> LoadFromFileAsync(IStorageFile file, XmlLoadSettings loadSettings);
-        static IAsyncOperation<XmlDocument> LoadFromUriAsync(Uri uri);
-        static IAsyncOperation<XmlDocument> LoadFromUriAsync(Uri uri, XmlLoadSettings loadSettings);
-         * */
+        //static IAsyncOperation<XmlDocument> LoadFromFileAsync(IStorageFile file);
+        //static IAsyncOperation<XmlDocument> LoadFromFileAsync(IStorageFile file, XmlLoadSettings loadSettings);
+        //static IAsyncOperation<XmlDocument> LoadFromUriAsync(Uri uri);
+        //static IAsyncOperation<XmlDocument> LoadFromUriAsync(Uri uri, XmlLoadSettings loadSettings);
     }
 
     [ComVisibleAttribute(true)]
@@ -496,4 +497,5 @@ namespace ReadiumPhoneSupport
         IXmlNode Item(uint index);
         uint Length { get; }
     }
+    */
 }

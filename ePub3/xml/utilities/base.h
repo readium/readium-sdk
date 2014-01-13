@@ -42,7 +42,7 @@ struct xmlError {
 typedef struct xmlError* xmlErrorPtr;
 #endif
 
-#if EPUB_USE(WIN_XML)
+#if EPUB_USE(WIN_XML) || EPUB_USE(WIN_PHONE_XML)
 #define xml_native_cast dynamic_cast
 #define __winstr(x) dynamic_cast<::Platform::String^>(x)
 #else
@@ -162,34 +162,41 @@ private:
 };
 
 #if EPUB_PLATFORM(WINRT)
-static inline ::Platform::String^ GetAttributeValueRecursiveNS(::Windows::Data::Xml::Dom::IXmlNode^ node, ::Platform::String^ uri, ::Platform::String^ name)
+#if EPUB_USE(WIN_PHONE_XML)
+typedef ::PhoneSupportInterfaces::IXmlNode		_NodeObj;
+typedef ::PhoneSupportInterfaces::IXmlElement	_ElementObj;
+#else // EPUB_USE(WIN_XML)
+typedef ::Windows::Data::Xml::Dom::IXmlNode		_NodeObj;
+typedef ::Windows::Data::Xml::Dom::IXmlElement	_ElementObj;
+#endif
+static inline ::Platform::String^ GetAttributeValueRecursiveNS(_NodeObj^ node, ::Platform::String^ uri, ::Platform::String^ name)
 {
-	::Windows::Data::Xml::Dom::IXmlElement^ element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(node);
+	_ElementObj^ element = dynamic_cast<_ElementObj^>(node);
 	if (element == nullptr)
-		element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(node->ParentNode);
+		element = dynamic_cast<_ElementObj^>(node->ParentNode);
 
 	while (element != nullptr)
 	{
 		auto attr = element->GetAttributeNS(uri, name);
 		if (attr != nullptr)
 			return attr;
-		element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(element->ParentNode);
+		element = dynamic_cast<_ElementObj^>(element->ParentNode);
 	}
 
 	return nullptr;
 }
-static inline ::Platform::String^ GetAttributeValueRecursive(::Windows::Data::Xml::Dom::IXmlNode^ node, ::Platform::String^ name)
+static inline ::Platform::String^ GetAttributeValueRecursive(_NodeObj^ node, ::Platform::String^ name)
 {
-	::Windows::Data::Xml::Dom::IXmlElement^ element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(node);
+	_ElementObj^ element = dynamic_cast<_ElementObj^>(node);
 	if (element == nullptr)
-		element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(node->ParentNode);
+		element = dynamic_cast<_ElementObj^>(node->ParentNode);
 
 	while (element != nullptr)
 	{
 		auto attr = element->GetAttribute(name);
 		if (attr != nullptr)
 			return attr;
-		element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(element->ParentNode);
+		element = dynamic_cast<_ElementObj^>(element->ParentNode);
 	}
 
 	return nullptr;

@@ -59,6 +59,8 @@ public:
 	typedef _xmlNode*							NativePtr;
 #elif EPUB_USE(WIN_XML)
 	typedef Windows::Data::Xml::Dom::IXmlNode^	NativePtr;
+#elif EPUB_USE(WIN_PHONE_XML)
+	typedef PhoneSupportInterfaces::IXmlNode^	NativePtr;
 #endif
 
     typedef std::list<std::shared_ptr<Node>>	NodeList;

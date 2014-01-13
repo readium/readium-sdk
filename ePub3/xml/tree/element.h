@@ -38,6 +38,8 @@ public:
 	typedef xmlNodePtr								NativeElementPtr;
 #elif EPUB_USE(WIN_XML)
 	typedef Windows::Data::Xml::Dom::XmlElement^	NativeElementPtr;
+#elif EPUB_USE(WIN_PHONE_XML)
+	typedef PhoneSupportInterfaces::IXmlElement^	NativeElementPtr;
 #endif
 public:
     explicit Element(const NativeElementPtr xml) : Node(xml_native_cast<NativePtr>(xml)) {}

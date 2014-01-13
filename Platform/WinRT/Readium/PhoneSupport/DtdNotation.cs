@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Xml;
 using System.Xml.Linq;
+using PhoneSupportInterfaces;
 
 namespace ReadiumPhoneSupport
 {
@@ -82,7 +83,7 @@ namespace ReadiumPhoneSupport
             throw new NotImplementedException();
         }
 
-        public XmlDocument OwnerDocument
+        public IXmlDocument OwnerDocument
         {
             get { throw new NotImplementedException(); }
         }
@@ -92,12 +93,12 @@ namespace ReadiumPhoneSupport
             get { throw new NotImplementedException(); }
         }
 
-        public XmlNamedNodeMap Attributes
+        public IXmlNamedNodeMap Attributes
         {
             get { throw new NotImplementedException(); }
         }
 
-        public XmlNodeList ChildNodes
+        public IXmlNodeList ChildNodes
         {
             get { throw new NotImplementedException(); }
         }

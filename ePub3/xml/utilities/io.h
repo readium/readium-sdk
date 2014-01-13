@@ -60,7 +60,7 @@ public:
     
     std::shared_ptr<Document> xmlReadDocument(const char * url, const char * encoding, int options);
     std::shared_ptr<Document> htmlReadDocument(const char * url, const char * encoding, int options);
-#elif EPUB_USE(WIN_XML)
+#elif EPUB_USE(WIN_XML) || EPUB_USE(WIN_PHONE_XML)
 	::Windows::Storage::IStorageFile^ File() { return _store; }
 	operator ::Windows::Storage::IStorageFile^() { return _store; }
 
@@ -73,7 +73,7 @@ public:
 protected:
 #if EPUB_USE(LIBXML2)
     xmlParserInputBufferPtr _buf;
-#elif EPUB_USE(WIN_XML)
+#elif EPUB_USE(WIN_XML) || EPUB_USE(WIN_PHONE_XML)
 	::Windows::Storage::IStorageFile^ _store;
 #endif
     
@@ -94,7 +94,7 @@ public:
     OutputBuffer(const std::string & encoding = std::string());
 #if EPUB_USE(LIBXML2)
     OutputBuffer(OutputBuffer && o) : _buf(o._buf) { o._buf = nullptr; }
-#elif EPUB_USE(WIN_XML)
+#elif EPUB_USE(WIN_XML) || EPUB_USE(WIN_PHONE_XML)
 	OutputBuffer(OutputBuffer && o) : _store(o._store) { o._store = nullptr; }
 #endif
     virtual ~OutputBuffer();
@@ -107,7 +107,7 @@ public:
     void flush() { xmlOutputBufferFlush(_buf); }
     
 	int writeDocument(xmlDocPtr doc);
-#elif EPUB_USE(WIN_XML)
+#elif EPUB_USE(WIN_XML) || EPUB_USE(WIN_PHONE_XML)
 	::Windows::Storage::IStorageFile^ File() { return _store; }
 	operator ::Windows::Storage::IStorageFile^() { return _store; }
 
@@ -119,7 +119,7 @@ public:
 protected:
 #if EPUB_USE(LIBXML2)
     xmlOutputBufferPtr  _buf;
-#elif EPUB_USE(WIN_XML)
+#elif EPUB_USE(WIN_XML) || EPUB_USE(WIN_PHONE_XML)
 	::Windows::Storage::IStorageFile^	_store;
 #endif
     

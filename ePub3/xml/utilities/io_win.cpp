@@ -32,7 +32,11 @@
 #include <MsXml6.h>
 
 using namespace ::concurrency;
+#if EPUB_USE(WIN_XML)
 using namespace ::Windows::Data::Xml::Dom;
+#elif EPUB_USE(WIN_PHONE_XML)
+using namespace ::PhoneSupportInterfaces;
+#endif
 using namespace ::Windows::Storage;
 using namespace ::Windows::Storage::Streams;
 using namespace ::Windows::Foundation;
@@ -406,8 +410,14 @@ std::shared_ptr<Document> InputBuffer::ReadDocument(const char* url, const char*
 
 
 	str.clear();		// watch your memory
+#if EPUB_USE(WIN_XML)
 	XmlDocument^ native = ref new XmlDocument;
 	XmlLoadSettings^ settings = ref new XmlLoadSettings;
+#elif EPUB_USE(WIN_PHONE_XML)
+	IXmlDocumentFactory^ factory = FactoryGlue.Singleton().XmlFactory;
+	IXmlDocument^ native = factory.CreateXmlDocument();
+	IXmlLoadSettings^ settings = factory.CreateLoadSettings();
+#endif
 	settings->ElementContentWhiteSpace = false;
 	settings->MaxElementDepth = 100;
 	settings->ProhibitDtd = ((options & PROHIBIT_DTD) == PROHIBIT_DTD);

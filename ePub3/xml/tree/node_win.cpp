@@ -32,7 +32,11 @@
 // for IIterator
 #include <collection.h>
 
-using namespace Windows::Data::Xml::Dom;
+#if EPUB_USE(WIN_XML)
+using namespace ::Windows::Data::Xml::Dom;
+#elif EPUB_USE(WIN_PHONE_XML)
+using namespace ::PhoneSupportInterfaces;
+#endif
 
 EPUB3_XML_BEGIN_NAMESPACE
 
@@ -457,7 +461,12 @@ std::shared_ptr<const Node> Node::FirstChild(const string & filterByName) const
 std::shared_ptr<Node> Node::FirstElementChild()
 {
 	auto child = _xml->FirstChild;
-	while (child != nullptr && child->NodeType != ::Windows::Data::Xml::Dom::NodeType::ElementNode)
+#if EPUB_USE(WIN_XML)
+	typedef ::Windows::Data::Xml::Dom::NodeType		WinNodeType;
+#elif EPUB_USE(WIN_PHONE_XML)
+	typedef ::PhoneSupportInterfaces::NodeType		WinNodeType;
+#endif
+	while (child != nullptr && child->NodeType != WinNodeType::ElementNode)
 		child = child->NextSibling;
 	if (child == nullptr)
 		return nullptr;
@@ -629,18 +638,22 @@ NodeSet Node::FindByXPath(const string &xpath, const NamespaceMap &namespaces) c
 }
 std::shared_ptr<Node> Node::NewNode(NativePtr newNode)
 {
+#if EPUB_USE(WIN_XML)
 	using ::Windows::Data::Xml::Dom::NodeType;
+#elif EPUB_USE(WIN_PHONE_XML)
+	using ::PhoneSupportInterfaces::NodeType;
+#endif
 
 	switch (newNode->NodeType)
 	{
 	case NodeType::ElementNode:
-		return std::make_shared<Element>(dynamic_cast<XmlElement^>(newNode));
+		return std::make_shared<Element>(dynamic_cast<IXmlElement^>(newNode));
 	
 	case NodeType::DocumentNode:
-		return std::make_shared<class Document>(dynamic_cast<XmlDocument^>(newNode));
+		return std::make_shared<class Document>(dynamic_cast<IXmlDocument^>(newNode));
 
 	case NodeType::NotationNode:
-		return std::make_shared<DTD>(dynamic_cast<DtdNotation^>(newNode));
+		return std::make_shared<DTD>(dynamic_cast<IDtdNotation^>(newNode));
 
 	default:
 		break;

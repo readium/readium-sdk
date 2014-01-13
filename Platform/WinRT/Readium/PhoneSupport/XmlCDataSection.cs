@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Xml;
 using System.Xml.Linq;
+using PhoneSupportInterfaces;
 
 namespace ReadiumPhoneSupport
 {
@@ -222,7 +223,7 @@ namespace ReadiumPhoneSupport
         /// <summary>
         /// Returns the root of the document that contains the node.
         /// </summary>
-        public XmlDocument OwnerDocument
+        public IXmlDocument OwnerDocument
         {
             get { return NodeConversion.ConvertNode(_base.Document) as XmlDocument; }
         }
@@ -238,7 +239,7 @@ namespace ReadiumPhoneSupport
         /// <summary>
         /// Gets the list of attributes of this node.
         /// </summary>
-        public XmlNamedNodeMap Attributes
+        public IXmlNamedNodeMap Attributes
         {
             get { return null; }
         }
@@ -246,7 +247,7 @@ namespace ReadiumPhoneSupport
         /// <summary>
         /// Gets a list of children in the current node. This property always returns NULL.
         /// </summary>
-        public XmlNodeList ChildNodes
+        public IXmlNodeList ChildNodes
         {
             get { return null; }
         }

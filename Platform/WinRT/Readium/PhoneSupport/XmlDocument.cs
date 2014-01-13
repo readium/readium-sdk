@@ -31,6 +31,7 @@ using Windows.Foundation;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
 using System.Net;
+using PhoneSupportInterfaces;
 
 namespace ReadiumPhoneSupport
 {
@@ -58,7 +59,7 @@ namespace ReadiumPhoneSupport
         /// <param name="name">The name of the new attribute object.
         /// This name is subsequently available as the new node's NodeName property.</param>
         /// <returns>The newly created attribute.</returns>
-        public XmlAttribute CreateAttribute(string name)
+        public IXmlAttribute CreateAttribute(string name)
         {
             return NodeConversion.ConvertNode(new XAttribute(name, "")) as XmlAttribute;
         }
@@ -70,7 +71,7 @@ namespace ReadiumPhoneSupport
         /// <param name="name">The name of the new attribute object.
         /// This name is subsequently available as the new node's NodeName property.</param>
         /// <returns>The newly created attribute.</returns>
-        public XmlAttribute CreateAttributeNS(object uri, string name)
+        public IXmlAttribute CreateAttributeNS(object uri, string name)
         {
             if (uri == null)
                 return CreateAttribute(name);
@@ -82,7 +83,7 @@ namespace ReadiumPhoneSupport
         /// </summary>
         /// <param name="data">The value to be supplied to the new CDATA section object's NodeValue property.</param>
         /// <returns>The newly created object.</returns>
-        public XmlCDataSection CreateCDataSection(string data)
+        public IXmlCDataSection CreateCDataSection(string data)
         {
             return NodeConversion.ConvertNode(new XCData(data)) as XmlCDataSection;
         }
@@ -92,7 +93,7 @@ namespace ReadiumPhoneSupport
         /// </summary>
         /// <param name="comment">The value to be supplied to the new comment object's NodeValue.</param>
         /// <returns>The newly created comment node.</returns>
-        public XmlComment CreateComment(string comment)
+        public IXmlComment CreateComment(string comment)
         {
             return NodeConversion.ConvertNode(new XComment(comment)) as XmlComment;
         }
@@ -101,7 +102,7 @@ namespace ReadiumPhoneSupport
         /// Creates an empty XmlDocumentFragment object.
         /// </summary>
         /// <returns>The newly created object.</returns>
-        public XmlDocumentFragment CreateDocumentFragment()
+        public IXmlDocumentFragment CreateDocumentFragment()
         {
             return NodeConversion.CreateDocumentFragment();
         }
@@ -112,7 +113,7 @@ namespace ReadiumPhoneSupport
         /// <param name="tagName">The name for the new element node. The string is case-sensitive.
         /// This name is subsequently available as the element node's NodeName property.</param>
         /// <returns>The newly created object.</returns>
-        public XmlElement CreateElement(string tagName)
+        public IXmlElement CreateElement(string tagName)
         {
             return NodeConversion.ConvertNode(new XElement(tagName)) as XmlElement;
         }
@@ -124,7 +125,7 @@ namespace ReadiumPhoneSupport
         /// <param name="tagName">The name for the new element node. It is case-sensitive.
         /// This name is subsequently available as the element node's NodeName property.</param>
         /// <returns>The newly created object.</returns>
-        public XmlElement CreateElementNS(object uri, string tagName)
+        public IXmlElement CreateElementNS(object uri, string tagName)
         {
             if (uri == null)
                 return CreateElement(tagName);
@@ -137,7 +138,7 @@ namespace ReadiumPhoneSupport
         /// <param name="name">The name of the entity referenced. This name is subsequently available
         /// as the new object's NodeName property.</param>
         /// <returns></returns>
-        public XmlEntityReference CreateEntityReference(string name)
+        public IXmlEntityReference CreateEntityReference(string name)
         {
             return NodeConversion.CreateEntityReference(name, new XText(""));
         }
@@ -150,7 +151,7 @@ namespace ReadiumPhoneSupport
         /// <param name="data">The remainder of the processing instruction preceding the closing ?>
         /// characters. It supplies the NodeValue property for the new object.</param>
         /// <returns>The newly created object.</returns>
-        public XmlProcessingInstruction CreateProcessingInstruction(string target, string data)
+        public IXmlProcessingInstruction CreateProcessingInstruction(string target, string data)
         {
             return NodeConversion.ConvertNode(new XProcessingInstruction(target, data)) as XmlProcessingInstruction;
         }
@@ -160,7 +161,7 @@ namespace ReadiumPhoneSupport
         /// </summary>
         /// <param name="data">The value to be supplied to the new text object's NodeValue.</param>
         /// <returns>The newly created object.</returns>
-        public XmlText CreateTextNode(string data)
+        public IXmlText CreateTextNode(string data)
         {
             return NodeConversion.ConvertNode(new XText(data)) as XmlText;
         }
@@ -170,7 +171,7 @@ namespace ReadiumPhoneSupport
         /// </summary>
         /// <param name="elementId">The ID to match.</param>
         /// <returns>The element that matches the supplied ID. If no elements match, this method returns Null.</returns>
-        public XmlElement GetElementById(string elementId)
+        public IXmlElement GetElementById(string elementId)
         {
             var matched = from XElement element in _base.Descendants()
                           where element.Attribute("id").Value == elementId
@@ -186,7 +187,7 @@ namespace ReadiumPhoneSupport
         /// <param name="tagName">The element name to find. 
         /// The value * returns all elements in the document.</param>
         /// <returns>The collection of elements that match the specified name.</returns>
-        public XmlNodeList GetElementsByTagName(string tagName)
+        public IXmlNodeList GetElementsByTagName(string tagName)
         {
             if (tagName == "*")
                 return new XmlNodeList(_base.Descendants());
@@ -218,7 +219,7 @@ namespace ReadiumPhoneSupport
         /// For XML, this property gets the address of the node that specifies the DTD.
         /// This property returns Null for for HTML documents and XML documents without a DTD.
         /// </summary>
-        public XmlDocumentType Doctype
+        public IXmlDocumentType Doctype
         {
             get { return NodeConversion.ConvertNode(_base.DocumentType) as XmlDocumentType; }
         }
@@ -226,7 +227,7 @@ namespace ReadiumPhoneSupport
         /// <summary>
         /// Gets the root element of the document.
         /// </summary>
-        public XmlElement DocumentElement
+        public IXmlElement DocumentElement
         {
             get { return NodeConversion.ConvertNode(_base.Root) as XmlElement; }
         }
@@ -242,7 +243,7 @@ namespace ReadiumPhoneSupport
         /// <summary>
         /// Gets the Implementation object for the document.
         /// </summary>
-        public XmlDomImplementation Implementation
+        public IXmlDomImplementation Implementation
         {
             get { return new XmlDomImplementation(); }
         }
@@ -341,7 +342,7 @@ namespace ReadiumPhoneSupport
                         if (newElementCount > 1)
                             throw new ArgumentException("Cannot have more than one element child of an XmlDocument.");
 
-                        var root = DocumentElement;
+                        var root = DocumentElement as XmlElement;
                         if (newElementCount == 1 && root != null)
                         {
                             XElement elem = container.Elements().First();
@@ -524,7 +525,7 @@ namespace ReadiumPhoneSupport
         /// <summary>
         /// Returns the root of the document that contains the node.
         /// </summary>
-        public XmlDocument OwnerDocument
+        public IXmlDocument OwnerDocument
         {
             get { return this; }
         }
@@ -542,7 +543,7 @@ namespace ReadiumPhoneSupport
         /// Gets the list of attributes of this node.
         /// </summary>
         /// <result>This property returns NULL.</result>
-        public XmlNamedNodeMap Attributes
+        public IXmlNamedNodeMap Attributes
         {
             get { return null; }
         }
@@ -550,7 +551,7 @@ namespace ReadiumPhoneSupport
         /// <summary>
         /// Gets a list of children in the current node.
         /// </summary>
-        public XmlNodeList ChildNodes
+        public IXmlNodeList ChildNodes
         {
             get { return new XmlNodeList(_base.Nodes()); }
         }
@@ -762,9 +763,10 @@ namespace ReadiumPhoneSupport
                 _base = aDoc;
         }
 
-        public void LoadXml(string xml, XmlLoadSettings loadSettings)
+        public void LoadXml(string xml, IXmlLoadSettings loadSettings)
         {
-            XDocument aDoc = XDocument.Parse(xml, loadSettings.LinqLoadOptions);
+            XmlLoadSettings concrete = loadSettings as XmlLoadSettings;
+            XDocument aDoc = XDocument.Parse(xml, concrete.LinqLoadOptions);
             if (aDoc != null)
                 _base = aDoc;
         }
@@ -780,7 +782,7 @@ namespace ReadiumPhoneSupport
             return _SaveToFileAsync(file).AsAsyncAction();
         }
 
-        private static async Task<XmlDocument> _LoadFromFileAsync(IStorageFile file)
+        private static async Task<IXmlDocument> _LoadFromFileAsync(IStorageFile file)
         {
             var stream = await file.OpenStreamForReadAsync();
             if (stream == null)
@@ -793,12 +795,12 @@ namespace ReadiumPhoneSupport
             return new XmlDocument(aDoc);
         }
 
-        public static IAsyncOperation<XmlDocument> LoadFromFileAsync(IStorageFile file)
+        public static IAsyncOperation<IXmlDocument> LoadFromFileAsync(IStorageFile file)
         {
-            return _LoadFromFileAsync(file).AsAsyncOperation<XmlDocument>();
+            return _LoadFromFileAsync(file).AsAsyncOperation<IXmlDocument>();
         }
 
-        private static async Task<XmlDocument> _LoadFromFileAsync(IStorageFile file, XmlLoadSettings loadSettings)
+        private static async Task<IXmlDocument> _LoadFromFileAsync(IStorageFile file, XmlLoadSettings loadSettings)
         {
             var stream = await file.OpenStreamForReadAsync();
             if (stream == null)
@@ -811,12 +813,12 @@ namespace ReadiumPhoneSupport
             return new XmlDocument(aDoc);
         }
 
-        public static IAsyncOperation<XmlDocument> LoadFromFileAsync(IStorageFile file, XmlLoadSettings loadSettings)
+        public static IAsyncOperation<IXmlDocument> LoadFromFileAsync(IStorageFile file, IXmlLoadSettings loadSettings)
         {
-            return _LoadFromFileAsync(file, loadSettings).AsAsyncOperation<XmlDocument>();
+            return _LoadFromFileAsync(file, loadSettings as XmlLoadSettings).AsAsyncOperation<IXmlDocument>();
         }
 
-        private static XmlDocument _LoadFromUriAsync(Uri uri, XmlLoadSettings loadSettings)
+        private static IXmlDocument _LoadFromUriAsync(Uri uri, XmlLoadSettings loadSettings)
         {
             AsyncUriLoader loader = new AsyncUriLoader();
             Stream stream = loader.GetStreamForUri(uri);
@@ -830,14 +832,14 @@ namespace ReadiumPhoneSupport
             return new XmlDocument(aDoc);
         }
 
-        public static IAsyncOperation<XmlDocument> LoadFromUriAsync(Uri uri)
+        public static IAsyncOperation<IXmlDocument> LoadFromUriAsync(Uri uri)
         {
-            return new Task<XmlDocument>(() => { return _LoadFromUriAsync(uri, null); }).AsAsyncOperation<XmlDocument>();
+            return new Task<IXmlDocument>(() => { return _LoadFromUriAsync(uri, null); }).AsAsyncOperation<IXmlDocument>();
         }
 
-        public static IAsyncOperation<XmlDocument> LoadFromUriAsync(Uri uri, XmlLoadSettings loadSettings)
+        public static IAsyncOperation<IXmlDocument> LoadFromUriAsync(Uri uri, IXmlLoadSettings loadSettings)
         {
-            return new Task<XmlDocument>(() => { return _LoadFromUriAsync(uri, loadSettings); }).AsAsyncOperation<XmlDocument>();
+            return new Task<IXmlDocument>(() => { return _LoadFromUriAsync(uri, loadSettings as XmlLoadSettings); }).AsAsyncOperation<IXmlDocument>();
         }
     }
 }

@@ -71,6 +71,9 @@
 #define ePub3__config_h
 
 #include "_platform.h"
+#if EPUB_OS(WINDOWS)
+#include <winapifamily.h>
+#endif
 
 #define REGEX_INCLUDE <regex>
 #define REGEX_NS std
@@ -183,7 +186,11 @@ typedef signed long ssize_t;
 
 #if EPUB_PLATFORM(WINRT)
 # define EPUB_USE_LIBXML2 0
-# define EPUB_USE_WIN_XML 1
+# if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PC_APP)
+#  define EPUB_USE_WIN_XML 1
+# elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+#  define EPUB_USE_WIN_PHONE_XML 1
+# endif
 # define EPUB_ENABLE_XML_BUILDER 0
 # define EPUB_ENABLE_XML_C14N 0
 #else

@@ -25,7 +25,11 @@
 
 #include <sstream>
 
+#if EPUB_USE(WIN_XML)
 using namespace ::Windows::Data::Xml::Dom;
+#elif EPUB_USE(WIN_PHONE_XML)
+using namespace ::PhoneSupportInterfaces;
+#endif
 
 EPUB3_XML_BEGIN_NAMESPACE
 
@@ -121,7 +125,11 @@ bool XPathEvaluator::Evaluate(std::shared_ptr<const Node> node, ObjectType * res
 			else
 			{
 				IXmlNode^ inode = _lastResult->Item(0);
+#if EPUB_USE(WIN_XML)
 				using ::Windows::Data::Xml::Dom::NodeType;
+#elif EPUB_USE(WIN_PHONE_XML)
+				using ::PhoneSupportInterfaces::NodeType;
+#endif
 				if ((inode != nullptr) && (inode->NodeType == NodeType::TextNode))
 				{
 					XmlText^ txt = dynamic_cast<XmlText^>(inode);

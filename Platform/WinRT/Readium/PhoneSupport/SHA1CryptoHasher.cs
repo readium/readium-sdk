@@ -22,12 +22,14 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Security.Cryptography;
+using Windows.Storage.Streams;
 
 namespace ReadiumPhoneSupport
 {
     [ComVisibleAttribute(true)]
-    public class SHA1CryptoHasher
+    public sealed class SHA1CryptoHasher : PhoneSupportInterfaces.IHasher
     {
         private SHA1Managed _tx;
 
@@ -46,9 +48,9 @@ namespace ReadiumPhoneSupport
             get { return _tx.CanTransformMultipleBlocks; }
         }
 
-        public byte[] Hash
+        public IBuffer Hash
         {
-            get { return _tx.Hash; }
+            get { return _tx.Hash.AsBuffer(); }
         }
 
         public int HashSize
@@ -71,14 +73,14 @@ namespace ReadiumPhoneSupport
             _tx.Clear();
         }
 
-        public byte[] ComputeHash(byte[] bytes)
+        public IBuffer ComputeHash(IBuffer bytes)
         {
-            return _tx.ComputeHash(bytes);
+            return _tx.ComputeHash(bytes.ToArray()).AsBuffer();
         }
 
-        public byte[] ComputeHash(byte[] bytes, int offset, int count)
+        public IBuffer ComputeHash(IBuffer bytes, int offset, int count)
         {
-            return _tx.ComputeHash(bytes, offset, count);
+            return _tx.ComputeHash(bytes.ToArray((uint)offset, count), 0, count).AsBuffer();
         }
 
         public void Initialize()
@@ -86,14 +88,14 @@ namespace ReadiumPhoneSupport
             _tx.Initialize();
         }
 
-        public int TransformBlock(byte[] inputBuffer, int inputOffset, int inputCount, byte[] outputBuffer, int outputOffset)
+        public int TransformBlock(IBuffer inputBuffer, int inputOffset, int inputCount, IBuffer outputBuffer, int outputOffset)
         {
-            return _tx.TransformBlock(inputBuffer, inputOffset, inputCount, outputBuffer, outputOffset);
+            return _tx.TransformBlock(inputBuffer.ToArray((uint)inputOffset, inputCount), 0, inputCount, outputBuffer.ToArray(), outputOffset);
         }
 
-        public byte[] TransformFinalBlock(byte[] inputBuffer, int inputOffset, int inputCount)
+        public IBuffer TransformFinalBlock(IBuffer inputBuffer, int inputOffset, int inputCount)
         {
-            return _tx.TransformFinalBlock(inputBuffer, inputOffset, inputCount);
+            return _tx.TransformFinalBlock(inputBuffer.ToArray((uint)inputOffset, inputCount), 0, inputCount).AsBuffer();
         }
 
         public void Dispose()

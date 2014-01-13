@@ -25,7 +25,11 @@
 
 #include <collection.h>
 
+#if EPUB_USE(WIN_XML)
 using namespace ::Windows::Data::Xml::Dom;
+#elif EPUB_USE(WIN_PHONE_XML)
+using namespace ::PhoneSupportInterfaces;
+#endif
 
 #if 0
 typedef std::map<ePub3::xml::Node*, ePub3::xml::NodeType> NodeMap;
@@ -150,7 +154,7 @@ void Document::SetInternalSubset(const string &name, const string &externalID, c
 #endif
 std::shared_ptr<Element> Document::Root()
 {
-	XmlElement^ element = xml()->DocumentElement;
+	IXmlElement^ element = xml()->DocumentElement;
 	if (element == nullptr)
 		return nullptr;
 	return std::make_shared<Element>(element);

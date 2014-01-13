@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Xml;
 using System.Xml.Linq;
+using PhoneSupportInterfaces;
 
 namespace ReadiumPhoneSupport
 {
@@ -162,7 +163,7 @@ namespace ReadiumPhoneSupport
         /// <summary>
         /// Returns the root of the document that contains the node.
         /// </summary>
-        public XmlDocument OwnerDocument
+        public IXmlDocument OwnerDocument
         {
             get { return NodeConversion.ConvertNode(_base.Document) as XmlDocument; }
         }
@@ -178,7 +179,7 @@ namespace ReadiumPhoneSupport
         /// <summary>
         /// This method is not applicable to this class and will throw an exception.
         /// </summary>
-        public XmlNamedNodeMap Attributes
+        public IXmlNamedNodeMap Attributes
         {
             get { throw new InvalidOperationException(); }
         }
@@ -186,7 +187,7 @@ namespace ReadiumPhoneSupport
         /// <summary>
         /// This method is not applicable to this class and will throw an exception.
         /// </summary>
-        public XmlNodeList ChildNodes
+        public IXmlNodeList ChildNodes
         {
             get { throw new InvalidOperationException(); }
         }

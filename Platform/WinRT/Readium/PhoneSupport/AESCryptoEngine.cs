@@ -22,24 +22,35 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Security.Cryptography;
+using Windows.Storage.Streams;
 
 namespace ReadiumPhoneSupport
 {
     [ComVisibleAttribute(true)]
-    public sealed class AESCryptoEngine
+    public sealed class AESCryptoEngine : PhoneSupportInterfaces.ICryptoEngine
     {
         private ICryptoTransform _cryptor;
 
-        public AESCryptoEngine(bool encrypt, byte[] iv, byte[] key)
+        public AESCryptoEngine()
         {
+        }
+
+        public bool Initialize(bool encrypt, IBuffer iv, IBuffer key)
+        {
+            if (_cryptor != null)
+                return false;
+
             using (AesManaged aes = new AesManaged())
             {
                 if (encrypt)
-                    _cryptor = aes.CreateEncryptor(key, iv);
+                    _cryptor = aes.CreateEncryptor(key.ToArray(), iv.ToArray());
                 else
-                    _cryptor = aes.CreateDecryptor(key, iv);
+                    _cryptor = aes.CreateDecryptor(key.ToArray(), iv.ToArray());
             }
+
+            return true;
         }
 
         public bool CanReuseTransform
@@ -62,14 +73,14 @@ namespace ReadiumPhoneSupport
             get { return _cryptor.OutputBlockSize; }
         }
 
-        public int TransformBlock(byte[] inputBuffer, int inputOffset, int inputCount, byte[] outputBuffer, int outputOffset)
+        public int TransformBlock(IBuffer inputBuffer, int inputOffset, int inputCount, IBuffer outputBuffer, int outputOffset)
         {
-            return _cryptor.TransformBlock(inputBuffer, inputOffset, inputCount, outputBuffer, outputOffset);
+            return _cryptor.TransformBlock(inputBuffer.ToArray((uint)inputOffset, inputCount), 0, inputCount, outputBuffer.ToArray(), outputOffset);
         }
 
-        public byte[] TransformFinalBlock(byte[] inputBuffer, int inputOffset, int inputCount)
+        public IBuffer TransformFinalBlock(IBuffer inputBuffer, int inputOffset, int inputCount)
         {
-            return _cryptor.TransformFinalBlock(inputBuffer, inputOffset, inputCount);
+            return _cryptor.TransformFinalBlock(inputBuffer.ToArray((uint)inputOffset, inputCount), 0, inputCount).AsBuffer();
         }
 
         public void Dispose()

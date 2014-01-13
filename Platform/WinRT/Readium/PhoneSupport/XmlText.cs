@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Xml;
 using System.Xml.Linq;
+using PhoneSupportInterfaces;
 
 namespace ReadiumPhoneSupport
 {
@@ -143,7 +144,7 @@ namespace ReadiumPhoneSupport
             throw new InvalidOperationException();
         }
 
-        public XmlDocument OwnerDocument
+        public IXmlDocument OwnerDocument
         {
             get { return NodeConversion.ConvertNode(_base.Document) as XmlDocument; }
         }
@@ -153,12 +154,12 @@ namespace ReadiumPhoneSupport
             get { return NodeConversion.ConvertNode(_base.Parent); }
         }
 
-        public XmlNamedNodeMap Attributes
+        public IXmlNamedNodeMap Attributes
         {
             get { throw new InvalidOperationException(); }
         }
 
-        public XmlNodeList ChildNodes
+        public IXmlNodeList ChildNodes
         {
             get { throw new InvalidOperationException(); }
         }

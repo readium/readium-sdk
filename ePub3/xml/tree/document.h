@@ -62,6 +62,9 @@ public:
 #elif EPUB_USE(WIN_XML)
 	typedef Windows::Data::Xml::Dom::XmlDocument^	NativeDocPtr;
 	typedef Windows::Data::Xml::Dom::DtdEntity^		NativeEntityPtr;
+#elif EPUB_USE(WIN_PHONE_XML)
+	typedef PhoneSupportInterfaces::IXmlDocument^	NativeDocPtr;
+	typedef PhoneSupportInterfaces::IDtdEntity^		NativeEntityPtr;
 #endif
 
 public:

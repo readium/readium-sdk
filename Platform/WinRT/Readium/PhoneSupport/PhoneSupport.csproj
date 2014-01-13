@@ -50,6 +50,8 @@
     <NoConfig>true</NoConfig>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
@@ -88,6 +90,7 @@
     <Compile Include="DtdEntity.cs" />
     <Compile Include="DtdNotation.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="Initializer.cs" />
     <Compile Include="XmlAttribute.cs" />
     <Compile Include="XmlCDataSection.cs" />
     <Compile Include="XmlComment.cs" />
@@ -108,6 +111,12 @@
     <Compile Include="SHA256CryptoHasher.cs" />
     <Compile Include="XmlInterfaces.cs" />
     <Compile Include="XPathToLinq.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PhoneSupportInterfaces\PhoneSupportInterfaces.vcxproj">
+      <Project>{71999345-AE10-4E5A-AFC2-B5CF9FE52B34}</Project>
+      <Name>PhoneSupportInterfaces</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).$(TargetFrameworkVersion).Overrides.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).CSharp.targets" />

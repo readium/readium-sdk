@@ -29,6 +29,7 @@ using System.Xml.Linq;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
+using PhoneSupportInterfaces;
 
 namespace ReadiumPhoneSupport
 {
@@ -68,7 +69,7 @@ namespace ReadiumPhoneSupport
         /// </summary>
         /// <param name="attributeName">The name of the required attribute.</param>
         /// <returns>The attribute pointer.</returns>
-        public XmlAttribute GetAttributeNode(string attributeName)
+        public IXmlAttribute GetAttributeNode(string attributeName)
         {
             return NodeConversion.ConvertNode(_base.Attribute(attributeName)) as XmlAttribute;
         }
@@ -79,7 +80,7 @@ namespace ReadiumPhoneSupport
         /// <param name="namespaceUri">The namespace of the attribute to get.</param>
         /// <param name="attributeName">The name of the attribute without the namespace prefix.</param>
         /// <returns>The returned attribute pointer.</returns>
-        public XmlAttribute GetAttributeNodeNS(object namespaceUri, string attributeName)
+        public IXmlAttribute GetAttributeNodeNS(object namespaceUri, string attributeName)
         {
             return NodeConversion.ConvertNode(_base.Attribute(XNamespace.Get(namespaceUri.ToString()) + attributeName)) as XmlAttribute;
         }
@@ -90,7 +91,7 @@ namespace ReadiumPhoneSupport
         /// <param name="tagName">The element name to find. 
         /// The value * returns all elements in the document.</param>
         /// <returns>The collection of elements that match the specified name.</returns>
-        public XmlNodeList GetElementsByTagName(string tagName)
+        public IXmlNodeList GetElementsByTagName(string tagName)
         {
             if (tagName == "*")
                 return new XmlNodeList(_base.Descendants());
@@ -115,7 +116,7 @@ namespace ReadiumPhoneSupport
         /// </summary>
         /// <param name="namespaceUri">The namespace of attribute to be removed.</param>
         /// <param name="attributeName">The name of the attribute without the namespace prefix.</param>
-        public void RemoveAttributeNs(object namespaceUri, string attributeName)
+        public void RemoveAttributeNS(object namespaceUri, string attributeName)
         {
             _base.Attribute(XNamespace.Get(namespaceUri.ToString()) + attributeName).Remove();
         }
@@ -124,12 +125,13 @@ namespace ReadiumPhoneSupport
         /// Removes the specified attribute from this element.
         /// </summary>
         /// <param name="attributeNode">The attribute to be removed.</param>
-        public XmlAttribute RemoveAttributeNode(XmlAttribute attributeNode)
+        public IXmlAttribute RemoveAttributeNode(IXmlAttribute attributeNode)
         {
+            XmlAttribute attr = attributeNode as XmlAttribute;
             if (attributeNode.ParentNode != this)
                 return null;
 
-            attributeNode._base.Remove();
+            attr._base.Remove();
             return attributeNode;
         }
 
@@ -159,12 +161,13 @@ namespace ReadiumPhoneSupport
         /// </summary>
         /// <param name="attributeNode">A pointer to the new attribute.</param>
         /// <returns>The returned pointer to the previous attribute (if any) with the same name.</returns>
-        public XmlAttribute SetAttributeNode(XmlAttribute attributeNode)
+        public IXmlAttribute SetAttributeNode(IXmlAttribute attributeNode)
         {
-            XmlAttribute existing = GetAttributeNode(attributeNode.LocalName.ToString());
+            XmlAttribute attr = attributeNode as XmlAttribute;
+            XmlAttribute existing = GetAttributeNode(attributeNode.LocalName.ToString()) as XmlAttribute;
             if (existing != null)
                 existing._base.Remove();
-            _base.Add(attributeNode._base);
+            _base.Add(attr._base);
             return existing;
         }
 
@@ -174,12 +177,13 @@ namespace ReadiumPhoneSupport
         /// <param name="attributeNode">The node to add to the collection.You set the namespace when
         /// you create the node using the CreateAttributeNS method.</param>
         /// <returns>The returned pointer to the previous attribute (if any) with the same name.</returns>
-        public XmlAttribute SetAttributeNodeNS(XmlAttribute attributeNode)
+        public IXmlAttribute SetAttributeNodeNS(IXmlAttribute attributeNode)
         {
-            XAttribute existing = _base.Attribute(attributeNode._base.Name);
+            XmlAttribute attr = attributeNode as XmlAttribute;
+            XAttribute existing = _base.Attribute(attr._base.Name);
             if (existing != null)
                 existing.Remove();
-            _base.Add(attributeNode._base);
+            _base.Add(attr._base);
             return NodeConversion.ConvertNode(existing) as XmlAttribute;
         }
 
@@ -463,7 +467,7 @@ namespace ReadiumPhoneSupport
         /// <summary>
         /// Returns the root of the document that contains the node.
         /// </summary>
-        public XmlDocument OwnerDocument
+        public IXmlDocument OwnerDocument
         {
             get { return NodeConversion.ConvertNode(_base.Document) as XmlDocument; }
         }
@@ -481,7 +485,7 @@ namespace ReadiumPhoneSupport
         /// Gets the list of attributes of this node.
         /// </summary>
         /// <result>This property returns NULL.</result>
-        public XmlNamedNodeMap Attributes
+        public IXmlNamedNodeMap Attributes
         {
             get { return new XmlNamedNodeMap(_base.Attributes()); }
         }
@@ -489,7 +493,7 @@ namespace ReadiumPhoneSupport
         /// <summary>
         /// Gets a list of children in the current node.
         /// </summary>
-        public XmlNodeList ChildNodes
+        public IXmlNodeList ChildNodes
         {
             get { return new XmlNodeList(_base.Nodes()); }
         }
@@ -529,7 +533,7 @@ namespace ReadiumPhoneSupport
             get
             {
                 string uri = _base.Name.Namespace.NamespaceName;
-                return OwnerDocument._base.CreateNamespaceManager().LookupPrefix(uri);
+                return (OwnerDocument as XmlDocument)._base.CreateNamespaceManager().LookupPrefix(uri);
             }
             set
             {
