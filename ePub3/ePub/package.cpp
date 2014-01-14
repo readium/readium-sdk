@@ -548,7 +548,9 @@ bool Package::Unpack()
         bool foundIdentifier = false, foundTitle = false, foundLanguage = false, foundModDate = false;
         string uniqueIDRef = _getProp(root, "unique-identifier");
         if ( uniqueIDRef.empty() )
-            HandleError(EPUBError::OPFPackageUniqueIDInvalid);
+            HandleError(EPUBError::OPFPackageUniqueIDInvalid, "No unique-identifier attribute on root element");
+
+		std::vector<string> uidRefIDs;
         
         for ( auto node : metadataNodes )
         {
@@ -583,8 +585,7 @@ bool Package::Unpack()
                     case DCType::Identifier:
                     {
                         foundIdentifier = true;
-                        if ( !uniqueIDRef.empty() && uniqueIDRef != p->XMLIdentifier() )
-                            HandleError(EPUBError::OPFPackageUniqueIDInvalid);
+						uidRefIDs.push_back(p->XMLIdentifier());
                         break;
                     }
                     case DCType::Title:
@@ -612,6 +613,23 @@ bool Package::Unpack()
                 StoreXMLIdentifiable(p);
             }
         }
+
+		if ((foundIdentifier) && !uidRefIDs.empty())
+		{
+			bool found = false;
+			for (auto& thisID : uidRefIDs)
+			{
+				if (thisID == uniqueIDRef)
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				HandleError(EPUBError::OPFPackageUniqueIDInvalid, "No matching identifier xml:id found");
+			}
+		}
         
         if ( !foundIdentifier )
             HandleError(EPUBError::OPFMissingIdentifierMetadata);

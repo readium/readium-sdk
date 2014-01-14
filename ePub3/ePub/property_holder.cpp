@@ -31,7 +31,8 @@ const PropertyHolder::PropertyVocabularyMap PropertyHolder::ReservedVocabularies
     { "marc", "http://id.loc.gov/vocabulary/" },
     { "media", "http://www.idpf.org/epub/vocab/overlays/#" },
     { "onix", "http://www.editeur.org/ONIX/book/codelists/current.html#" },
-    { "xsd", "http://www.w3.org/2001/XMLSchema#" }
+    { "xsd", "http://www.w3.org/2001/XMLSchema#" },
+    { "rendition", "http://www.idpf.org/vocab/rendition/#" }
 });
 const std::map<const string, bool> PropertyHolder::CoreMediaTypes({
     // Image Types

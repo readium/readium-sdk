@@ -423,7 +423,7 @@ std::shared_ptr<Document> InputBuffer::ReadDocument(const char* url, const char*
 	settings->ProhibitDtd = ((options & PROHIBIT_DTD) == PROHIBIT_DTD);
 	settings->ResolveExternals = ((options & RESOLVE_EXTERNALS) == RESOLVE_EXTERNALS);
 	settings->ValidateOnParse = ((options & VALIDATE_ON_PARSE) == VALIDATE_ON_PARSE);
-	
+
 	try
 	{
 		native->LoadXml(nstr, settings);
