@@ -31,7 +31,7 @@
 #include <type_traits>
 #include <utility>
 
-#if EPUB_PLATFORM(WINRT)
+#if EPUB_PLATFORM(WINRT) && !EPUB_PLATFORM(WIN_PHONE)
 using std::make_unique;
 #else
 

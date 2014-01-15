@@ -32,7 +32,7 @@ bool EncryptionInfo::ParseXML(shared_ptr<xml::Node> node)
     XPathWrangler::NamespaceList nsList;
     nsList["enc"] = XMLENCNamespaceURI;
     nsList["dsig"] = XMLDSigNamespaceURI;
-    XPathWrangler xpath(node->doc, nsList);
+    XPathWrangler xpath(node->Document(), nsList);
 #endif
     
     auto strings = xpath.Strings("./enc:EncryptionMethod/@Algorithm", node);

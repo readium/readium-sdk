@@ -107,7 +107,12 @@ public:
 	property bool CanLoadDocument { bool get(); }
 	property UINT ResourceSize { UINT get(); }
 	
-	::Windows::Data::Xml::Dom::XmlDocument^ LoadDocument();
+#if EPUB_USE(WIN_XML)
+	::Windows::Data::Xml::Dom::IXmlDocument^
+#elif EPUB_USE(WIN_PHONE_XML)
+	::PhoneSupportInterfaces::IXmlDocumuent^
+#endif
+		LoadDocument();
 
 	IClosableStream^ ReadStream();
 

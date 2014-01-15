@@ -29,9 +29,16 @@
 #include <windows.h>
 #include <Wincrypt.h>
 #elif EPUB_PLATFORM(WINRT)
-using namespace ::Platform;
+#if EPUB_PLATFORM(WIN_PHONE)
+#include <robuffer.h>
+#include <wrl.h>
+#include <wrl/client.h>
+using namespace ::PhoneSupportInterfaces;
+#else
 using namespace ::Windows::Security::Cryptography;
 using namespace ::Windows::Security::Cryptography::Core;
+#endif
+using namespace ::Platform;
 //using namespace ::Windows::Storage::Streams;
 #else
 #include <openssl/sha.h>
@@ -116,6 +123,16 @@ bool FontObfuscator::BuildKey(ConstContainerPtr container)
 
     if ( winerr != NO_ERROR )
         _THROW_WIN_ERROR_(winerr);
+#elif EPUB_PLATFORM(WIN_PHONE)
+	auto inBuf = BufferFactory::CreateFromBytes(reinterpret_cast<byte*>(const_cast<char*>(str.data())), str.length());
+	auto hasher = FactoryGlue::Singleton()->CryptoFactory->CreateSHA1();
+	auto keyBuf = hasher->ComputeHash(inBuf);
+
+	::Microsoft::WRL::ComPtr<IUnknown> comBuffer(reinterpret_cast<IUnknown*>(keyBuf));
+	::Microsoft::WRL::ComPtr<::Windows::Storage::Streams::IBufferByteAccess> byteBuffer;
+	comBuffer.As(&byteBuffer);
+
+	memcpy_s(_key, KeySize, byteBuffer->Buffer, keyBuf->Length);
 #elif EPUB_PLATFORM(WINRT)
 	auto byteArray = ArrayReference<byte>(reinterpret_cast<byte*>(const_cast<char*>(str.data())), str.length());
 	auto inBuf = CryptographicBuffer::CreateFromByteArray(byteArray);

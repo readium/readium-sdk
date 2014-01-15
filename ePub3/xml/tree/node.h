@@ -149,7 +149,7 @@ public:
     ///////////////////////////////////////////////////////
     // Hierarchy
     
-    std::shared_ptr<Document> Document();
+    std::shared_ptr<class Document> Document();
     std::shared_ptr<const class Document> Document() const;
     
     std::shared_ptr<Element> Parent();
@@ -196,7 +196,7 @@ public:
 #if EPUB_USE(LIBXML2)
     static void Wrap(_xmlNode* xml);
     static void Unwrap(_xmlNode * xml);
-#elif EPUB_USE(WIN_XML)
+#elif EPUB_USE(WIN_XML) || EPUB_USE(WIN_PHONE_XML)
 	static std::shared_ptr<Node> NewNode(NativePtr ptr);
 #endif
     

@@ -37,7 +37,7 @@ public:
 #if EPUB_USE(LIBXML2)
 	typedef xmlNodePtr								NativeElementPtr;
 #elif EPUB_USE(WIN_XML)
-	typedef Windows::Data::Xml::Dom::XmlElement^	NativeElementPtr;
+	typedef Windows::Data::Xml::Dom::IXmlElement^	NativeElementPtr;
 #elif EPUB_USE(WIN_PHONE_XML)
 	typedef PhoneSupportInterfaces::IXmlElement^	NativeElementPtr;
 #endif

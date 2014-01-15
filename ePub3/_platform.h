@@ -27,6 +27,10 @@
 /* Include compiler-specific macros */
 #include "_compiler.h"
 
+#if __cplusplus_winrt
+#include <winapifamily.h>
+#endif
+
 /* ==== PLATFORM handles OS, operating environment, graphics API, and
  CPU. This macro will be phased out in favor of platform adaptation
  macros, policy decision macros, and top-level port definitions. ==== */
@@ -468,6 +472,9 @@
 #elif EPUB_OS(WINDOWS)
 #if __cplusplus_winrt
 #define EPUB_PLATFORM_WINRT 1
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE)
+#define EPUB_PLATFORM_WIN_PHONE 1
+#endif
 #else
 #define EPUB_PLATFORM_WIN 1
 #endif

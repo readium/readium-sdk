@@ -1,6 +1,7 @@
 ﻿// PhoneSupportInterfaces.cpp
 #include "pch.h"
 #include "PhoneSupportInterfaces.h"
+#include "BufferHelp.h"
 #include <atomic>
 
 using namespace PhoneSupportInterfaces;

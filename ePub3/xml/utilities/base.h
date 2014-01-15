@@ -151,10 +151,28 @@ public:
     
     WrapperBase & operator = (WrapperBase && moveRef) { return *this; }
 
+#if EPUB_COMPILER_SUPPORTS(CXX_VARIADIC_TEMPLATES) && !EPUB_PLATFORM(WIN_PHONE)
 	template <class... _Args>
 	static std::shared_ptr<_Tp> New(_Args&& ...__args) {
 		return std::make_shared<_Tp>(std::forward<_Args>(__args)...);
 	}
+#else
+	static std::shared_ptr<_Tp> New() {
+		return std::make_shared<_Tp>();
+	}
+	template <class _Arg1>
+	static std::shared_ptr<_Tp> New(_Arg1&& __arg1) {
+		return std::make_shared<_Tp>(std::forward<_Arg1>(__arg1));
+	}
+	template <class _Arg1, class _Arg2>
+	static std::shared_ptr<_Tp> New(_Arg1&& __arg1, _Arg2&& __arg2) {
+		return std::make_shared<_Tp>(std::forward<_Arg1>(__arg1), std::forward<_Arg2>(__arg2));
+	}
+	template <class _Arg1, class _Arg2, class _Arg3>
+	static std::shared_ptr<_Tp> New(_Arg1&& __arg1, _Arg2&& __arg2, _Arg3&& __arg3) {
+		return std::make_shared<_Tp>(std::forward<_Arg1>(__arg1), std::forward<_Arg2>(__arg2), std::forward<_Arg3>(__arg3));
+	}
+#endif
     
 private:
     WrapperBase(WrapperBase & o);

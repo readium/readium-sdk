@@ -217,11 +217,11 @@ bool ZipArchive::CreateFolder(const string & path)
 }
 unique_ptr<ByteStream> ZipArchive::ByteStreamAtPath(const string &path) const
 {
-    return make_unique<ZipFileByteStream>(_zip, path);
+    return make_unique<ZipFileByteStream>(_zip, Sanitized(path));
 }
 unique_ptr<AsyncByteStream> ZipArchive::AsyncByteStreamAtPath(const string& path) const
 {
-    return make_unique<AsyncZipFileByteStream>(_zip, path);
+    return make_unique<AsyncZipFileByteStream>(_zip, Sanitized(path));
 }
 unique_ptr<ArchiveReader> ZipArchive::ReaderAtPath(const string & path) const
 {

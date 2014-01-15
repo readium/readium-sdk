@@ -26,6 +26,7 @@
 #include "xpath_wrangler.h"
 #include "byte_stream.h"
 #include "filter_manager.h"
+#include "ibooks_options.h"
 #include <ePub3/xml/document.h>
 #include <ePub3/xml/io.h>
 #include <ePub3/content_module_manager.h>
@@ -111,6 +112,97 @@ bool Container::Open(const string& path)
 		auto pkg = Package::New(Ptr(), type);
 		if (pkg->Open(path))
 			_packages.push_back(pkg);
+	}
+
+	if (FileExistsAtPath(iBooksOptions::AppleMetadataPath))
+	{
+		auto basicReader = _archive->ReaderAtPath(iBooksOptions::AppleMetadataPath);
+		if (basicReader)
+		{
+			auto xmlReader = make_unique<ArchiveXmlReader>(std::move(basicReader));
+
+			try
+			{
+				iBooksOptions opts(std::move(xmlReader));
+
+				if (opts.GetOptionValue("fixed-layout") == "true")
+				{
+					for (auto pkg : _packages)
+					{
+						IRI identifier = pkg->MakePropertyIRI("layout", "rendition");
+						PropertyPtr prop = pkg->PropertyMatching(identifier);
+						
+						if (prop == nullptr)
+						{
+							prop = Property::New(pkg->CastPtr<PropertyHolder>());
+							prop->SetPropertyIdentifier(identifier);
+							pkg->AddProperty(prop);
+						}
+
+						prop->SetValue("pre-paginated");
+					}
+				}
+
+				const string& opensToSpread = opts.GetOptionValue("open-to-spread");
+				if (!opensToSpread.empty())
+				{
+					for (auto pkg : _packages)
+					{
+						IRI identifier = pkg->MakePropertyIRI("spread", "rendition");
+						PropertyPtr prop = pkg->PropertyMatching(identifier);
+
+						if (prop == nullptr)
+						{
+							prop = Property::New(pkg->CastPtr<PropertyHolder>());
+							prop->SetPropertyIdentifier(identifier);
+							pkg->AddProperty(prop);
+						}
+
+						if (opensToSpread == "true")
+							prop->SetValue("both");
+						else
+							prop->SetValue("none");
+					}
+				}
+
+				const string& orientationLock = opts.GetOptionValue("orientation-lock");
+				if (!orientationLock.empty())
+				{
+					for (auto pkg : _packages)
+					{
+						IRI identifier = pkg->MakePropertyIRI("orientation", "rendition");
+						PropertyPtr prop = pkg->PropertyMatching(identifier);
+
+						if (prop == nullptr)
+						{
+							prop = Property::New(pkg->CastPtr<PropertyHolder>());
+							prop->SetPropertyIdentifier(identifier);
+							pkg->AddProperty(prop);
+						}
+
+						if (orientationLock == "portrait-only")
+							prop->SetValue("portrait");
+						else if (orientationLock == "landscape-only")
+							prop->SetValue("landscape");
+						else
+							prop->SetValue("auto");
+					}
+				}
+
+				// TODO: handling for the other known values, possibly
+				//  "interactive": boolean, similar to "scripted" manifest item property
+				//  "specified-fonts": boolean, unused I believe (we always allow publisher-specified fonts)
+			}
+#if 0
+			catch (std::exception& exc)
+			{
+				std::cerr << "Exception parsing iBooks Display Options: " << exc.what() << std::endl;
+			}
+#endif
+			catch (...)
+			{
+			}
+		}
 	}
 
 	for (auto& pkg : _packages)

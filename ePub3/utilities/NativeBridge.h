@@ -47,7 +47,11 @@ public:
 	NativeBridge(NativeBridge&& o) : _weakRef(std::move(o._weakRef)) {}
 	virtual ~NativeBridge() {}
 
+#if EPUB_COMPILER_SUPPORTS(CXX_DEFAULTED_FUNCTIONS) && !EPUB_PLATFORM(WIN_PHONE)
 	NativeBridge& operator=(const NativeBridge&) = default;
+#else
+	NativeBridge& operator=(const NativeBridge& o) { _weakRef = o._weakRef; }
+#endif
 	NativeBridge& operator=(NativeBridge&& o) { _weakRef = std::move(o._weakRef); }
 
 	template <typename _Tp>

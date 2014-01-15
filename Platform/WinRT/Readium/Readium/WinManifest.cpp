@@ -120,7 +120,12 @@ UINT ManifestItem::ResourceSize::get()
 	return _native->GetResourceSize();
 }
 
-::Windows::Data::Xml::Dom::XmlDocument^ ManifestItem::LoadDocument()
+#if EPUB_USE(WIN_XML)
+::Windows::Data::Xml::Dom::IXmlDocument^
+#elif EPUB_USE(WIN_PHONE_XML)
+::PhoneSupportInterfaces::IXmlDocumuent^
+#endif
+ManifestItem::LoadDocument()
 {
 	return _native->ReferencedDocument()->xml();
 }

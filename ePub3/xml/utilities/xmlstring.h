@@ -29,7 +29,7 @@
 #if EPUB_USE(LIBXML2)
 #include <libxml/xmlstring.h>
 #include <ePub3/utilities/utfstring.h>
-#elif EPUB_USE(WIN_XML)
+#elif EPUB_USE(WIN_XML) || EPUB_USE(WIN_PHONE_XML)
 // Nothing
 #else
 #error No XML engine specified
@@ -39,12 +39,14 @@ EPUB3_XML_BEGIN_NAMESPACE
 
 #if EPUB_USE(LIBXML2)
 typedef ePub3::string string;
-#elif EPUB_USE(WIN_XML)
+#define _XSTR(x) x
+#elif EPUB_USE(WIN_XML) || EPUB_USE(WIN_PHONE_XML)
+#define _XSTR(x) (const wchar_t*)(L ## x)
 class string : public std::wstring
 {
 public:
-	using _Base = std::wstring;
-	using UTF8Converter = std::wstring_convert<std::codecvt_utf8<value_type>>;
+	typedef std::wstring											_Base;
+	typedef std::wstring_convert<std::codecvt_utf8<value_type>>		UTF8Converter;
 
 private:
 	mutable std::string _utf8;
@@ -74,7 +76,8 @@ public:
 	operator ::Platform::StringReference() const { return ::Platform::StringReference(data(), length()); }
 
 	const unsigned char* utf8() const {
-		_utf8 = UTF8Converter().to_bytes(*this);
+		if (_utf8.empty() && !empty())
+			_utf8 = UTF8Converter().to_bytes(*this);
 		return reinterpret_cast<const unsigned char*>(_utf8.c_str());
 	}
 

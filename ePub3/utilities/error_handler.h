@@ -522,20 +522,27 @@ void HandleError(int __code, const std::error_category& __cat, const char* __msg
     std::system_error __err(__code, __cat, __msg);
     __DispatchError(__err);
 }
+
+#if EPUB_PLATFORM(WIN_PHONE)
+typedef std::errc::errc errc;
+#else
+typedef std::errc errc;
+#endif
+
 static inline FORCE_INLINE
-void HandleError(std::errc __code)
+void HandleError(errc __code)
 {
     std::system_error __err(std::make_error_code(__code));
     __DispatchError(__err);
 }
 static inline FORCE_INLINE
-void HandleError(std::errc __code, const std::string& __msg)
+void HandleError(errc __code, const std::string& __msg)
 {
     std::system_error __err(std::make_error_code(__code), __msg);
     __DispatchError(__err);
 }
 static inline FORCE_INLINE
-void HandleError(std::errc __code, const char* __msg)
+void HandleError(errc __code, const char* __msg)
 {
     std::system_error __err(std::make_error_code(__code), __msg);
     __DispatchError(__err);

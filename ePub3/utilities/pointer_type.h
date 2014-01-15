@@ -70,7 +70,7 @@ protected:
 public:
     virtual ~PointerType() {}
     
-#if EPUB_COMPILER_SUPPORTS(CXX_VARIADIC_TEMPLATES)
+#if EPUB_COMPILER_SUPPORTS(CXX_VARIADIC_TEMPLATES) && !EPUB_PLATFORM(WIN_PHONE)
     template <typename... _Args>
     FORCE_INLINE
     static Pointer New(_Args&& ...__args) {
@@ -90,7 +90,7 @@ public:
         return std::make_shared<_Sub>(std::forward<_Args>(__args)...);
     }
 #else
-    template <class, _Sub, typename _Arg1>
+    template <class _Sub, typename _Arg1>
     FORCE_INLINE
     static
     typename std::enable_if

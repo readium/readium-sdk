@@ -60,7 +60,7 @@ public:
          XSLTTree     = ::XPATH_XSLT_TREE,
          */
     };
-#elif EPUB_USE(WIN_XML)
+#elif EPUB_USE(WIN_XML) || EPUB_USE(WIN_PHONE_XML)
 	enum class ObjectType {
 		Undefined,
 		NodeSet,
@@ -126,6 +126,9 @@ protected:
     _xmlXPathObject *       _lastResult;
 #elif EPUB_USE(WIN_XML)
 	::Windows::Data::Xml::Dom::XmlNodeList^	_lastResult;
+	std::map<string, string>				_namespaces;
+#elif EPUB_USE(WIN_PHONE_XML)
+	::PhoneSupportInterfaces::IXmlNodeList^	_lastResult;
 	std::map<string, string>				_namespaces;
 #endif
 };

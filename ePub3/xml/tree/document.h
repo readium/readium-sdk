@@ -60,8 +60,8 @@ public:
 	typedef _xmlDoc*								NativeDocPtr;
 	typedef xmlEntityPtr							NativeEntityPtr;
 #elif EPUB_USE(WIN_XML)
-	typedef Windows::Data::Xml::Dom::XmlDocument^	NativeDocPtr;
-	typedef Windows::Data::Xml::Dom::DtdEntity^		NativeEntityPtr;
+	typedef Windows::Data::Xml::Dom::IXmlDocument^	NativeDocPtr;
+	typedef Windows::Data::Xml::Dom::IDtdEntity^	NativeEntityPtr;
 #elif EPUB_USE(WIN_PHONE_XML)
 	typedef PhoneSupportInterfaces::IXmlDocument^	NativeDocPtr;
 	typedef PhoneSupportInterfaces::IDtdEntity^		NativeEntityPtr;

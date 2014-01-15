@@ -45,6 +45,7 @@
     <ClInclude Include="..\..\..\..\ePub3\ePub\font_obfuscation.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\Forward.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\glossary.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\ibooks_options.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\initialization.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\library.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\manifest.h" />
@@ -167,6 +168,7 @@
     <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager_impl.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\font_obfuscation.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\glossary.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\ibooks_options.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\initialization.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\library.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\manifest.cpp" />

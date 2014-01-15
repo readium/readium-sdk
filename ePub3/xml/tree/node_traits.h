@@ -27,27 +27,32 @@
 EPUB3_XML_BEGIN_NAMESPACE
 
 #if EPUB_PLATFORM(WINRT)
+#if EPUB_USE(WIN_PHONE_XML)
+typedef ::PhoneSupportInterfaces::NodeType	_BaseNodeType;
+#else	// EPUB_USE(WIN_XML)
+typedef ::Windows::Data::Xml::Dom::NodeType	_BaseNodeType;
+#endif
 enum class NodeType {
-	Element						= int(Windows::Data::Xml::Dom::NodeType::ElementNode),
-	Attribute					= int(Windows::Data::Xml::Dom::NodeType::AttributeNode),
-	Text						= int(Windows::Data::Xml::Dom::NodeType::TextNode),
-	CDATASection				= int(Windows::Data::Xml::Dom::NodeType::TextNode)+1,
-	EntityReference				= int(Windows::Data::Xml::Dom::NodeType::EntityReferenceNode),
-	Entity						= int(Windows::Data::Xml::Dom::NodeType::EntityNode),
-	ProcessingInstruction		= int(Windows::Data::Xml::Dom::NodeType::ProcessingInstructionNode),
-	Comment						= int(Windows::Data::Xml::Dom::NodeType::CommentNode),
-	Document					= int(Windows::Data::Xml::Dom::NodeType::DocumentNode),
-	DocumentType				= int(Windows::Data::Xml::Dom::NodeType::DocumentTypeNode),
-	DocumentFragment			= int(Windows::Data::Xml::Dom::NodeType::DocumentFragmentNode),
-	Notation					= int(Windows::Data::Xml::Dom::NodeType::NotationNode),
-	HTMLDocument				= int(Windows::Data::Xml::Dom::NodeType::TextNode)+2,
-	DTD							= int(Windows::Data::Xml::Dom::NodeType::TextNode)+3,
-	ElementDeclaration			= int(Windows::Data::Xml::Dom::NodeType::TextNode)+4,
-	AttributeDeclaration		= int(Windows::Data::Xml::Dom::NodeType::TextNode)+5,
-	EntityDeclaration			= int(Windows::Data::Xml::Dom::NodeType::TextNode)+6,
-	NamespaceDeclaration		= int(Windows::Data::Xml::Dom::NodeType::TextNode)+7,
-	XIncludeStart				= int(Windows::Data::Xml::Dom::NodeType::TextNode)+8,
-	XIncludeEnd					= int(Windows::Data::Xml::Dom::NodeType::TextNode)+9,
+	Element						= int(_BaseNodeType::ElementNode),
+	Attribute					= int(_BaseNodeType::AttributeNode),
+	Text						= int(_BaseNodeType::TextNode),
+	CDATASection				= int(_BaseNodeType::TextNode)+1,
+	EntityReference				= int(_BaseNodeType::EntityReferenceNode),
+	Entity						= int(_BaseNodeType::EntityNode),
+	ProcessingInstruction		= int(_BaseNodeType::ProcessingInstructionNode),
+	Comment						= int(_BaseNodeType::CommentNode),
+	Document					= int(_BaseNodeType::DocumentNode),
+	DocumentType				= int(_BaseNodeType::DocumentTypeNode),
+	DocumentFragment			= int(_BaseNodeType::DocumentFragmentNode),
+	Notation					= int(_BaseNodeType::NotationNode),
+	HTMLDocument				= int(_BaseNodeType::TextNode)+2,
+	DTD							= int(_BaseNodeType::TextNode)+3,
+	ElementDeclaration			= int(_BaseNodeType::TextNode)+4,
+	AttributeDeclaration		= int(_BaseNodeType::TextNode)+5,
+	EntityDeclaration			= int(_BaseNodeType::TextNode)+6,
+	NamespaceDeclaration		= int(_BaseNodeType::TextNode)+7,
+	XIncludeStart				= int(_BaseNodeType::TextNode)+8,
+	XIncludeEnd					= int(_BaseNodeType::TextNode)+9,
 };
 #else
 /**

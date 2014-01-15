@@ -36,7 +36,9 @@ public:
 #if EPUB_USE(LIBXML2)
 	typedef _xmlDtd*								NativeDtdPtr;
 #elif EPUB_USE(WIN_XML)
-	typedef Windows::Data::Xml::Dom::DtdNotation^	NativeDtdPtr;
+	typedef Windows::Data::Xml::Dom::IDtdNotation^	NativeDtdPtr;
+#elif EPUB_USE(WIN_PHONE_XML)
+	typedef PhoneSupportInterfaces::IDtdNotation^	NativeDtdPtr;
 #endif
 public:
     explicit DTD(NativeDtdPtr dtd) : Node(xml_native_cast<NativePtr>(dtd)) {}
@@ -49,7 +51,7 @@ public:
 #if EPUB_USE(LIBXML2)
     string ExternalID() const { return xml()->ExternalID; }
     string SystemID() const { return xml()->SystemID; }
-#elif EPUB_USE(WIN_XML)
+#elif EPUB_USE(WIN_XML) || EPUB_USE(WIN_PHONE_XML)
 	string ExternalID() const { return dynamic_cast<::Platform::String^>(const_cast<NativeDtdPtr>(xml())->PublicId); }
 	string SystemID() const { return dynamic_cast<::Platform::String^>(const_cast<NativeDtdPtr>(xml())->SystemId); }
 #endif

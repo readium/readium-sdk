@@ -1,178 +1,72 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Resources">
-      <UniqueIdentifier>d12a9e57-cb5c-4e15-bc18-8d86324b576f</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Public Interface">
-      <UniqueIdentifier>{6b16c072-47f7-46a0-85c2-b29b4b4d9be8}</UniqueIdentifier>
+      <UniqueIdentifier>5fd0e509-b6ae-4f29-bd2a-4d2cc10f3aa0</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="ePub3">
-      <UniqueIdentifier>{898eeabb-8235-4c18-b292-85a10a8a460f}</UniqueIdentifier>
+      <UniqueIdentifier>{dc952ce1-7153-4d63-95ea-0ce96eb77a7d}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub">
-      <UniqueIdentifier>{0617d508-cccd-4ee6-8bd2-9da10e1f0a06}</UniqueIdentifier>
+      <UniqueIdentifier>{214463d7-766d-44de-97b4-0236bae553fb}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\Filters">
-      <UniqueIdentifier>{1b9e2b57-2577-43d3-83ba-5682c7e1a427}</UniqueIdentifier>
+      <UniqueIdentifier>{1bcbf0d5-cdbd-4f99-a692-2c07b1e8291c}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\Filters\Content Preprocessing">
-      <UniqueIdentifier>{b78af7cd-e21b-4356-8066-76db70077083}</UniqueIdentifier>
+      <UniqueIdentifier>{dfb0146c-46df-436e-b6a0-5b59bedce27d}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\Filters\Encryption">
-      <UniqueIdentifier>{f4fc6d43-ec16-48e7-8f07-970faa891371}</UniqueIdentifier>
+      <UniqueIdentifier>{8bb3c41c-fc3c-4bad-a585-9895e399f3fe}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\Library">
-      <UniqueIdentifier>{8bd45694-c6d9-40e5-bcd6-f2ec1116c833}</UniqueIdentifier>
+      <UniqueIdentifier>{a9ef82b5-1964-4618-ab42-2bebc6108a5e}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\Components">
-      <UniqueIdentifier>{7531472e-13d9-4591-8113-d3edad5c312a}</UniqueIdentifier>
+      <UniqueIdentifier>{693afd2d-5516-48d3-a08b-897971b95021}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\Components\Properties">
-      <UniqueIdentifier>{1a230b56-18a2-4760-a1dc-c783e40463bc}</UniqueIdentifier>
+      <UniqueIdentifier>{eeea2eb7-c16a-475c-987b-1db53bb5162d}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\Components\Navigation">
-      <UniqueIdentifier>{eb783f34-5ed6-4bec-944b-77eb931803ef}</UniqueIdentifier>
+      <UniqueIdentifier>{8aab09bc-100d-4ed6-bfca-14a0690fab4a}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\Archives">
-      <UniqueIdentifier>{88bd7c19-dc7a-4411-9da4-6bc1e8976c17}</UniqueIdentifier>
+      <UniqueIdentifier>{75cc7cdf-802c-4114-b353-6391d693c680}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ePub\ContentModule">
-      <UniqueIdentifier>{1e60e318-cc76-49c7-bd56-11d6ac47676f}</UniqueIdentifier>
+      <UniqueIdentifier>{28e89e97-3f39-4aeb-967a-62606c33bcb4}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\xml">
-      <UniqueIdentifier>{2816625c-25b2-41ca-87b2-11df60fff7b9}</UniqueIdentifier>
+      <UniqueIdentifier>{41411513-35e6-46fe-9fe4-03d83090fdae}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\xml\tree">
-      <UniqueIdentifier>{362e7ffa-ff7d-4730-ad9a-086438b165c5}</UniqueIdentifier>
+      <UniqueIdentifier>{869bb3bc-2305-4b2e-a0a9-8a2340d7ac6e}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\xml\utilities">
-      <UniqueIdentifier>{55f0a9a0-bb65-49b1-af88-534ae94fe4fa}</UniqueIdentifier>
+      <UniqueIdentifier>{ac4bf9ef-a637-4040-891b-bed373d23794}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\xml\validation">
-      <UniqueIdentifier>{fb7fa3c7-1271-4b26-8b31-a3f1aba39030}</UniqueIdentifier>
+      <UniqueIdentifier>{cd7479e0-fa60-424f-86ab-4bd7571a3fa8}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\utilities">
-      <UniqueIdentifier>{a59af293-11a6-4a86-b377-581a2c735b20}</UniqueIdentifier>
+      <UniqueIdentifier>{89419ff0-8ae7-4a9a-9729-7a03fe778bfb}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ThirdParty">
-      <UniqueIdentifier>{4d2a4fa4-4be5-471d-9a0e-2587c8109e3f}</UniqueIdentifier>
+      <UniqueIdentifier>{15901d05-6d3f-4f42-9ffa-7690e2ec5a24}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ThirdParty\google-url">
-      <UniqueIdentifier>{a52215dd-277b-4d23-a2dc-2ad8b2a311aa}</UniqueIdentifier>
+      <UniqueIdentifier>{a58857dc-e842-4740-8a10-e4c2afa48f22}</UniqueIdentifier>
     </Filter>
     <Filter Include="ePub3\ThirdParty\libzip">
-      <UniqueIdentifier>{8277a60a-510e-49f2-b440-9d1b0ac8679c}</UniqueIdentifier>
+      <UniqueIdentifier>{fbe93999-1869-4955-868f-9a159416f6a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public Interface">
+      <UniqueIdentifier>{bc3aa61b-e043-4a9f-b4eb-9a6dce0e1539}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ThreadEmulation.h" />
-    <ClInclude Include="BufferBridge.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="CollectionBridges.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="ExceptionWrapper.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="IContentFilter.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="IContentHandler.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="IContentModule.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="INavigationElement.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="IPropertyHolder.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="NavElementList.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="PluginMaps.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="PropertyHolderImpl.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="PropertyHolderSubclassDecl.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="PropertyHolderSubclassImpl.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="PropertyTypes.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinCFI.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinContainer.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinContentModuleManager.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinCredentialRequest.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinEncryptionInfo.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinErrorHandler.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinFilterChain.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinFilterManager.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinInitialization.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinLibrary.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="Readium.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="Streams.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinManifest.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinMediaHandler.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinMediaSupport.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinNavPoint.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinNavTable.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinPackage.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinProperty.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinPropertyExtension.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="WinSpine.h">
-      <Filter>Public Interface</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\ePub3\base.h">
       <Filter>ePub3</Filter>
     </ClInclude>
@@ -359,6 +253,9 @@
     <ClInclude Include="..\..\..\..\ePub3\utilities\owned_by.h">
       <Filter>ePub3\utilities</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\path_help.h">
+      <Filter>ePub3\utilities</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\..\ePub3\utilities\pointer_type.h">
       <Filter>ePub3\utilities</Filter>
     </ClInclude>
@@ -437,78 +334,117 @@
     <ClInclude Include="..\..\..\..\ePub3\ThirdParty\libzip\zipint.h">
       <Filter>ePub3\ThirdParty\libzip</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\ePub3\utilities\path_help.h">
-      <Filter>ePub3\utilities</Filter>
+    <ClInclude Include="..\Readium\BufferBridge.h">
+      <Filter>Public Interface</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\ePub3\ePub\ibooks_options.h">
-      <Filter>ePub3\ePub\Components</Filter>
+    <ClInclude Include="..\Readium\CollectionBridges.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\ExceptionWrapper.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\IContentFilter.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\IContentHandler.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\IContentModule.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\INavigationElement.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\IPropertyHolder.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\NavElementList.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\PluginMaps.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\PropertyHolderImpl.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\PropertyHolderSubclassDecl.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\PropertyHolderSubclassImpl.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\PropertyTypes.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\Readium.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\Streams.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinCFI.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinContainer.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinContentModuleManager.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinCredentialRequest.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinEncryptionInfo.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinErrorHandler.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinFilterChain.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinFilterManager.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinInitialization.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinLibrary.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinManifest.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinMediaHandler.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinMediaSupport.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinNavPoint.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinNavTable.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinPackage.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinProperty.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinPropertyExtension.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\WinSpine.h">
+      <Filter>Public Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\ThreadEmulation.h" />
+    <ClInclude Include="..\..\..\..\ePub3\xml\tree\node_traits.h">
+      <Filter>ePub3\xml\tree</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ThreadEmulation.cpp" />
-    <ClCompile Include="PluginMaps.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="Streams.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinCFI.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinContainer.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinContentModuleManager.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinCredentialRequest.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinEncryptionInfo.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinErrorHandler.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinFilterChain.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinFilterManager.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinInitialization.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinLibrary.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinManifest.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinMediaHandler.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinMediaSupport.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinNavPoint.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinNavTable.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinPackage.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinProperty.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinPropertyExtension.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="WinSpine.cpp">
-      <Filter>Public Interface</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ePub\xpath_wrangler.cpp">
       <Filter>ePub3\ePub</Filter>
     </ClCompile>
@@ -630,6 +566,9 @@
       <Filter>ePub3\utilities</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\utilities\iri.cpp">
+      <Filter>ePub3\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\path_help.cpp">
       <Filter>ePub3\utilities</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\utilities\ring_buffer.cpp">
@@ -863,15 +802,70 @@
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange_data.c">
       <Filter>ePub3\ThirdParty\libzip</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\utilities\path_help.cpp">
-      <Filter>ePub3\utilities</Filter>
+    <ClCompile Include="..\Readium\PluginMaps.cpp">
+      <Filter>Public Interface</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\utilities\path_help.cpp">
-      <Filter>ePub3\utilities</Filter>
+    <ClCompile Include="..\Readium\Streams.cpp">
+      <Filter>Public Interface</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ePub\ibooks_options.cpp">
-      <Filter>ePub3\ePub\Components</Filter>
+    <ClCompile Include="..\Readium\WinCFI.cpp">
+      <Filter>Public Interface</Filter>
     </ClCompile>
+    <ClCompile Include="..\Readium\WinContainer.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinContentModuleManager.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinCredentialRequest.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinEncryptionInfo.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinErrorHandler.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinFilterChain.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinFilterManager.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinInitialization.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinLibrary.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinManifest.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinMediaHandler.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinMediaSupport.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinNavPoint.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinNavTable.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinPackage.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinProperty.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinPropertyExtension.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\WinSpine.cpp">
+      <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Readium\ThreadEmulation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\ePub3\utilities\utfstringspec.inl">

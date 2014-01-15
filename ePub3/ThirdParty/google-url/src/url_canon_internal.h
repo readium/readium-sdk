@@ -430,7 +430,7 @@ bool CanonicalizePartialPath(const char16* spec,
                              int path_begin_in_output,
                              CanonOutput* output);
 
-#ifndef WIN32
+#if !defined(WIN32) && !defined(__cplusplus_winrt)
 
 // Implementations of Windows' int-to-string conversions
 GURL_API int _itoa_s(int value, char* buffer, size_t size_in_chars, int radix);
