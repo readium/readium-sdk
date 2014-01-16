@@ -24,7 +24,6 @@
 
 #include <ePub3/epub3.h>
 #include <ePub3/container.h>
-#include <ePub3/utilities/string_view.h>
 #include <map>
 
 EPUB3_BEGIN_NAMESPACE
