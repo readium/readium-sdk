@@ -140,6 +140,12 @@ public:
     virtual string Path() const { return _path; }
     
     /**
+     Enumerates the contents of the archive.
+     @param fn A function to be called with each item's ArchiveInfo object.
+     */
+    virtual void EachItem(std::function<void(const ArchiveItemInfo&)> fn) const = 0;
+    
+    /**
      Check whether an item exists within an archive.
      @param path A path within the archive to a specific item.
      @result Returns `true` if an item exists with that path, `false` otherwise.
@@ -304,7 +310,7 @@ public:
     }
     
     ///
-    /// Retrieves the item's p4ath within an archive.
+    /// Retrieves the item's path within an archive.
     virtual string Path() const { return _path; }
     ///
     /// Whether the item is compressed.

@@ -67,6 +67,8 @@ public:
     EPUB3_EXPORT
     Archive & operator = (ZipArchive &&o);
     
+    virtual void EachItem(std::function<void(const ArchiveItemInfo&)> fn) const OVERRIDE;
+    
     virtual bool ContainsItem(const string & path) const;
     virtual bool DeleteItem(const string & path);
     

@@ -200,6 +200,19 @@ Archive & ZipArchive::operator = (ZipArchive &&o)
     o._zip = nullptr;
     return dynamic_cast<Archive&>(*this);
 }
+void ZipArchive::EachItem(std::function<void (const ArchiveItemInfo &)> fn) const
+{
+    struct zip_stat zinfo = {0};
+    zip_stat_init(&zinfo);
+    for (int i = 0, n = zip_get_num_files(_zip); i < n; i++)
+    {
+        if (zip_stat_index(_zip, i, 0, &zinfo) < 0)
+            continue;
+        
+        ZipItemInfo info(zinfo);
+        fn(info);
+    }
+}
 bool ZipArchive::ContainsItem(const string & path) const
 {
     return (zip_name_locate(_zip, Sanitized(path).c_str(), 0) >= 0);
