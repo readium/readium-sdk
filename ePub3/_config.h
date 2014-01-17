@@ -161,7 +161,7 @@ typedef signed long ssize_t;
 # endif
 #endif
 
-#if !EPUB_PLATFORM(WINRT)
+#if !EPUB_PLATFORM(WINRT) || EPUB_PLATFORM(WIN_PHONE)
 #if EPUB_COMPILER(MSVC)
 # pragma section(".CRT$XCU",read)
 # define INITIALIZER(f) \

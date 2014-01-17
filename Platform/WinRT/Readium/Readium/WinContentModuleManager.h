@@ -31,7 +31,7 @@
 BEGIN_READIUM_API
 
 template <typename _Result, typename _NativeResult = _Result>
-static void __process_operation_completion(::Windows::Foundation::IAsyncOperation<_Result>^ operation, ::Windows::Foundation::AsyncStatus status, std::promise<_NativeResult>& promise,
+static void __process_operation_completion(::Windows::Foundation::IAsyncOperation<_Result>^ operation, ::Windows::Foundation::AsyncStatus status, ePub3::promised_result<_NativeResult>& promise,
 	std::function<void()> process_result)
 {
 	using namespace ::Windows::Foundation;
@@ -74,20 +74,28 @@ public:
 		}
 
 	virtual
-	std::future<ePub3::ContainerPtr>
-	ProcessFile(const ::ePub3::string& path, std::launch policy = std::launch::async)
+	ePub3::async_result<ePub3::ContainerPtr>
+	ProcessFile(const ::ePub3::string& path, ePub3::launch policy = ePub3::launch::async)
 		{
 			using namespace ::Windows::Foundation;
 
-			if (policy == std::launch::deferred)
+			if (policy == ePub3::launch::deferred)
 			{
 				Container^ container = __winrt_->ProcessFileSync(StringFromNative(path));
-				std::promise<ePub3::ContainerPtr> __p;
+				ePub3::promised_result<ePub3::ContainerPtr> __p;
+#if EPUB_PLATFORM(WIN_PHONE)
+				if (container)
+					__p.set(container->NativeObject);
+				else
+					__p.set(nullptr);
+				return ePub3::async_result<ePub3::ContainerPtr>(__p);
+#else
 				if (container)
 					__p.set_value(container->NativeObject);
 				else
 					__p.set_value(nullptr);
 				return __p.get_future();
+#endif
 			}
 			else
 			{
@@ -109,11 +117,11 @@ public:
 	// User actions
 
 	virtual
-	std::future<bool>
+	ePub3::async_result<bool>
 	ApproveUserAction(const ::ePub3::UserAction& action)
 		{
 			using namespace ::Windows::Foundation;
-			auto promise = new std::promise<bool>();
+			auto promise = new ePub3::promised_result<bool>();
 			auto op = __winrt_->ApproveUserAction(ref new UserAction(action));
 
 			op->Completed = ref new AsyncOperationCompletedHandler<bool>([promise](IAsyncOperation<bool>^ operation, AsyncStatus status) {
@@ -127,11 +135,11 @@ public:
 		}
 
 private:
-	std::future<ePub3::ContainerPtr> ProcessFileAsyncInternal(const ePub3::string& path)
+	ePub3::async_result<ePub3::ContainerPtr> ProcessFileAsyncInternal(const ePub3::string& path)
 		{
 			using namespace ::Windows::Foundation;
 			auto op = __winrt_->ProcessFile(StringFromNative(path));
-			auto promise = new std::promise<::ePub3::ContainerPtr>();
+			auto promise = new ePub3::promised_result<::ePub3::ContainerPtr>();
 
 			op->Completed = ref new AsyncOperationCompletedHandler<Container^>([promise](IAsyncOperation<Container^>^ operation, AsyncStatus status) {
 				__process_operation_completion(operation, status, *promise, [operation, promise]() {
@@ -181,7 +189,8 @@ public:
 		using namespace ::concurrency;
 		auto __fut = _native->ProcessFile(StringToNative(path)).share();
 		return create_async([__fut]() -> Container^ {
-			return Container::Wrapper(__fut.get());
+			auto shared = __fut;	// MSVC complains that __fut is const if I call __fut.get(). Sigh.
+			return Container::Wrapper(shared.get());
 		});
 	}
 
@@ -204,7 +213,8 @@ public:
 		using namespace ::concurrency;
 		auto __fut = _native->ApproveUserAction(action->Native).share();
 		return create_async([__fut]() -> bool {
-			return __fut.get();
+			auto shared = __fut;		// no idea why MSVC thinks __fut is const when calling its members...
+			return shared.get();
 		});
 	}
 

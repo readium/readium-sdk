@@ -74,7 +74,11 @@ bool Library::Load(const string& path)
             _containers[thisPath] = nullptr;
             for ( auto uid : uidList )
             {
-                _packages[uid] = std::make_pair(thisPath, nullptr);
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+                _packages.emplace(uid, std::make_pair(thisPath, PackagePtr(nullptr)));
+#else
+				_packages[uid] = std::make_pair(thisPath, PackagePtr(nullptr));
+#endif
             }
         }
         catch (...)

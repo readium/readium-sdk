@@ -31,8 +31,7 @@ public:
         Button
     };
     
-    using ButtonHandler =
-        std::function<void(const CredentialRequest*, size_t)>;
+	typedef std::function<void(const CredentialRequest*, size_t)>	ButtonHandler;
     
 public:
     CredentialRequest(const string& title,
@@ -50,14 +49,14 @@ public:
 		{
 			m_components = o.m_components;
 			m_credentials = o.m_credentials;
-			m_promise = std::promise<Credentials>();
+			m_promise = promised_result<Credentials>();
             return *this;
 		}
     CredentialRequest& operator=(CredentialRequest&& o)
         {
             m_components.swap(o.m_components);
             m_credentials.swap(o.m_credentials);
-            m_promise.swap(o.m_promise);
+			std::swap(m_promise, o.m_promise);
             return *this;
         }
     
@@ -88,7 +87,13 @@ public:
     
     void
     SignalCompletion() _NOEXCEPT
-        { m_promise.set_value(m_credentials); }
+        {
+#if EPUB_PLATFORM(WIN_PHONE)
+			m_promise.set(m_credentials);
+#else
+			m_promise.set_value(m_credentials);
+#endif
+		}
     
     void
     SignalException(std::exception_ptr exc) _NOEXCEPT

@@ -178,7 +178,13 @@ AsyncEvent AsyncByteStream::WaitNextEvent(timeout_type timeout)
         event = evt;
         RunLoop::CurrentRunLoop()->Stop();
     });
+#if EPUB_PLATFORM(WIN_PHONE)
+	// Windows Phone's stdlib has problems with this, apparently...
+	std::chrono::nanoseconds nanos((long long)(timeout.count() * std::nano::den));
+	RunLoop::CurrentRunLoop()->Run(false, nanos);
+#else
     RunLoop::CurrentRunLoop()->Run(false, timeout);
+#endif
     
     SetTargetRunLoop(oldRunLoop);
     SetEventHandler(oldHandler);

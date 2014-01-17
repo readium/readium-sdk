@@ -27,7 +27,7 @@ EPUB3_BEGIN_NAMESPACE
 #if EPUB_USE(LIBXML2)
 const xmlChar * DCMES_uri = (const xmlChar*)"http://purl.org/dc/elements/1.1/";
 const xmlChar * MetaTagName = (const xmlChar*)"meta";
-#elif EPUB_USE(WIN_XML)
+#elif EPUB_USE(WIN_XML) || EPUB_USE(WIN_PHONE_XML)
 const TCHAR* DCMES_uri = TEXT("http://purl.org/dc/elements/1.1/");
 const TCHAR* MetaTagName = TEXT("meta");
 #endif

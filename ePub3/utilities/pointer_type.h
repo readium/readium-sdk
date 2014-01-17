@@ -90,6 +90,17 @@ public:
         return std::make_shared<_Sub>(std::forward<_Args>(__args)...);
     }
 #else
+	template <class _Sub>
+	FORCE_INLINE
+	static
+	typename std::enable_if
+	<
+		std::is_base_of<_Tp, _Sub>::value,
+		typename PointerType<_Sub>::Pointer
+	>::type
+	New() {
+		return std::make_shared<_Sub>();
+	}
     template <class _Sub, typename _Arg1>
     FORCE_INLINE
     static
@@ -110,7 +121,7 @@ public:
         typename PointerType<_Sub>::Pointer
     >::type
     New(_Arg1 __arg1, _Arg2 __arg2) {
-        return std::make_shared<_Sub>(std::forward<_Arg1, _Arg2>(__arg1, __arg2));
+		return std::make_shared<_Sub>(std::forward<_Arg1>(__arg1), std::forward<_Arg2>(__arg2));
     }
     template <class _Sub, typename _Arg1, typename _Arg2, typename _Arg3>
     FORCE_INLINE
@@ -121,7 +132,7 @@ public:
         typename PointerType<_Sub>::Pointer
     >::type
     New(_Arg1 __arg1, _Arg2 __arg2, _Arg3 __arg3) {
-        return std::make_shared<_Sub>(std::forward<_Arg1, _Arg2, _Arg3>(__arg1, __arg2, __arg3));
+		return std::make_shared<_Sub>(std::forward<_Arg1>(__arg1), std::forward<_Arg2>(__arg2), std::forward<_Arg3>(__arg3));
     }
     template <class _Sub, typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4>
     FORCE_INLINE
@@ -132,7 +143,7 @@ public:
         typename PointerType<_Sub>::Pointer
     >::type
     New(_Arg1 __arg1, _Arg2 __arg2, _Arg3 __arg3, _Arg4 __arg4) {
-        return std::make_shared<_Sub>(std::forward<_Arg1, _Arg2, _Arg3, _Arg4>(__arg1, __arg2, __arg3, __arg4));
+		return std::make_shared<_Sub>(std::forward<_Arg1>(__arg1), std::forward<_Arg2>(__arg2), std::forward<_Arg3>(__arg3), std::forward<_Arg4>(__arg4));
     }
     template <class _Sub, typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4, typename _Arg5>
     FORCE_INLINE
@@ -143,28 +154,31 @@ public:
         typename PointerType<_Sub>::Pointer
     >::type
     New(_Arg1 __arg1, _Arg2 __arg2, _Arg3 __arg3, _Arg4 __arg4, _Arg5 __arg5) {
-        return std::make_shared<_Sub>(std::forward<_Arg1, _Arg2, _Arg3, _Arg4, _Arg5>(__arg1, __arg2, __arg3, __arg4, __arg5));
+		return std::make_shared<_Sub>(std::forward<_Arg1>(__arg1), std::forward<_Arg2>(__arg2), std::forward<_Arg3>(__arg3), std::forward<_Arg4>(__arg4), std::forward<_Arg5>(__arg5));
     }
     
+	static Pointer New() {
+		return std::make_shared<_Tp>();
+	}
     template <typename _Arg1>
     static Pointer New(_Arg1 __arg1) {
         return std::make_shared<_Tp>(std::forward<_Arg1>(__arg1));
     }
     template <typename _Arg1, typename _Arg2>
     static Pointer New(_Arg1 __arg1, _Arg2 __arg2) {
-        return std::make_shared<_Tp>(std::forward<_Arg1, _Arg2>(__arg1, __arg2));
+		return std::make_shared<_Tp>(std::forward<_Arg1>(__arg1), std::forward<_Arg2>(__arg2));
     }
     template <typename _Arg1, typename _Arg2, typename _Arg3>
     static Pointer New(_Arg1 __arg1, _Arg2 __arg2, _Arg3 __arg3) {
-        return std::make_shared<_Tp>(std::forward<_Arg1, _Arg2, _Arg3>(__arg1, __arg2, __arg3));
+		return std::make_shared<_Tp>(std::forward<_Arg1>(__arg1), std::forward<_Arg2>(__arg2), std::forward<_Arg3>(__arg3));
     }
     template <typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4>
     static Pointer New(_Arg1 __arg1, _Arg2 __arg2, _Arg3 __arg3, _Arg4 __arg4) {
-        return std::make_shared<_Tp>(std::forward<_Arg1, _Arg2, _Arg3, _Arg4>(__arg1, __arg2, __arg3, __arg4));
+		return std::make_shared<_Tp>(std::forward<_Arg1>(__arg1), std::forward<_Arg2>(__arg2), std::forward<_Arg3>(__arg3), std::forward<_Arg4>(__arg4));
     }
     template <typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4, typename _Arg5>
     static Pointer New(_Arg1 __arg1, _Arg2 __arg2, _Arg3 __arg3, _Arg4 __arg4, _Arg5 __arg5) {
-        return std::make_shared<_Tp>(std::forward<_Arg1, _Arg2, _Arg3, _Arg4, _Arg5>(__arg1, __arg2, __arg3, __arg4, __arg5));
+		return std::make_shared<_Tp>(std::forward<_Arg1>(__arg1), std::forward<_Arg2>(__arg2), std::forward<_Arg3>(__arg3), std::forward<_Arg4>(__arg4), std::forward<_Arg5>(__arg5));
     }
 #endif
     

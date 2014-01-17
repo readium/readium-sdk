@@ -443,6 +443,24 @@
     <ClInclude Include="..\..\..\..\ePub3\ePub\ibooks_options.h">
       <Filter>ePub3\ePub\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\condition_variable_any.h">
+      <Filter>ePub3\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\future.h">
+      <Filter>ePub3\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\integer_sequence.h">
+      <Filter>ePub3\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\invoke.h">
+      <Filter>ePub3\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\optional.h">
+      <Filter>ePub3\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\string_view.h">
+      <Filter>ePub3\utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ThreadEmulation.cpp" />
@@ -871,6 +889,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ePub\ibooks_options.cpp">
       <Filter>ePub3\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\future.cpp">
+      <Filter>ePub3\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\optional.cpp">
+      <Filter>ePub3\utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

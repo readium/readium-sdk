@@ -23,7 +23,7 @@
 #define __ePub3_xml_string__
 
 #include <ePub3/utilities/basic.h>
-#include <ePub3/utilities/integer_sequence.h>
+//#include <ePub3/utilities/integer_sequence.h>
 #include <ePub3/utilities/string_view.h>
 #include <string>
 #include <iterator>

@@ -26,7 +26,7 @@
 #if EPUB_PLATFORM(WINRT)
 // need a converter from UTF-8 to Windows' wchar_t
 #include <codecvt>
-using WinRTCharConverter = std::wstring_convert<std::codecvt_utf8<wchar_t>>;
+typedef std::wstring_convert<std::codecvt_utf8<wchar_t>> WinRTCharConverter;
 #endif
 
 EPUB3_BEGIN_NAMESPACE

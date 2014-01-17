@@ -446,27 +446,6 @@ namespace PhoneSupportInterfaces
 	public interface class IXmlComment : public IXmlCharacterData
 	{};
 
-	public interface class IXmlDocument : public IXmlNode
-	{
-		IXmlAttribute^ CreateAttribute(String^ name);
-		IXmlAttribute^ CreateAttributeNS([Windows::Foundation::Metadata::VariantAttribute] Object^ uri, String^ name);
-		IXmlCDataSection^ CreateCDataSection(String^ data);
-		IXmlComment^ CreateComment(String^ comment);
-		IXmlDocumentFragment^ CreateDocumentFragment();
-		IXmlElement^ CreateElement(String^ tagName);
-		IXmlElement^ CreateElementNS([Windows::Foundation::Metadata::VariantAttribute] Object^ uri, String^ tagName);
-		IXmlEntityReference^ CreateEntityReference(String^ name);
-		IXmlProcessingInstruction^ CreateProcessingInstruction(String^ target, String^ data);
-		IXmlText^ CreateTextNode(String^ data);
-		IXmlElement^ GetElementById(String^ elementId);
-		IXmlNodeList^ GetElementsByTagName(String^ tagName);
-		IXmlNode^ ImportNode(IXmlNode^ node, bool deep);
-		property IXmlDocumentType^ Doctype { IXmlDocumentType^ get(); }
-		property IXmlElement^ DocumentElement { IXmlElement^ get(); }
-		property Object^ DocumentUri { Object^ get(); }
-		property IXmlDomImplementation^ Implementation { IXmlDomImplementation^ get(); }
-	};
-
 	public interface class IXmlDocumentFragment : public IXmlNode
 	{};
 
@@ -497,6 +476,27 @@ namespace PhoneSupportInterfaces
 		static IAsyncOperation<XmlDocument> LoadFromUriAsync(Uri uri);
 		static IAsyncOperation<XmlDocument> LoadFromUriAsync(Uri uri, XmlLoadSettings loadSettings);
 		* */
+	};
+
+	public interface class IXmlDocument : public IXmlNode, public IXmlDocumentIO
+	{
+		IXmlAttribute^ CreateAttribute(String^ name);
+		IXmlAttribute^ CreateAttributeNS([Windows::Foundation::Metadata::VariantAttribute] Object^ uri, String^ name);
+		IXmlCDataSection^ CreateCDataSection(String^ data);
+		IXmlComment^ CreateComment(String^ comment);
+		IXmlDocumentFragment^ CreateDocumentFragment();
+		IXmlElement^ CreateElement(String^ tagName);
+		IXmlElement^ CreateElementNS([Windows::Foundation::Metadata::VariantAttribute] Object^ uri, String^ tagName);
+		IXmlEntityReference^ CreateEntityReference(String^ name);
+		IXmlProcessingInstruction^ CreateProcessingInstruction(String^ target, String^ data);
+		IXmlText^ CreateTextNode(String^ data);
+		IXmlElement^ GetElementById(String^ elementId);
+		IXmlNodeList^ GetElementsByTagName(String^ tagName);
+		IXmlNode^ ImportNode(IXmlNode^ node, bool deep);
+		property IXmlDocumentType^ Doctype { IXmlDocumentType^ get(); }
+		property IXmlElement^ DocumentElement { IXmlElement^ get(); }
+		property Object^ DocumentUri { Object^ get(); }
+		property IXmlDomImplementation^ Implementation { IXmlDomImplementation^ get(); }
 	};
 
 	public interface class IXmlDomImplementation
@@ -533,6 +533,7 @@ namespace PhoneSupportInterfaces
 		ICryptoEngine^ CreateAES128();
 		IHasher^ CreateSHA1();
 		IHasher^ CreateSHA256();
+		UINT CreateRandomNumber();
 	};
 
 	public ref class FactoryGlue sealed

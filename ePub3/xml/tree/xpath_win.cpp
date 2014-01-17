@@ -132,7 +132,7 @@ bool XPathEvaluator::Evaluate(std::shared_ptr<const Node> node, ObjectType * res
 #endif
 				if ((inode != nullptr) && (inode->NodeType == NodeType::TextNode))
 				{
-					XmlText^ txt = dynamic_cast<XmlText^>(inode);
+					IXmlText^ txt = dynamic_cast<IXmlText^>(inode);
 					string str(txt->Data);
 					if (_wtoi(str.c_str()) != 0)
 					{
@@ -221,7 +221,7 @@ bool XPathEvaluator::BooleanResult() const
 	if (NodeType(node->NodeType) != NodeType::Text)
 		return true;
 	
-	string str(dynamic_cast<XmlText^>(node)->Data);
+	string str(dynamic_cast<IXmlText^>(node)->Data);
 	if (::_wcsnicmp(str.c_str(), __TEXT("true"), min((string::size_type)4, str.length())) == 0)
 	{
 		return true;
@@ -243,7 +243,7 @@ double XPathEvaluator::NumberResult() const
 	if (NodeType(node->NodeType) != NodeType::Text)
 		return 0.0;
 
-	string str(dynamic_cast<XmlText^>(node)->Data);
+	string str(dynamic_cast<IXmlText^>(node)->Data);
 	return (_wtof(str.c_str()) != 0);
 }
 string XPathEvaluator::StringResult() const
@@ -256,7 +256,7 @@ string XPathEvaluator::StringResult() const
 	if (NodeType(node->NodeType) != NodeType::Text)
 		return string();
 
-	return string(dynamic_cast<XmlText^>(node)->Data);
+	return string(dynamic_cast<IXmlText^>(node)->Data);
 }
 NodeSet XPathEvaluator::NodeSetResult() const
 {

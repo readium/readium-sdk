@@ -54,7 +54,14 @@ public:
 	CFI(CFI^ otherCFI, UINT fromIndex);
 	virtual ~CFI() {}
 
-	virtual String^ ToString() override;
+#if !EPUB_PLATFORM(WIN_PHONE)
+	virtual
+#endif
+		String^ ToString()
+#if !EPUB_PLATFORM(WIN_PHONE)
+		override
+#endif
+		;
 
 	property bool IsRangeTriplet { bool get(); }
 	property bool IsEmpty { bool get(); }

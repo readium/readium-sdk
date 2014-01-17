@@ -57,7 +57,7 @@ static string GetTempFilePath(const string& ext)
     string r(tmpFile);
     return r;
 #elif EPUB_PLATFORM(WINRT)
-	using ToUTF8 = std::wstring_convert<std::codecvt_utf8<wchar_t>>;
+	typedef std::wstring_convert<std::codecvt_utf8<wchar_t>> ToUTF8;
 
 	auto tempFolder = ::Windows::Storage::ApplicationData::Current->TemporaryFolder;
 	std::wstring tempFolderPath(tempFolder->Path->Data(), tempFolder->Path->Length());
@@ -65,7 +65,11 @@ static string GetTempFilePath(const string& ext)
 
 	ss << tempFolderPath;
 	ss << TEXT("\\epub3.");
+#if EPUB_PLATFORM(WIN_PHONE)
+	ss << PhoneSupportInterfaces::FactoryGlue::Singleton()->CryptoFactory->CreateRandomNumber();
+#else
 	ss << Windows::Security::Cryptography::CryptographicBuffer::GenerateRandomNumber();
+#endif
 	ss << TEXT(".");
 	ss << ToUTF8().from_bytes(ext.stl_str());
 	

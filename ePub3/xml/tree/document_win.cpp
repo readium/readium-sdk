@@ -139,7 +139,7 @@ string Document::Encoding() const
 }
 std::shared_ptr<DTD> Document::InternalSubset() const
 {
-	auto notation = dynamic_cast<DtdNotation^>(xml()->Doctype->Notations->First()->Current);
+	auto notation = dynamic_cast<IDtdNotation^>(xml()->Doctype->Notations->First()->Current);
 	if (notation == nullptr)
 		return nullptr;
 	return std::make_shared<DTD>(notation);

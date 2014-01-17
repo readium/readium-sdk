@@ -44,6 +44,8 @@
 
 #include <ePub3/epub3.h>
 
+#if !EPUB_PLATFORM(WIN_PHONE)
+
 /*
 
         Header <experimental/optional> synopsis
@@ -170,7 +172,9 @@ namespace experimental {
 
 #include <utility>
 #include <type_traits>
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS) && !EPUB_PLATFORM(WIN_PHONE)
 #include <initializer_list>
+#endif
 #include <cassert>
 #include <functional>
 #include <string>
@@ -219,17 +223,24 @@ __constexpr_addressof(_Tp& __t)
 
 #ifdef NDEBUG
 # define ASSERTED_EXPRESSION(chk, expr) (expr)
+#elif EPUB_COMPILER(MSVC)
+# define ASSERTED_EXPRESSION(chk, expr) ((chk) ? (expr) : (fail(_CRT_WIDE(#chk), _CRT_WIDE(__FILE__), __LINE__), (expr)))
+static inline
+void fail(const wchar_t* expr, const wchar_t* file, unsigned line)
+{
+	_wassert(expr, file, line);
+}
 #else
 # define ASSERTED_EXPRESSION(chk, expr) ((chk) ? (expr) : (fail(#chk, __file__, __line__), (expr)))
 static inline
 void fail(const char* expr, const char* file, unsigned line)
 {
-# if defined(__clang__) || defined(__GNU_LIBRARY__)
+# if EPUB_COMPILER(CLANG) || defined(__GNU_LIBRARY__)
     __assert(expr, file, line);
-# elif defined(__GNUC__)
+# elif EPUB_COMPILER(GCC)
     _assert(expr, file, line);
-# else
-#  warning I don't know how to fire assertion internals on this compiler.
+# elif EPUB_COMPILER(MSVC)
+#  warning Do not know how to fire assertion internals on this compiler
 # endif
 }
 #endif
@@ -300,7 +311,7 @@ struct nullopt_t
 private:
     nullopt_t();
 public:
-    struct init {}
+	struct init {};
     FORCE_INLINE
     nullopt_t(init) {};
 };
@@ -1065,5 +1076,7 @@ struct hash<EPUB3_NAMESPACE::optional<_Tp>>
 };
 
 }   // namespace std
+
+#endif	// !EPUB_PLATFORM(WIN_PHONE)
 
 #endif

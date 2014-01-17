@@ -44,11 +44,13 @@ void ContentModuleManager::DisplayMessage(String^ title, String^ message)
 }
 IAsyncOperation<Credentials^>^ ContentModuleManager::RequestCredentialInput(CredentialRequest^ request)
 {
-	std::future<::ePub3::Credentials> future = ::ePub3::ContentModuleManager::Instance()->RequestCredentialInput(request->NativeObject);
+	ePub3::async_result<::ePub3::Credentials> future = ::ePub3::ContentModuleManager::Instance()->RequestCredentialInput(request->NativeObject);
 	auto shared = future.share();
 
 	return ::concurrency::create_async([shared]() -> Credentials^ {
-		return ref new BridgedStringToStringMapView(shared.get());
+		// how did 'shared' become const? decltype(shared) isn't const...
+		decltype(shared)* p = const_cast<decltype(shared)*>(&shared);
+		return ref new BridgedStringToStringMapView(p->get());
 	});
 }
 

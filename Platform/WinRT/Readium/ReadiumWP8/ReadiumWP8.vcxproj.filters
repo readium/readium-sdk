@@ -439,10 +439,28 @@
     <ClInclude Include="..\Readium\WinSpine.h">
       <Filter>Public Interface</Filter>
     </ClInclude>
-    <ClInclude Include="..\Readium\ThreadEmulation.h" />
     <ClInclude Include="..\..\..\..\ePub3\xml\tree\node_traits.h">
       <Filter>ePub3\xml\tree</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\condition_variable_any.h">
+      <Filter>ePub3\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\future.h">
+      <Filter>ePub3\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\integer_sequence.h">
+      <Filter>ePub3\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\invoke.h">
+      <Filter>ePub3\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\optional.h">
+      <Filter>ePub3\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\string_view.h">
+      <Filter>ePub3\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Readium\ThreadEmulation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\ePub3\ePub\xpath_wrangler.cpp">
@@ -864,6 +882,12 @@
     </ClCompile>
     <ClCompile Include="..\Readium\WinSpine.cpp">
       <Filter>Public Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\future.cpp">
+      <Filter>ePub3\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\optional.cpp">
+      <Filter>ePub3\utilities</Filter>
     </ClCompile>
     <ClCompile Include="..\Readium\ThreadEmulation.cpp" />
   </ItemGroup>

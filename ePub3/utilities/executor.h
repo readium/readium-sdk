@@ -156,7 +156,11 @@ protected:
             // terminate if a closure throws an exception
             // this matches the paper's guidance
             try {
+#if EPUB_PLATFORM(WIN_PHONE)
+				closure();
+#else
                 invoke(closure);
+#endif
             } catch (...) {
 #ifndef NDEBUG
                 std::exception_ptr __exc = std::current_exception();

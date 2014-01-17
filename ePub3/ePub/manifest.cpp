@@ -25,6 +25,7 @@
 #include "container.h"
 #include REGEX_INCLUDE
 #include <sstream>
+#include <ePub3/xml/document.h>
 
 EPUB3_BEGIN_NAMESPACE
 

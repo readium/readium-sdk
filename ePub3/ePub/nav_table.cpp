@@ -84,13 +84,13 @@ bool NavigationTable::ParseXML(shared_ptr<xml::Node> node)
 #else
     XPathWrangler::NamespaceList __ns;
     __ns["epub"] = ePub3NamespaceURI;
-    XPathWrangler xpath(node->doc, __ns);
+    XPathWrangler xpath(node->Document(), __ns);
 #endif
     xpath.NameDefaultNamespace("html");
     
     // look for optional <h2> title
     // Q: Should we fail on finding multiple <h2> tags here?
-#if EPUB_USE(WIN_XML)
+#if EPUB_USE(WIN_XML) || EPUB_USE(WIN_PHONE_XML)
 	xml::NodeSet h2nodes = xpath.Nodes("./html:h2", node);
 	if (!h2nodes.empty()){
 		_title = std::move(h2nodes[0]->FirstChild()->StringValue());
@@ -198,7 +198,7 @@ void NavigationTable::LoadChildElements(shared_ptr<NavigationElement> pElement, 
 #else
     XPathWrangler::NamespaceList __ns;
     __ns["ePub3"] = ePub3NamespaceURI;
-    XPathWrangler xpath(olNode->doc, __ns);
+    XPathWrangler xpath(olNode->Document(), __ns);
 #endif
     xpath.NameDefaultNamespace("html");
 

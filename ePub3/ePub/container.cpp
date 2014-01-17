@@ -214,11 +214,11 @@ bool Container::Open(const string& path)
 }
 ContainerPtr Container::OpenContainer(const string &path)
 {
-	auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, std::launch::any);
+	auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, launch::any);
 	ContainerPtr result;
 
 	// see if it's complete with a nil value
-	if (future.wait_for(std::chrono::system_clock::duration(0)) == std::future_status::ready)
+	if (__ar_has_value(future))
 	{
 		if (future.get().get() == nullptr)
 			result = OpenContainerForContentModule(path);
@@ -229,18 +229,21 @@ ContainerPtr Container::OpenContainer(const string &path)
 
 	return result;
 }
-std::future<ContainerPtr> Container::OpenContainerAsync(const string& path, std::launch policy)
+async_result<ContainerPtr> Container::OpenContainerAsync(const string& path, launch policy)
 {
     auto result = ContentModuleManager::Instance()->LoadContentAtPath(path, policy);
     
     // see if it's complete with a nil value
-    if (result.wait_for(std::chrono::system_clock::duration(0)) == std::future_status::ready)
+    if (__ar_has_value(result))
     {
-		ContainerPtr container = result.get();
-		if (container)
-			result = __make_ready_future(container);
-		else
-            result = std::async(policy, &Container::OpenContainerForContentModule, path);
+		if (result.get().get() == nullptr)
+		{
+#if EPUB_PLATFORM(WIN_PHONE)
+			result = async_result<ContainerPtr>([path]() { return Container::OpenContainerForContentModule(path); });
+#else
+			result = ::ePub3::async(policy, &Container::OpenContainerForContentModule, path);
+#endif
+		}
     }
     
     return result;
@@ -248,10 +251,11 @@ std::future<ContainerPtr> Container::OpenContainerAsync(const string& path, std:
 #if EPUB_PLATFORM(WINRT)
 ContainerPtr Container::OpenSynchronouslyForWinRT(const string& path)
 {
-	auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, std::launch::deferred);
+	auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, launch::deferred);
 
 	// see if it's complete with a nil value
-	if (future.wait_for(std::chrono::system_clock::duration(0)) == std::future_status::ready)
+	//if (future.wait_for(std::chrono::system_clock::duration(0)) == future_status::ready)
+	if (__ar_has_value(future))
 	{
 		ContainerPtr result = future.get();
 		if (bool(result))
@@ -320,7 +324,7 @@ void Container::LoadEncryption()
     ArchiveXmlReader reader(std::move(pZipReader));
 #if EPUB_USE(LIBXML2)
     shared_ptr<xml::Document> enc = reader.xmlReadDocument(gEncryptionFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
-#elif EPUB_USE(WIN_XML)
+#elif EPUB_USE(WIN_XML) || EPUB_USE(WIN_PHONE_XML)
 	auto enc = reader.ReadDocument(gEncryptionFilePath, nullptr, 0);
 #endif
     if ( !bool(enc) )

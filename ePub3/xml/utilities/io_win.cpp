@@ -49,9 +49,9 @@ namespace Readium
 {
 	namespace XML
 	{
-		using ReadFn = std::function<int(void*, char*, int)>;
-		using WriteFn = std::function<int(void*, const char*, int)>;
-		using CloseFn = std::function<int(void*)>;
+		typedef std::function<int(void*, char*, int)> ReadFn;
+		typedef std::function<int(void*, const char*, int)> WriteFn;
+		typedef std::function<int(void*)> CloseFn;
 
 		static ::ComPtr<IBufferByteAccess> getByteAccessForBuffer(IBuffer^ buffer)
 		{
@@ -379,7 +379,7 @@ std::shared_ptr<Document> InputBuffer::ReadDocument(const char* url, const char*
 	auto task = XmlDocument::LoadFromUriAsync(uri);
 	return new Document(task->GetResults());
 #else
-	using Converter = std::wstring_convert<std::codecvt_utf8<wchar_t>>;
+	typedef std::wstring_convert<std::codecvt_utf8<wchar_t>> Converter;
 	static const size_t BUF_SIZE = 4096;
 	std::wstring str;
 	uint8_t buf[BUF_SIZE];
@@ -414,9 +414,9 @@ std::shared_ptr<Document> InputBuffer::ReadDocument(const char* url, const char*
 	XmlDocument^ native = ref new XmlDocument;
 	XmlLoadSettings^ settings = ref new XmlLoadSettings;
 #elif EPUB_USE(WIN_PHONE_XML)
-	IXmlDocumentFactory^ factory = FactoryGlue.Singleton().XmlFactory;
-	IXmlDocument^ native = factory.CreateXmlDocument();
-	IXmlLoadSettings^ settings = factory.CreateLoadSettings();
+	IXmlDocumentFactory^ factory = FactoryGlue::Singleton()->XmlFactory;
+	IXmlDocument^ native = factory->CreateXmlDocument();
+	IXmlLoadSettings^ settings = factory->CreateLoadSettings();
 #endif
 	settings->ElementContentWhiteSpace = false;
 	settings->MaxElementDepth = 100;
@@ -475,7 +475,7 @@ int OutputBuffer::WriteDocument(std::shared_ptr<const Document> doc)
 	const wchar_t* wbuf = xmlstr->Data();
 	size_t len = xmlstr->Length();
 
-	using Converter = std::wstring_convert<std::codecvt_utf8<wchar_t>>;
+	typedef std::wstring_convert<std::codecvt_utf8<wchar_t>> Converter;
 	std::string utf8(Converter().to_bytes(wbuf, wbuf + len));
 	delete xmlstr;		// watch the memory usage
 

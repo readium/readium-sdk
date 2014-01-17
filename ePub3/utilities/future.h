@@ -20,12 +20,26 @@
 #define ePub3_future_h
 
 #include <ePub3/base.h>
+
+#if EPUB_PLATFORM(WIN_PHONE)
+#include <ppltasks.h>
+EPUB3_BEGIN_NAMESPACE
+enum class launch
+{
+	async = 1,
+	deferred = 2,
+	any = async | deferred
+};
+EPUB3_END_NAMESPACE
+#else
+
 #include <list>
 #include <string>
 #include <system_error>
 #include <thread>
 #include <memory>
 #include <ePub3/utilities/invoke.h>
+#include <ePub3/utilities/integer_sequence.h>
 #include <ePub3/utilities/executor.h>
 #include <ePub3/utilities/condition_variable_any.h>
 
@@ -373,7 +387,7 @@ public:
     packaged_task& operator=(packaged_task&& other) noexcept;
     void swap(packaged_task& other) noexcept;
 
-    bool valid() const noexcept;
+    bool valid() const _NOEnoexceptXCEPT;
 
     // result retrieval
     future<R> get_future();
@@ -1169,7 +1183,7 @@ public:
         {}
     
     static FORCE_INLINE
-    void run(__future_async_shared_state* __that, _Fp&& __f)
+    void run(__future_async_shared_state* __that, _Fp& __f)
         {
             try
             {
@@ -1195,7 +1209,7 @@ public:
         {}
     
     static FORCE_INLINE
-    void run(__future_async_shared_state* __that, _Fp&& __f)
+    void run(__future_async_shared_state* __that, _Fp& __f)
         {
             try
             {
@@ -1221,7 +1235,7 @@ public:
         {}
     
     static FORCE_INLINE
-    void run(__future_async_shared_state* __that, _Fp&& __f)
+    void run(__future_async_shared_state* __that, _Fp& __f)
         {
             try
             {
@@ -2241,7 +2255,7 @@ public:
     
     // These are all implemented by __basic_future
     /*
-    bool valid() const noexcept;
+    bool valid() const _NOEXCEPT;
     void wait() const
     
     template <class Rep, class Period>
@@ -2357,7 +2371,7 @@ public:
         {}
     
     FORCE_INLINE
-    future(future&& __o) noexcept
+    future(future&& __o) _NOEXCEPT
         : _Base(std::move(static_cast<_Base&>(__o)))
         {}
     
@@ -2366,7 +2380,7 @@ public:
         {}
     
     FORCE_INLINE
-    future& operator=(future&& __o) noexcept
+    future& operator=(future&& __o) _NOEXCEPT
         {
             this->_Base::operator=(std::move(static_cast<_Base&>(__o)));
             return *this;
@@ -2447,7 +2461,7 @@ public:
     
     // These are all implemented by __basic_future
     /*
-    bool valid() const noexcept;
+    bool valid() const _NOEXCEPT;
     void wait() const
     
     template <class Rep, class Period>
@@ -2550,14 +2564,14 @@ public:
         {}
     
     FORCE_INLINE
-    shared_future(shared_future&& __o) noexcept
+    shared_future(shared_future&& __o) _NOEXCEPT
         : _Base(std::move(__o))
         {
             __o.__future_.reset();
         }
     
     FORCE_INLINE
-    shared_future(future<_Rp>&& __o) noexcept
+    shared_future(future<_Rp>&& __o) _NOEXCEPT
         : _Base(std::move(__o))
         {}
     
@@ -2571,7 +2585,7 @@ public:
             return *this;
         }
     
-    shared_future& operator=(shared_future&& __o) noexcept
+    shared_future& operator=(shared_future&& __o) _NOEXCEPT
         {
             this->_Base::operator=(std::move(static_cast<_Base&>(__o)));
             return *this;
@@ -2614,7 +2628,7 @@ public:
     
     // These are all implemented by __basic_future
     /*
-    bool valid() const noexcept;
+    bool valid() const _NOEXCEPT;
     void wait() const
     
     template <class Rep, class Period>
@@ -2710,13 +2724,13 @@ public:
     // assignment
     
     FORCE_INLINE
-    promise(promise&& __o) noexcept
+    promise(promise&& __o) _NOEXCEPT
         : __future_(std::move(__o.__future_)), __future_obtained_(__o.__future_obtained_)
         {
             __o.__future_obtained_ = false;
         }
     
-    promise& operator=(promise&& __o) noexcept
+    promise& operator=(promise&& __o) _NOEXCEPT
         {
             __future_ = std::move(__o.__future_);
             __future_obtained_ = __o.__future_obtained_;
@@ -2752,7 +2766,7 @@ public:
             if (__future_->__done_)
                 throw promise_already_satisfied();
             
-            __future_->mark_finished_with_result_internal(std::forward<_Rp>(__r), __lk);
+            __future_->mark_finished_with_result_internal(__r, __lk);
         }
     
     void set_value(typename __future_traits<_Rp>::rvalue_source_type __r)
@@ -2881,13 +2895,13 @@ public:
     // assignment
     
     FORCE_INLINE
-    promise(promise&& __o) noexcept
+    promise(promise&& __o) _NOEXCEPT
         : __future_(std::move(__o.__future_)), __future_obtained_(__o.__future_obtained_)
         {
             __o.__future_obtained_ = false;
         }
     
-    promise& operator=(promise&& __o) noexcept
+    promise& operator=(promise&& __o) _NOEXCEPT
         {
             __future_ = std::move(__o.__future_);
             __future_obtained_ = __o.__future_obtained_;
@@ -3034,13 +3048,13 @@ public:
     // assignment
     
     FORCE_INLINE
-    promise(promise&& __o) noexcept
+    promise(promise&& __o) _NOEXCEPT
         : __future_(std::move(__o.__future_)), __future_obtained_(__o.__future_obtained_)
         {
             __o.__future_obtained_ = false;
         }
     
-    promise& operator=(promise&& __o) noexcept
+    promise& operator=(promise&& __o) _NOEXCEPT
         {
             __future_ = std::move(__o.__future_);
             __future_obtained_ = __o.__future_obtained_;
@@ -3140,7 +3154,7 @@ namespace std
 {
     
     template <class _Rp>
-    void swap(EPUB3_NAMESPACE::promise<_Rp>& __x, EPUB3_NAMESPACE::promise<_Rp>& __y) noexcept
+    void swap(EPUB3_NAMESPACE::promise<_Rp>& __x, EPUB3_NAMESPACE::promise<_Rp>& __y) _NOEXCEPT
         {
             __x.swap(__y);
         }
@@ -3253,7 +3267,7 @@ public:
     // assignment
     
     FORCE_INLINE
-    packaged_task(packaged_task&& __o) noexcept
+    packaged_task(packaged_task&& __o) _NOEXCEPT
         : __future_obtained_(__o.__future_obtained_)
         {
             __task_.swap(__o.__task_);
@@ -3285,7 +3299,7 @@ public:
         }
     
     FORCE_INLINE
-    bool valid() const noexcept
+    bool valid() const _NOEXCEPT
         {
             return bool(__task_);
         }
@@ -3397,26 +3411,29 @@ async(launch __policy, _Fp&& __f, _Args&&... __args)
 {
     typedef __async_func<typename std::decay<_Fp>::type, typename std::decay<_Args>::type...> _BF;
     typedef typename _BF::_Rp _Rp;
+
+	_BF __fo(decay_copy(std::forward<_Fp>(__f)), decay_copy(std::forward<_Args>(__args))...);
     
     future<_Rp> __r;
     if (int(__policy) & int(launch::async))
     {
-        __r = __make_future_async_shared_state<_Rp>(_BF(decay_copy(std::forward<_Fp>(__f)), decay_copy(std::forward<_Args>(__args))...));
+        __r = __make_future_async_shared_state<_Rp>(std::move(__fo));
     }
     else if (int(__policy) & int(launch::deferred))
     {
-        __r = __make_future_deferred_shared_state<_Rp>(_BF(decay_copy(std::forward<_Fp>(__f)), decay_copy(std::forward<_Args>(__args))...));
+        __r = __make_future_deferred_shared_state<_Rp>(std::move(__fo));
     }
     
     return __r;
 }
-
+#if !EPUB_PLATFORM(WINRT)
 template <class _Fp, class ..._Args>
 future<typename __invoke_of<typename std::decay<_Fp>::type, typename std::decay<_Args>::type...>::type>
 async(_Fp&& __f, _Args&&... __args)
 {
     return async(launch::any, std::forward<_Fp>(__f), std::forward<_Args>(__args)...);
 }
+#endif
 
 template <typename _Tp>
 FORCE_INLINE
@@ -3434,7 +3451,7 @@ inline FORCE_INLINE
 future<void>
 make_ready_future()
 {
-    typedef typename future<void>::future_ptr _F;
+    typedef future<void>::future_ptr _F;
     _F __state(new __shared_state<void>);
     __state->mark_finished_with_result();
     return future<void>(__state);
@@ -3480,7 +3497,7 @@ inline FORCE_INLINE
 shared_future<void>
 make_ready_shared_future()
 {
-    typedef typename shared_future<void>::future_ptr _F;
+    typedef shared_future<void>::future_ptr _F;
     _F __state(new __shared_state<void>);
     __state->mark_finished_with_result();
     return shared_future<void>(__state);
@@ -3898,5 +3915,7 @@ shared_future<_Rp>::then(executor& __exec, _Fp&& __func)
 }
 
 EPUB3_END_NAMESPACE
+
+#endif	// !EPUB_PLATFORM(WIN_PHONE)
 
 #endif

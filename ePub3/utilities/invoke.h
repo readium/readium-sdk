@@ -10,6 +10,9 @@
 #define ePub3_invoke_h
 
 #include <ePub3/base.h>
+
+#if !EPUB_PLATFORM(WIN_PHONE)
+
 #include <type_traits>
 #include <functional>
 
@@ -41,12 +44,14 @@ struct __nat
 
 struct __any
 {
-    __any(...);
+	template <typename... _Args>
+    __any(_Args&&...);
 };
 
 // check for complete types
 
-template <class... _Tp> struct __check_complete;
+template <class ..._Tp>
+struct __check_complete;
 
 template <>
 struct __check_complete<>
@@ -259,5 +264,7 @@ struct __invoke_of
 };
 
 EPUB3_END_NAMESPACE
+
+#endif	// !EPUB_PLATFORM(WIN_PHONE)
 
 #endif

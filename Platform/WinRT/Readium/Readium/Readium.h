@@ -72,7 +72,7 @@ static inline ::ePub3::IRI URIToIRI(::Windows::Foundation::Uri^ uri)
 
 #define _DECLARE_BRIDGE_API_(_Native, _Wrapped) \
 	private: \
-	std::remove_reference_t<_Native> _native; \
+	std::remove_reference<_Native>::type _native; \
 	internal: \
 	property _Native NativeObject { _Native get() { return _native; } } \
 	static _Wrapped Wrapper(_Native native)

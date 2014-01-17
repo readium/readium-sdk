@@ -11,21 +11,37 @@
 
 #include <ePub3/ePub3.h>
 #include <ePub3/user_action.h>
-#include <future>
+#include <ePub3/utilities/future.h>
 #include <memory>
 
 EPUB3_BEGIN_NAMESPACE
 
-#if EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES)
+#if !EPUB_PLATFORM(WIN_PHONE)
+# if EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES)
 template <typename _Tp>
-using async_result = std::future<_Tp>;
+using async_result = ::ePub3::future<_Tp>;
 
 template <typename _Tp>
-using promised_result = std::promise<_Tp>;
-#else
-# define async_result std::future
-# define promised_result std::promise
-#endif
+using promised_result = ::ePub3::promise<_Tp>;
+# else
+#  define async_result ::ePub3::future
+#  define promised_result ::ePub3::promise
+# endif
+# define __ar_has_value(X) X.has_value()
+#else	// EPUB_PLATFORM(WIN_PHONE)
+#include <ppltasks.h>
+# if EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES)
+template <typename _Tp>
+using async_result = ::Concurrency::task<_Tp>;
+
+template <typename _Tp>
+using promised_result = ::Concurrency::task_completion_event<_Tp>;
+# else
+#  define async_result ::Concurrency::task
+#  define promised_result ::Concurrency::task_completion_event
+# endif
+# define __ar_has_value(X) (X._GetImpl()->_IsCompleted() || X._GetImpl()->_IsCanceled())
+#endif	// EPUB_PLATFORM(WIN_PHONE)
 
 class ContentModule : public std::enable_shared_from_this<ContentModule>
 {
@@ -48,7 +64,7 @@ public:
     virtual
     async_result<ContainerPtr>
     ProcessFile(const string& path,
-                std::launch policy=std::launch::any)        = 0;
+                launch policy=launch::any)        = 0;
     
     //////////////////////////////////////////////
     // Content Filters

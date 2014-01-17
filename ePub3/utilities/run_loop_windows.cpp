@@ -561,14 +561,14 @@ RunLoop::Timer::Timer(Clock::time_point& fireDate, Clock::duration& interval, Ti
 	if (interval > Clock::duration(0))
 	{
 		// Periodic Timer
-		Windows::Foundation::TimeSpan timeSpan{ interval.count() };
+		Windows::Foundation::TimeSpan timeSpan = { interval.count() };
 		_timer = ThreadPoolTimer::CreatePeriodicTimer(elapsedHandler, timeSpan);
 	}
 	else
 	{
 		// One-shot timer
 		long long theInterval = duration_cast<milliseconds>(fireDate.time_since_epoch() - Clock::now().time_since_epoch()).count();
-		Windows::Foundation::TimeSpan timeSpan{ theInterval };
+		Windows::Foundation::TimeSpan timeSpan = { theInterval };
 		_timer = ThreadPoolTimer::CreateTimer(elapsedHandler, timeSpan);
 	}
 
@@ -608,7 +608,7 @@ RunLoop::Timer::Timer(Clock::duration& interval, bool repeat, TimerFn fn) : _run
 	});
 	auto elapsedHandler = ref new TimerElapsedHandler(doneFn, &TimerCallbackWrapper::Fire, Platform::CallbackContext::Any, true);
 
-	Windows::Foundation::TimeSpan timeSpan{ interval.count() };
+	Windows::Foundation::TimeSpan timeSpan = { interval.count() };
 	_timer = ThreadPoolTimer::CreatePeriodicTimer(elapsedHandler, timeSpan);
 #else
     _handle = ::CreateWaitableTimer(NULL, FALSE, NULL);

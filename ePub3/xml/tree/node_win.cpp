@@ -34,8 +34,10 @@
 
 #if EPUB_USE(WIN_XML)
 using namespace ::Windows::Data::Xml::Dom;
+typedef ::Windows::Data::Xml::Dom::NodeType _XNodeType;
 #elif EPUB_USE(WIN_PHONE_XML)
 using namespace ::PhoneSupportInterfaces;
+typedef ::PhoneSupportInterfaces::NodeType	_XNodeType;
 #endif
 
 EPUB3_XML_BEGIN_NAMESPACE
@@ -416,7 +418,8 @@ std::shared_ptr<const Node> Node::NextSibling() const
 std::shared_ptr<Node> Node::NextElementSibling()
 {
 	auto next = _xml->NextSibling;
-	while (next != nullptr && next->NodeType != ::Windows::Data::Xml::Dom::NodeType::ElementNode)
+
+	while (next != nullptr && next->NodeType != _XNodeType::ElementNode)
 		next = next->NextSibling;
 	if (next == nullptr)
 		return nullptr;

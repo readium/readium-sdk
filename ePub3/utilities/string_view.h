@@ -189,9 +189,21 @@ bool operator>=(basic_string_view<charT, traits> x, basic_string_view<charT, tra
 // [string.view.comparison], sufficient additional overloads of comparison functions
 
 // [string.view.nonmem], other non-member basic_string_view functions
+#if EPUB_COMPILER_SUPPORTS(CXX_DEFAULT_TEMPLATE_ARGS_ON_FUNCTIONS)
 template <class _CharT, class _Traits = std::char_traits<_CharT>, class _Allocator = std::allocator<_CharT>>
     std::basic_string<_CharT, _Traits, _Allocator>
     to_string(basic_string_view<_CharT, _Traits>, const _Allocator& a = _Allocator());
+#else
+template <class _CharT, class _Traits, class _Allocator>
+	std::basic_string<_CharT, _Traits, _Allocator>
+	to_string(basic_string_view<_CharT, _Traits>, const _Allocator& a = _Allocator());
+template <class _CharT, class _Traits>
+	std::basic_string<_CharT, _Traits>
+	to_string(basic_string_view<_CharT, _Traits>, const typename std::basic_string<_CharT, _Traits>::allocator_type& a = std::basic_string<_CharT, _Traits>::allocator_type());
+template <class _CharT>
+	std::basic_string<_CharT>
+	to_string(basic_string_view<_CharT, std::char_traits<_CharT>>, const typename std::basic_string<_CharT>::allocator_type& a = std::basic_string<_CharT>::allocator_type());
+#endif
 
 template <class _CharT, class _Traits>
     std::basic_ostream<_CharT, _Traits>&
@@ -312,7 +324,7 @@ public:
     
     // [string.view.ops], string operations:
     template<class _Allocator>
-    explicit operator std::basic_string<_CharT, _Traits, _Allocator>() const
+    operator std::basic_string<_CharT, _Traits, _Allocator>() const
         {
             return std::basic_string<_CharT, _Traits, _Allocator>(begin(), end());
         }

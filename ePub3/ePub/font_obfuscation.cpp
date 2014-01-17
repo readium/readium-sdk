@@ -132,7 +132,10 @@ bool FontObfuscator::BuildKey(ConstContainerPtr container)
 	::Microsoft::WRL::ComPtr<::Windows::Storage::Streams::IBufferByteAccess> byteBuffer;
 	comBuffer.As(&byteBuffer);
 
-	memcpy_s(_key, KeySize, byteBuffer->Buffer, keyBuf->Length);
+	byte* outBuf = nullptr;
+	byteBuffer->Buffer(&outBuf);
+
+	memcpy_s(_key, KeySize, outBuf, keyBuf->Length);
 #elif EPUB_PLATFORM(WINRT)
 	auto byteArray = ArrayReference<byte>(reinterpret_cast<byte*>(const_cast<char*>(str.data())), str.length());
 	auto inBuf = CryptographicBuffer::CreateFromByteArray(byteArray);

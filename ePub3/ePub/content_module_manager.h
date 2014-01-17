@@ -12,8 +12,8 @@
 #include <ePub3/ePub3.h>
 #include <ePub3/content_module.h>
 #include <ePub3/credential_request.h>
+#include <ePub3/utilities/future.h>
 #include <map>
-#include <future>
 #include <memory>
 
 EPUB3_BEGIN_NAMESPACE
@@ -65,7 +65,7 @@ private:
     friend class Container;
     
     // for the use of Container::OpenContainer(path)
-    async_result<ContainerPtr> LoadContentAtPath(const string& path, std::launch policy);
+    async_result<ContainerPtr> LoadContentAtPath(const string& path, launch policy);
     
 };
 

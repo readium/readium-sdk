@@ -49,16 +49,16 @@ CFI::CFI(::ePub3::CFI&& native) : _native(std::move(native))
 	_native.SetBridge(this);
 }
 
-CFI::CFI() : CFI(std::move(::ePub3::CFI()))
+CFI::CFI() : _native(std::move(::ePub3::CFI()))
 {
 }
-CFI::CFI(CFI^ base, CFI^ start, CFI^ end) : CFI(std::move(::ePub3::CFI(base->NativeObject, start->NativeObject, end->NativeObject)))
+CFI::CFI(CFI^ base, CFI^ start, CFI^ end) : _native(std::move(::ePub3::CFI(base->NativeObject, start->NativeObject, end->NativeObject)))
 {
 }
-CFI::CFI(String^ stringRepresentation) : CFI(std::move(::ePub3::CFI(StringToNative(stringRepresentation))))
+CFI::CFI(String^ stringRepresentation) : _native(std::move(::ePub3::CFI(StringToNative(stringRepresentation))))
 {
 }
-CFI::CFI(CFI^ otherCFI, UINT fromIndex) : CFI(std::move(::ePub3::CFI(otherCFI->NativeObject, fromIndex)))
+CFI::CFI(CFI^ otherCFI, UINT fromIndex) : _native(std::move(::ePub3::CFI(otherCFI->NativeObject, fromIndex)))
 {
 }
 
