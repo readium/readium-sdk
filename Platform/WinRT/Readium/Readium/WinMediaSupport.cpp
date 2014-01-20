@@ -28,7 +28,7 @@ using ::Platform::String;
 
 BEGIN_READIUM_API
 
-using ManifestItemList = BridgedObjectVectorView<ManifestItem^, ::ePub3::ManifestItemPtr>;
+typedef BRIDGED_OBJECT_VECTOR(ManifestItem^, ::ePub3::ManifestItemPtr) ManifestItemList;
 
 _BRIDGE_API_IMPL_(::ePub3::MediaSupportInfoPtr, MediaSupportInfo)
 

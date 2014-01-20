@@ -31,6 +31,11 @@
 using namespace ::Platform;
 using namespace ::Windows::Foundation;
 
+#if EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES)
+using ::ePub3::async_result;
+using ::ePub3::promised_result;
+#endif
+
 BEGIN_READIUM_API
 
 void ContentModuleManager::RegisterContentModule(IContentModule^ module, String^ name)
@@ -44,7 +49,13 @@ void ContentModuleManager::DisplayMessage(String^ title, String^ message)
 }
 IAsyncOperation<Credentials^>^ ContentModuleManager::RequestCredentialInput(CredentialRequest^ request)
 {
-	ePub3::async_result<::ePub3::Credentials> future = ::ePub3::ContentModuleManager::Instance()->RequestCredentialInput(request->NativeObject);
+	async_result<::ePub3::Credentials> future = ::ePub3::ContentModuleManager::Instance()->RequestCredentialInput(request->NativeObject);
+#if EPUB_PLATFORM(WIN_PHONE)
+	return ::concurrency::create_async([future]() -> Credentials^ {
+		decltype(future)* p = const_cast<decltype(future)*>(&future);
+		return ref new BridgedStringToStringMapView(p->get());
+	});
+#else
 	auto shared = future.share();
 
 	return ::concurrency::create_async([shared]() -> Credentials^ {
@@ -52,6 +63,7 @@ IAsyncOperation<Credentials^>^ ContentModuleManager::RequestCredentialInput(Cred
 		decltype(shared)* p = const_cast<decltype(shared)*>(&shared);
 		return ref new BridgedStringToStringMapView(p->get());
 	});
+#endif
 }
 
 END_READIUM_API

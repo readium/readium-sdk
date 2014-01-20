@@ -34,7 +34,7 @@ using namespace ::Windows::Foundation::Collections;
 
 BEGIN_READIUM_API
 
-using ExtensionList = BridgedObjectVectorView<PropertyExtension^, ::ePub3::PropertyExtensionPtr>;
+typedef BRIDGED_OBJECT_VECTOR(PropertyExtension^, ::ePub3::PropertyExtensionPtr) ExtensionList;
 
 static ::ePub3::PropertyHolderPtr GetNative(IPropertyHolder^ holder)
 {

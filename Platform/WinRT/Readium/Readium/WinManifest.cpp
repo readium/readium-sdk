@@ -27,9 +27,13 @@
 #include <ePub3/xml/document.h>
 
 using namespace ::Platform;
-using namespace ::Windows::Data::Xml::Dom;
 using namespace ::Windows::Foundation;
 using namespace ::Windows::Foundation::Collections;
+#if EPUB_USE(WIN_PHONE_XML)
+using namespace ::PhoneSupportInterfaces;
+#else
+using namespace ::Windows::Data::Xml::Dom;
+#endif
 
 BEGIN_READIUM_API
 
@@ -123,7 +127,7 @@ UINT ManifestItem::ResourceSize::get()
 #if EPUB_USE(WIN_XML)
 ::Windows::Data::Xml::Dom::IXmlDocument^
 #elif EPUB_USE(WIN_PHONE_XML)
-::PhoneSupportInterfaces::IXmlDocumuent^
+::PhoneSupportInterfaces::IXmlDocument^
 #endif
 ManifestItem::LoadDocument()
 {

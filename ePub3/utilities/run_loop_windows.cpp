@@ -866,7 +866,7 @@ void RunLoop::Timer::SetNextFireDateTime(Clock::time_point& when)
 	auto elapsedHandler = ref new TimerElapsedHandler(doneFn, &TimerCallbackWrapper::Fire, Platform::CallbackContext::Any, true);
 
 	long long delay = duration_cast<milliseconds>(_fireDate.time_since_epoch() - Clock::now().time_since_epoch()).count();
-	Windows::Foundation::TimeSpan timeSpan{delay};
+	Windows::Foundation::TimeSpan timeSpan = {delay};
 	_timer = ThreadPoolTimer::CreateTimer(elapsedHandler, timeSpan);
 #else
     LARGE_INTEGER due;
@@ -896,7 +896,7 @@ void RunLoop::Timer::SetNextFireDateDuration(Clock::duration& when)
 	auto doneFn = ref new TimerCallbackWrapper([this](){if (_handle != NULL)::SetEvent(_handle); });
 	auto elapsedHandler = ref new TimerElapsedHandler(doneFn, &TimerCallbackWrapper::Fire, Platform::CallbackContext::Any, true);
 
-	Windows::Foundation::TimeSpan timeSpan{ when.count() };
+	Windows::Foundation::TimeSpan timeSpan = { when.count() };
 	_timer = ThreadPoolTimer::CreatePeriodicTimer(elapsedHandler, timeSpan);
 #else
     LARGE_INTEGER due;

@@ -30,9 +30,24 @@
 
 BEGIN_READIUM_API
 
-template <typename _Result, typename _NativeResult = _Result>
-static void __process_operation_completion(::Windows::Foundation::IAsyncOperation<_Result>^ operation, ::Windows::Foundation::AsyncStatus status, ePub3::promised_result<_NativeResult>& promise,
-	std::function<void()> process_result)
+#if EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES)
+// the async_result<> and promised_result<> types are actually types here;
+// otherwise, they're macros, and cannot be used with a namespace.
+// to keep the code working in both cases, we'll tell the compiler that the
+// names refer to those in the 'ePub3' namespace when we're using actual types.
+using ::ePub3::async_result;
+using ::ePub3::promised_result;
+#endif
+
+template <
+	typename _Result,
+	typename _NativeResult
+#if EPUB_COMPILER_SUPPORTS(CXX_DEFAULT_TEMPLATE_ARGS_ON_FUNCTIONS)
+		= _Result
+#endif
+	>
+static void __process_operation_completion(::Windows::Foundation::IAsyncOperation<_Result>^ operation, ::Windows::Foundation::AsyncStatus status, promised_result<_NativeResult>& promise,
+	::std::function<void()> process_result)
 {
 	using namespace ::Windows::Foundation;
 	if (status == AsyncStatus::Completed)
@@ -54,6 +69,15 @@ static void __process_operation_completion(::Windows::Foundation::IAsyncOperatio
 	}
 }
 
+#if !EPUB_COMPILER_SUPPORTS(CXX_DEFAULT_TEMPLATE_ARGS_ON_FUNCTIONS)
+template <typename _Result>
+static void __process_operation_completion(::Windows::Foundation::IAsyncOperation<_Result>^ operation, ::Windows::Foundation::AsyncStatus status, promised_result<_Result>& promise,
+	::std::function<void()> process_result)
+{
+	__process_operation_completion<_Result, _Result>(operation, status, promise, process_result);
+}
+#endif
+
 class __WinRTContentModule
 	: public ::ePub3::ContentModule
 {
@@ -74,7 +98,7 @@ public:
 		}
 
 	virtual
-	ePub3::async_result<ePub3::ContainerPtr>
+	async_result<ePub3::ContainerPtr>
 	ProcessFile(const ::ePub3::string& path, ePub3::launch policy = ePub3::launch::async)
 		{
 			using namespace ::Windows::Foundation;
@@ -82,20 +106,12 @@ public:
 			if (policy == ePub3::launch::deferred)
 			{
 				Container^ container = __winrt_->ProcessFileSync(StringFromNative(path));
-				ePub3::promised_result<ePub3::ContainerPtr> __p;
-#if EPUB_PLATFORM(WIN_PHONE)
+				promised_result<ePub3::ContainerPtr> __p;
 				if (container)
-					__p.set(container->NativeObject);
+					__set_promise(__p, container->NativeObject);
 				else
-					__p.set(nullptr);
-				return ePub3::async_result<ePub3::ContainerPtr>(__p);
-#else
-				if (container)
-					__p.set_value(container->NativeObject);
-				else
-					__p.set_value(nullptr);
-				return __p.get_future();
-#endif
+					__set_promise(__p, nullptr);
+				return __ar_from_promise(__p, ePub3::ContainerPtr);
 			}
 			else
 			{
@@ -117,42 +133,41 @@ public:
 	// User actions
 
 	virtual
-	ePub3::async_result<bool>
+	async_result<bool>
 	ApproveUserAction(const ::ePub3::UserAction& action)
 		{
 			using namespace ::Windows::Foundation;
-			auto promise = new ePub3::promised_result<bool>();
+			auto promise = new promised_result<bool>();
 			auto op = __winrt_->ApproveUserAction(ref new UserAction(action));
 
 			op->Completed = ref new AsyncOperationCompletedHandler<bool>([promise](IAsyncOperation<bool>^ operation, AsyncStatus status) {
 				__process_operation_completion(operation, status, *promise, [operation, promise]() {
-					promise->set_value(operation->GetResults());
+					__set_promise(*promise, operation->GetResults());
 				});
 				delete promise;
 			});
-
-			return promise->get_future();
+			return __ar_from_promise(*promise, bool);
 		}
 
 private:
-	ePub3::async_result<ePub3::ContainerPtr> ProcessFileAsyncInternal(const ePub3::string& path)
+	async_result<ePub3::ContainerPtr> ProcessFileAsyncInternal(const ePub3::string& path)
 		{
 			using namespace ::Windows::Foundation;
 			auto op = __winrt_->ProcessFile(StringFromNative(path));
-			auto promise = new ePub3::promised_result<::ePub3::ContainerPtr>();
+			auto promise = new promised_result<::ePub3::ContainerPtr>();
 
 			op->Completed = ref new AsyncOperationCompletedHandler<Container^>([promise](IAsyncOperation<Container^>^ operation, AsyncStatus status) {
 				__process_operation_completion(operation, status, *promise, [operation, promise]() {
 					Container^ container = operation->GetResults();
 					if (container == nullptr)
-						promise->set_value(nullptr);
+						__set_promise(*promise, nullptr);
 					else
-						promise->set_value(container->NativeObject);
+						__set_promise(*promise, container->NativeObject);
 				});
 				delete promise;
 			});
 
-			return promise->get_future();
+			return __ar_from_promise(*promise, ePub3::ContainerPtr);
 		}
 
 };
@@ -186,12 +201,24 @@ public:
 
 	virtual ::Windows::Foundation::IAsyncOperation<Container^>^ ProcessFile(::Platform::String^ path)
 	{
+#if EPUB_PLATFORM(WIN_PHONE)
+		using namespace ::concurrency;
+		auto __task = _native->ProcessFile(StringToNative(path));
+
+		// fiddly things to return the right type-- can't just pass a task in, have to pass a lambda which returns the task...
+		return create_async([__task]() {
+			return __task.then([](ePub3::ContainerPtr native) {
+				return Container::Wrapper(native);
+			});
+		});
+#else
 		using namespace ::concurrency;
 		auto __fut = _native->ProcessFile(StringToNative(path)).share();
 		return create_async([__fut]() -> Container^ {
 			auto shared = __fut;	// MSVC complains that __fut is const if I call __fut.get(). Sigh.
 			return Container::Wrapper(shared.get());
 		});
+#endif
 	}
 
 	virtual Container^ ProcessFileSync(::Platform::String^ path)
@@ -211,11 +238,17 @@ public:
 	virtual ::Windows::Foundation::IAsyncOperation<bool>^ ApproveUserAction(UserAction^ action)
 	{
 		using namespace ::concurrency;
+#if EPUB_PLATFORM(WIN_PHONE)
+		return create_async([this, action]() {
+			return _native->ApproveUserAction(action->Native);
+		});
+#else
 		auto __fut = _native->ApproveUserAction(action->Native).share();
 		return create_async([__fut]() -> bool {
 			auto shared = __fut;		// no idea why MSVC thinks __fut is const when calling its members...
 			return shared.get();
 		});
+#endif
 	}
 
 };

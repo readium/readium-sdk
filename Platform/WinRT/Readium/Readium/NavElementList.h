@@ -53,6 +53,6 @@ struct NavElementFromNative : public std::unary_function<::ePub3::NavigationElem
 	}
 };
 
-using NavElementList = BridgedVectorView<INavigationElement^, ::ePub3::NavigationElementPtr, NavElementToNative, NavElementFromNative>;
+typedef BridgedVectorView<INavigationElement^, ::ePub3::NavigationElementPtr, NavElementToNative, NavElementFromNative> NavElementList;
 
 END_READIUM_API

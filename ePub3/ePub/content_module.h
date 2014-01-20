@@ -28,6 +28,8 @@ using promised_result = ::ePub3::promise<_Tp>;
 #  define promised_result ::ePub3::promise
 # endif
 # define __ar_has_value(X) X.has_value()
+# define __ar_from_promise(P, T) (P).get_future()
+# define __set_promise(P, V) (P).set_value(V)
 #else	// EPUB_PLATFORM(WIN_PHONE)
 #include <ppltasks.h>
 # if EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES)
@@ -41,6 +43,8 @@ using promised_result = ::Concurrency::task_completion_event<_Tp>;
 #  define promised_result ::Concurrency::task_completion_event
 # endif
 # define __ar_has_value(X) (X._GetImpl()->_IsCompleted() || X._GetImpl()->_IsCanceled())
+# define __ar_from_promise(P, T) async_result<T>(P)
+# define __set_promise(P, V) (P).set(V)
 #endif	// EPUB_PLATFORM(WIN_PHONE)
 
 class ContentModule : public std::enable_shared_from_this<ContentModule>

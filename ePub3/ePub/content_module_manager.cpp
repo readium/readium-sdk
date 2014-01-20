@@ -50,13 +50,8 @@ ContentModuleManager::RequestCredentialInput(const CredentialRequest &request)
     promised_result<Credentials> promise;
     
     Credentials none;
-#if EPUB_PLATFORM(WIN_PHONE)
-	promise.set(std::move(none));
-	return async_result<Credentials>(promise);
-#else
-	promise.set_value(std::move(none));
-	return promise.get_future();
-#endif
+	__set_promise(promise, std::move(none));
+	return __ar_from_promise(promise, Credentials);
 }
 
 async_result<ContainerPtr>
@@ -68,13 +63,8 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
     {
         // special case for when we don't have any Content Modules to rely on for an initialized result
         promised_result<ContainerPtr> promise;
-#if EPUB_PLATFORM(WIN_PHONE)
-		promise.set(nullptr);
-		return async_result<ContainerPtr>(promise);
-#else
-        promise.set_value(nullptr);
-        return promise.get_future();
-#endif
+		__set_promise(promise, nullptr);
+		return __ar_from_promise(promise, ContainerPtr);
     }
     
     async_result<ContainerPtr> result;
@@ -92,13 +82,8 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
             if (bool(container)) {
                 // we have a valid container already
 				promised_result<ContainerPtr> p;
-#if EPUB_PLATFORM(WIN_PHONE)
-				p.set(container);
-				result = async_result<ContainerPtr>(p);
-#else
-				p.set_value(container);
-				result = p.get_future();
-#endif
+				__set_promise(p, container);
+				result = __ar_from_promise(p, ContainerPtr);
 //				result = make_ready_future(container);
 //                result.then([modulePtr]() {
                     modulePtr->RegisterContentFilters();

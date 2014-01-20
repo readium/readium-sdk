@@ -67,7 +67,11 @@ public:
 	bool HasProperty(ItemProperties^ properties) { return _native.HasProperty(properties->NativeObject); }
 
 	property UINT Value { UINT get() { return (::ePub3::ItemProperties::value_type)_native; } }
+#if EPUB_PLATFORM(WIN_PHONE)
+	String^ ToString() { return StringFromNative(_native.str()); }
+#else
 	virtual String^ ToString() override { return StringFromNative(_native.str()); }
+#endif
 
 };
 
@@ -110,7 +114,7 @@ public:
 #if EPUB_USE(WIN_XML)
 	::Windows::Data::Xml::Dom::IXmlDocument^
 #elif EPUB_USE(WIN_PHONE_XML)
-	::PhoneSupportInterfaces::IXmlDocumuent^
+	::PhoneSupportInterfaces::IXmlDocument^
 #endif
 		LoadDocument();
 

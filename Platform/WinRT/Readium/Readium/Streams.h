@@ -55,7 +55,7 @@ public interface class IClosableRandomAccessStream : IClosableStream, IRandomAcc
 ref class Stream: public IClosableStream
 {
 private:
-	using NativePtr = ::ePub3::ByteStreamPtr;
+	typedef ::ePub3::ByteStreamPtr NativePtr;
 	NativePtr	_native;
 
 internal:
@@ -94,7 +94,7 @@ public:
 ref class RandomAccessStream: public IClosableRandomAccessStream
 {
 private:
-	using NativePtr = std::shared_ptr<::ePub3::SeekableByteStream>;
+	typedef std::shared_ptr<::ePub3::SeekableByteStream> NativePtr;
 	NativePtr	_native;
 
 internal:

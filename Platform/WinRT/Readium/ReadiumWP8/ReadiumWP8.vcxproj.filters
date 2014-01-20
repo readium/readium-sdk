@@ -461,6 +461,9 @@
       <Filter>ePub3\utilities</Filter>
     </ClInclude>
     <ClInclude Include="..\Readium\ThreadEmulation.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\ibooks_options.h">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\ePub3\ePub\xpath_wrangler.cpp">
@@ -890,6 +893,9 @@
       <Filter>ePub3\utilities</Filter>
     </ClCompile>
     <ClCompile Include="..\Readium\ThreadEmulation.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\ibooks_options.cpp">
+      <Filter>ePub3\ePub\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\ePub3\utilities\utfstringspec.inl">

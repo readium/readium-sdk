@@ -65,7 +65,7 @@ IVectorView<String^>^ Container::PackageLocations()
 
 IVectorView<Package^>^ Container::Packages()
 {
-	return ref new BridgedObjectVectorView<Package^, ::ePub3::PackagePtr>(_native->Packages());
+	return ref new BRIDGED_OBJECT_VECTOR(Package^, ::ePub3::PackagePtr)(_native->Packages());
 }
 
 Package^ Container::DefaultPackage()
@@ -85,7 +85,7 @@ String^ Container::Path::get()
 
 IVectorView<EncryptionInfo^>^ Container::EncryptionData()
 {
-	return ref new BridgedObjectVectorView<EncryptionInfo^, ::ePub3::EncryptionInfoPtr>(_native->EncryptionData());
+	return ref new BRIDGED_OBJECT_VECTOR(EncryptionInfo^, ::ePub3::EncryptionInfoPtr)(_native->EncryptionData());
 }
 
 EncryptionInfo^ Container::EncryptionInfoForPath(String^ path)

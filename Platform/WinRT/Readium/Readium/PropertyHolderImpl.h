@@ -38,7 +38,7 @@ BEGIN_READIUM_API
 		} \
 	}
 
-typedef BridgedObjectVectorView<Property^, ::ePub3::PropertyPtr>	PropertyVectorView;
+typedef BRIDGED_OBJECT_VECTOR(Property^, ::ePub3::PropertyPtr)	PropertyVectorView;
 
 ref class PropertyIteratorImpl : public IIterator<Property^>
 {

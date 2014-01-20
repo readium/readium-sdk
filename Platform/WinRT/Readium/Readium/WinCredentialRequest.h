@@ -28,8 +28,8 @@ BEGIN_READIUM_API
 
 ref class CredentialRequest;
 
-using Credentials = ::Windows::Foundation::Collections::IMapView<::Platform::String^, ::Platform::String^>;
-using CredentialType = ::Platform::String^;
+typedef ::Windows::Foundation::Collections::IMapView<::Platform::String^, ::Platform::String^> Credentials;
+typedef ::Platform::String^ CredentialType;
 
 public enum class CredentialRequestFieldType
 {

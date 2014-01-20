@@ -154,10 +154,15 @@ struct ContentFilterFromNative : public std::unary_function<::ePub3::ContentFilt
 	}
 };
 
+#if EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES)
 using BridgedContentHandlerVectorView =
 BridgedVectorView<IContentHandler^, ::ePub3::ContentHandlerPtr, ContentHandlerToNative, ContentHandlerFromNative>;
 using BridgedContentFilterVectorView =
 BridgedVectorView<IContentFilter^, ::ePub3::ContentFilterPtr, ContentFilterToNative, ContentFilterFromNative>;
+#else
+typedef BridgedVectorView<IContentHandler^, ::ePub3::ContentHandlerPtr, ContentHandlerToNative, ContentHandlerFromNative> BridgedContentHandlerVectorView;
+typedef BridgedVectorView<IContentFilter^, ::ePub3::ContentFilterPtr, ContentFilterToNative, ContentFilterFromNative> BridgedContentFilterVectorView;
+#endif
 
 END_READIUM_API
 

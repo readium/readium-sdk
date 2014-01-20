@@ -29,6 +29,7 @@
 #include <ePub3/xml/io.h>
 #include <ePub3/xml/xmlstring.h>
 #include <set>
+#include <mutex>		// for once_flag and call_once
 
 #define THROW_INVALID_XML()	throw std::invalid_argument("iBooksOptions: XML file does not conform to described format.")
 
@@ -54,11 +55,21 @@ iBooksOptions::iBooksOptions(unique_ptr<ArchiveXmlReader>&& reader)
 		if (platform->Name() != _XSTR("platform"))
 			THROW_INVALID_XML();
 
-		static const xml::string		kNameAttr(_XSTR("name"));
-		static const xml::string		kEmptyNamespace(_XSTR(""));
-		static const std::set<string>	kSupportedPlatformNames{_XSTR("*"), _XSTR("iphone"), _XSTR("ipad")};
+		static const xml::string			kNameAttr(_XSTR("name"));
+		static const xml::string			kEmptyNamespace(_XSTR(""));
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+		static const std::set<xml::string>	kSupportedPlatformNames{_XSTR("*"), _XSTR("iphone"), _XSTR("ipad")};
+#else
+		static std::set<xml::string>		kSupportedPlatformNames;
+		static std::once_flag __once;
+		std::call_once(__once, [&]() {
+			kSupportedPlatformNames.insert(_XSTR("*"));
+			kSupportedPlatformNames.insert(_XSTR("iphone"));
+			kSupportedPlatformNames.insert(_XSTR("ipad"));
+		});
+#endif
 
-		string platformName = platform->AttributeValue(kNameAttr, kEmptyNamespace);
+		xml::string platformName = platform->AttributeValue(kNameAttr, kEmptyNamespace);
 		if (kSupportedPlatformNames.find(platformName) == kSupportedPlatformNames.end())
 			THROW_INVALID_XML();
 

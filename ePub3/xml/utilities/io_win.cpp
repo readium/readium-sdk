@@ -511,7 +511,7 @@ bool StreamInputBuffer::close()
 
 bool StreamOutputBuffer::write(const uint8_t *buffer, size_t len)
 {
-	if (bool(_output))
+	if (_output.good())
 		_output.write(reinterpret_cast<const std::ostream::char_type*>(buffer), len);
 	return _output.good();
 }

@@ -24,11 +24,18 @@
 
 #include "Readium.h"
 #include <collection.h>
+#include <vector>
 
 BEGIN_READIUM_API
 
 #define _COLLECTION_ATTRIBUTES [::Platform::Metadata::RuntimeClassName] [::Windows::Foundation::Metadata::Default]
+
+#if EPUB_PLATFORM(WIN_PHONE)
+# define _COLLECTION_WUXI 0
+#else
 #define _COLLECTION_WUXI 1
+#endif
+
 #define _COLLECTION_TRANSLATE           \
 } catch (const ::std::bad_alloc&) { \
 	throw ref new OutOfMemoryException; \
@@ -213,7 +220,7 @@ internal:
 
 		m_good_ctr = 0;
 	}
-
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
 	BridgedMapView(::std::initializer_list < ::std::pair < const NK, NV >> il, const C& comp = C()) {
 		Details::Init(m_ctr, m_map, comp);
 
@@ -221,6 +228,7 @@ internal:
 
 		m_good_ctr = 0;
 	}
+#endif
 
 public:
 	virtual Details::WFC::IIterator<Details::WFC::IKeyValuePair<K, V>^>^ First() {
@@ -410,18 +418,30 @@ internal:
 
 		m_good_ctr = 0;
 	}
+#if EPUB_PLATFORM(WIN_PHONE)
+	explicit BridgedVectorView(const ::std::vector<NT>& v) {
+		Details::Init(m_ctr, m_vec, v.begin(), v.end());
 
-	template <typename U> explicit BridgedVectorView(const ::std::vector<U>& v, typename Details::VectorEnableIf<NT, U>::type = nullptr) {
+		m_good_ctr = 0;
+	}
+	explicit BridgedVectorView(::std::vector<NT>&& v) {
+		Details::InitMoveVector(m_ctr, m_vec, ::std::move(v));
+
+		m_good_ctr = 0;
+	}
+#else
+	template <typename U> explicit BridgedVectorView(const ::std::vector<U>& v, typename Details::VectorEnableIf<NT, U>::type unused = nullptr) {
 		Details::Init(m_ctr, m_vec, v.begin(), v.end());
 
 		m_good_ctr = 0;
 	}
 
-	template <typename U> explicit BridgedVectorView(::std::vector<U>&& v, typename Details::VectorEnableIf<NT, U>::type = nullptr) {
+	template <typename U> explicit BridgedVectorView(::std::vector<U>&& v, typename Details::VectorEnableIf<NT, U>::type unused = nullptr) {
 		Details::InitMoveVector(m_ctr, m_vec, ::std::move(v));
 
 		m_good_ctr = 0;
 	}
+#endif
 
 	BridgedVectorView(const NT * ptr, unsigned int size) {
 		Details::Init(m_ctr, m_vec, ptr, ptr + size);
@@ -448,12 +468,13 @@ internal:
 
 		m_good_ctr = 0;
 	}
-
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
 	BridgedVectorView(::std::initializer_list<NT> il) {
 		Details::Init(m_ctr, m_vec, il.begin(), il.end());
 
 		m_good_ctr = 0;
 	}
+#endif
 
 public:
 	virtual Details::WFC::IIterator<T>^ First() = WFC_Base::First{
@@ -523,17 +544,29 @@ private:
 	unsigned int m_good_ctr;
 };
 
+#if EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES)
 using BridgedStringVectorView = BridgedVectorView<::Platform::String^, ::ePub3::string, ToNativeString, ToBridgedString>;
 using BridgedStringToStringMapView = BridgedMapView<::Platform::String^, ::Platform::String^, ::ePub3::string, ePub3::string, ToNativeString, ToBridgedString, ToNativeString, ToBridgedString>;
 
 template <typename Bridge, typename Native>
 using BridgedObjectVectorView = BridgedVectorView<Bridge, Native, ToNative<Bridge, Native>, ToBridged<Bridge, Native>>;
+#define BRIDGED_OBJECT_VECTOR(Bridge, Native) BridgedObjectVectorView<Bridge, Native>
 
 template <typename Bridge, typename Native>
 using BridgedStringKeyedObjectMapView = BridgedMapView<::Platform::String^, Bridge, ::ePub3::string, Native>;
+#define BRIDGED_STRING_OBJECT_MAP(Bridge, Native) BridgedStringKeyedObjectMapView<Bridge, Native>
 
 template <typename BKey, typename NKey, typename BValue, typename NValue>
 using BridgedObjectKeyedObjectMapView = BridgedMapView<BKey, BValue, NKey, NValue, ToNative<BKey, NKey>, ToBridged<BKey, NKey>>;
+#define BRIDGED_OBJECT_MAP(BKey, NKey, BValue, NValue) BridgedObjectKeyedObjectMapView<BKey, NKey, BValue, NValue>
+#else
+typedef BridgedVectorView<::Platform::String^, ::ePub3::string, ToNativeString, ToBridgedString> BridgedStringVectorView;
+typedef BridgedMapView<::Platform::String^, ::Platform::String^, ::ePub3::string, ePub3::string, ToNativeString, ToBridgedString, ToNativeString, ToBridgedString> BridgedStringToStringMapView;
+
+#define BRIDGED_OBJECT_VECTOR(Bridge, Native) BridgedVectorView<Bridge, Native, ToNative<Bridge, Native>, ToBridged<Bridge, Native>>
+#define BRIDGED_STRING_OBJECT_MAP(Bridge, Native) BridgedMapView<::Platform::String^, Bridge, ::ePub3::string, Native>
+#define BRIDGED_OBJECT_MAP(BKey, NKey, BValue, NValue) BridgedMapView<BKey, BValue, NKey, NValue, ToNative<BKey, NKey>, ToBridged<BKey, NKey>>
+#endif
 
 END_READIUM_API
 

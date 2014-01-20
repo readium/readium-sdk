@@ -61,7 +61,13 @@ _zip_mkstemp(char *path)
 {
 	int fd;   
 	char *start, *trv;
-    struct stat sbuf;
+	struct stat sbuf;
+
+	/* To guarantee multiple calls generate unique names even if
+	the file is not created. 676 different possibilities with 7
+	or more X's, 26 with 6 or less. */
+	static char xtra[2] = { 'a', 'a' };
+	int xcnt = 0;
 
 #if defined(_MSC_VER)
     unsigned long long pid;
@@ -78,12 +84,6 @@ _zip_mkstemp(char *path)
 	pid_t pid;
     pid = getpid();
 #endif
-
-	/* To guarantee multiple calls generate unique names even if
-	   the file is not created. 676 different possibilities with 7
-	   or more X's, 26 with 6 or less. */
-	static char xtra[2] = {'a','a'};
-	int xcnt = 0;
 
 	/* Move to end of path and count trailing X's. */
 	for (trv = path; *trv; ++trv)

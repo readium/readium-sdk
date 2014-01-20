@@ -35,11 +35,11 @@
 
 BEGIN_READIUM_API
 
-typedef BridgedStringKeyedObjectMapView<ManifestItem^, ::ePub3::ManifestItemPtr>					ManifestMapView;
-typedef BridgedStringKeyedObjectMapView<NavigationTable^, ::ePub3::NavigationTablePtr>				NavTableMapView;
-typedef BridgedObjectVectorView<ManifestItem^, ::ePub3::ManifestItemPtr>							ManifestList;
+typedef BRIDGED_STRING_OBJECT_MAP(ManifestItem^, ::ePub3::ManifestItemPtr)							ManifestMapView;
+typedef BRIDGED_STRING_OBJECT_MAP(NavigationTable^, ::ePub3::NavigationTablePtr)					NavTableMapView;
+typedef BRIDGED_OBJECT_VECTOR(ManifestItem^, ::ePub3::ManifestItemPtr)								ManifestList;
 typedef BridgedContentHandlerVectorView																ContentHandlerList;
-typedef BridgedObjectVectorView<MediaSupportInfo^, ::std::shared_ptr<::ePub3::MediaSupportInfo>>	MediaSupportList;
+typedef BRIDGED_OBJECT_VECTOR(MediaSupportInfo^, ::std::shared_ptr<::ePub3::MediaSupportInfo>)		MediaSupportList;
 
 class winrt_clock
 {
@@ -68,9 +68,16 @@ private:
 
 winrt_clock::time_point winrt_clock::now() _NOEXCEPT
 {
+#if EPUB_PLATFORM(WIN_PHONE)
+	FILETIME theTime = { 0 };
+	GetSystemTimeAsFileTime(&theTime);
+	PULARGE_INTEGER pULI = (PULARGE_INTEGER)&theTime;
+	return time_point(duration(pULI->QuadPart));
+#else
 	auto calendar = ref new ::Windows::Globalization::Calendar();
 	auto datetime = calendar->GetDateTime();
 	return time_point(duration(datetime.UniversalTime));
+#endif
 }
 time_t winrt_clock::to_time_t(const time_point &__t) _NOEXCEPT
 {
@@ -375,7 +382,7 @@ IVectorView<String^>^ Package::UnsupportedMediaTypes::get()
 
 IMapView<String^, MediaSupportInfo^>^ Package::MediaSupport::get()
 {
-	return ref new BridgedStringKeyedObjectMapView<MediaSupportInfo^, ::ePub3::MediaSupportInfoPtr>(_native->MediaSupport());
+	return ref new BRIDGED_STRING_OBJECT_MAP(MediaSupportInfo^, ::ePub3::MediaSupportInfoPtr)(_native->MediaSupport());
 }
 void Package::MediaSupport::set(IMapView<String^, MediaSupportInfo^>^ newValue)
 {
