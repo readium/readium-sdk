@@ -285,7 +285,7 @@ typedef std::map<EPUBError, ErrorInfo>                                     Error
 	output.Flush()
 
 	for _, info := range infoList {
-		if _, err := fmt.Fprintf(output, "    gErrorLookupTable[%s] = ErrorInfo(EPUBError::%s, %s, \"%s\", \"%s\");\n", info.name, info.severity, info.spec, info.section, info.message); err != nil {
+		if _, err := fmt.Fprintf(output, "    gErrorLookupTable[EPUBError::%s] = ErrorInfo(%s, %s, \"%s\", \"%s\");\n", info.name, info.severity, info.spec, info.section, info.message); err != nil {
 			panic(err)
 		}
 		output.Flush()
