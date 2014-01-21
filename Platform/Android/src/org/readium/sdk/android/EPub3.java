@@ -119,6 +119,13 @@ public class EPub3 {
 	 * application context.
 	 */
 	public static native void setCachePath(String cachePath);
+	
+	/**
+	 * Checks if the supplied book is EPUB3. 
+	 * @param path Path to the book.
+	 * @return True if the book is EPUB3.
+	 */
+	public static native boolean isEpub3Book(final String path);
 
 	/**
 	 * Open an ePub3 book.

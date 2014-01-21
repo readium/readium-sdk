@@ -139,6 +139,13 @@ JNIEXPORT void JNICALL Java_org_readium_sdk_android_EPub3_setCachePath(JNIEnv* e
 
 /*
  * Class:     org_readium_sdk_android_EPub3
+ * Method:    isEpub3Book
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_readium_sdk_android_EPub3_isEpub3Book(JNIEnv* env, jobject thiz, jstring Path);
+
+/*
+ * Class:     org_readium_sdk_android_EPub3
  * Method:    openBook
  * Signature: (Ljava/lang/String;)Lorg/readium/sdk/android/Container
  */
