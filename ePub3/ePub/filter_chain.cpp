@@ -141,7 +141,7 @@ ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, size_type 
 			throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
 		}
 
-		if (filteredData != bytes)
+		if (filteredData != buf.GetBytes())
 		{
 			buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), filteredLen);
 			result = filteredLen;
