@@ -494,7 +494,8 @@ public:
     unique_ptr<ArchiveReader>   ReaderForRelativePath(const string& path)       const;
 
     unique_ptr<ArchiveXmlReader>    XmlReaderForRelativePath(const string& path)    const {
-        return unique_ptr<ArchiveXmlReader>(new ArchiveXmlReader(ReaderForRelativePath(path)));
+        try { return unique_ptr<ArchiveXmlReader>(new ArchiveXmlReader(ReaderForRelativePath(path))); }
+        catch (std::invalid_argument&) { return nullptr; }
     }
 
     EPUB3_EXPORT

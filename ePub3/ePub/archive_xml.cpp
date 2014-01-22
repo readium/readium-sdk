@@ -33,6 +33,8 @@ ArchiveXmlReader::ArchiveXmlReader(ArchiveReader * r) : _reader(r)
 }
 ArchiveXmlReader::ArchiveXmlReader(unique_ptr<ArchiveReader>&& r) : _reader(std::move(r))
 {
+    if ( _reader == nullptr )
+        throw std::invalid_argument(std::string(__PRETTY_FUNCTION__) + ": Nil ArchiveReader supplied");
 }
 ArchiveXmlReader::ArchiveXmlReader(ArchiveXmlReader&& o) : _reader(std::move(o._reader))
 {
