@@ -43,8 +43,9 @@
 
 #if defined(_MSC_VER)
 # define strdup _strdup
-# define fseeko fseek
-# define ftello ftell
+# define fseeko PLATFORM_FUNC(fseek)
+# define ftello PLATFORM_FUNC(ftell)
+# define fcloseo PLATFORM_FUNC(fclose)
 # define fileno _fileno
 #endif
 
@@ -164,7 +165,7 @@ read_file(void *state, void *data, size_t len, enum zip_source_cmd cmd)
 	
     case ZIP_SOURCE_CLOSE:
 	if (z->fname) {
-	    fclose(z->f);
+		fcloseo(z->f);
 	    z->f = NULL;
 	}
 	return 0;
@@ -211,7 +212,7 @@ read_file(void *state, void *data, size_t len, enum zip_source_cmd cmd)
     case ZIP_SOURCE_FREE:
 	free(z->fname);
 	if (z->f)
-	    fclose(z->f);
+		fcloseo(z->f);
 	free(z);
 	return 0;
 

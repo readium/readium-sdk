@@ -49,8 +49,11 @@
 
 #if defined(_MSC_VER)
 # define strdup _strdup
-# define fseeko fseek
-# define ftello ftell
+# define fseeko PLATFORM_FUNC(fseek)
+# define ftello PLATFORM_FUNC(ftell)
+# define freado PLATFORM_FUNC(fread)
+# define fcloseo PLATFORM_FUNC(fclose)
+
 # define fileno _fileno
 # define fdopen _fdopen
 # define strcasecmp _stricmp
@@ -301,13 +304,13 @@ zip_close(struct zip *za)
     
     if (error) {
         _zip_dirent_finalize(&de);
-        fclose(out);
+        fcloseo(out);
         remove(temp);
         free(temp);
         return -1;
     }
     
-    if (fclose(out) != 0) {
+    if (fcloseo(out) != 0) {
         _zip_error_set(&za->error, ZIP_ER_CLOSE, errno);
         remove(temp);
         free(temp);
@@ -315,7 +318,7 @@ zip_close(struct zip *za)
     }
     
     if (za->zp) {
-        fclose(za->zp);
+        fcloseo(za->zp);
         za->zp = NULL;
         reopen_on_error = 1;
     }
@@ -551,7 +554,7 @@ copy_data(FILE *fs, off_t len, FILE *ft, struct zip_error *error)
 
     while (len > 0) {
 	nn = len > sizeof(buf) ? sizeof(buf) : (size_t)len;
-	if ((n=(ssize_t)fread(buf, 1, nn, fs)) < 0) {
+	if ((n=(ssize_t)freado(buf, 1, nn, fs)) < 0) {
 	    _zip_error_set(error, ZIP_ER_READ, errno);
 	    return -1;
 	}

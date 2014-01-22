@@ -53,6 +53,12 @@ int _zip_mkstemp(char *);
 #define _zip_rename	rename
 #endif
 
+#if POSIX_WRT
+#define PLATFORM_FUNC(x) x ## _wrt
+#else
+#define PLATFORM_FUNC(x) x 
+#endif
+
 #ifndef HAVE_FSEEKO
 #define fseeko(s, o, w)	(fseek((s), (long int)(o), (w)))
 #endif

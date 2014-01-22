@@ -44,8 +44,8 @@
 
 #if defined(_MSC_VER)
 # define strdup _strdup
-# define fseeko fseek
-# define ftello ftell
+# define fseeko PLATFORM_FUNC(fseek)
+# define ftello PLATFORM_FUNC(ftell)
 # define fileno _fileno
 #endif
 

@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Readium", "Readium\Readium.vcxproj", "{A6CC9E63-8351-4B12-ABAD-90A28D8D587D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{316BD5EC-247C-401E-8B83-71A88E753F8A} = {316BD5EC-247C-401E-8B83-71A88E753F8A}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSIXReadium", "VSIXReadium\VSIXReadium.csproj", "{48704110-3F83-4A5D-917E-3F5359FE7603}"
 EndProject
@@ -12,6 +15,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PhoneSupportInterfaces", "PhoneSupportInterfaces\PhoneSupportInterfaces.vcxproj", "{71999345-AE10-4E5A-AFC2-B5CF9FE52B34}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ReadiumWP8", "ReadiumWP8\ReadiumWP8.vcxproj", "{FD16FEC4-AA83-49D5-AF95-15ADDD20C29D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinRTPortingKit", "WinRTPortingKit\WinRTPortingKit.vcxproj", "{316BD5EC-247C-401E-8B83-71A88E753F8A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -129,6 +134,24 @@ Global
 		{FD16FEC4-AA83-49D5-AF95-15ADDD20C29D}.Release|x64.ActiveCfg = Release|Win32
 		{FD16FEC4-AA83-49D5-AF95-15ADDD20C29D}.Release|x86.ActiveCfg = Release|Win32
 		{FD16FEC4-AA83-49D5-AF95-15ADDD20C29D}.Release|x86.Build.0 = Release|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Debug|ARM.ActiveCfg = Debug|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Debug|Win32.Build.0 = Debug|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Debug|x64.ActiveCfg = Debug|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Debug|x86.ActiveCfg = Debug|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Debug|x86.Build.0 = Debug|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Release|Any CPU.ActiveCfg = Release|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Release|ARM.ActiveCfg = Release|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Release|Win32.ActiveCfg = Release|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Release|Win32.Build.0 = Release|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Release|x64.ActiveCfg = Release|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Release|x86.ActiveCfg = Release|Win32
+		{316BD5EC-247C-401E-8B83-71A88E753F8A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

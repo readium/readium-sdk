@@ -41,8 +41,9 @@
 
 #if defined(_MSC_VER)
 # define strdup _strdup
-# define fseeko fseek
-# define ftello ftell
+# define fseeko PLATFORM_FUNC(fseek)
+# define ftello PLATFORM_FUNC(ftell)
+# define freado PLATFORM_FUNC(fread)
 # define fileno _fileno
 #endif
 
@@ -180,7 +181,7 @@ _zip_file_fillbuf(void *buf, size_t buflen, struct zip_file *zf)
     else
 	i = zf->cbytes_left;
 
-    j = (ssize_t)fread(buf, 1, i, zf->za->zp);
+    j = (ssize_t)freado(buf, 1, i, zf->za->zp);
     if (j == 0) {
 	_zip_error_set(&zf->error, ZIP_ER_EOF, 0);
 	j = -1;

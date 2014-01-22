@@ -37,7 +37,10 @@
 
 #include "zipint.h"
 
-
+#if defined(_MSC_VER)
+# define fcloseo PLATFORM_FUNC(fclose)
+#endif
+
 
 /* _zip_free:
    frees the space allocated to a zipfile struct, and closes the
@@ -55,7 +58,7 @@ _zip_free(struct zip *za)
 	free(za->zn);
 
     if (za->zp)
-	fclose(za->zp);
+		fcloseo(za->zp);
 
     _zip_cdir_free(za->cdir);
 

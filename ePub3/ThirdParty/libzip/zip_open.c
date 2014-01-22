@@ -42,11 +42,17 @@
 
 #include "zipint.h"
 
+
 #if defined(_MSC_VER)
 # define strdup _strdup
-# define fseeko fseek
-# define ftello ftell
 # define fileno _fileno
+# define stato	PLATFORM_FUNC(stat)
+# define fseeko PLATFORM_FUNC(fseek)
+# define ftello PLATFORM_FUNC(ftell)
+# define fopeno PLATFORM_FUNC(fopen)
+# define freado PLATFORM_FUNC(fread)
+# define fcloseo PLATFORM_FUNC(fclose)
+# define clearerro PLATFORM_FUNC(clearerr)
 #endif
 
 static void set_error(int *, struct zip_error *, int);
@@ -82,7 +88,7 @@ zip_open(const char *fn, int flags, int *zep)
 	break;
     }
 
-    if ((fp=fopen(fn, "rb")) == NULL) {
+	if ((fp = fopeno(fn, "rb")) == NULL) {
 	set_error(zep, NULL, ZIP_ER_OPEN);
 	return NULL;
     }
@@ -93,7 +99,7 @@ zip_open(const char *fn, int flags, int *zep)
     /* treat empty files as empty archives */
     if (len == 0) {
 	if ((za=_zip_allocate_new(fn, zep)) == NULL)
-	    fclose(fp);
+		fcloseo(fp);
 	else
 	    za->zp = fp;
 	return za;
@@ -101,13 +107,13 @@ zip_open(const char *fn, int flags, int *zep)
 
     cdir = _zip_find_central_dir(fp, flags, zep, len);
     if (cdir == NULL) {
-	fclose(fp);
+		fcloseo(fp);
 	return NULL;
     }
 
     if ((za=_zip_allocate_new(fn, zep)) == NULL) {
 	_zip_cdir_free(cdir);
-	fclose(fp);
+	fcloseo(fp);
 	return NULL;
     }
 
@@ -224,7 +230,7 @@ _zip_readcdir(FILE *fp, unsigned char *buf, unsigned char *eocd, int buflen,
     else {
 	/* go to start of cdir and read it entry by entry */
 	bufp = NULL;
-	clearerr(fp);
+	clearerro(fp);
 	fseeko(fp, cd->offset, SEEK_SET);
 	/* possible consistency check: cd->offset =
 	   len-(cd->size+cd->comment_len+EOCDLEN) ? */
@@ -456,7 +462,7 @@ _zip_file_exists(const char *fn, int flags, int *zep)
 	return -1;
     }
     
-    if (stat(fn, &st) != 0) {
+	if (stato(fn, &st) != 0) {
 	if (flags & ZIP_CREATE)
 	    return 0;
 	else {
@@ -498,8 +504,8 @@ _zip_find_central_dir(FILE *fp, int flags, int *zep, off_t len)
 	return NULL;
     }
 
-    clearerr(fp);
-    buflen = (int)fread(buf, 1, CDBUFSIZE, fp);
+    clearerro(fp);
+    buflen = (int)freado(buf, 1, CDBUFSIZE, fp);
 
     if (ferror(fp)) {
 	set_error(zep, NULL, ZIP_ER_READ);

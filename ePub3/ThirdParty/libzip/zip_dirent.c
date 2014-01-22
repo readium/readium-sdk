@@ -44,8 +44,9 @@
 
 #if defined(_MSC_VER)
 # define strdup _strdup
-# define fseeko fseek
-# define ftello ftell
+# define fseeko PLATFORM_FUNC(fseek)
+# define ftello PLATFORM_FUNC(ftell)
+# define freado PLATFORM_FUNC(fread)
 # define fileno _fileno
 #endif
 
@@ -244,7 +245,7 @@ _zip_dirent_read(struct zip_dirent *zde, FILE *fp,
     }
     else {
 	/* read entry from disk */
-	if ((fread(buf, 1, size, fp)<size)) {
+	if ((freado(buf, 1, size, fp)<size)) {
 	    _zip_error_set(error, ZIP_ER_READ, errno);
 	    return -1;
 	}
@@ -537,7 +538,7 @@ _zip_readfpstr(FILE *fp, unsigned int len, int nulp, struct zip_error *error)
 	return NULL;
     }
 
-    if (fread(r, 1, len, fp)<len) {
+    if (freado(r, 1, len, fp)<len) {
 	free(r);
 	_zip_error_set(error, ZIP_ER_READ, errno);
 	return NULL;

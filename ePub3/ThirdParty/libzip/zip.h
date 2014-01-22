@@ -44,6 +44,11 @@
 #endif
 #endif
 
+#include "wrtcompatibility.h"
+#if EPUB_PLATFORM(WINRT)
+#include "wrtcompatibility.h"
+#endif
+
 #include <sys/types.h>
 #include <stdio.h>
 #include <time.h>
