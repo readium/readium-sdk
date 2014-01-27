@@ -169,7 +169,7 @@ const shared_vector<ManifestItem> PackageBase::ManifestItemsWithProperties(Prope
 }
 ConstManifestItemPtr PackageBase::ManifestItemAtRelativePath(const string& path) const
 {
-	string absPath = _pathBase + path;
+    string absPath = _pathBase + (path[0] == '/' ? path.substr(1) : path);
 	for (auto& item : _manifest)
 	{
 		if (item.second->AbsolutePath() == absPath)
