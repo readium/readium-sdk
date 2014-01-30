@@ -51,7 +51,7 @@ extern "C" {
  * Internal constants
  **************************************************/
 
-static const int BUFFER_SIZE = 32768;
+static const int BUFFER_SIZE = 128*1024;
 static const char *java_class_ResourceInputStream_name = "org/readium/sdk/android/util/ResourceInputStream";
 
 static const char *java_method_ResourceInputStream_createResourceInputStream_name = "createResourceInputStream";
@@ -110,14 +110,9 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_
 
 	ResourceStream* stream = (ResourceStream*) nativePtr;
     auto byteStream = stream->getPtr();
-    // Read the stream to set the reader to the offset value
-    char tmpBuffer[BUFFER_SIZE];
-    ssize_t unreadBytes = byteStream->ReadBytes(&tmpBuffer, std::min(byteCount, BUFFER_SIZE));
-    int currentOffset = unreadBytes;
-    while (currentOffset < byteCount) {
-    	unreadBytes = byteStream->ReadBytes(&tmpBuffer, std::min(byteCount - currentOffset, BUFFER_SIZE));
-    	currentOffset += unreadBytes;
-    }
+    ePub3::SeekableByteStream *seekableStream = dynamic_cast<ePub3::SeekableByteStream*>(byteStream);
+
+    seekableStream->Seek(byteCount, std::ios::beg);
 }
 
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeGetBytes

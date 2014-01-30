@@ -632,6 +632,7 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetSpineIte
 		env->DeleteLocalRef(href);
 		env->DeleteLocalRef(pageSpread);
 		env->DeleteLocalRef(renditionLayout);
+		env->DeleteLocalRef(media_overlay_id);
 		env->DeleteLocalRef(spineItem);
 
     } while ((spine = spine->Next()) != nullptr);
