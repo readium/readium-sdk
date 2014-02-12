@@ -546,40 +546,41 @@ public:
             return accumulatedDurationMilliseconds;
         }
 
-        std::vector<string> splitIriFileFragmentID(const string & iri)
+        static std::vector<string> splitFileFragmentId; // = std::vector<string>(2);
+
+        void splitIriFileFragmentID(const string & iri, std::vector<string> &splitFileFragmentId)
         {
             //printf("=========== IRI: %s\n", iri.c_str());
 
-            //auto split = std::vector<string>(2);
-            std::vector<string> split;
+            splitFileFragmentId.clear();
 
             // FILE
             string::size_type i = iri.find_first_of('#');
             if (i != string::npos && i > 0)
             {
-                split.push_back(iri.substr(0, i));
+                splitFileFragmentId.push_back(iri.substr(0, i));
             }
             else
             {
-                split.push_back(string(iri));
+                splitFileFragmentId.push_back(string(iri));
             }
 
             // FRAGMENT ID
             if (i != string::npos && i < (iri.length() - 1))
             {
                 string::size_type n = iri.length() - i - 1;
-                split.push_back(iri.substr(i + 1, n));
+                splitFileFragmentId.push_back(iri.substr(i + 1, n));
             }
             else
             {
-                split.push_back("");
+                splitFileFragmentId.push_back("");
             }
 
             //printf("=========== IRI FILE: %s\n", split.at(0).c_str());
             //printf("=========== IRI FRAGID: %s\n", split.at(1).c_str());
 
             // RVO Return Value Optimisation should take care of moving the object reference from the local stack that of the callee's context?
-            return split;
+            //return split;
         }
 
         std::shared_ptr<ManifestItem> getReferencedManifestItem(const std::shared_ptr<Package> & package, string filepathInSmil, const std::shared_ptr<ManifestItem> & smilItem, std::map<std::shared_ptr<ManifestItem>, string> & cache_manifestItemToAbsolutePath)
@@ -691,7 +692,7 @@ public:
             return nullptr;
         }
 
-uint32_t MediaOverlaysSmilModel::parseSMIL(SMILDataPtr smilData, shared_ptr<SMILData::Sequence> sequence, shared_ptr<SMILData::Parallel> parallel, const ManifestItemPtr item, shared_ptr<xml::Node> element, std::map<std::shared_ptr<ManifestItem>, string> & cache_manifestItemToAbsolutePath, std::map<string, std::shared_ptr<ManifestItem>> & cache_smilRelativePathToManifestItem)
+        uint32_t MediaOverlaysSmilModel::parseSMIL(SMILDataPtr smilData, shared_ptr<SMILData::Sequence> sequence, shared_ptr<SMILData::Parallel> parallel, const ManifestItemPtr item, shared_ptr<xml::Node> element, std::map<std::shared_ptr<ManifestItem>, string> & cache_manifestItemToAbsolutePath, std::map<string, std::shared_ptr<ManifestItem>> & cache_smilRelativePathToManifestItem)
         {
             if (!bool(element) || !element->IsElementNode())
             {
@@ -709,13 +710,13 @@ uint32_t MediaOverlaysSmilModel::parseSMIL(SMILDataPtr smilData, shared_ptr<SMIL
             {
                 //printf("=========== TEXTREF: %s\n", textref.c_str());
 
-                std::vector<string> split = splitIriFileFragmentID(textref_);
+                splitIriFileFragmentID(textref_, splitFileFragmentId);
 
-                textref_file = split[0];
-                textref_fragmentID = split[1];
-
-                //printf("=========== TEXTREF FILE: %s\n", textref_file.c_str());
-                //printf("=========== TEXTREF FRAGID: %s\n", textref_fragmentID.c_str());
+                textref_file = splitFileFragmentId[0];
+                textref_fragmentID = splitFileFragmentId[1];
+//
+//                printf("=========== TEXTREF FILE: %s\n", textref_file.c_str());
+//                printf("=========== TEXTREF FRAGID: %s\n", textref_fragmentID.c_str());
             }
 
             string src_ = string(_getProp(element, "src", SMILNamespaceURI));
@@ -725,13 +726,13 @@ uint32_t MediaOverlaysSmilModel::parseSMIL(SMILDataPtr smilData, shared_ptr<SMIL
             {
                 //printf("=========== SRC: %s\n", src.c_str());
 
-                std::vector<string> split = splitIriFileFragmentID(src_);
+                splitIriFileFragmentID(src_, splitFileFragmentId);
 
-                src_file = split[0];
-                src_fragmentID = split[1];
-
-                //printf("=========== SRC FILE: %s\n", src_file.c_str());
-                //printf("=========== SRC FRAGID: %s\n", src_fragmentID.c_str());
+                src_file = splitFileFragmentId[0];
+                src_fragmentID = splitFileFragmentId[1];
+//
+//                printf("=========== SRC FILE: %s\n", src_file.c_str());
+//                printf("=========== SRC FRAGID: %s\n", src_fragmentID.c_str());
             }
 
             std::shared_ptr<Package> package = Owner(); // internally: std::weak_ptr<Package>.lock()
