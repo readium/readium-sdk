@@ -22,6 +22,8 @@
 #ifndef ePub3_mo_smil_utils_h
 #define ePub3_mo_smil_utils_h
 
+#define USE_CHAR_STRING
+
 #include <ePub3/base.h>
 
 #include <cmath>
@@ -81,12 +83,28 @@ public:
 
     //EPUB3_EXPORT
     static
-    double ToSeconds(const string& str)
+    double ToSeconds(const string&
+#ifdef USE_CHAR_STRING
+            strstr
+#else
+            str
+#endif
+    )
     {
-        if (str.length() == 0)
+        if (
+#ifdef USE_CHAR_STRING
+            strstr
+#else
+            str
+#endif
+.length() == 0)
         {
             return 0;
         }
+
+#ifdef USE_CHAR_STRING
+        const char* str = (char*)strstr.c_str(); //&strstr[0];
+#endif
 
         //printf("SMIL CLOCK VALUE STRING: %s\n", str.c_str());
 
@@ -175,7 +193,13 @@ private:
      */
 
     static
-    void checkDigit(char current, const string& str, size_t *index)
+    void checkDigit(char current,
+#ifdef USE_CHAR_STRING
+            const char*
+#else
+            const string&
+#endif
+            str, size_t *index)
     {
         if (current < '0' || current > '9')
         {
@@ -188,7 +212,13 @@ private:
     }
 
     static
-    void badChar(char current, const string& str, size_t *index)
+    void badChar(char current,
+#ifdef USE_CHAR_STRING
+            const char*
+#else
+            const string&
+#endif
+            str, size_t *index)
     {
         std::stringstream s;
         s << "The character '" << current << "' at position [" << index << "] in string \"" << str << "\" is not valid !";
@@ -196,13 +226,31 @@ private:
     }
 
     static
-    char advanceChar(const string& str, size_t *index)
+    char advanceChar(
+#ifdef USE_CHAR_STRING
+            const char*
+#else
+            const string&
+#endif
+            str, size_t *index)
     {
-        return (*index) == (str.length() - 1) ? '\0' : str[++(*index)];
+        return (*index) == (
+#ifdef USE_CHAR_STRING
+            strlen(str)
+#else
+            str.length()
+#endif
+- 1) ? '\0' : str[++(*index)];
     }
 
     static
-    uint32_t parseDigits(const string& str, size_t *index)
+    uint32_t parseDigits(
+#ifdef USE_CHAR_STRING
+            const char*
+#else
+            const string&
+#endif
+            str, size_t *index)
     {
         char current = str[*index];
 
@@ -221,7 +269,13 @@ private:
     }
 
     static
-    double parseFraction(const string& str, size_t *index)
+    double parseFraction(
+#ifdef USE_CHAR_STRING
+            const char*
+#else
+            const string&
+#endif
+            str, size_t *index)
     {
         char current = str[*index];
 
@@ -247,7 +301,13 @@ private:
     }
 
     static
-    double parseUnit(const string& str, size_t *index)
+    double parseUnit(
+#ifdef USE_CHAR_STRING
+            const char*
+#else
+            const string&
+#endif
+            str, size_t *index)
     {
         char current = str[*index];
 

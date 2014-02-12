@@ -189,7 +189,7 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             uint32_t parseSMILs();
 
-            uint32_t parseSMIL(SMILDataPtr smilData, shared_ptr<SMILData::Sequence> sequence, shared_ptr<SMILData::Parallel> parallel, const ManifestItemPtr item, shared_ptr<xml::Node> element, std::map<std::shared_ptr<ManifestItem>, string> & cache_manifestItemToAbsolutePath); // recursive
+            uint32_t parseSMIL(SMILDataPtr smilData, shared_ptr<SMILData::Sequence> sequence, shared_ptr<SMILData::Parallel> parallel, const ManifestItemPtr item, shared_ptr<xml::Node> element, std::map<std::shared_ptr<ManifestItem>, string> & cache_manifestItemToAbsolutePath, std::map<string, std::shared_ptr<ManifestItem>> & cache_smilRelativePathToManifestItem); // recursive
 
         protected:
             shared_ptr<const SMILData::Parallel> ParallelAt(uint32_t timeMilliseconds) const;

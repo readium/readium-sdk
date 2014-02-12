@@ -509,11 +509,12 @@ public:
 
                 shared_ptr<xml::Node> body = nodes[0];
 
-//
+                std::map<string, std::shared_ptr<ManifestItem>> cache_smilRelativePathToManifestItem;
+
 //// TIMER START
 //timer.reset();
 
-                uint32_t smilDur = parseSMIL(smilData, nullptr, nullptr, item, body, cache_manifestItemToAbsolutePath);
+                uint32_t smilDur = parseSMIL(smilData, nullptr, nullptr, item, body, cache_manifestItemToAbsolutePath, cache_smilRelativePathToManifestItem);
                 //printf("Media Overlays SMIL DURATION (milliseconds): %ld\n", (long) smilDur);
 
 //// TIMER END
@@ -690,7 +691,7 @@ public:
             return nullptr;
         }
 
-uint32_t MediaOverlaysSmilModel::parseSMIL(SMILDataPtr smilData, shared_ptr<SMILData::Sequence> sequence, shared_ptr<SMILData::Parallel> parallel, const ManifestItemPtr item, shared_ptr<xml::Node> element, std::map<std::shared_ptr<ManifestItem>, string> & cache_manifestItemToAbsolutePath)
+uint32_t MediaOverlaysSmilModel::parseSMIL(SMILDataPtr smilData, shared_ptr<SMILData::Sequence> sequence, shared_ptr<SMILData::Parallel> parallel, const ManifestItemPtr item, shared_ptr<xml::Node> element, std::map<std::shared_ptr<ManifestItem>, string> & cache_manifestItemToAbsolutePath, std::map<string, std::shared_ptr<ManifestItem>> & cache_smilRelativePathToManifestItem)
         {
             if (!bool(element) || !element->IsElementNode())
             {
@@ -738,10 +739,44 @@ uint32_t MediaOverlaysSmilModel::parseSMIL(SMILDataPtr smilData, shared_ptr<SMIL
             {
                 return 0;
             }
-            
-            std::shared_ptr<ManifestItem> srcManifestItem = getReferencedManifestItem(package, src_file, item, cache_manifestItemToAbsolutePath);
 
-            std::shared_ptr<ManifestItem> textrefManifestItem = getReferencedManifestItem(package, textref_file, item, cache_manifestItemToAbsolutePath);
+            std::map<string, std::shared_ptr<ManifestItem>>::iterator iterator = cache_smilRelativePathToManifestItem.find(src_file);
+            std::shared_ptr<ManifestItem> srcManifestItem;
+            if (iterator != cache_smilRelativePathToManifestItem.end()
+                    //cache_smilRelativePathToManifestItem.count(src_file)
+                    )
+            {
+                //srcManifestItem = cache_smilRelativePathToManifestItem[src_file];
+                srcManifestItem = iterator->second;
+
+                //printf("=========== srcManifestItem FROM CACHE: %s\n", src_file.c_str());
+            }
+            else
+            {
+                srcManifestItem = getReferencedManifestItem(package, src_file, item, cache_manifestItemToAbsolutePath);
+                cache_smilRelativePathToManifestItem[src_file] = srcManifestItem;
+
+                //printf("=========== srcManifestItem CACHING: %s\n", src_file.c_str());
+            }
+
+            iterator = cache_smilRelativePathToManifestItem.find(textref_file);
+            std::shared_ptr<ManifestItem> textrefManifestItem;
+            if (iterator != cache_smilRelativePathToManifestItem.end()
+                    //cache_smilRelativePathToManifestItem.count(textref_file)
+                    )
+            {
+                //textrefManifestItem = cache_smilRelativePathToManifestItem[textref_file];
+                textrefManifestItem = iterator->second;
+
+                //printf("=========== textrefManifestItem FROM CACHE: %s\n", textref_file.c_str());
+            }
+            else
+            {
+                textrefManifestItem = getReferencedManifestItem(package, textref_file, item, cache_manifestItemToAbsolutePath);
+                cache_smilRelativePathToManifestItem[textref_file] = textrefManifestItem;
+
+                //printf("=========== textrefManifestItem CACHING: %s\n", textref_file.c_str());
+            }
 
             string type = string(_getProp(element, "type", ePub3NamespaceURI));
 
@@ -920,7 +955,7 @@ uint32_t MediaOverlaysSmilModel::parseSMIL(SMILDataPtr smilData, shared_ptr<SMIL
 
                 for (; bool(childNode); childNode = childNode->NextElementSibling())
                 {
-                    uint32_t time = parseSMIL(smilData, sequence, parallel, item, childNode, cache_manifestItemToAbsolutePath);
+                    uint32_t time = parseSMIL(smilData, sequence, parallel, item, childNode, cache_manifestItemToAbsolutePath, cache_smilRelativePathToManifestItem);
 
                     if (elementName != "par" || !_excludeAudioDuration)
                     {
