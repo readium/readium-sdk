@@ -554,33 +554,58 @@ public:
 
             splitFileFragmentId.clear();
 
-            // FILE
-            string::size_type i = iri.find_first_of('#');
-            if (i != string::npos && i > 0)
+            const char * str = iri.c_str();
+            size_t size = strlen(str);
+            for (int j = 0; j < size; j++)
             {
-                splitFileFragmentId.push_back(iri.substr(0, i));
-            }
-            else
-            {
-                splitFileFragmentId.push_back(string(iri));
-            }
+                char c = str[j];
+                if (c == '#')
+                {
+                    splitFileFragmentId.push_back(string(str, j));
 
-            // FRAGMENT ID
-            if (i != string::npos && i < (iri.length() - 1))
-            {
-                string::size_type n = iri.length() - i - 1;
-                splitFileFragmentId.push_back(iri.substr(i + 1, n));
-            }
-            else
-            {
-                splitFileFragmentId.push_back("");
-            }
+                    j++;
+                    if (size > j)
+                    {
+                        splitFileFragmentId.push_back(string(str + j));
+                    }
+                    else
+                    {
+                        splitFileFragmentId.push_back("");
+                    }
 
-            //printf("=========== IRI FILE: %s\n", split.at(0).c_str());
-            //printf("=========== IRI FRAGID: %s\n", split.at(1).c_str());
-
-            // RVO Return Value Optimisation should take care of moving the object reference from the local stack that of the callee's context?
-            //return split;
+                    return;
+                }
+            }
+            splitFileFragmentId.push_back(iri);
+            splitFileFragmentId.push_back("");
+//
+//            // FILE
+//            string::size_type i = iri.find_first_of('#');
+//            if (i != string::npos && i > 0)
+//            {
+//                splitFileFragmentId.push_back(iri.substr(0, i));
+//            }
+//            else
+//            {
+//                splitFileFragmentId.push_back(iri); //string(iri)
+//            }
+//
+//            // FRAGMENT ID
+//            if (i != string::npos && i < (iri.length() - 1))
+//            {
+//                string::size_type n = iri.length() - i - 1;
+//                splitFileFragmentId.push_back(iri.substr(i + 1, n));
+//            }
+//            else
+//            {
+//                splitFileFragmentId.push_back("");
+//            }
+//
+//            //printf("=========== IRI FILE: %s\n", split.at(0).c_str());
+//            //printf("=========== IRI FRAGID: %s\n", split.at(1).c_str());
+//
+//            // RVO Return Value Optimisation should take care of moving the object reference from the local stack that of the callee's context?
+//            //return split;
         }
 
         std::shared_ptr<ManifestItem> getReferencedManifestItem(const std::shared_ptr<Package> & package, string filepathInSmil, const std::shared_ptr<ManifestItem> & smilItem, std::map<std::shared_ptr<ManifestItem>, string> & cache_manifestItemToAbsolutePath)
