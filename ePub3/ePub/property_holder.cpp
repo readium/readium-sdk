@@ -224,7 +224,7 @@ PropertyPtr PropertyHolder::PropertyMatching(const string& reference, const stri
 {
     IRI iri = MakePropertyIRI(reference, prefix);
     if ( iri.IsEmpty() )
-        return false;
+        return nullptr;
     return PropertyMatching(iri);
 }
 void PropertyHolder::RegisterPrefixIRIStem(const string &prefix, const string &iriStem)
