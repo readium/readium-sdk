@@ -25,6 +25,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.util.Log;
+
 
 
 /**
@@ -49,6 +51,7 @@ public class EPub3 {
 
 	//TODO: Is this needed at all?
 	private static final int BUFFER_SIZE_INCREMENT = 2*1024*1024;
+	private static final String TAG = "EPub3";
 
 	
 	/**
@@ -87,6 +90,7 @@ public class EPub3 {
 		ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
 		buffer.position(0);
 		buffer.limit(0);
+//		Log.d(TAG, "createBuffer: "+bufferSize);
 		return buffer;
 	}
 	
@@ -97,6 +101,7 @@ public class EPub3 {
 	 */
 	private static void appendBytesToBuffer(ByteBuffer buffer, byte[] data) {
 		int newLimit = buffer.limit() + data.length;
+//		Log.d(TAG, "appendBytesToBuffer: "+newLimit);
 		buffer.limit(newLimit);
 		buffer.put(data);
 	}

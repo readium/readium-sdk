@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <string>
 
+#include <ePub3/_config.h>
 #include "url_canon_internal.h"
 
 namespace url_canon {

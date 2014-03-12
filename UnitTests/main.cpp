@@ -22,8 +22,10 @@
 #define CATCH_CONFIG_RUNNER
 #include <string>
 #include "catch.hpp"
+#include "../ePub3/ePub/initialization.h"
 #include "../ePub3/ePub/archive.h"
 #include "../ePub3/xml/utilities/io.h"
+#include "../ePub3/ePub/filter_manager_impl.h"
 
 extern "C" void DumpXMLString(xmlNodePtr node)
 {
@@ -44,9 +46,23 @@ int main(int argc, char * const argv[])
     // global setup here
     //////////////////////////////////////
     
-    ePub3::Archive::Initialize();
+    ePub3::InitializeSdk();
+    ePub3::PopulateFilterManager();
     
-    int result = Catch::Main(argc, argv);
+    /////////////////////////////////////
+    // Unit Tests
+    /////////////////////////////////////
+    
+    Catch::Session session;
+    
+    //session.configData().showSuccessfulTests = true;
+    session.configData().showDurations = Catch::ShowDurations::Always;
+    
+    int returnCode = session.applyCommandLine(argc, argv);
+    if (returnCode != 0)
+        return returnCode;
+    
+    int result = session.run();
     
     //////////////////////////////////////
     // global teardown here

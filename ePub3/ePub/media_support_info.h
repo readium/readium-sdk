@@ -44,32 +44,35 @@ class ManifestItem;
  
  @ingroup utilities
  */
-class MediaSupportInfo : public std::enable_shared_from_this<MediaSupportInfo>, public OwnedBy<Package>
+class MediaSupportInfo : public PointerType<MediaSupportInfo>, public OwnedBy<Package>
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 public:
     ///
     /// A list of manifest items.
-    typedef shared_list<ManifestItem>   ManifestItemList;
+    typedef shared_vector<ManifestItem>   ManifestItemList;
     
     ///
     /// Possible types of support provided.
     enum class EPUB3_EXPORT SupportType : uint8_t
     {
         Unsupported             = 0,    ///< The media type is not supported.
-        IntrinsicSupport        = 1,    ///< The rendering engine undersands this media type with no outside help.
+        IntrinsicSupport        = 1,    ///< The rendering engine understands this media type with no outside help.
         SupportedWithHandler    = 2     ///< The publication provides a DHTML handler for this media type.
     };
     
 public:
     ///
     /// The default constructor creates an object with no information.
-    EPUB3_EXPORT    MediaSupportInfo(shared_ptr<Package>& owner);
+    EPUB3_EXPORT    MediaSupportInfo(shared_ptr<Package> owner);
     ///
     /// A simple constructor, normally used to define intrinsic support.
-    EPUB3_EXPORT    MediaSupportInfo(shared_ptr<Package>& owner, const string& mediaType, bool supported=true);
+    EPUB3_EXPORT    MediaSupportInfo(shared_ptr<Package> owner, const string& mediaType, bool supported=true);
     ///
     /// The real constructor takes a specific SupportType value.
-    EPUB3_EXPORT    MediaSupportInfo(shared_ptr<Package>& owner, const string& mediaType, SupportType support);
+    EPUB3_EXPORT    MediaSupportInfo(shared_ptr<Package> owner, const string& mediaType, SupportType support);
     ///
     /// Copy constructor.
     EPUB3_EXPORT    MediaSupportInfo(const MediaSupportInfo& o);

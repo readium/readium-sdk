@@ -24,7 +24,9 @@
 
 #include <ePub3/xml/base.h>
 #include <ePub3/xml/node.h>
+#if EPUB_USE(LIBXML2)
 #include <libxml/xpath.h>
+#endif
 #include <functional>
 #if EPUB_USE(PTHREADS)
 # include <pthread.h>
@@ -38,11 +40,12 @@ class Element;
 /**
  @ingroup xml-utils
  */
-class XPathEvaluator : public WrapperBase
+class XPathEvaluator : public WrapperBase<XPathEvaluator>
 {
 public:
+#if EPUB_USE(LIBXML2)
     typedef std::function<void(xmlXPathParserContextPtr ctx, int nargs)> XPathFunction;
-    
+
     enum class ObjectType : uint8_t {
         Undefined    = ::XPATH_UNDEFINED,
         NodeSet      = ::XPATH_NODESET,
@@ -57,21 +60,36 @@ public:
          XSLTTree     = ::XPATH_XSLT_TREE,
          */
     };
+#elif EPUB_USE(WIN_XML)
+	enum class ObjectType {
+		Undefined,
+		NodeSet,
+		Boolean,
+		Number,
+		String,
+	};
+#endif
+
+	typedef std::map<string, string> NamespaceMap;
     
 public:
-    XPathEvaluator(const string & xpath, const Document * document);
+	XPathEvaluator(const string & xpath, std::shared_ptr<const Document> document);
     virtual ~XPathEvaluator();
     
     string XPath() const { return _xpath; }
-    const class Document * Document() const { return _document; }
+	std::shared_ptr<const class Document> Document() const { return _document; }
+    
+    //////////////////////////////////////////////////////////////////
+    // Compilation (optional)
+    bool Compile();
     
     //////////////////////////////////////////////////////////////////
     // Evaluation
     
-    bool Evaluate(const Node * node, ObjectType * resultType = nullptr);
+	bool Evaluate(std::shared_ptr<const Node> node, ObjectType * resultType = nullptr);
     
     // special optimized entry point when evaluating as a boolean. Returns result directly.
-    bool EvaluateAsBoolean(const Node * node);
+	bool EvaluateAsBoolean(std::shared_ptr<const Node> node);
     
     // these throw if there is no current result
     bool BooleanResult() const;
@@ -84,28 +102,36 @@ public:
     
     bool RegisterNamespace(const string & prefix, const string & uri);
     bool RegisterNamespaces(const NamespaceMap & namespaces);
-    bool RegisterAllNamespacesForElement(const Element * element);
-    
+	bool RegisterAllNamespacesForElement(std::shared_ptr<const Element> element);
+#if EPUB_USE(LIBXML2)
     bool RegisterFunction(const string & name, XPathFunction fn);
     bool RegisterFunction(const string & name, const string & namespaceURI, XPathFunction fn);
     
     bool RegisterVariable(const string & name, void * data, ObjectType type, const string & namespaceURI = string());
+#endif
     
+    virtual
+    void release() OVERRIDE
+        {}
 protected:
+#if EPUB_USE(LIBXML2)
     typedef std::map<string, XPathFunction>    FunctionLookup;
     
     static void _XMLFunctionWrapper(xmlXPathParserContextPtr ctx, int nargs);
     void PerformFunction(xmlXPathParserContextPtr ctx, const string & name, const string & uri, int nargs);
-    
-    string             _xpath;
-    const class Document *  _document;
-    
+#endif
+    string									_xpath;
+	std::shared_ptr<const class Document>	_document;
+#if EPUB_USE(LIBXML2)
     _xmlXPathContext *      _ctx;
     _xmlXPathCompExpr *     _compiled;
     FunctionLookup          _functions;
     
     _xmlXPathObject *       _lastResult;
-    
+#elif EPUB_USE(WIN_XML)
+	::Windows::Data::Xml::Dom::XmlNodeList^	_lastResult;
+	std::map<string, string>				_namespaces;
+#endif
 };
 
 EPUB3_XML_END_NAMESPACE

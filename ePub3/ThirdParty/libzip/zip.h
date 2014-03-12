@@ -34,6 +34,8 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <ePub3/_config.h>
+
 #ifndef ZIP_EXTERN
 #ifdef _MSC_VER
 #define ZIP_EXTERN __declspec(dllexport)
@@ -42,13 +44,13 @@
 #endif
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <sys/types.h>
 #include <stdio.h>
 #include <time.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* flags for zip_open */
 
@@ -144,6 +146,11 @@ extern "C" {
 #endif
 #define ZIP_EM_UNKNOWN    0xffff  /* unknown algorithm */
 
+/* zip_file offset locations */
+#define ZIP_SEEK_SET      0       /* set absolute offset */
+#define ZIP_SEEK_CUR      1       /* set relative to current offset */
+#define ZIP_SEEK_END      2       /* set to EOF plus offset */
+
 enum zip_source_cmd {
     ZIP_SOURCE_OPEN,	/* prepare for reading */
     ZIP_SOURCE_READ, 	/* read data */
@@ -186,6 +193,8 @@ ZIP_EXTERN const char *zip_file_strerror(struct zip_file *);
 ZIP_EXTERN struct zip_file *zip_fopen(struct zip *, const char *, int);
 ZIP_EXTERN struct zip_file *zip_fopen_index(struct zip *, int, int);
 ZIP_EXTERN ssize_t zip_fread(struct zip_file *, void *, size_t);
+ZIP_EXTERN int zip_fseek(struct zip_file*, long, int);
+ZIP_EXTERN long zip_ftell(struct zip_file*);
 ZIP_EXTERN const char *zip_get_archive_comment(struct zip *, int *, int);
 ZIP_EXTERN int zip_get_archive_flag(struct zip *, int, int);
 ZIP_EXTERN const char *zip_get_file_comment(struct zip *, int, int *, int);

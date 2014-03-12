@@ -21,17 +21,33 @@ import org.readium.sdk.android.components.navigation.NavigationTable;
  */
 public abstract class JavaObjectsFactory {
 	
+	/**
+	 * Creates a new list of SpineItem
+	 * @return the created list
+	 */
 	@SuppressWarnings("unused")
 	private static List<SpineItem> createSpineItemList() {
 		return new ArrayList<SpineItem>();
 	}
 	
+	/**
+	 * Creates a new SpineItem
+	 * @param idRef spine item identifier
+	 * @param href 
+	 * @param pageSpread
+	 * @param renditionLayout
+	 * @return a spine item
+	 */
 	@SuppressWarnings("unused")
 	private static SpineItem createSpineItem(String idRef, String href,
-			String pageSpread, String renditionLayout) {
-		return new SpineItem(idRef, href, pageSpread, renditionLayout);
+			String pageSpread, String renditionLayout, String media_overlay_id) {
+		return new SpineItem(idRef, href, pageSpread, renditionLayout, media_overlay_id);
 	}
-	
+
+	/**
+	 * Adds an spine item to the list.
+	 * @return the created list
+	 */
 	@SuppressWarnings("unused")
 	private static void addSpineItemToList(List<SpineItem> list, SpineItem spineItem) {
 		list.add(spineItem);
@@ -50,6 +66,35 @@ public abstract class JavaObjectsFactory {
 	@SuppressWarnings("unused")
 	private static void addElementToParent(NavigationElement parent, NavigationElement child) {
 		parent.appendChild(child);
+	}
+	
+	/**
+	 * Creates a new list of ManifestItem
+	 * @return the created list
+	 */
+	@SuppressWarnings("unused")
+	private static List<ManifestItem> createManifestItemList() {
+		return new ArrayList<ManifestItem>();
+	}
+	
+	/**
+	 * Creates a new ManifestItem
+	 * @param href
+	 * @param mediaType
+	 * @return manifest item
+	 */
+	@SuppressWarnings("unused")
+	private static ManifestItem createManifestItem(String href, String mediaType) {
+		return new ManifestItem(href, mediaType);
+	}
+
+	/**
+	 * Adds a manifest item to the list.
+	 * @return the created list
+	 */
+	@SuppressWarnings("unused")
+	private static void addManifestItemToList(List<ManifestItem> list, ManifestItem manifestItem) {
+		list.add(manifestItem);
 	}
 	
 }

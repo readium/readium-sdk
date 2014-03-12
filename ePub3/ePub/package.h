@@ -27,8 +27,9 @@
 #include <vector>
 #include <map>
 #include <list>
-#include <libxml/tree.h>
+#include <ePub3/xml/node.h>
 #include <ePub3/utilities/owned_by.h>
+#include <epub3/encryption.h>
 #include <ePub3/spine.h>
 #include <ePub3/manifest.h>
 #include <ePub3/cfi.h>
@@ -39,7 +40,10 @@
 #include <ePub3/content_handler.h>
 #include <ePub3/media_support_info.h>
 #include <ePub3/property_holder.h>
+#include <ePub3/epub_collection.h>
 #include <ePub3/utilities/xml_identifiable.h>
+#include <ePub3/utilities/string_view.h>
+//#include "media-overlays_smil_model.h"
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -50,8 +54,7 @@ class ByteStream;
 class Container;
 class PackageBase;
 class Package;
-
-typedef shared_ptr<Package>     PackagePtr;
+class MediaOverlaysSmilModel;
 
 /**
  The PackageBase class implements the low-level components and all storage of an OPF
@@ -135,7 +138,7 @@ public:
     ///
     /// Returns an immutable reference to the map of navigation tables.
     const NavigationMap&    NavigationTables()      const       { return _navigation; }
-    
+
     /// @}
     
     /// @{
@@ -194,11 +197,19 @@ public:
     
     /**
      Get an array of manifest items which have *all* the given properties.
-     @param A vector of manifest `<item>` property names, e.g. `"nav"`, `"cover"`, etc.
+     @param properties A vector of manifest `<item>` property names, e.g. `"nav"`, `"cover"`, etc.
      @result A vector containing pointers to any matching manifest items.
      */
     EPUB3_EXPORT
     const shared_vector<ManifestItem> ManifestItemsWithProperties(PropertyIRIList properties) const;
+
+	/**
+	 Get a ManifestItem corresponding to a package-relative path.
+	 @param path The package-relative path to the item whose ManifestItem to locate.
+	 @result A ManifestItem pointer, or `nullptr` if no manifest item matches the path.
+	 */
+	EPUB3_EXPORT
+	ConstManifestItemPtr    ManifestItemAtRelativePath(const string& path) const;
     
     /// @}
     
@@ -210,6 +221,21 @@ public:
      */
     EPUB3_EXPORT
     shared_ptr<NavigationTable> NavigationTable(const string& type)            const;
+    
+    /**
+     Returns the list of collections by reference.
+     */
+    EPUB3_EXPORT FORCE_INLINE
+    const CollectionList& Collections() const
+        { return _collections; }
+    
+    /**
+     Returns a Collection by role.
+     @param role The role of the collection to retrieve, such as `"index"` or `"preview"`.
+     @result A pointer to the relevant collection, or `nullptr` if none was found.
+     */
+    EPUB3_EXPORT
+    CollectionPtr CollectionWithRole(string_view role)                          const;
     
     /**
      Returns a ByteStream for reading from the specified file in the package's Archive.
@@ -225,18 +251,20 @@ public:
     uint32_t                SpineCFIIndex()                 const   { return _spineCFIIndex; }
     
 protected:
-    shared_ptr<Archive>     _archive;           ///< The archive from which the package was loaded.
-    xmlDocPtr               _opf;               ///< The XML document representing the package.
-    string                  _pathBase;          ///< The base path of the document within the archive.
-    string                  _type;              ///< The MIME type of the package document.
-    ManifestTable           _manifest;          ///< All manifest items, indexed by unique identifier.
-    NavigationMap           _navigation;        ///< All navigation tables, indexed by type.
-    ContentHandlerMap       _contentHandlers;   ///< All installed content handlers, indexed by media-type.
-    shared_ptr<SpineItem>   _spine;             ///< The first item in the spine (SpineItems are a linked list).
-    XMLIDLookup             _xmlIDLookup;       ///< Lookup table for all items with XML ID values.
-    
+    shared_ptr<Archive>			_archive;           ///< The archive from which the package was loaded.
+    shared_ptr<xml::Document>   _opf;               ///< The XML document representing the package.
+    string						_pathBase;          ///< The base path of the document within the archive.
+    string						_type;              ///< The MIME type of the package document.
+    ManifestTable				_manifest;          ///< All manifest items, indexed by unique identifier.
+    NavigationMap				_navigation;        ///< All navigation tables, indexed by type.
+    ContentHandlerMap			_contentHandlers;   ///< All installed content handlers, indexed by media-type.
+    shared_ptr<SpineItem>		_spine;             ///< The first item in the spine (SpineItems are a linked list).
+    XMLIDLookup					_xmlIDLookup;       ///< Lookup table for all items with XML ID values.
+    CollectionList              _collections;       ///< List of all parsed <collection> elements.
+
+protected:
     // used to verify/correct CFIs
-    uint32_t                _spineCFIIndex;     ///< The CFI index for the `<spine>` element in the package document.
+    uint32_t					_spineCFIIndex;     ///< The CFI index for the `<spine>` element in the package document.
     
     ///
     /// Unpacks the _opf document. Implemented by the subclass, to make PackageBase pure-virtual.
@@ -250,9 +278,15 @@ protected:
     shared_ptr<SpineItem>   ConfirmOrCorrectSpineItemQualifier(shared_ptr<SpineItem> pItem, CFI::Component* pComponent) const;
     
     ///
-    /// Loads navigation tables from a given manifest item (which has the `"nav"` property).
+    /// Loads navigation tables from a given manifest item (which has the `"nav"` property) or one referencing an NCX document.
     static NavigationList   NavTablesFromManifestItem(shared_ptr<PackageBase> owner, shared_ptr<ManifestItem> pItem);
 
+private:
+	// these are only called by NavTablesFromManifestItem()
+	static NavigationList	_LoadEPUB3NavTablesFromManifestItem(shared_ptr<Package> owner, shared_ptr<ManifestItem> pItem, shared_ptr<xml::Document> doc);
+	static NavigationList	_LoadNCXNavTablesFromManifestItem(shared_ptr<Package> owner, shared_ptr<ManifestItem> pItem, shared_ptr<xml::Document> doc);
+
+protected:
 #if EPUB_COMPILER_SUPPORTS(CXX_DEFAULT_TEMPLATE_ARGS)
     template <class _Tp, class = typename std::enable_if
                             <
@@ -274,6 +308,14 @@ protected:
 #endif
         }
     }
+
+protected:
+    std::shared_ptr<MediaOverlaysSmilModel> _mediaOverlays;      ///< The Media Overlays SMIL model
+public:
+    // returns a copy of the smart shared pointer (reference count++)
+    std::shared_ptr<MediaOverlaysSmilModel>    MediaOverlaysSmilModel()      const       { return _mediaOverlays; }
+
+    shared_ptr<Archive> Archive() const { return _archive; }
 };
 
 /**
@@ -287,7 +329,10 @@ protected:
  
  @ingroup epub-model
  */
-class Package : public PackageBase, public std::enable_shared_from_this<Package>, public PropertyHolder, public OwnedBy<Container>
+class Package : public PackageBase, public PointerType<Package>, public PropertyHolder, public OwnedBy<Container>
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 public:
     /**
@@ -305,7 +350,7 @@ public:
      Each type is paired with an instance of MediaSupportInfo which describes the
      support for that media type.
      */
-    typedef std::map<string, MediaSupportInfo>      MediaSupportList;
+    typedef std::map<string, MediaSupportInfoPtr>	MediaSupportList;
     
 private:
                             Package()                                   _DELETED_;
@@ -316,8 +361,10 @@ public:
                             Package(Package&& o) : OwnedBy(std::move(o)), PackageBase(std::move(o)) {}
     virtual                 ~Package() {}
     
+    ContainerPtr            GetContainer()          const       { return Owner(); }
+    
     virtual bool            Open(const string& path);
-    bool                    _OpenForTest(xmlDocPtr doc, const string& basePath);
+    bool                    _OpenForTest(shared_ptr<xml::Document> doc, const string& basePath);
     
     ///
     /// The full Unique Identifier, built from the package unique-id and the modification date.
@@ -419,7 +466,7 @@ public:
      to the empty CFI.
      @result An `xmlDocPtr` for the selected document, or `nullptr` upon failure.
      */
-    xmlDocPtr               DocumentForCFI(CFI& cfi, CFI* pRemainingCFI) const {
+    shared_ptr<xml::Document>	DocumentForCFI(CFI& cfi, CFI* pRemainingCFI) const {
         return ManifestItemForCFI(cfi, pRemainingCFI)->ReferencedDocument();
     }
     
@@ -444,14 +491,28 @@ public:
     /// @{
     /// @name Raw Data Access
     
-    unique_ptr<ArchiveReader>   ReaderForRelativePath(const string& path)       const {
-        return _archive->ReaderAtPath((_pathBase + path).stl_str());
-    }
+    unique_ptr<ArchiveReader>   ReaderForRelativePath(const string& path)       const;
+
     unique_ptr<ArchiveXmlReader>    XmlReaderForRelativePath(const string& path)    const {
         return unique_ptr<ArchiveXmlReader>(new ArchiveXmlReader(ReaderForRelativePath(path)));
     }
+
     EPUB3_EXPORT
     unique_ptr<ByteStream>        ReadStreamForRelativePath(const string& path)   const;
+    
+    EPUB3_EXPORT
+    shared_ptr<AsyncByteStream>     ContentStreamForItem(SpineItemPtr spineItem)    const {
+        return ContentStreamForItem(spineItem->ManifestItem());
+    }
+    EPUB3_EXPORT
+    shared_ptr<AsyncByteStream>     ContentStreamForItem(ManifestItemPtr manifestItem)  const;
+
+	EPUB3_EXPORT
+	shared_ptr<ByteStream>			SyncContentStreamForItem(SpineItemPtr spineItem)    const {
+		return SyncContentStreamForItem(spineItem->ManifestItem());
+	}
+	EPUB3_EXPORT
+	shared_ptr<ByteStream>			SyncContentStreamForItem(ManifestItemPtr manifestItem)  const;
     
     /// @}
     
@@ -473,6 +534,18 @@ public:
     ///
     /// Returns the page list, if any exists.
     shared_ptr<class NavigationTable>   PageList()              const       { return NavigationTable("page-list"); }
+    
+    /// @}
+    
+    /// @{
+    /// @name Collections
+    
+    ///
+    /// Returns the publication's Index collection, if any.
+    CollectionPtr                   IndexCollection()           const       { return CollectionWithRole(Collection::IndexRole); }
+    ///
+    /// Returns the publication's Preview collection, if any.
+    CollectionPtr                   PreviewCollection()         const       { return CollectionWithRole(Collection::PreviewRole); }
     
     /// @}
     
@@ -619,7 +692,45 @@ public:
      */
     EPUB3_EXPORT
     const string&           Language()                              const;
-    
+
+    /**
+     Retrieves the Media Overlays media:active-class (may be empty string, if unspecified in the OPF package)
+     @result The publication's Media Overlays media:active-class CSS class name.
+     */
+    EPUB3_EXPORT
+    const string& MediaOverlays_ActiveClass() const;
+
+    /**
+     Retrieves the Media Overlays media:playback-active-class (may be empty string, if unspecified in the OPF package)
+     @result The publication's Media Overlays media:playback-active-class CSS class name.
+     */
+    EPUB3_EXPORT
+    const string& MediaOverlays_PlaybackActiveClass() const;
+
+    /**
+     Retrieves the Media Overlays media:duration (may be empty string, if unspecified in the OPF package)
+     @result The publication's Media Overlays media:duration
+     */
+    EPUB3_EXPORT
+    const string& MediaOverlays_DurationTotal() const;
+
+    /**
+     Retrieves the Media Overlays media:duration (may be empty string, if unspecified in the OPF package)
+     @result The publication's Media Overlays media:duration
+     */
+    EPUB3_EXPORT
+    const string& MediaOverlays_DurationItem(const std::shared_ptr<ManifestItem> & manifestItem);
+
+    /**
+     Retrieves a the Media Overlays media:narrator (may be empty string, if unspecified in the OPF package)
+     @param localized Set to `true` (the default) to obtain a localized value if
+     one is available. The localization to use is determined by calling
+     PackageBase::Locale().
+     @result the Media Overlays media:narrator
+     */
+    EPUB3_EXPORT
+    const string& MediaOverlays_Narrator(bool localized=true) const;
+
     /**
      Retrieves the source of the publication, if available.
      @param localized Set to `true` (the default) to obtain a localized value if
@@ -688,8 +799,8 @@ public:
      @param mediaType The media-type whose handler list to retrieve.
      @result A list of installed handlers for this media type.
      */
-    EPUB3_EXPORT
-    const ContentHandlerList    HandlersForMediaType(const string& mediaType)   const;
+	EPUB3_EXPORT
+	const ContentHandlerList    HandlersForMediaType(const string& mediaType)   const;
     
     /**
      Retrieves the handler that will be used for a certain media type.
@@ -742,6 +853,18 @@ public:
      */
     virtual void            SetMediaSupport(MediaSupportList&& list);
     
+    /**
+     Assigns a filter chain to this package.
+     
+     This is called automatically by Container at the end of its initialization. The
+     public API here is available only for quite specific circumstances where the
+     built-in chain creation is not enough.
+     @param chain The filter chain for the receiving Package instance.
+     */
+    virtual void            SetFilterChain(FilterChainPtr chain) _NOEXCEPT {
+        _filterChain = chain;
+    }
+    
     /// @}
     
 protected:
@@ -751,6 +874,12 @@ protected:
     ///
     /// Used to handle the `prefix` attribute of the OPF `<package>` element.
     void                    InstallPrefixesFromAttributeValue(const string& attrValue);
+	///
+	/// Assigns titlues to SpineItems based on the contents of the TOC nav table.
+	void					CompileSpineItemTitles();
+	///
+	/// Internal recursive function for navigating the TOC tree.
+	void					_CompileSpineItemTitlesInternal(const NavigationList& navPoints, std::map<string, string>& compiled);
     
     // default is `true`
     EPUB3_EXPORT
@@ -769,6 +898,8 @@ protected:
     MediaSupportList        _mediaSupport;          ///< A list of media types with their support details.
     
     void                    InitMediaSupport();
+    
+    FilterChainPtr          _filterChain;           ///< The filter chain for this package.
 };
 
 EPUB3_END_NAMESPACE

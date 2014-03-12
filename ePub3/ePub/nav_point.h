@@ -38,7 +38,10 @@ typedef shared_ptr<NavigationPoint> NavigationPointPtr;
 /**
  @ingroup navigation
  */
-class NavigationPoint : public NavigationElement, public std::enable_shared_from_this<NavigationPoint>, public OwnedBy<NavigationElement>
+class NavigationPoint : public NavigationElement, public PointerType<NavigationPoint>, public OwnedBy<NavigationElement>
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 private:
                             NavigationPoint(const NavigationPoint&)     _DELETED_;
@@ -55,6 +58,10 @@ public:
     const string&           Content()                   const   { return _content; }
     void                    SetContent(const string& str)       { _content = str; }
     void                    SetContent(string&& str)            { _content = str; }
+
+	///
+	/// Turns the Content() href into an absolute value, similar to ManifestItem::AbsolutePath().
+	string					AbsolutePath(ConstPackagePtr pkg)				const;
     
 protected:
     string _label;

@@ -22,7 +22,7 @@
 #ifndef __ePub3__property__
 #define __ePub3__property__
 
-#include <ePub3/ePub3.h>
+#include <ePub3/epub3.h>
 #include <ePub3/utilities/basic.h>
 #include <ePub3/utilities/owned_by.h>
 #include <ePub3/utilities/iri.h>
@@ -30,7 +30,7 @@
 #include <ePub3/property_extension.h>
 #include <ePub3/utilities/epub_locale.h>
 #include <ePub3/utilities/xml_identifiable.h>
-#include <libxml/tree.h>
+#include <ePub3/xml/node.h>
 #include <vector>
 #include <map>
 
@@ -121,8 +121,13 @@ EPUB3_EXPORT
 DCType          DCTypeFromIRI(const IRI& iri);
     
 __private_extern__ string __lang_from_locale(const std::locale& loc);
+#if EPUB_USE(LIBXML2)
 __private_extern__ const xmlChar * DCMES_uri;
 __private_extern__ const xmlChar * MetaTagName;
+#else
+__private_extern__ const TCHAR * DCMES_uri;
+__private_extern__ const TCHAR * MetaTagName;
+#endif
 
 /**
  This exception is thrown when a property vocabulary prefix is unknown to a
@@ -140,7 +145,10 @@ public:
     virtual     ~UnknownPrefix()                     _NOEXCEPT                                      {}
 };
 
-class Property : public std::enable_shared_from_this<Property>, public OwnedBy<PropertyHolder>, public XMLIdentifiable
+class Property : public PointerType<Property>, public OwnedBy<PropertyHolder>, public XMLIdentifiable
+#if EPUB_PLATFORM(WINRT)
+	, public NativeBridge
+#endif
 {
 public:
     ///
@@ -163,7 +171,7 @@ public:
     virtual                 ~Property() {}
     
     EPUB3_EXPORT
-    bool                    ParseMetaElement(xmlNodePtr node);
+    bool                    ParseMetaElement(shared_ptr<xml::Node> node);
     
     
     /// @{

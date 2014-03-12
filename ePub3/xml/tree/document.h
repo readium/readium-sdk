@@ -23,20 +23,25 @@
 #define __ePub3_xml_document__
 
 #include <ePub3/xml/node.h>
-#include <ePub3/xml/element.h>
+#include <ePub3/xml/document.h>
+
+#if EPUB_USE(LIBXML2)
 #include <ePub3/xml/io.h>
 #include <ePub3/xml/c14n.h>
+#endif
 
 EPUB3_XML_BEGIN_NAMESPACE
 
 class DTD;
 class Element;
+#if EPUB_USE(LIBXML2)
 class C18N;
+#endif
 
 /**
  @ingroup tree
  */
-enum class EntityType : uint8_t {
+enum class EntityType {
     InternalGeneral,
     ExternalGeneralParsed,
     ExternalGeneralUnparsed,
@@ -51,52 +56,76 @@ enum class EntityType : uint8_t {
 class Document : public Node
 {
 public:
+#if EPUB_USE(LIBXML2)
+	typedef _xmlDoc*								NativeDocPtr;
+	typedef xmlEntityPtr							NativeEntityPtr;
+#elif EPUB_USE(WIN_XML)
+	typedef Windows::Data::Xml::Dom::XmlDocument^	NativeDocPtr;
+	typedef Windows::Data::Xml::Dom::DtdEntity^		NativeEntityPtr;
+#endif
+
+public:
+	explicit Document(NativeDocPtr xml);
+#if EPUB_ENABLE(XML_BUILDER)
     explicit Document(const string & version = "1.0");
-    explicit Document(xmlDocPtr xml);
-    explicit Document(Element * rootElement);
+    explicit Document(std::shared_ptr<Element> rootElement);
+#endif
     virtual ~Document();
     
     string Encoding() const;
-    DTD * InternalSubset() const;
+    std::shared_ptr<DTD> InternalSubset() const;
+#if EPUB_ENABLE(XML_BUILDER)
     void SetInternalSubset(const string & name, const string & externalID,
                            const string & systemID);
     
-    Element * Root();
-    const Element * Root() const;
-    
-    Element * SetRoot(const string & name, const string & nsUri = string(),
-                      const string & nsPrefix = string());
-    Element * SetRoot(const Node * nodeToCopy, bool recursive = true);
-    Element * SetRoot(Element * root);
+#endif
 
+	std::shared_ptr<Element> Root();
+	std::shared_ptr<const Element> Root() const;
+#if EPUB_ENABLE(XML_BUILDER)
+	std::shared_ptr<Element> SetRoot(const string & name, const string & nsUri = string(),
+                      const string & nsPrefix = string());
+	std::shared_ptr<Element> SetRoot(std::shared_ptr<const Node> nodeToCopy, bool recursive = true);
+	std::shared_ptr<Element> SetRoot(std::shared_ptr<Element> root);
+#endif
+
+#if EPUB_ENABLE(XML_BUILDER)
     // only comments and processing instructions can be outside the root node;
     // this will throw if another type of node is passed in-- it checks the node's Type()
-    Node * AddNode(Node * commentOrPINode, bool beforeRoot = true);
+    std::shared_ptr<Node> AddNode(std::shared_ptr<Node> commentOrPINode, bool beforeRoot = true);
     
-    Node * AddComment(const string & comment, bool beforeRoot = true);
-    Node * AddProcessingInstruction(const string & name, const string & content, bool beforeRoot = true);
+    std::shared_ptr<Node> AddComment(const string & comment, bool beforeRoot = true);
+    std::shared_ptr<Node> AddProcessingInstruction(const string & name, const string & content, bool beforeRoot = true);
     
     // add an entity declaration to a given subset
     void DeclareEntity(const string & name, EntityType type, const string & publicID, const string & systemID, const string & value);
-    
+#endif
+
+#if EPUB_USE(LIBXML2)
     int ProcessXInclude(bool generateXIncludeNodes = true);
+#endif
+
+    NativeDocPtr xml() { return xml_native_cast<NativeDocPtr>(Node::xml()); }
+    const NativeDocPtr xml() const { return xml_native_cast<const NativeDocPtr>(Node::xml()); }
     
-    _xmlDoc * xml() { return reinterpret_cast<_xmlDoc*>(Node::xml()); }
-    const _xmlDoc * xml() const { return reinterpret_cast<const _xmlDoc*>(Node::xml()); }
-    
-    xmlEntityPtr NamedEntity(const string & name) const;
+    NativeEntityPtr NamedEntity(const string & name) const;
     string ContentOfNamedEntity(const string & name) const;
     
     //////////////////////////////////////////////////////////////////////////////
     // Output
-    
+#if EPUB_USE(LIBXML2)
+#if EPUB_ENABLE(XML_C14N)
     template <C14NVersion _Version, bool _WithComments>
-    string Canonicalize(const C14NParams<_Version, _WithComments> & params) const;
-    
+    string Canonicalize(const C14NParams<_Version, _WithComments> & params) const {
+        return "";
+    }
+#endif
+
     void WriteXML(OutputBuffer & outbuf) const;
+#endif
     void WriteXML(string & string) const;
     
-    string XMLString() const { string __s; WriteXML(__s); return std::move(__s); }
+    string XMLString() const { string __s; WriteXML(__s); return __s; }
     
 };
 

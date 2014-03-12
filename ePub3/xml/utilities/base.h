@@ -23,7 +23,6 @@
 #define ePub3_xml_base_h
 
 #include <ePub3/base.h>
-#include <ePub3/utilities/basic.h>
 
 #define EPUB3_XML_BEGIN_NAMESPACE EPUB3_BEGIN_NAMESPACE namespace xml {
 #define EPUB3_XML_END_NAMESPACE } EPUB3_END_NAMESPACE
@@ -31,22 +30,189 @@
 #include <exception>
 #include <string>
 #include <map>
+#include <memory>
+
+#define PROMISCUOUS_LIBXML_OVERRIDES 0
+
+#if EPUB_USE(LIBXML2)
 #include <libxml/xmlerror.h>
+#define xml_native_cast reinterpret_cast
+#undef PROMISCUOUS_LIBXML_OVERRIDES
+#define PROMISCUOUS_LIBXML_OVERRIDES 1
+#else
+struct xmlError {
+	char* message;
+};
+typedef struct xmlError* xmlErrorPtr;
+#endif
+
+#if EPUB_USE(WIN_XML)
+#define xml_native_cast dynamic_cast
+#define __winstr(x) dynamic_cast<::Platform::String^>(x)
+#else
+#define xml_native_cast reinterpret_cast
+#endif
 
 EPUB3_XML_BEGIN_NAMESPACE
+
+#if PROMISCUOUS_LIBXML_OVERRIDES == 0
+#ifdef __cplusplus
+                extern "C" {
+#endif
+                extern void __resetLibXMLOverrides(void);
+                extern void __setupLibXML(void);
+#ifdef __cplusplus
+                }
+#endif
+#endif /* PROMISCUOUS_XML_OVERRIDES */
+
+static CONSTEXPR const unsigned int _READIUM_XML_SIGNATURE = 0x52586D6C;    /* 'RXml' */
+
+class Node;
+
+template <class _Tp, typename _Nm>
+static inline std::shared_ptr<_Tp> Wrapped(_Nm * __n);
+
+// note that MOVE is allowed, just not COPY
+/**
+ @ingroup xml-utils
+ */
+template <class _Tp>
+class WrapperBase : public std::enable_shared_from_this<_Tp>
+{
+public:
+    WrapperBase() {}
+    WrapperBase(WrapperBase && moveRef) {}
+    virtual ~WrapperBase() {}
+    
+    WrapperBase & operator = (WrapperBase && moveRef) { return *this; }
+    
+	template <class... _Args>
+	static inline FORCE_INLINE
+    std::shared_ptr<_Tp>
+    New(_Args&& ...__args)
+        {
+            return std::make_shared<_Tp>(std::forward<_Args>(__args)...);
+        }
+    
+    template <class _Sub, typename... _Args>
+    static inline FORCE_INLINE
+    typename std::enable_if
+        <
+            std::is_base_of<_Tp, _Sub>::value,
+            std::shared_ptr<_Sub>
+        >::type
+    New(_Args&& ...__args)
+        {
+            return std::make_shared<_Sub>(std::forward<_Args>(__args)...);
+        }
+    
+    virtual
+    void release() = 0;
+    
+private:
+    WrapperBase(WrapperBase & o);
+    WrapperBase & operator = (WrapperBase & o);
+    
+};
+
+#if EPUB_USE(LIBXML2)
+template <typename _Tp>
+struct LibXML2Private
+{
+    LibXML2Private()
+        : __sig(_READIUM_XML_SIGNATURE), __ptr(nullptr)
+        {}
+    LibXML2Private(_Tp* __p)
+        : __sig(_READIUM_XML_SIGNATURE), __ptr(__p)
+        {}
+    LibXML2Private(std::shared_ptr<_Tp>& __p)
+        : __sig(_READIUM_XML_SIGNATURE), __ptr(__p)
+        {}
+    ~LibXML2Private()
+        { __sig = 0xbaadf00d; }
+    
+    // data member-- used to determine if this is a Readium-made pointer
+    unsigned int __sig;
+    std::shared_ptr<_Tp> __ptr;
+};
+#endif
+
+#if !EPUB_PLATFORM(WINRT)
+
+#define IS_READIUM_WRAPPED_XML(xml) (((xml) != nullptr) && ((xml)->_private != nullptr) && (*((unsigned int*)xml->_private) == _READIUM_XML_SIGNATURE))
 
 // generic 'get me a wrapper' template
 /**
  @ingroup xml-utils
  */
 template <class _Tp, typename _Nm>
-static inline _Tp * Wrapped(_Nm * n)
+static inline std::shared_ptr<_Tp> Wrapped(_Nm * __n)
 {
-    if ( n == nullptr ) return nullptr;
-    if ( n->_private != nullptr ) return reinterpret_cast<_Tp*>(n->_private);
-    return new _Tp(n);
+    typedef LibXML2Private<_Tp>*                _PrivatePtr;
+    
+    if ( __n == nullptr )
+        return nullptr;
+    
+    // remember: _private is a *pointer to* a std::shared_ptr<_Tp> object
+    try
+    {
+        // naive pagezero check
+        if (__n->_private != nullptr && __n->_private > (void*)0x1000)
+        {
+            _PrivatePtr __p = reinterpret_cast<_PrivatePtr>(__n->_private);
+            if (__p->__sig == _READIUM_XML_SIGNATURE)
+            {
+                return __p->__ptr;
+            }
+            else
+            {
+                throw std::logic_error("XML _private already carries a value!");
+            }
+        }
+    }
+    catch (...)
+    {
+        if (__n->_private != nullptr)
+            throw std::logic_error("XML _private already carries a value!");
+    }
+    
+    
+    _PrivatePtr __p = new LibXML2Private<_Tp>(new _Tp(__n));
+    __n->_private = __p;
+    return __p->__ptr;
 }
 
+/**
+ @ingroup xml-utils
+ */
+template <class _Tp, typename _Nm>
+static inline void Rewrap(_Nm* __n, std::shared_ptr<_Tp> __t)
+{
+    typedef LibXML2Private<_Tp> _Private;
+    
+    if (__n == nullptr)
+        return;
+    
+    try
+    {
+        if (IS_READIUM_WRAPPED_XML(__n))
+        {
+            _Private* __p = reinterpret_cast<_Private*>(__n->_private);
+            if (__p->__ptr == __t)
+                return;
+            
+            delete __p;
+            __n->_private = nullptr;
+        }
+        
+        __n->_private = new _Private(__t);
+    }
+    catch (...)
+    {
+    }
+}
+#endif
 /**
  @ingroup xml-utils
  */
@@ -111,25 +277,40 @@ public:
     virtual ~InternalError() throw () {}
 };
 
-// note that MOVE is allowed, just not COPY
-/**
- @ingroup xml-utils
- */
-class WrapperBase
+#if EPUB_PLATFORM(WINRT)
+static inline ::Platform::String^ GetAttributeValueRecursiveNS(::Windows::Data::Xml::Dom::IXmlNode^ node, ::Platform::String^ uri, ::Platform::String^ name)
 {
-public:
-    WrapperBase() {}
-    WrapperBase(WrapperBase && moveRef) {}
-    virtual ~WrapperBase() {}
-    
-    WrapperBase & operator = (WrapperBase && moveRef) { return *this; }
-    
-private:
-    WrapperBase(WrapperBase & o);
-    WrapperBase & operator = (WrapperBase & o);
-};
+	::Windows::Data::Xml::Dom::IXmlElement^ element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(node);
+	if (element == nullptr)
+		element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(node->ParentNode);
 
+	while (element != nullptr)
+	{
+		auto attr = element->GetAttributeNS(uri, name);
+		if (attr != nullptr)
+			return attr;
+		element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(element->ParentNode);
+	}
 
+	return nullptr;
+}
+static inline ::Platform::String^ GetAttributeValueRecursive(::Windows::Data::Xml::Dom::IXmlNode^ node, ::Platform::String^ name)
+{
+	::Windows::Data::Xml::Dom::IXmlElement^ element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(node);
+	if (element == nullptr)
+		element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(node->ParentNode);
+
+	while (element != nullptr)
+	{
+		auto attr = element->GetAttribute(name);
+		if (attr != nullptr)
+			return attr;
+		element = dynamic_cast<::Windows::Data::Xml::Dom::IXmlElement^>(element->ParentNode);
+	}
+
+	return nullptr;
+}
+#endif
 
 EPUB3_XML_END_NAMESPACE
 

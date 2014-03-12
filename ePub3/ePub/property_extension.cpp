@@ -25,13 +25,13 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-bool PropertyExtension::ParseMetaElement(xmlNodePtr node)
+bool PropertyExtension::ParseMetaElement(shared_ptr<xml::Node> node)
 {
     if ( node == nullptr )
         return false;
-    if ( node->type != XML_ELEMENT_NODE )
+    if ( node->IsElementNode() == false )
         return false;
-    if ( xmlStrcasecmp(node->name, MetaTagName) != 0 )
+    if ( node->Name() != MetaTagName )
         return false;
     
     string property = _getProp(node, "property");
@@ -39,9 +39,9 @@ bool PropertyExtension::ParseMetaElement(xmlNodePtr node)
         return false;
     
     _identifier = Owner()->Owner()->PropertyIRIFromString(property);
-    _value = xmlNodeGetContent(node);
+	_value = node->StringValue();
     _scheme = _getProp(node, "scheme");
-    _language = xmlNodeGetLang(node);
+    _language = node->Language();
     SetXMLIdentifier(_getProp(node, "id"));
     return true;
 }

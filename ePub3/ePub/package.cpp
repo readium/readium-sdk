@@ -29,38 +29,46 @@
 #include "iri.h"
 #include "basic.h"
 #include "byte_stream.h"
+#include "filter_chain.h"
+#include "filter_manager.h"
+#include "media-overlays_smil_model.h"
 #include <ePub3/utilities/error_handler.h>
 #include <sstream>
 #include <list>
 #include REGEX_INCLUDE
-#include <libxml/xpathInternals.h>
-
-void PrintNodeSet(xmlNodeSetPtr nodeSet)
-{
-    xmlBufferPtr buf = xmlBufferCreate();
-    for ( int i = 0; i < nodeSet->nodeNr; i++ )
-    {
-        xmlNodePtr node = nodeSet->nodeTab[i];
-        fprintf(stderr, "Node %02d: ", i);
-        
-        if ( node == nullptr )
-        {
-            fprintf(stderr, "[nullptr]");
-        }
-        else
-        {
-            xmlNodeDump(buf, node->doc, node, 0, 0);
-            fprintf(stderr, "%s", reinterpret_cast<const char*>(xmlBufferContent(buf)));
-            xmlBufferEmpty(buf);
-        }
-        
-        fprintf(stderr, "\n");
-    }
-    
-    xmlBufferFree(buf);
-}
+#include <ePub3/xml/document.h>
+#include <ePub3/xml/element.h>
 
 EPUB3_BEGIN_NAMESPACE
+
+#define _XML_OVERRIDE_SWITCHES (EPUB_USE(LIBXML2) && PROMISCUOUS_LIBXML_OVERRIDES == 0)
+
+#if _XML_OVERRIDE_SWITCHES
+    extern "C" {
+        extern void __resetLibXMLOverrides(void);
+        extern void __setupLibXML(void);
+    }
+#endif
+
+void PrintNodeSet(xml::NodeSet& nodeSet)
+{
+	for (decltype(nodeSet.size()) i = 0; i < nodeSet.size(); i++)
+	{
+		auto node = nodeSet[i];
+		fprintf(stderr, "Node %02lu: ", i);
+
+		if ( !bool(node) )
+		{
+			fprintf(stderr, "[nullptr]");
+		}
+		else
+		{
+			fprintf(stderr, "%s", node->XMLString().utf8());
+		}
+
+		fprintf(stderr, "\n");
+	}
+}
 
 #if EPUB_COMPILER_SUPPORTS(CXX_USER_LITERALS)
 static const xmlChar * OPFNamespace = "http://www.idpf.org/2007/opf"_xml;
@@ -79,22 +87,23 @@ PackageBase::PackageBase(const shared_ptr<Container>& owner, const string& type)
     if ( !_archive )
         throw std::invalid_argument("Owner doesn't have an archive!");
 }
-PackageBase::PackageBase(PackageBase&& o) : _archive(o._archive), _opf(o._opf), _pathBase(std::move(o._pathBase)), _type(std::move(o._type)), _manifest(std::move(o._manifest)), _spine(std::move(o._spine))
+PackageBase::PackageBase(PackageBase&& o) : _archive(o._archive), _opf(std::move(o._opf)), _pathBase(std::move(o._pathBase)), _type(std::move(o._type)), _manifest(std::move(o._manifest)), _spine(std::move(o._spine))
 {
     o._archive = nullptr;
-    o._opf = nullptr;
 }
 PackageBase::~PackageBase()
 {
     // our Container owns the archive
-    if ( _opf != nullptr )
-        xmlFreeDoc(_opf);
 }
 bool PackageBase::Open(const string& path)
 {
     ArchiveXmlReader reader(_archive->ReaderAtPath(path.stl_str()));
+#if EPUB_USE(LIBXML2)
     _opf = reader.xmlReadDocument(path.c_str(), nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
-    if ( _opf == nullptr )
+#elif EPUB_USE(WIN_XML)
+	_opf = reader.ReadDocument(path.c_str(), nullptr, 0);
+#endif
+    if ( !bool(_opf) )
     {
         HandleError(EPUBError::OCFInvalidRootfileURL, _Str(__PRETTY_FUNCTION__, ": No OPF file at ", path.stl_str()));
         return false;
@@ -146,7 +155,7 @@ string PackageBase::CFISubpathForManifestItemWithID(const string &ident) const
     if ( sz == size_t(-1) )
         throw std::invalid_argument(_Str("Identifier '", ident, "' was not found in the spine."));
     
-    return _Str(_spineCFIIndex, "/", sz*2, "[", ident, "]!");
+    return _Str(_spineCFIIndex, "/", (sz+1)*2, "[", ident, "]!");
 }
 const shared_vector<ManifestItem> PackageBase::ManifestItemsWithProperties(PropertyIRIList properties) const
 {
@@ -158,10 +167,27 @@ const shared_vector<ManifestItem> PackageBase::ManifestItemsWithProperties(Prope
     }
     return result;
 }
+ConstManifestItemPtr PackageBase::ManifestItemAtRelativePath(const string& path) const
+{
+	string absPath = _pathBase + path;
+	for (auto& item : _manifest)
+	{
+		if (item.second->AbsolutePath() == absPath)
+			return item.second;
+	}
+	return nullptr;
+}
 shared_ptr<NavigationTable> PackageBase::NavigationTable(const string &title) const
 {
     auto found = _navigation.find(title);
     if ( found == _navigation.end() )
+        return nullptr;
+    return found->second;
+}
+shared_ptr<Collection> PackageBase::CollectionWithRole(string_view role) const
+{
+    auto found = _collections.find(role);
+    if (found == _collections.end())
         return nullptr;
     return found->second;
 }
@@ -196,8 +222,9 @@ shared_ptr<SpineItem> PackageBase::ConfirmOrCorrectSpineItemQualifier(shared_ptr
     
     return pItem;
 }
-NavigationList PackageBase::NavTablesFromManifestItem(shared_ptr<PackageBase> owner, shared_ptr<ManifestItem> pItem)
+NavigationList PackageBase::NavTablesFromManifestItem(shared_ptr<PackageBase> owner, ManifestItemPtr pItem)
 {
+    // have to do this one manually, as PackageBase doesn't inherit from PointerType itself
     PackagePtr sharedPkg = std::dynamic_pointer_cast<Package>(owner);
     if ( !sharedPkg )
         return NavigationList();
@@ -205,37 +232,99 @@ NavigationList PackageBase::NavTablesFromManifestItem(shared_ptr<PackageBase> ow
     if ( pItem == nullptr )
         return NavigationList();
     
-    xmlDocPtr doc = pItem->ReferencedDocument();
-    if ( doc == nullptr )
+    auto doc = pItem->ReferencedDocument();
+    if ( !bool(doc) )
         return NavigationList();
     
-    // find each <nav> node
+    NavigationList navList;
+	if (pItem->MediaType() != NCXContentType)
+		navList = _LoadEPUB3NavTablesFromManifestItem(sharedPkg, pItem, doc);
+    else
+        navList = _LoadNCXNavTablesFromManifestItem(sharedPkg, pItem, doc);
+    
+    if (navList.empty() && pItem->Href().rfind(".ncx") == pItem->Href().size()-4)
+        navList = _LoadNCXNavTablesFromManifestItem(sharedPkg, pItem, doc);
+    
+    return navList;
+}
+NavigationList PackageBase::_LoadEPUB3NavTablesFromManifestItem(PackagePtr sharedPkg, ManifestItemPtr pItem, shared_ptr<xml::Document> doc)
+{
+	// find each <nav> node
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-    XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}}); // goddamn I love C++11 initializer list constructors
+	XPathWrangler xpath(doc, {{"epub", ePub3NamespaceURI}, {"html", XHTMLNamespaceURI}}); // goddamn I love C++11 initializer list constructors
 #else
-    XPathWrangler::NamespaceList __m;
-    __m["epub"] = ePub3NamespaceURI;
-    XPathWrangler xpath(doc, __m);
+	XPathWrangler::NamespaceList __m;
+	__m["epub"] = ePub3NamespaceURI;
+	XPathWrangler xpath(doc, __m);
 #endif
-    xpath.NameDefaultNamespace("html");
-    
-    xmlNodeSetPtr nodes = xpath.Nodes("//html:nav");
-    
-    NavigationList tables;
-    for ( int i = 0; i < nodes->nodeNr; i++ )
-    {
-        xmlNodePtr navNode = nodes->nodeTab[i];
-        auto navTablePtr = std::make_shared<class NavigationTable>(sharedPkg, pItem->Href());
-        if ( navTablePtr->ParseXML(navNode) )
-            tables.push_back(navTablePtr);
-    }
-    
-    xmlXPathFreeNodeSet(nodes);
-    
-    // now look for any <dl> nodes with an epub:type of "glossary"
-    nodes = xpath.Nodes("//html:dl[epub:type='glossary']");
-    
-    return tables;
+	xpath.NameDefaultNamespace("html");
+
+	xml::NodeSet nodes = xpath.Nodes("//html:nav");
+
+	NavigationList tables;
+	for (auto navNode : nodes)
+	{
+		auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
+		if (navTablePtr->ParseXML(navNode))
+			tables.push_back(navTablePtr);
+	}
+
+	// now look for any <dl> nodes with an epub:type of "glossary"
+	nodes = xpath.Nodes("//html:dl[epub:type='glossary']");
+	for (auto node : nodes)
+	{
+		auto glosPtr = Glossary::New(node, sharedPkg);
+		tables.push_back(glosPtr);
+	}
+
+	return tables;
+}
+NavigationList PackageBase::_LoadNCXNavTablesFromManifestItem(PackagePtr sharedPkg, ManifestItemPtr pItem, shared_ptr<xml::Document> doc)
+{
+	// find each <nav> node
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+	XPathWrangler xpath(doc, { { "ncx", NCXNamespaceURI} }); // goddamn I love C++11 initializer list constructors
+#else
+	XPathWrangler::NamespaceList __m;
+	__m["ncx"] = NCXNamespaceURI;
+	XPathWrangler xpath(doc, __m);
+#endif
+	xpath.NameDefaultNamespace("ncx");
+
+	auto titles = xpath.Strings("/ncx:ncx/ncx:docTitle/ncx:text/text()");
+	string title;
+	if (!titles.empty())
+		title = titles[0];
+
+	auto nodes = xpath.Nodes("/ncx:ncx/ncx:navMap");
+
+	NavigationList tables;
+	if (!nodes.empty())
+	{
+		auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
+		if (navTablePtr->ParseNCXNavMap(nodes[0], title))
+			tables.push_back(navTablePtr);
+	}
+
+	// now look for any <pageList> nodes
+	nodes = xpath.Nodes("/ncx:ncx/ncx:pageList");
+	if (!nodes.empty())
+	{
+		auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
+		if (navTablePtr->ParseNCXPageList(nodes[0]))
+			tables.push_back(navTablePtr);
+	}
+
+	// now any <navList> nodes
+	nodes = xpath.Nodes("/ncx:ncx/ncx:navList");
+	for (auto node : nodes)
+	{
+		auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
+		if (navTablePtr->ParseNCXNavList(node))
+			tables.push_back(navTablePtr);
+	}
+
+	return tables;
 }
 
 #if 0
@@ -247,61 +336,100 @@ Package::Package(const shared_ptr<Container>& owner, const string& type) : Prope
 }
 bool Package::Open(const string& path)
 {
-    return PackageBase::Open(path) && Unpack();
+#if _XML_OVERRIDE_SWITCHES
+    __setupLibXML();
+#endif
+    auto status = PackageBase::Open(path) && Unpack();
+#if _XML_OVERRIDE_SWITCHES
+    __resetLibXMLOverrides();
+#endif
+    return status;
 }
-bool Package::_OpenForTest(xmlDocPtr doc, const string& basePath)
+bool Package::_OpenForTest(shared_ptr<xml::Document> doc, const string& basePath)
 {
+#if _XML_OVERRIDE_SWITCHES
+    __setupLibXML();
+#endif
     _opf = doc;
     _pathBase = basePath;
-    return Unpack();
+    auto status = Unpack();
+#if _XML_OVERRIDE_SWITCHES
+    __resetLibXMLOverrides();
+#endif
+    return status;
 }
+
+unique_ptr<ArchiveReader> Package::ReaderForRelativePath(const string& path)       const
+{
+    return _archive->ReaderAtPath((_pathBase + path).stl_str());
+}
+
 bool Package::Unpack()
 {
     PackagePtr sharedMe = shared_from_this();
     
     // very basic sanity check
-    xmlNodePtr root = xmlDocGetRootElement(_opf);
-    string rootName(reinterpret_cast<const char*>(root->name));
+    auto root = _opf->Root();
+    string rootName(root->Name());
     rootName.tolower();
+	bool isEPUB3 = true;
+	string versionStr;
+	int version = 0;
+
     
     if ( rootName != "package" )
     {
         HandleError(EPUBError::OPFInvalidPackageDocument);
         return false;       // not an OPF file, innit?
     }
-    if ( _getProp(root, "version").empty() )
+	versionStr = _getProp(root, "version");
+    if ( versionStr.empty() )
     {
         HandleError(EPUBError::OPFPackageHasNoVersion);
     }
-    
-    InstallPrefixesFromAttributeValue(_getProp(root, "prefix", ePub3NamespaceURI));
+	else
+	{
+        // GNU libstdc++ seems to not want to let us use these C++11 routines...
+#ifndef _LIBCPP_VERSION
+        version = (int)strtol(versionStr.c_str(), nullptr, 10);
+#else
+		version = std::stoi(versionStr.stl_str());
+#endif
+
+		if (version < 3)
+			isEPUB3 = false;
+	}
+
+    auto val = _getProp(root, "prefix", ePub3NamespaceURI);
+    InstallPrefixesFromAttributeValue(val);
     
     // go through children to determine the CFI index of the <spine> tag
-    static const xmlChar* kSpineName = BAD_CAST "spine";
-    static const xmlChar* kManifestName = BAD_CAST "manifest";
-    static const xmlChar* kMetadataName = BAD_CAST "metadata";
+    static xml::string kSpineName((const char*)"spine");
+    static xml::string kManifestName((const char*)"manifest");
+    static xml::string kMetadataName((const char*)"metadata");
+
     _spineCFIIndex = 0;
     uint32_t idx = 0;
-    xmlNodePtr child = xmlFirstElementChild(root);
-    while ( child != nullptr )
+    auto child = root->FirstElementChild();
+    while ( bool(child) )
     {
         idx += 2;
-        if ( xmlStrEqual(child->name, kSpineName) )
+        if ( child->Name() == kSpineName )
         {
             _spineCFIIndex = idx;
             if ( _spineCFIIndex != 6 )
                 HandleError(EPUBError::OPFSpineOutOfOrder);
         }
-        else if ( xmlStrEqual(child->name, kManifestName) && idx != 4 )
+        else if ( child->Name() == kManifestName && idx != 4 )
         {
             HandleError(EPUBError::OPFManifestOutOfOrder);
         }
-        else if ( xmlStrEqual(child->name, kMetadataName) && idx != 2 )
+        else if ( child->Name() == kMetadataName && idx != 2 )
         {
             HandleError(EPUBError::OPFMetadataOutOfOrder);
         }
         
-        child = xmlNextElementSibling(child);
+		child = child->NextElementSibling();
     }
     
     if ( _spineCFIIndex == 0 )
@@ -320,28 +448,28 @@ bool Package::Unpack()
 #endif
     
     // simple things: manifest and spine items
-    xmlNodeSetPtr manifestNodes = nullptr;
-    xmlNodeSetPtr spineNodes = nullptr;
+    xml::NodeSet manifestNodes;
+    xml::NodeSet spineNodes;
     
     try
     {
         manifestNodes = xpath.Nodes("/opf:package/opf:manifest/opf:item");
         spineNodes = xpath.Nodes("/opf:package/opf:spine/opf:itemref");
         
-        if ( manifestNodes == nullptr )
+        if ( manifestNodes.empty() )
         {
             HandleError(EPUBError::OPFNoManifestItems);
         }
         
-        if ( spineNodes == nullptr )
+        if ( spineNodes.empty() )
         {
             HandleError(EPUBError::OPFNoSpineItems);
         }
         
-        for ( int i = 0; i < manifestNodes->nodeNr; i++ )
+        for ( auto node : manifestNodes )
         {
-            auto p = std::make_shared<ManifestItem>(sharedMe);
-            if ( p->ParseXML(p, manifestNodes->nodeTab[i]) )
+            auto p = ManifestItem::New(sharedMe);
+            if ( p->ParseXML(node) )
             {
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
                 _manifest.emplace(p->Identifier(), p);
@@ -381,10 +509,10 @@ bool Package::Unpack()
         }
         
         SpineItemPtr cur;
-        for ( int i = 0; i < spineNodes->nodeNr; i++ )
+        for ( auto node : spineNodes )
         {
-            auto next = std::make_shared<SpineItem>(sharedMe);
-            if ( next->ParseXML(next, spineNodes->nodeTab[i]) == false )
+            auto next = SpineItem::New(sharedMe);
+            if ( next->ParseXML(node) == false )
             {
                 // TODO: need an error code here
                 continue;
@@ -431,35 +559,60 @@ bool Package::Unpack()
     }
     catch (const std::system_error& exc)
     {
-        if ( manifestNodes != nullptr )
-            xmlXPathFreeNodeSet(manifestNodes);
-        if ( spineNodes != nullptr )
-            xmlXPathFreeNodeSet(spineNodes);
         if ( exc.code().category() == epub_spec_category() )
+            throw;
+        
+        return false;
+    }
+    catch (...)
+    {
+        return false;
+    }
+    
+    manifestNodes.clear();
+    spineNodes.clear();
+    
+    // collections
+    xml::NodeSet collectionNodes;
+    
+    try
+    {
+        PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
+        collectionNodes = xpath.Nodes("/opf:package/opf:collection");
+        
+        for (auto& node : collectionNodes)
+        {
+            CollectionPtr collection = Collection::New(Ptr(), nullptr);
+            if (collection->ParseXML(node))
+            {
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+                _collections.emplace(collection->Role(), collection);
+#else
+                _collections[collection->Role()] = collection;
+#endif
+            }
+        }
+    }
+    catch (const std::system_error& exc)
+    {
+        if (exc.code().category() == epub_spec_category())
             throw;
         return false;
     }
     catch (...)
     {
-        if ( manifestNodes != nullptr )
-            xmlXPathFreeNodeSet(manifestNodes);
-        if ( spineNodes != nullptr )
-            xmlXPathFreeNodeSet(spineNodes);
         return false;
     }
     
-    xmlXPathFreeNodeSet(manifestNodes);
-    xmlXPathFreeNodeSet(spineNodes);
-    
     // now the metadata, which is slightly more involved due to extensions
-    xmlNodeSetPtr metadataNodes = nullptr;
-    xmlNodeSetPtr refineNodes = xmlXPathNodeSetCreate(nullptr);
+    xml::NodeSet metadataNodes;
+    xml::NodeSet refineNodes;
     
     try
     {
-        shared_ptr<PropertyHolder> holderPtr = std::dynamic_pointer_cast<PropertyHolder>(sharedMe);
+        PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
         metadataNodes = xpath.Nodes("/opf:package/opf:metadata/*");
-        if ( metadataNodes == nullptr )
+        if ( metadataNodes.empty() )
             HandleError(EPUBError::OPFNoMetadata);
         
         bool foundIdentifier = false, foundTitle = false, foundLanguage = false, foundModDate = false;
@@ -467,15 +620,17 @@ bool Package::Unpack()
         if ( uniqueIDRef.empty() )
             HandleError(EPUBError::OPFPackageUniqueIDInvalid);
         
-        for ( int i = 0; i < metadataNodes->nodeNr; i++ )
+        std::vector<string> uidRefIds = std::vector<string>();
+        
+        for ( auto node : metadataNodes )
         {
-            xmlNodePtr node = metadataNodes->nodeTab[i];
             PropertyPtr p;
             
-            if ( node->ns != nullptr && xmlStrcmp(node->ns->href, BAD_CAST DCNamespace) == 0 )
+			auto ns = node->Namespace();
+            if ( bool(ns) && ns->URI() == xml::string(DCNamespace) )
             {
                 // definitely a main node
-                p = std::make_shared<Property>(holderPtr);
+                p = Property::New(holderPtr);
             }
             else if ( _getProp(node, "name").size() > 0 )
             {
@@ -485,12 +640,12 @@ bool Package::Unpack()
             else if ( _getProp(node, "refines").empty() )
             {
                 // not refining anything, so it's a main node
-                p = std::make_shared<Property>(holderPtr);
+                p = Property::New(holderPtr);
             }
             else
             {
                 // by elimination it's refining something-- we'll process it later when we know we've got all the main nodes in there
-                xmlXPathNodeSetAdd(refineNodes, node);
+				refineNodes.push_back(node);
             }
             
             if ( p && p->ParseMetaElement(node) )
@@ -500,6 +655,7 @@ bool Package::Unpack()
                     case DCType::Identifier:
                     {
                         foundIdentifier = true;
+                        uidRefIds.push_back(p->XMLIdentifier());
                         break;
                     }
                     case DCType::Title:
@@ -528,19 +684,35 @@ bool Package::Unpack()
             }
         }
         
+        if ( foundIdentifier && !uniqueIDRef.empty() )
+        {
+            bool found = false;
+            for (int i = 0; i < uidRefIds.size(); i++)
+            {
+                const string id = uidRefIds[i];
+                if ( uniqueIDRef == id )
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                HandleError(EPUBError::OPFPackageUniqueIDInvalid);
+            }
+        }
+        
         if ( !foundIdentifier )
             HandleError(EPUBError::OPFMissingIdentifierMetadata);
         if ( !foundTitle )
             HandleError(EPUBError::OPFMissingTitleMetadata);
         if ( !foundLanguage )
             HandleError(EPUBError::OPFMissingLanguageMetadata);
-        //Modification date requirement was added in ePub 3 spec. ePub 2 doesn't require it.
-        if ( !foundModDate && atof(Version().c_str()) >= 3 )
+        if ( !foundModDate && isEPUB3 )
             HandleError(EPUBError::OPFMissingModificationDateMetadata);
         
-        for ( int i = 0; i < refineNodes->nodeNr; i++ )
+        for ( auto node : refineNodes )
         {
-            xmlNodePtr node = refineNodes->nodeTab[i];
             string ident = _getProp(node, "refines");
             if ( ident.empty() )
             {
@@ -578,17 +750,17 @@ bool Package::Unpack()
             if ( prop )
             {
                 // it's a property, so this is an extension
-                PropertyExtensionPtr extPtr = std::make_shared<PropertyExtension>(prop);
+                PropertyExtensionPtr extPtr = PropertyExtension::New(prop);
                 if ( extPtr->ParseMetaElement(node) )
                     prop->AddExtension(extPtr);
             }
             else
             {
                 // not a property, so treat this as a plain property
-                shared_ptr<PropertyHolder> ptr = std::dynamic_pointer_cast<PropertyHolder>(found->second);
+                PropertyHolderPtr ptr = std::dynamic_pointer_cast<PropertyHolder>(found->second);
                 if ( ptr )
                 {
-                    prop = std::make_shared<Property>(ptr);
+                    prop = Property::New(ptr);
                     if ( prop->ParseMetaElement(node) )
                         ptr->AddProperty(prop);
                 }
@@ -596,14 +768,14 @@ bool Package::Unpack()
         }
         
         // now look at the <spine> element for properties
-        xmlNodePtr spineNode = xmlFirstElementChild(root);
+		auto spineNode = root->FirstElementChild();
         for ( uint32_t i = 2; i < _spineCFIIndex; i += 2 )
-            spineNode = xmlNextElementSibling(spineNode);
+            spineNode = spineNode->NextElementSibling();
         
         string value = _getProp(spineNode, "page-progression-direction");
         if ( !value.empty() )
         {
-            PropertyPtr prop = std::make_shared<Property>(holderPtr);
+            PropertyPtr prop = Property::New(holderPtr);
             prop->SetPropertyIdentifier(MakePropertyIRI("page-progression-direction"));
             prop->SetValue(value);
             AddProperty(prop);
@@ -611,38 +783,27 @@ bool Package::Unpack()
     }
     catch (std::system_error& exc)
     {
-        if ( metadataNodes != nullptr )
-            xmlXPathFreeNodeSet(metadataNodes);
-        if ( refineNodes != nullptr )
-            xmlXPathFreeNodeSet(refineNodes);
         if ( exc.code().category() == epub_spec_category() )
             throw;
         return false;
     }
     catch (...)
     {
-        if ( metadataNodes != nullptr )
-            xmlXPathFreeNodeSet(metadataNodes);
-        if ( refineNodes != nullptr )
-            xmlXPathFreeNodeSet(refineNodes);
         return false;
     }
     
-    xmlXPathFreeNodeSet(metadataNodes);
-    xmlXPathFreeNodeSet(refineNodes);
-    
     // now any content type bindings
-    xmlNodeSetPtr bindingNodes = nullptr;
+    xml::NodeSet bindingNodes;
     
     try
     {
         bindingNodes = xpath.Nodes("/opf:package/opf:bindings/*");
-        if ( bindingNodes != nullptr )
+        if ( !bindingNodes.empty() )
         {
-            for ( int i = 0; i < bindingNodes->nodeNr; i++ )
+			xml::string mediaTypeElementName(MediaTypeElementName);
+            for ( auto node : bindingNodes )
             {
-                xmlNodePtr node = bindingNodes->nodeTab[i];
-                if ( xmlStrcasecmp(node->name, MediaTypeElementName) != 0 )
+                if ( node->Name() != mediaTypeElementName )
                     continue;
                 
                 ////////////////////////////////////////////////////////////
@@ -705,48 +866,109 @@ bool Package::Unpack()
                 }
                 
                 // all good-- install it now
-                _contentHandlers[mediaType].push_back(std::make_shared<MediaHandler>(sharedMe, mediaType, handlerItem->AbsolutePath()));
+                _contentHandlers[mediaType].push_back(MediaHandler::New<MediaHandler>(sharedMe, mediaType, handlerItem->AbsolutePath()));
             }
         }
     }
     catch (std::exception& exc)
     {
         std::cerr << "Exception processing OPF file: " << exc.what() << std::endl;
-        if ( bindingNodes != nullptr )
-            xmlXPathFreeNodeSet(bindingNodes);
         throw;
     }
     catch (...)
     {
-        if ( bindingNodes != nullptr )
-            xmlXPathFreeNodeSet(bindingNodes);
-        return false;
+		return false;
     }
-    
-    xmlXPathFreeNodeSet(bindingNodes);
     
     // now the navigation tables
-    for ( auto item : _manifest )
-    {
-        if ( !item.second->HasProperty(ItemProperties::Navigation) )
-            continue;
-        
-        NavigationList tables = NavTablesFromManifestItem(sharedMe, item.second);
-        for ( auto table : tables )
-        {
-            // have to dynamic_cast these guys to get the right pointer type
-            shared_ptr<class NavigationTable> navTable = std::dynamic_pointer_cast<class NavigationTable>(table);
+	if (isEPUB3)
+	{
+		// look for EPUB3 navigation document(s)
+		for ( auto item : _manifest )
+		{
+			if ( !item.second->HasProperty(ItemProperties::Navigation) )
+	            continue;
+			
+			NavigationList tables = NavTablesFromManifestItem(sharedMe, item.second);
+			for ( auto& table : tables )
+			{
+				// have to dynamic_cast these guys to get the right pointer type
+				NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
-            _navigation.emplace(navTable->Type(), navTable);
+				_navigation.emplace(navTable->Type(), navTable);
 #else
-            _navigation[navTable->Type()] = navTable;
+				_navigation[navTable->Type()] = navTable;
 #endif
-        }
-    }
+			}
+		}
+	}
+
+	if (_navigation.empty() || _navigation["toc"]->Children().empty())
+	{
+		// look for EPUB2 NCX file
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+		XPathWrangler xpath(_opf, { { "opf", OPFNamespace } });
+#else
+		XPathWrangler::NamespaceList __m;
+		__m["opf"] = OPFNamespace;
+		XPathWrangler xpath(_opf, __m);
+#endif
+		auto tocNames = xpath.Strings("/opf:package/opf:spine/@toc");
+
+		if (tocNames.empty() && _navigation.empty())
+		{
+            // no NCX, and no other nav document
+            // otherwise, we had a valid EPUB3 nav with empty (one-level) TOC
+			HandleError(EPUBError::OPFNoNavDocument);
+		}
+		else
+		{
+			try
+			{
+				ManifestItemPtr tocItem = ManifestItemWithID(tocNames[0]);
+				if (!bool(tocItem))
+					throw EPUBError::OPFNoNavDocument;
+
+				NavigationList tables = NavTablesFromManifestItem(sharedMe, tocItem);
+				for (auto& table : tables)
+				{
+					// have to dynamic_cast these guys to get the right pointer type
+					NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+					_navigation.emplace(navTable->Type(), navTable);
+#else
+					_navigation[navTable->Type()] = navTable;
+#endif
+				}
+			}
+			catch (std::exception& exc)
+			{
+				std::cerr << "Exception locating or processing NCX navigation document: " << exc.what() << std::endl;
+				throw;
+			}
+			catch (EPUBError errCode)
+			{
+				// a 'break'-style mechanism here
+				// the error handler will determine if it's safe to continue
+				HandleError(errCode);
+			}
+			catch (...)
+			{
+				HandleError(EPUBError::OPFNoNavDocument);
+			}
+		}
+	}
+
+	// go through the TOC and copy titles to the relevant spine items for easy access
+	CompileSpineItemTitles();
     
     // lastly, let's set the media support information
     InitMediaSupport();
-    
+
+    //std::weak_ptr<Package> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy() which maintains its own weak pointer
+    _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
+    _mediaOverlays->Initialize();
+
     return true;
 }
 void Package::InstallPrefixesFromAttributeValue(const string& attrValue)
@@ -834,7 +1056,7 @@ string Package::PackageID() const
 }
 string Package::Version() const
 {
-    return _getProp(xmlDocGetRootElement(_opf), "version");
+    return _getProp(_opf->Root(), "version");
 }
 void Package::FireLoadEvent(const IRI &url) const
 {
@@ -909,9 +1131,9 @@ shared_ptr<ManifestItem> Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRema
     
     try
     {
-        if ( (component.nodeIndex % 2) == 1 )
+        if ( (component.nodeIndex & 1) == 1 )
             throw CFI::InvalidCFI("CFI spine item index is odd, which makes no sense for always-empty spine nodes.");
-        SpineItemPtr item = _spine->at((component.nodeIndex/2) - 1);
+        SpineItemPtr item = _spine->at((component.nodeIndex>>1)-1);
         
         // check and correct any qualifiers
         item = ConfirmOrCorrectSpineItemQualifier(item, &component);
@@ -936,7 +1158,15 @@ shared_ptr<ManifestItem> Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRema
 }
 unique_ptr<ByteStream> Package::ReadStreamForRelativePath(const string &path) const
 {
-    return _archive->ByteStreamAtPath(path.stl_str());
+    return _archive->ByteStreamAtPath(_Str(_pathBase, path.stl_str()));
+}
+shared_ptr<AsyncByteStream> Package::ContentStreamForItem(ManifestItemPtr manifestItem) const
+{
+    return _filterChain->GetFilteredOutputStreamForManifestItem(manifestItem);
+}
+shared_ptr<ByteStream> Package::SyncContentStreamForItem(ManifestItemPtr manifestItem) const
+{
+	return _filterChain->GetSyncFilteredOutputStreamForManifestItem(manifestItem);
 }
 const string& Package::Title(bool localized) const
 {
@@ -1214,6 +1444,91 @@ const string& Package::Language() const
         return string::EmptyString;
     return items[0]->Value();
 }
+const string& Package::MediaOverlays_ActiveClass() const
+{
+    // See:
+    // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
+
+    PropertyPtr prop = PropertyMatching("active-class", "media");
+    if (prop != nullptr)
+    {
+        return prop->Value();
+    }
+    else
+    {
+        return string::EmptyString;
+    }
+}
+const string& Package::MediaOverlays_PlaybackActiveClass() const
+{
+    // introduced in the EPUB 3.0.1 revision,
+    // see:
+    // https://epub-revision.googlecode.com/svn/trunk/build/301/spec/epub30-mediaoverlays.html#sec-package-metadata
+
+    PropertyPtr prop = PropertyMatching("playback-active-class", "media");
+    if (prop != nullptr)
+    {
+        return prop->Value();
+    }
+    else
+    {
+        return string::EmptyString;
+    }
+}
+const string& Package::MediaOverlays_DurationTotal() const
+{
+    // See:
+    // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
+
+    PropertyPtr prop = PropertyMatching("duration", "media", false);
+    if (prop != nullptr)
+    {
+        return prop->Value();
+    }
+    else
+    {
+        return string::EmptyString;
+    }
+}
+const string& Package::MediaOverlays_DurationItem(const std::shared_ptr<ManifestItem> & manifestItem)
+{
+    // See:
+    // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
+
+    auto iri = MakePropertyIRI("duration", "media");
+
+    PropertyPtr prop = manifestItem->PropertyMatching(iri, false);
+    if (prop == nullptr)
+    {
+        std::shared_ptr<ManifestItem> mediaOverlay = manifestItem->MediaOverlay();
+        if (mediaOverlay != nullptr)
+        {
+            prop = mediaOverlay->PropertyMatching(iri, false);
+        }
+    }
+
+    if (prop == nullptr)
+    {
+        return string::EmptyString;
+    }
+
+    return prop->Value();
+}
+const string& Package::MediaOverlays_Narrator(bool localized) const
+{
+    // See:
+    // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-package-metadata
+
+    PropertyPtr prop = PropertyMatching("narrator", "media");
+    if (prop != nullptr)
+    {
+        return localized ? prop->LocalizedValue() : prop->Value();
+    }
+    else
+    {
+        return string::EmptyString;
+    }
+}
 const string& Package::Source(bool localized) const
 {
     auto items = PropertiesMatching(DCType::Source);
@@ -1300,7 +1615,7 @@ shared_ptr<MediaHandler> Package::OPFHandlerForMediaType(const string &mediaType
     
     for ( auto ptr : found->second )
     {
-        shared_ptr<MediaHandler> handler = std::dynamic_pointer_cast<MediaHandler>(ptr);
+        MediaHandlerPtr handler = ptr->CastPtr<MediaHandler>();
         if ( handler )
             return handler;
     }
@@ -1328,7 +1643,7 @@ const Package::StringList Package::UnsupportedMediaTypes() const
     StringList types;
     for ( auto& pair : _mediaSupport )
     {
-        if ( pair.second.Support() == MediaSupportInfo::SupportType::Unsupported )
+        if ( pair.second->Support() == MediaSupportInfo::SupportType::Unsupported )
         {
             types.push_back(pair.first);
         }
@@ -1345,13 +1660,16 @@ void Package::SetMediaSupport(MediaSupportList &&list)
 }
 void Package::InitMediaSupport()
 {
-    PackagePtr sharedMe = std::enable_shared_from_this<Package>::shared_from_this();
     for ( auto& mediaType : AllMediaTypes() )
     {
         if ( CoreMediaTypes.find(mediaType) != CoreMediaTypes.end() )
         {
             // support for core types is required
-            _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo(sharedMe, mediaType)));
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+			_mediaSupport.emplace(mediaType, MediaSupportInfo::New(Ptr(), mediaType));
+#else
+            _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo::New(Ptr(), mediaType)));
+#endif
         }
         else
         {
@@ -1359,15 +1677,70 @@ void Package::InitMediaSupport()
             if ( pHandler )
             {
                 // supported through a handler
-                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo(sharedMe, mediaType, MediaSupportInfo::SupportType::SupportedWithHandler)));
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+				_mediaSupport.emplace(mediaType, MediaSupportInfo::New(Ptr(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler));
+#else
+                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo::New(Ptr(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler)));
+#endif
             }
             else
             {
                 // unsupported
-                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo(sharedMe, mediaType, false)));
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+				_mediaSupport.emplace(mediaType, MediaSupportInfo::New(Ptr(), mediaType, false));
+#else
+                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo::New(Ptr(), mediaType, false)));
+#endif
             }
         }
     }
+}
+void Package::CompileSpineItemTitles()
+{
+	NavigationTablePtr toc = TableOfContents();
+	if (!bool(toc))
+		return;
+
+	// optimization: we assume that TOC/spine are both in-order, so we can avoid searching a linked-list every time
+
+	std::map<string, string> lookup;
+	_CompileSpineItemTitlesInternal(toc->Children(), lookup);
+
+	for (auto item = FirstSpineItem(); bool(item); item = item->Next())
+	{
+		string path = item->ManifestItem()->AbsolutePath();
+		auto pos = lookup.find(path);
+		if (pos != lookup.end())
+			item->SetTitle(pos->second);
+	}
+}
+void Package::_CompileSpineItemTitlesInternal(const NavigationList& navPoints, std::map<string, string>& compiled)
+{
+	// compile the titles to a list, accessed by absolute path
+	for (auto& element : navPoints)
+	{
+		NavigationPointPtr pt = std::dynamic_pointer_cast<NavigationPoint>(element);
+		if (bool(pt))
+		{
+			try
+			{
+				string path = pt->AbsolutePath(Ptr());
+				auto pos = compiled.find(path);
+				if (pos == compiled.end())
+					compiled[path] = pt->Title();
+			}
+			catch (std::exception& cppErr)
+			{
+				std::cerr << "Exception: " << cppErr.what() << std::endl;
+				std::cerr.flush();
+#if EPUB_OS(WINDOWS)
+				OutputDebugStringA(_Str("Exception: ", cppErr.what()).c_str());
+#endif
+			}
+		}
+
+		_CompileSpineItemTitlesInternal(element->Children(), compiled);
+	}
 }
 
 EPUB3_END_NAMESPACE

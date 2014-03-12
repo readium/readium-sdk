@@ -20,6 +20,7 @@
 //
 
 #include "io.h"
+#include "../tree/document.h"
 
 EPUB3_XML_BEGIN_NAMESPACE
 
@@ -44,13 +45,14 @@ int InputBuffer::close_cb(void *context)
     InputBuffer * p = static_cast<InputBuffer*>(context);
     return (p->close() ? 0 : -1);
 }
-xmlDocPtr InputBuffer::xmlReadDocument(const char * url, const char * encoding, int options)
+std::shared_ptr<Document> InputBuffer::xmlReadDocument(const char * url, const char * encoding, int options)
 {
-    return xmlReadIO(_buf->readcallback, _buf->closecallback, _buf->context, url, encoding, options);
+    xmlDocPtr raw = xmlReadIO(_buf->readcallback, _buf->closecallback, _buf->context, url, encoding, options);
+    return Wrapped<Document>(raw);
 }
-xmlDocPtr InputBuffer::htmlReadDocument(const char *url, const char *encoding, int options)
+std::shared_ptr<Document> InputBuffer::htmlReadDocument(const char *url, const char *encoding, int options)
 {
-    return htmlReadIO(_buf->readcallback, _buf->closecallback, _buf->context, url, encoding, options);
+    return Wrapped<Document>(htmlReadIO(_buf->readcallback, _buf->closecallback, _buf->context, url, encoding, options));
 }
 
 OutputBuffer::OutputBuffer(const std::string & encoding)
@@ -102,6 +104,13 @@ bool StreamInputBuffer::close()
 {
     return true;
 }
+size_t StreamInputBuffer::size() const
+{
+    std::istream::pos_type pos = _input.tellg();
+    size_t result = _input.seekg(0, std::ios::end).tellg();
+    _input.seekg(pos);
+    return result;
+}
 
 bool StreamOutputBuffer::write(const uint8_t *buffer, size_t len)
 {
@@ -114,6 +123,13 @@ bool StreamOutputBuffer::close()
 {
     _output.flush();
     return true;
+}
+size_t StreamOutputBuffer::size() const
+{
+    std::ostream::pos_type pos = _output.tellp();
+    size_t result = _output.seekp(0, std::ios::end).tellp();
+    _output.seekp(pos);
+    return result;
 }
 
 EPUB3_XML_END_NAMESPACE

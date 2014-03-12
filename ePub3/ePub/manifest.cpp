@@ -22,6 +22,7 @@
 #include "manifest.h"
 #include "package.h"
 #include "byte_stream.h"
+#include "container.h"
 #include REGEX_INCLUDE
 #include <sstream>
 
@@ -76,10 +77,10 @@ ItemProperties& ItemProperties::operator=(const string& attrStr)
     string lowAttrs = attrStr.tolower();
     
     // NB: this is a C++11 raw-string literal. R"" means 'raw string', and the X(...)X bit are delimiters.
-    REGEX_NS::regex re("\\w+", REGEX_NS::regex::icase);
+	REGEX_NS::regex re("\\w+(-\\w+)?", REGEX_NS::regex::icase);
     auto pos = REGEX_NS::sregex_iterator(lowAttrs.stl_str().begin(), lowAttrs.stl_str().end(), re);
     auto end = REGEX_NS::sregex_iterator();
-    
+
     for ( ; pos != end; pos++ )
     {
         // using the entire matched range
@@ -155,7 +156,7 @@ ManifestItem::ManifestItem(ManifestItem&& o) : OwnedBy(std::move(o)), PropertyHo
 ManifestItem::~ManifestItem()
 {
 }
-bool ManifestItem::ParseXML(ManifestItemPtr& sharedMe, xmlNodePtr node)
+bool ManifestItem::ParseXML(shared_ptr<xml::Node> node)
 {
     SetXMLIdentifier(_getProp(node, "id"));
     if ( XMLIdentifier().empty() )
@@ -176,7 +177,7 @@ bool ManifestItem::ParseXML(ManifestItemPtr& sharedMe, xmlNodePtr node)
 }
 string ManifestItem::AbsolutePath() const
 {
-    return _Str(this->Owner()->BasePath(), BaseHref());
+    return _Str(GetPackage()->BasePath(), BaseHref());
 }
 shared_ptr<ManifestItem> ManifestItem::MediaOverlay() const
 {
@@ -214,7 +215,16 @@ bool ManifestItem::HasProperty(const std::vector<IRI>& properties) const
     }
     return false;
 }
-xmlDocPtr ManifestItem::ReferencedDocument() const
+EncryptionInfoPtr ManifestItem::GetEncryptionInfo() const
+{
+    ContainerPtr container = GetPackage()->GetContainer();
+    return container->EncryptionInfoForPath(AbsolutePath());
+}
+bool ManifestItem::CanLoadDocument() const
+{
+	return GetPackage()->GetContainer()->FileExistsAtPath(AbsolutePath());
+}
+shared_ptr<xml::Document> ManifestItem::ReferencedDocument() const
 {
     // TODO: handle remote URLs
     string path(BaseHref());
@@ -227,21 +237,41 @@ xmlDocPtr ManifestItem::ReferencedDocument() const
     if ( !reader )
         return nullptr;
     
-    xmlDocPtr result = nullptr;
+    shared_ptr<xml::Document> result(nullptr);
+#if EPUB_USE(LIBXML2)
     int flags = XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR;
     if ( _mediaType == "text/html" )
         result = reader->htmlReadDocument(path.c_str(), "utf-8", flags);
     else
         result = reader->xmlReadDocument(path.c_str(), "utf-8", flags);
-    
+#elif EPUB_USE(WIN_XML)
+	result = reader->ReadDocument(path.c_str(), "utf-8", 0);
+#endif
     return result;
 }
 unique_ptr<ByteStream> ManifestItem::Reader() const
 {
-    auto package = this->Owner();
+    auto package = GetPackage();
     if ( !package )
         return nullptr;
-    return package->ReadStreamForRelativePath(BaseHref());
+    
+    auto container = package->GetContainer();
+    if ( !container )
+        return nullptr;
+    
+    return container->GetArchive()->ByteStreamAtPath(AbsolutePath());
+}
+unique_ptr<AsyncByteStream> ManifestItem::AsyncReader() const
+{
+    auto package = GetPackage();
+    if ( !package )
+        return nullptr;
+    
+    auto container = package->GetContainer();
+    if ( !container )
+        return nullptr;
+    
+    return container->GetArchive()->AsyncByteStreamAtPath(AbsolutePath());
 }
 
 EPUB3_END_NAMESPACE

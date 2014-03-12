@@ -143,6 +143,17 @@ zip_fopen_index(struct zip *za, int fileno, int flags)
 	    return NULL;
 	}
     }
+
+	/* JCD added begin */
+    
+    /* store the file index for cloning purposes */
+	zf->file_index = fileno;
+    
+    /* store position within this file */
+    /* NB: position is relative to bytes returned from zip_fread(), is dependent on ZIP_FL_COMPRESSED, etc. */
+    zf->file_fpos = 0;
+    
+    /* JCD added end */
     
     return zf;
 }
@@ -165,11 +176,11 @@ _zip_file_fillbuf(void *buf, size_t buflen, struct zip_file *zf)
 	return -1;
     }
     if (buflen < zf->cbytes_left)
-	i = buflen;
+	i = (ssize_t)buflen;
     else
 	i = zf->cbytes_left;
 
-    j = fread(buf, 1, i, zf->za->zp);
+    j = (ssize_t)fread(buf, 1, i, zf->za->zp);
     if (j == 0) {
 	_zip_error_set(&zf->error, ZIP_ER_EOF, 0);
 	j = -1;

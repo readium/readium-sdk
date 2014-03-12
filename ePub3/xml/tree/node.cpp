@@ -24,9 +24,59 @@
 #include <ePub3/xml/ns.h>
 #include <ePub3/xml/xpath.h>
 #include <ePub3/xml/document.h>
+#include <ePub3/xml/element.h>
+#include <ePub3/xml/dtd.h>
 #include <string>
 #include <sstream>
 #include <cstdlib>
+
+#if EPUB_PLATFORM(MAC)
+#include "xml_bridge_dtrace_probes.h"
+#endif
+
+#ifndef NDEBUG
+extern "C" void DebugPrintNode(std::shared_ptr<ePub3::xml::Node> aNode)
+{
+    auto output = xmlOutputBufferCreateFile(stderr, nullptr);
+    xmlNodeDumpOutput(output, aNode->Document()->xml(), aNode->xml(), 0, 1, "UTF-8");
+    xmlOutputBufferClose(output);
+}
+extern "C" void DebugPrintNodeConst(std::shared_ptr<const ePub3::xml::Node> aNode)
+{
+    auto output = xmlOutputBufferCreateFile(stderr, nullptr);
+    xmlNodeDumpOutput(output, aNode->Document()->xml(), aNode->xml(), 0, 1, "UTF-8");
+    xmlOutputBufferClose(output);
+}
+
+extern "C" const char* XMLDocumentString(std::shared_ptr<ePub3::xml::Document> aNode)
+{
+    xmlChar* s = nullptr;
+    int ssize = 0;
+    xmlDocDumpFormatMemory(aNode->xml(), &s, &ssize, 1);
+    return reinterpret_cast<char*>(s);
+}
+extern "C" const char* XMLDocumentStringConst(std::shared_ptr<const ePub3::xml::Document> aNode)
+{
+    xmlChar* s = nullptr;
+    int ssize = 0;
+    xmlDocDumpFormatMemory(aNode->xml(), &s, &ssize, 1);
+    return reinterpret_cast<char*>(s);
+}
+extern "C" const char* XMLNodeDocumentString(std::shared_ptr<const ePub3::xml::Node> aNode)
+{
+    xmlChar* s = nullptr;
+    int ssize = 0;
+    xmlDocDumpFormatMemory(aNode->Document()->xml(), &s, &ssize, 1);
+    return reinterpret_cast<char*>(s);
+}
+extern "C" const char* XMLNodeDocumentStringConst(std::shared_ptr<const ePub3::xml::Node> aNode)
+{
+    xmlChar* s = nullptr;
+    int ssize = 0;
+    xmlDocDumpFormatMemory(aNode->Document()->xml(), &s, &ssize, 1);
+    return reinterpret_cast<char*>(s);
+}
+#endif
 
 EPUB3_XML_BEGIN_NAMESPACE
 
@@ -68,7 +118,7 @@ std::string TypeString(NodeType type)
 
 Node::Node(_xmlNode *xml) : _xml(xml)
 {
-    _xml->_private = this;
+    //_xml->_private = this;
 }
 Node::Node(const string & name, NodeType type, const string & content, const class Namespace & ns)
 {
@@ -116,20 +166,32 @@ Node::Node(const string & name, NodeType type, const string & content, const cla
         throw InvalidNodeType(std::string("NodeType '") + TypeString(type) + "' is not supported");
     
     _xml = newNode;
-    _xml->_private = this;
+    _xml->_private = new LibXML2Private<Node>(this);
 }
 Node::Node(Node && o) : _xml(o._xml) {
-    _xml->_private = this;
+    typedef LibXML2Private<Node> _Private;
+    _Private* priv = reinterpret_cast<_Private*>(_xml->_private);
+    priv->__ptr.reset(this);
     o._xml = NULL;
 }
 Node::~Node()
 {
-    if ( _xml->_private != this )
+    typedef LibXML2Private<Node> _Private;
+    
+    if (_xml == nullptr)
+        return;
+    
+    _Private* priv = reinterpret_cast<_Private*>(_xml->_private);
+    if ( priv->__sig != _READIUM_XML_SIGNATURE || priv->__ptr.get() != this )
         return;
     
     // free the underlying node if *and only if* it is detached
     if ( _xml->parent == nullptr && _xml->prev == nullptr && _xml->next == nullptr )
+    {
+        _xml->_private = nullptr;
+        delete priv;
         xmlFreeNode(_xml);
+    }
 }
 
 #if 0
@@ -138,6 +200,9 @@ Node::~Node()
 
 string Node::Name() const
 {
+    const xmlChar* ch = _xml->name;
+    if (ch == nullptr)
+        return string::EmptyString;
     return _xml->name;
 }
 void Node::SetName(const string &name)
@@ -146,13 +211,16 @@ void Node::SetName(const string &name)
 }
 string Node::Content() const
 {
-    return ( _xml->content );
+    const xmlChar* ch = xmlNodeGetContent(_xml);
+    if (ch == nullptr)
+        return string::EmptyString;
+    return ch;
 }
 void Node::SetContent(const string &content)
 {
     xmlNodeSetContent(_xml, content.utf8());
 }
-Namespace * Node::Namespace() const
+std::shared_ptr<Namespace> Node::Namespace() const
 {
     switch ( Type() )
     {
@@ -250,11 +318,34 @@ int Node::Line() const
 #pragma mark - Values
 #endif
 
+string Node::AttributeValue(const string& name, const string& nsURI) const
+{
+    xmlChar * ch = nullptr;
+    if ( !nsURI.empty() )
+    {
+        ch = xmlGetNsProp(_xml, name.xml_str(), nsURI.xml_str());
+    }
+    
+    if ( ch == nullptr )
+    {
+        ch = xmlGetProp(_xml, name.xml_str());
+    }
+    
+    if ( ch == nullptr )
+        return string::EmptyString;
+    
+    string result(ch);
+    xmlFree(ch);
+    return result;
+}
 string Node::XMLString() const
 {
     std::ostringstream stream;
+    
     StreamOutputBuffer buf(stream);
-    xmlNodeDumpOutput(buf, _xml->doc, _xml, 0, 0, nullptr);
+    xmlNodeDumpOutput(buf.xmlBuffer(), _xml->doc, _xml, 0, 1, "UTF-8");
+    buf.flush();
+    
     return xmlString(stream.str().c_str());
 }
 string Node::StringValue() const
@@ -287,35 +378,51 @@ bool Node::BoolValue() const
 #pragma mark - Hierarchy
 #endif
 
-Document * Node::Document()
+std::shared_ptr<Document> Node::Document()
 {
     return Wrapped<class Document, _xmlDoc>(_xml->doc);
 }
-const Document * Node::Document() const
+std::shared_ptr<const Document> Node::Document() const
 {
     return const_cast<Node*>(this)->Document();
 }
-Node * Node::NextSibling()
+std::shared_ptr<Element> Node::Parent()
+{
+    return Wrapped<Element>(_xml->parent);
+}
+std::shared_ptr<const Element> Node::Parent() const
+{
+    return const_cast<Node*>(this)->Parent();
+}
+std::shared_ptr<Node> Node::NextSibling()
 {
     if ( _xml->next == nullptr )
         return nullptr;
-    return Wrapped<Node, _xmlNode>(_xml);
+    return Wrapped<Node, _xmlNode>(_xml->next);
 }
-const Node * Node::NextSibling() const
+std::shared_ptr<const Node> Node::NextSibling() const
 {
     return const_cast<Node*>(this)->NextSibling();
 }
-Node * Node::PreviousSibling()
+std::shared_ptr<Node> Node::NextElementSibling()
+{
+    return Wrapped<Node>(xmlNextElementSibling(_xml));
+}
+std::shared_ptr<const Node> Node::NextElementSibling() const
+{
+    return const_cast<Node*>(this)->NextElementSibling();
+}
+std::shared_ptr<Node> Node::PreviousSibling()
 {
     if ( _xml->prev == nullptr )
         return nullptr;
     return Wrapped<Node, _xmlNode>(_xml->prev);
 }
-const Node * Node::PreviousSibling() const
+std::shared_ptr<const Node> Node::PreviousSibling() const
 {
     return const_cast<Node*>(this)->PreviousSibling();
 }
-Node * Node::FirstChild(const string & filterByName)
+std::shared_ptr<Node> Node::FirstChild(const string & filterByName)
 {
     xmlNodePtr child = _xml->children;
     if ( child == nullptr )
@@ -333,9 +440,17 @@ Node * Node::FirstChild(const string & filterByName)
     
     return nullptr;
 }
-const Node * Node::FirstChild(const string & filterByName) const
+std::shared_ptr<const Node> Node::FirstChild(const string & filterByName) const
 {
     return const_cast<Node*>(this)->FirstChild(filterByName);
+}
+std::shared_ptr<Node> Node::FirstElementChild()
+{
+    return Wrapped<Node>(xmlFirstElementChild(_xml));
+}
+std::shared_ptr<const Node> Node::FirstElementChild() const
+{
+    return const_cast<Node*>(this)->FirstElementChild();
 }
 Node::NodeList Node::Children(const string & filterByName)
 {
@@ -351,7 +466,7 @@ const Node::NodeList Node::Children(const string & filterByName) const
 {
     return const_cast<Node*>(this)->Children(filterByName);
 }
-Element * Node::AddChild(const string &name, const string & prefix)
+std::shared_ptr<Element> Node::AddChild(const string &name, const string & prefix)
 {
     xmlNodePtr child = createChild(name, prefix);
     xmlNodePtr newNode = xmlAddChild(_xml, child);
@@ -363,14 +478,14 @@ Element * Node::AddChild(const string &name, const string & prefix)
     
     return Wrapped<Element, _xmlNode>(newNode);
 }
-void Node::AddChild(Node *child)
+void Node::AddChild(std::shared_ptr<Node> child)
 {
     xmlNodePtr newNode = xmlAddChild(_xml, child->xml());
     if ( newNode == nullptr )
         throw InternalError("Unable to add child node");
     child->rebind(newNode);
 }
-Element * Node::InsertAfter(const string &name, const string & prefix)
+std::shared_ptr<Element> Node::InsertAfter(const string &name, const string & prefix)
 {
     xmlNodePtr child = createChild(name, prefix);
     xmlNodePtr newNode = xmlAddNextSibling(xml(), child);
@@ -382,14 +497,14 @@ Element * Node::InsertAfter(const string &name, const string & prefix)
     
     return Wrapped<Element, _xmlNode>(newNode);
 }
-void Node::InsertAfter(Node *child)
+void Node::InsertAfter(std::shared_ptr<Node> child)
 {
     xmlNodePtr newNode = xmlAddNextSibling(xml(), child->xml());
     if ( newNode == nullptr )
         throw InternalError("Unable to add child node", xmlGetLastError());
     child->rebind(newNode);
 }
-Element * Node::InsertBefore(const string &name, const string & prefix)
+std::shared_ptr<Element> Node::InsertBefore(const string &name, const string & prefix)
 {
     xmlNodePtr child = createChild(name, prefix);
     xmlNodePtr newNode = xmlAddPrevSibling(xml(), child);
@@ -401,14 +516,14 @@ Element * Node::InsertBefore(const string &name, const string & prefix)
     
     return Wrapped<Element, _xmlNode>(newNode);
 }
-void Node::InsertBefore(Node *child)
+void Node::InsertBefore(std::shared_ptr<Node> child)
 {
     xmlNodePtr newNode = xmlAddPrevSibling(xml(), child->xml());
     if ( newNode == nullptr )
         throw InternalError("Unable to add child node", xmlGetLastError());
     child->rebind(newNode);
 }
-Node * Node::CopyIn(const Node *nodeToCopy, bool recursive)
+std::shared_ptr<Node> Node::CopyIn(std::shared_ptr<const Node> nodeToCopy, bool recursive)
 {
     if ( nodeToCopy == nullptr )
         return nullptr;
@@ -456,7 +571,7 @@ NodeSet Node::FindByXPath(const string &xpath, const NamespaceMap &namespaces) c
     eval.RegisterNamespaces(namespaces);
     
     XPathEvaluator::ObjectType type = XPathEvaluator::ObjectType::Undefined;
-    if ( eval.Evaluate(this, &type) && type == XPathEvaluator::ObjectType::NodeSet )
+    if ( eval.Evaluate(shared_from_this(), &type) && type == XPathEvaluator::ObjectType::NodeSet )
         return eval.NodeSetResult();
     
     return NodeSet();
@@ -466,23 +581,25 @@ NodeSet Node::FindByXPath(const string &xpath, const NamespaceMap &namespaces) c
 #pragma mark - Internal Methods
 #endif
 
-WrapperBase * Node::Wrap(_xmlNode *aNode)
+void Node::Wrap(_xmlNode *aNode)
 {
-    WrapperBase * wrapper = nullptr;
+    void* wrapper = nullptr;
     switch ( aNode->type )
     {
         case XML_DOCUMENT_NODE:
         case XML_DOCUMENT_FRAG_NODE:
         case XML_HTML_DOCUMENT_NODE:
-            //wrapper = new class Document(reinterpret_cast<xmlDocPtr>(aNode));
+        {
+            wrapper = new LibXML2Private<class Document>(new class Document(reinterpret_cast<xmlDocPtr>(aNode)));
             break;
+        }
             
         case XML_DTD_NODE:
-            //wrapper = new DTD(reinterpret_cast<xmlDtdPtr>(aNode));
+            wrapper = new LibXML2Private<DTD>(new DTD(reinterpret_cast<xmlDtdPtr>(aNode)));
             break;
             
         case XML_NAMESPACE_DECL:
-            wrapper = new class Namespace(reinterpret_cast<xmlNsPtr>(aNode));
+            wrapper = new LibXML2Private<class Namespace>(new class Namespace(reinterpret_cast<xmlNsPtr>(aNode)));
             break;
             
         case XML_ATTRIBUTE_NODE:
@@ -490,31 +607,50 @@ WrapperBase * Node::Wrap(_xmlNode *aNode)
             break;
             
         case XML_ELEMENT_NODE:
-            //wrapper = new Element(aNode);
+            wrapper = new LibXML2Private<Element>(new Element(aNode));
             break;
             
         default:
-            wrapper = new Node(aNode);
+            wrapper = new LibXML2Private<Node>(new Node(aNode));
             break;
     }
     
+    // The _private ptr in the xmlNodePtr is a POINTER TO a LibXML2Private
+    // object. This means that the allocated object is shared, and the
+    // xmlNodePtr holds a strong reference, released when the xmlNodePtr
+    // is deallocated.
     aNode->_private = wrapper;
-    return wrapper;
 }
 void Node::Unwrap(_xmlNode *aNode)
 {
-    /*
-    const char * content = (const char *)xmlNodeGetContent(aNode);
-    fprintf(stderr, "Deleting node: type %d, name %s, content %s\n", aNode->type, (aNode->name == nullptr ? "(null)" : (const char *)aNode->name), (content == nullptr ? "(null)" : content));
-    */
-    if ( aNode->_private == nullptr )
-        return;
-    if ( aNode->type == 0 )
-        return;
+    typedef LibXML2Private<class Namespace> NsPrivate;
+    typedef LibXML2Private<Node> NodePrivate;
     
-    WrapperBase * obj = reinterpret_cast<WrapperBase*>(aNode->_private);
-    aNode->_private = nullptr;
-    delete obj;
+    if (aNode->type == XML_NAMESPACE_DECL)
+    {
+        // _xmlNs is laid out differently -- _private is in a different place...
+        xmlNsPtr __ns = reinterpret_cast<xmlNsPtr>(aNode);
+        if (__ns->_private != nullptr)
+        {
+            NsPrivate* ptr = reinterpret_cast<NsPrivate*>(__ns->_private);
+            if (ptr->__sig == _READIUM_XML_SIGNATURE)
+            {
+                ptr->__ptr->release();
+                delete ptr;
+            }
+            __ns->_private = nullptr;
+        }
+    }
+    else if (aNode->_private != nullptr)
+    {
+        NodePrivate* ptr = reinterpret_cast<NodePrivate*>(aNode->_private);
+        if (ptr->__sig == _READIUM_XML_SIGNATURE)
+        {
+            ptr->__ptr->release();
+            delete ptr;
+        }
+        aNode->_private = nullptr;
+    }
 }
 xmlNodePtr Node::createChild(const string &name, const string &prefix) const
 {
@@ -541,13 +677,32 @@ void Node::rebind(_xmlNode *newNode)
     if ( _xml == newNode )
         return;
     
+    typedef LibXML2Private<Node> _Private;
+    
     if ( _xml != nullptr )
     {
         if ( _xml->parent == nullptr && _xml->next == nullptr && _xml->prev == nullptr )
-            xmlFreeNode(_xml);
+        {
+            xmlNodePtr __n = _xml;
+            this->release();
+            xmlFreeNode(__n); // releases libxml's reference to this object
+        }
     }
     
     _xml = newNode;
+    
+    typedef std::shared_ptr<Node> NodePtr;
+    if (_xml->_private != nullptr && *((unsigned int*)(_xml->_private)) == _READIUM_XML_SIGNATURE)
+    {
+        // reassign the bridge ptr on the libxml node
+        _Private* ptr = reinterpret_cast<_Private*>(newNode->_private);
+        ptr->__ptr = shared_from_this();
+    }
+    else if (_xml->_private != nullptr)
+    {
+        auto ptr = shared_from_this();
+        _xml->_private = new _Private(ptr);
+    }
 }
 
 EPUB3_XML_END_NAMESPACE

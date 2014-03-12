@@ -90,6 +90,13 @@ public:
     virtual void        ErasePropertyAt(size_type idx);
     
     EPUB3_EXPORT
+    virtual bool        ContainsProperty(DCType type, bool lookupParents) const;
+    EPUB3_EXPORT
+    virtual bool        ContainsProperty(const IRI& iri, bool lookupParents) const;
+    EPUB3_EXPORT
+    virtual bool        ContainsProperty(const string& reference, const string& prefix, bool lookupParents) const;
+    
+    EPUB3_EXPORT
     virtual bool        ContainsProperty(DCType type) const;
     EPUB3_EXPORT
     virtual bool        ContainsProperty(const IRI& iri) const;
@@ -97,11 +104,25 @@ public:
     virtual bool        ContainsProperty(const string& reference, const string& prefix="") const;
     
     EPUB3_EXPORT
+    const PropertyList  PropertiesMatching(DCType type, bool lookupParents) const;
+    EPUB3_EXPORT
+    const PropertyList  PropertiesMatching(const IRI& iri, bool lookupParents) const;
+    EPUB3_EXPORT
+    const PropertyList  PropertiesMatching(const string& reference, const string& prefix, bool lookupParents) const;
+    
+    EPUB3_EXPORT
     const PropertyList  PropertiesMatching(DCType type) const;
     EPUB3_EXPORT
     const PropertyList  PropertiesMatching(const IRI& iri) const;
     EPUB3_EXPORT
     const PropertyList  PropertiesMatching(const string& reference, const string& prefix="") const;
+    
+    EPUB3_EXPORT
+    PropertyPtr         PropertyMatching(DCType type, bool lookupParents) const;
+    EPUB3_EXPORT
+    PropertyPtr         PropertyMatching(const IRI& iri, bool lookupParents) const;
+    EPUB3_EXPORT
+    PropertyPtr         PropertyMatching(const string& reference, const string& prefix, bool lookupParents) const;
     
     EPUB3_EXPORT
     PropertyPtr         PropertyMatching(DCType type) const;

@@ -21,6 +21,7 @@
 
 #include "object_preprocessor.h"
 #include "package.h"
+#include "filter_manager.h"
 
 static const REGEX_NS::regex::flag_type regexFlags(REGEX_NS::regex::ECMAScript|REGEX_NS::regex::optimize);
 static const REGEX_NS::regex reEscaper("\\\\\\.\\(\\)\\[\\]\\$\\^\\*\\+\\?\\:\\=\\|", regexFlags);
@@ -31,17 +32,27 @@ static REGEX_NS::regex ParamMatcher("<param[^>]+(name|value)=\"([^\"]*)\"[^>]*?(
 static REGEX_NS::regex SourceFinder("data=\\\"([^\\\"]*)\\\"", regexFlags);
 static REGEX_NS::regex IDFinder("id=\\\"([^\\\"]*)\\\"", regexFlags);
 
-bool ObjectPreprocessor::ShouldApply(const ePub3::ManifestItem *item, const ePub3::EncryptionInfo *encInfo)
+bool ObjectPreprocessor::ShouldApply(ConstManifestItemPtr item)
 {
     return (item->MediaType() == "application/xhtml+xml" || item->MediaType() == "text/html");
 }
-ObjectPreprocessor::ObjectPreprocessor(const Package* pkg, const string& buttonTitle) : ContentFilter(ShouldApply), _button(buttonTitle)
+ContentFilterPtr ObjectPreprocessor::ObjectFilterFactory(ConstPackagePtr package)
+{
+    if ( package->MediaTypesWithDHTMLHandlers().empty() )
+        return nullptr;
+    return New(package, "Open");
+}
+void ObjectPreprocessor::Register()
+{
+    FilterManager::Instance()->RegisterFilter("ObjectPreprocessor", ObjectPreprocessing, ObjectFilterFactory);
+}
+ObjectPreprocessor::ObjectPreprocessor(ConstPackagePtr pkg, const string& buttonTitle) : ContentFilter(ShouldApply), _button(buttonTitle)
 {
     Package::StringList mediaTypes = pkg->MediaTypesWithDHTMLHandlers();
     if ( mediaTypes.empty() )
     {
         // No work for the filter to do here -- disable all matches
-        SetTypeSniffer([](const ManifestItem*, const EncryptionInfo*){return false;});
+        SetTypeSniffer([](ConstManifestItemPtr){return false;});
         return;
     }
     
@@ -54,7 +65,8 @@ ObjectPreprocessor::ObjectPreprocessor(const Package* pkg, const string& buttonT
     while ( pos != end )
     {
         auto here = pos++;
-        std::string str = REGEX_NS::regex_replace(here->stl_str(), reEscaper, "$`\\\\$&$'");    // yes, double-backslash, so it doesn't escape whatever '$&' is (i.e. the character which needs to be escaped)
+        std::string regstr("$`\\\\$&$'");
+        std::string str = REGEX_NS::regex_replace(here->stl_str(), reEscaper, regstr);    // yes, double-backslash, so it doesn't escape whatever '$&' is (i.e. the character which needs to be escaped)
         if ( pos == end )
             ss << str;
         else
@@ -74,7 +86,7 @@ ObjectPreprocessor::ObjectPreprocessor(const Package* pkg, const string& buttonT
 #endif
     }
 }
-void* ObjectPreprocessor::FilterData(void *data, size_t len, size_t *outputLen)
+void* ObjectPreprocessor::FilterData(FilterContext* context, void *data, size_t len, size_t *outputLen)
 {
     char* input = reinterpret_cast<char*>(data);
     // find each `object` tag
