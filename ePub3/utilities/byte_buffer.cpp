@@ -32,18 +32,17 @@ const prealloc_buf_t prealloc_buf = {};
 ByteBuffer::ByteBuffer(size_t bufferSize) : m_buffer(nullptr), m_bufferSize(0), m_bufferCapacity(0)
 {
     size_t cap = GoodSize(bufferSize);
-	m_buffer = reinterpret_cast<unsigned char*>(calloc(cap, sizeof(unsigned char*)));
+	m_buffer = reinterpret_cast<unsigned char*>(calloc(cap, sizeof(unsigned char)));
     if ( m_buffer == nullptr )
         throw std::system_error(std::make_error_code(std::errc::not_enough_memory), "ByteBuffer");
     
-    bzero(m_buffer, bufferSize);
     m_bufferSize = bufferSize;
     m_bufferCapacity = cap;
 }
 ByteBuffer::ByteBuffer(size_t bufferSize, prealloc_buf_t) : m_buffer(nullptr), m_bufferSize(0), m_bufferCapacity(0)
 {
     size_t cap = GoodSize(bufferSize);
-	m_buffer = reinterpret_cast<unsigned char*>(calloc(cap, sizeof(unsigned char*)));
+	m_buffer = reinterpret_cast<unsigned char*>(calloc(cap, sizeof(unsigned char)));
     if ( m_buffer == nullptr )
         throw std::system_error(std::make_error_code(std::errc::not_enough_memory), "ByteBuffer");
     
@@ -52,7 +51,7 @@ ByteBuffer::ByteBuffer(size_t bufferSize, prealloc_buf_t) : m_buffer(nullptr), m
 ByteBuffer::ByteBuffer(const unsigned char* buffer, size_t bufferSize)
 {
     size_t cap = GoodSize(bufferSize);
-	m_buffer = reinterpret_cast<unsigned char*>(calloc(cap, sizeof(unsigned char*)));
+	m_buffer = reinterpret_cast<unsigned char*>(calloc(cap, sizeof(unsigned char)));
     if ( m_buffer == nullptr )
         throw std::system_error(std::make_error_code(std::errc::not_enough_memory), "ByteBuffer");
     
