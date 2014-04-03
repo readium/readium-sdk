@@ -195,6 +195,10 @@ protected:
     /// Parses the file META-INF/encryption.xml into an EncryptionList.
     void							LoadEncryption();
 
+    ///
+    /// Parses the file META-INF/com.apple.ibooks.display-options.xml.
+    void							AmendDisplayOptions();
+    
 	//////////////////////////////////////////////////////////////////////////////
 	// BLATANT HACK!
 	//

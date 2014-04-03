@@ -34,6 +34,7 @@ EPUB3_BEGIN_NAMESPACE
 
 static const char * gContainerFilePath = "META-INF/container.xml";
 static const char * gEncryptionFilePath = "META-INF/encryption.xml";
+static const char * gDisplayOptionsFilePath = "META-INF/com.apple.ibooks.display-options.xml";
 static const char * gRootfilesXPath = "/ocf:container/ocf:rootfiles/ocf:rootfile";
 static const char * gRootfilePathsXPath = "/ocf:container/ocf:rootfiles/ocf:rootfile/@full-path";
 static const char * gVersionXPath = "/ocf:container/@version";
@@ -104,6 +105,8 @@ bool Container::Open(const string& path)
 		if (pkg->Open(path))
 			_packages.push_back(pkg);
 	}
+
+    AmendDisplayOptions();
 
     auto fm = FilterManager::Instance();
 	for (auto& pkg : _packages)
@@ -260,6 +263,55 @@ shared_ptr<EncryptionInfo> Container::EncryptionInfoForPath(const string &path) 
     }
     
     return nullptr;
+}
+void Container::AmendDisplayOptions()
+{
+    auto pkg = DefaultPackage();
+    
+    if (!pkg)
+        return;
+    
+    // IRI iri("http", "www.idpf.org", "/vocab/rendition/", "", "layout-pre-paginated");
+    auto iri = pkg->MakePropertyIRI("layout", "rendition");
+    
+    if (iri.IsEmpty())
+    {
+        pkg->RegisterPrefixIRIStem("rendition", "http://www.idpf.org/vocab/rendition/#");
+        iri = pkg->MakePropertyIRI("layout", "rendition");
+    }
+    
+    if (pkg->ContainsProperty(iri))
+        return;
+    
+    unique_ptr<ArchiveReader> pZipReader = _archive->ReaderAtPath(gDisplayOptionsFilePath);
+    if ( !pZipReader )
+        return;
+    
+    ArchiveXmlReader reader(std::move(pZipReader));
+#if EPUB_USE(LIBXML2)
+    shared_ptr<xml::Document> opt = reader.xmlReadDocument(gDisplayOptionsFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
+#elif EPUB_USE(WIN_XML)
+	auto opt = reader.ReadDocument(gDisplayOptionsFilePath, nullptr, 0);
+#endif
+    if ( !bool(opt) )
+        return;
+    
+    XPathWrangler xpath(opt);
+    
+    xml::NodeSet nodes = xpath.Nodes("/display_options//option[@name='fixed-layout']");
+    for ( auto node : nodes )
+    {
+        // string a = node->AttributeValue("name", string());
+        if (node->BoolValue())
+        {
+            PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
+            
+            PropertyPtr prop = Property::New(holderPtr);
+            prop->SetPropertyIdentifier(iri);
+            prop->SetValue("pre-paginated");
+            pkg->AddProperty(prop);
+        }
+    }
 }
 bool Container::FileExistsAtPath(const string& path) const
 {
