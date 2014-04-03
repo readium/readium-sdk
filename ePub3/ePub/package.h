@@ -29,7 +29,7 @@
 #include <list>
 #include <ePub3/xml/node.h>
 #include <ePub3/utilities/owned_by.h>
-#include <epub3/encryption.h>
+#include <ePub3/encryption.h>
 #include <ePub3/spine.h>
 #include <ePub3/manifest.h>
 #include <ePub3/cfi.h>

@@ -9,7 +9,7 @@
 #ifndef ePub3_content_module_manager_h
 #define ePub3_content_module_manager_h
 
-#include <ePub3/ePub3.h>
+#include <ePub3/epub3.h>
 #include <ePub3/content_module.h>
 #include <ePub3/credential_request.h>
 #include <map>
