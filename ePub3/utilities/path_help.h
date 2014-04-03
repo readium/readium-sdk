@@ -19,7 +19,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <ePub3/ePub3.h>
+#include <ePub3/epub3.h>
 #include <ePub3/utilities/utfstring.h>
 
 EPUB3_BEGIN_NAMESPACE

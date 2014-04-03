@@ -9,7 +9,7 @@
 #ifndef ePub3_user_action_h
 #define ePub3_user_action_h
 
-#include <ePub3/ePub3.h>
+#include <ePub3/epub3.h>
 #include <ePub3/cfi.h>
 #include <ePub3/utilities/iri.h>
 
