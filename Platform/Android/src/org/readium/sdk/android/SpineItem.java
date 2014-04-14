@@ -6,14 +6,16 @@ import org.json.JSONObject;
 public class SpineItem {
 	
 	private String idRef;
+	private String title;
 	private String href;
 	private String pageSpread;
 	private String renditionLayout;
 	private String media_overlay_id;
 	
-	public SpineItem(String idRef, String href, String pageSpread, String renditionLayout, String media_overlay_id) {
+	public SpineItem(String idRef, String title, String href, String pageSpread, String renditionLayout, String media_overlay_id) {
 		
 		this.idRef = idRef;
+		this.title = title;
 		this.href = href;
 		this.pageSpread = pageSpread;
 		this.renditionLayout = renditionLayout;
@@ -22,6 +24,10 @@ public class SpineItem {
 	
 	public String getIdRef() {
 		return idRef;
+	}
+	
+	public String getTitle() {
+		return title;
 	}
 	
 	public String getHref() {
