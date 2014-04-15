@@ -9,7 +9,7 @@
 #ifndef ePub3_initialization_h
 #define ePub3_initialization_h
 
-#include <ePub3/ePub3.h>
+#include <ePub3/epub3.h>
 
 EPUB3_BEGIN_NAMESPACE
 

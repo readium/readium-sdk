@@ -16,7 +16,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <ePub3/ePub3.h>
+#include <ePub3/epub3.h>
 #include <system_error>
 #include "future.h"
 

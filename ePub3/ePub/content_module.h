@@ -9,7 +9,7 @@
 #ifndef ePub3_content_module_h
 #define ePub3_content_module_h
 
-#include <ePub3/ePub3.h>
+#include <ePub3/epub3.h>
 #include <ePub3/user_action.h>
 #include <ePub3/utilities/future.h>
 #include <memory>

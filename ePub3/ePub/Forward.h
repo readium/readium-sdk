@@ -9,7 +9,7 @@
 #ifndef ePub3_Forward_h
 #define ePub3_Forward_h
 
-#include <epub3/base.h>
+#include <ePub3/base.h>
 #include <ePub3/utilities/pointer_type.h>
 #include <ePub3/utilities/owned_by.h>
 #include <memory>
