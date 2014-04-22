@@ -66,6 +66,12 @@
             -post-build
             -pre-clean
     -->
+    <target name="-pre-compile" >
+        <exec executable="sh">
+            <arg value="ndk-compile.sh" />
+            <arg value="build" />
+        </exec>
+    </target>
     <import file="custom_rules.xml" optional="true" />
 
     <!-- Import the actual build file.
