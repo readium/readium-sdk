@@ -601,6 +601,8 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetSpineIte
         auto manifestItem = spine->ManifestItem();
     	jni::StringUTF hr(env, (std::string&) manifestItem->BaseHref().stl_str());
     	jstring href = (jstring) hr;
+    	jni::StringUTF mt(env, (std::string&) manifestItem->MediaType().stl_str());
+    	jstring mediaType = (jstring) mt;
     	const char* _page_spread;
     	ePub3::PageSpread spread = spine->Spread();
     	switch (spread) {
@@ -625,13 +627,14 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetSpineIte
     	jstring media_overlay_id = env->NewStringUTF(_media_overlay_id.c_str());
 
     	jobject spineItem = env->CallStaticObjectMethod(javaJavaObjectsFactoryClass, createSpineItem_ID,
-    			idRef, title, href, pageSpread, renditionLayout, media_overlay_id);
+    			idRef, title, href, mediaType, pageSpread, renditionLayout, media_overlay_id);
 
 		env->CallStaticVoidMethod(javaJavaObjectsFactoryClass, addSpineItemToList_ID,
 				spineItemList, spineItem);
 		env->DeleteLocalRef(idRef);
 		env->DeleteLocalRef(title);
 		env->DeleteLocalRef(href);
+		env->DeleteLocalRef(mediaType);
 		env->DeleteLocalRef(pageSpread);
 		env->DeleteLocalRef(renditionLayout);
 		env->DeleteLocalRef(media_overlay_id);
