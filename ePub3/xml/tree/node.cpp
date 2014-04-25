@@ -211,10 +211,12 @@ void Node::SetName(const string &name)
 }
 string Node::Content() const
 {
-    const xmlChar* ch = xmlNodeGetContent(_xml);
+    xmlChar* ch = xmlNodeGetContent(_xml);
     if (ch == nullptr)
         return string::EmptyString;
-    return ch;
+    string result(ch);
+    xmlFree(ch);
+    return result;
 }
 void Node::SetContent(const string &content)
 {
@@ -249,10 +251,12 @@ void Node::SetNamespace(const class Namespace *ns)
 }
 string Node::Language() const
 {
-    const xmlChar * ch = xmlNodeGetLang(_xml);
+    xmlChar * ch = xmlNodeGetLang(_xml);
     if ( ch == nullptr )
-        return string();
-    return ch;
+        return string::EmptyString;
+    string result(ch);
+    xmlFree(ch);
+    return result;
 }
 void Node::SetLanguage(const string &language)
 {
@@ -268,10 +272,12 @@ void Node::SetPreserveSpace(bool preserve)
 }
 string Node::BaseURL() const
 {
-    const xmlChar * ch = xmlNodeGetBase(_xml->doc, _xml);
+    xmlChar * ch = xmlNodeGetBase(_xml->doc, _xml);
     if ( ch == nullptr )
-        return string();
-    return ch;
+        return string::EmptyString;
+    string result(ch);
+    xmlFree(ch);
+    return result;
 }
 void Node::SetBaseURL(const string &baseURL)
 {
@@ -350,10 +356,12 @@ string Node::XMLString() const
 }
 string Node::StringValue() const
 {
-    const xmlChar * content = xmlNodeGetContent(_xml);
+    xmlChar * content = xmlNodeGetContent(_xml);
     if ( content == nullptr )
-        return string();
-    return content;
+        return string::EmptyString;
+    string result(content);
+    xmlFree(content);
+    return result;
 }
 int Node::IntValue() const
 {
