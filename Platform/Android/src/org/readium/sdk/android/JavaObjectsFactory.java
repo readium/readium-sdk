@@ -39,9 +39,9 @@ public abstract class JavaObjectsFactory {
 	 * @return a spine item
 	 */
 	@SuppressWarnings("unused")
-	private static SpineItem createSpineItem(String idRef, String href,
+	private static SpineItem createSpineItem(String idRef, String title, String href,
 			String pageSpread, String renditionLayout, String media_overlay_id) {
-		return new SpineItem(idRef, href, pageSpread, renditionLayout, media_overlay_id);
+		return new SpineItem(idRef, title, href, pageSpread, renditionLayout, media_overlay_id);
 	}
 
 	/**
