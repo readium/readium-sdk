@@ -39,7 +39,7 @@ static RDPackage *m_package = nil;
 	// Synchronize using a process-level lock to guard against multiple threads accessing a
 	// resource byte stream, which may lead to instability.
 
-	@synchronized ([PackageResourceServer resourceLock]) {
+	@synchronized ([RDPackageResourceServer resourceLock]) {
 		RDPackageResource *resource = [m_package resourceAtRelativePath:path];
 
 		if (resource == nil) {
@@ -64,7 +64,7 @@ static RDPackage *m_package = nil;
 			}
 		}
 		else {
-			PackageResourceResponse *resourceResponse = [[PackageResourceResponse alloc]
+			RDPackageResourceResponse *resourceResponse = [[RDPackageResourceResponse alloc]
 				initWithResource:resource];
 			response = resourceResponse;
 		}
