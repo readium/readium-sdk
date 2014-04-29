@@ -270,6 +270,12 @@
 
 	if (resource != nil) {
 		m_byteStreamVector.push_back(std::move(byteStream));
+		ePub3::ConstManifestItemPtr item = m_package->ManifestItemAtRelativePath(s);
+
+		if (item) {
+			const ePub3::ManifestItem::MimeType &mediaType = item->MediaType();
+			resource.mimeType = [NSString stringWithUTF8String:mediaType.c_str()];
+		}
 	}
 
 	return resource;

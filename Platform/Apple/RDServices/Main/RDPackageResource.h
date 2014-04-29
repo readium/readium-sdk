@@ -28,6 +28,7 @@
 @property (nonatomic, readonly) void *byteStream;
 @property (nonatomic, readonly) NSUInteger contentLength;
 @property (nonatomic, readonly) NSData *data;
+@property (nonatomic, copy) NSString *mimeType;
 @property (nonatomic, readonly) RDPackage *package;
 
 // The relative path associated with this resource.

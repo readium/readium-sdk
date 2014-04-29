@@ -7,9 +7,9 @@
 //
 
 #import "RDPackageResourceConnection.h"
-#import "HTTPDataResponse.h"
 #import "RDPackage.h"
 #import "RDPackageResource.h"
+#import "RDPackageResourceDataResponse.h"
 #import "RDPackageResourceResponse.h"
 #import "RDPackageResourceServer.h"
 
@@ -34,10 +34,12 @@ static RDPackage *m_package = nil;
 		path = [path substringFromIndex:1];
 	}
 
+	NSObject <HTTPResponse> *response = nil;
+
 	// Synchronize using a process-level lock to guard against multiple threads accessing a
 	// resource byte stream, which may lead to instability.
 
-	@synchronized ([RDPackageResourceServer resourceLock]) {
+	@synchronized ([PackageResourceServer resourceLock]) {
 		RDPackageResource *resource = [m_package resourceAtRelativePath:path];
 
 		if (resource == nil) {
@@ -51,15 +53,24 @@ static RDPackage *m_package = nil;
 			NSData *data = resource.data;
 
 			if (data != nil) {
-				return [[HTTPDataResponse alloc] initWithData:data];
+				RDPackageResourceDataResponse *dataResponse = [[RDPackageResourceDataResponse alloc]
+					initWithData:data];
+
+				if (resource.mimeType) {
+					dataResponse.contentType = resource.mimeType;
+				}
+
+				response = dataResponse;
 			}
 		}
 		else {
-			return [[RDPackageResourceResponse alloc] initWithResource:resource];
+			PackageResourceResponse *resourceResponse = [[PackageResourceResponse alloc]
+				initWithResource:resource];
+			response = resourceResponse;
 		}
 	}
 
-	return nil;
+	return response;
 }
 
 

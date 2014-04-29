@@ -19,6 +19,18 @@
 }
 
 
+- (NSDictionary *)httpHeaders {
+	NSString *contentType = self->m_resource.mimeType;
+
+	if (contentType) {
+		return @{@"Content-Type": contentType};
+	}
+	else {
+		return @{};
+	}
+}
+
+
 - (id)initWithResource:(RDPackageResource *)resource {
 	if (resource == nil) {
 		return nil;
