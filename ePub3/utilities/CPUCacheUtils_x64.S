@@ -8,6 +8,7 @@
 
 #if defined(__x86_64__)
 
+
     .text
     .align 4, 0x00
 
