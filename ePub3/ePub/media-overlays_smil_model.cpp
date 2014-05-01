@@ -3,21 +3,20 @@
 //  ePub3
 //
 //  Created by Daniel Weck on 2013-09-15.
-//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
+//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  
-//  The Readium SDK is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, either version 3 of the License, or
-//  (at your option) any later version.
+//  This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+//  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 //  
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  Licensed under Gnu Affero General Public License Version 3 (provided, notwithstanding this notice, 
+//  Readium Foundation reserves the right to license this material under a different separate license, 
+//  and if you have done so, the terms of that separate license control and the following references 
+//  to GPL do not apply).
 //  
-//  You should have received a copy of the GNU General Public License
-//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+//  This program is free software: you can redistribute it and/or modify it under the terms of the GNU 
+//  Affero General Public License as published by the Free Software Foundation, either version 3 of 
+//  the License, or (at your option) any later version. You should have received a copy of the GNU 
+//  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "media-overlays_smil_model.h"
 #include "package.h"
@@ -26,10 +25,38 @@
 #include "error_handler.h"
 #include "xpath_wrangler.h"
 
+
+//#include <iostream>
+#include <chrono>
+
+
 //#include "make_unique.h"
 //std::unique_ptr<KLASS> obj = make_unique<KLASS>(constructor_params);
 
 EPUB3_BEGIN_NAMESPACE
+
+class Timer
+{
+
+private:
+    typedef std::chrono::high_resolution_clock CLOCK;
+    typedef std::chrono::duration<double, std::ratio<1>> SECOND;
+    std::chrono::time_point<CLOCK> BEGIN;
+
+public:
+    Timer() : BEGIN(CLOCK::now())
+    {}
+
+    void reset()
+    {
+        BEGIN = CLOCK::now();
+    }
+
+    double elapsed() const
+    {
+        return std::chrono::duration_cast<SECOND>(CLOCK::now() - BEGIN).count();
+    }
+};
 
 //     static inline FORCE_INLINE
 //     void HandleError_(EPUBError __code, const std::string & __msg)
@@ -340,7 +367,13 @@ EPUB3_BEGIN_NAMESPACE
                 return 0;
             }
 
+//Timer timer;
+            //uint counter = 0;
+
+            std::map<std::shared_ptr<ManifestItem>, string> cache_manifestItemToAbsolutePath;
+
             uint32_t accumulatedDurationMilliseconds = 0;
+
 
             shared_ptr<SpineItem> spineItem = package->FirstSpineItem();
             while (spineItem != nullptr)
@@ -359,6 +392,12 @@ EPUB3_BEGIN_NAMESPACE
                     spineItem = spineItem->Next();
                     continue;
                 }
+
+//                counter++;
+//                if (counter > 10)
+//                {
+//                    break;
+//                }
 
                 //printf("Media Overlays SMIL PARSING: %s\n", item->Href().c_str());
 
@@ -469,8 +508,21 @@ EPUB3_BEGIN_NAMESPACE
 
                 shared_ptr<xml::Node> body = nodes[0];
 
-                uint32_t smilDur = parseSMIL(smilData, nullptr, nullptr, item, body);
+                std::map<string, std::shared_ptr<ManifestItem>> cache_smilRelativePathToManifestItem;
+
+//// TIMER START
+//timer.reset();
+
+                uint32_t smilDur = parseSMIL(smilData, nullptr, nullptr, item, body, cache_manifestItemToAbsolutePath, cache_smilRelativePathToManifestItem);
                 //printf("Media Overlays SMIL DURATION (milliseconds): %ld\n", (long) smilDur);
+
+//// TIMER END
+//double seconds = timer.elapsed();
+//std::stringstream s;
+//s << "TIMER (" << counter << "): " << seconds;
+//const std::string & str = _Str(s.str());
+//printf("%s\n", str.c_str());
+////std::cout << t << std::endl;
 
                 uint32_t metaDur = smilData->DurationMilliseconds_Metadata();
                 if (metaDur != smilDur)
@@ -493,50 +545,95 @@ EPUB3_BEGIN_NAMESPACE
             return accumulatedDurationMilliseconds;
         }
 
-        std::vector<string> splitIriFileFragmentID(const string & iri)
+        static std::vector<string> splitFileFragmentId; // = std::vector<string>(2);
+
+        void splitIriFileFragmentID(const string & iri, std::vector<string> &splitFileFragmentId)
         {
             //printf("=========== IRI: %s\n", iri.c_str());
 
-            //auto split = std::vector<string>(2);
-            std::vector<string> split;
+            splitFileFragmentId.clear();
 
-            // FILE
-            string::size_type i = iri.find_first_of('#');
-            if (i != string::npos && i > 0)
+            const char * str = iri.c_str();
+            size_t size = strlen(str);
+            for (int j = 0; j < size; j++)
             {
-                split.push_back(iri.substr(0, i));
-            }
-            else
-            {
-                split.push_back(string(iri));
-            }
+                char c = str[j];
+                if (c == '#')
+                {
+                    splitFileFragmentId.push_back(string(str, j));
 
-            // FRAGMENT ID
-            if (i != string::npos && i < (iri.length() - 1))
-            {
-                string::size_type n = iri.length() - i - 1;
-                split.push_back(iri.substr(i + 1, n));
-            }
-            else
-            {
-                split.push_back("");
-            }
+                    j++;
+                    if (size > j)
+                    {
+                        splitFileFragmentId.push_back(string(str + j));
+                    }
+                    else
+                    {
+                        splitFileFragmentId.push_back("");
+                    }
 
-            //printf("=========== IRI FILE: %s\n", split.at(0).c_str());
-            //printf("=========== IRI FRAGID: %s\n", split.at(1).c_str());
-
-            // RVO Return Value Optimisation should take care of moving the object reference from the local stack that of the callee's context?
-            return split;
+                    return;
+                }
+            }
+            splitFileFragmentId.push_back(iri);
+            splitFileFragmentId.push_back("");
+//
+//            // FILE
+//            string::size_type i = iri.find_first_of('#');
+//            if (i != string::npos && i > 0)
+//            {
+//                splitFileFragmentId.push_back(iri.substr(0, i));
+//            }
+//            else
+//            {
+//                splitFileFragmentId.push_back(iri); //string(iri)
+//            }
+//
+//            // FRAGMENT ID
+//            if (i != string::npos && i < (iri.length() - 1))
+//            {
+//                string::size_type n = iri.length() - i - 1;
+//                splitFileFragmentId.push_back(iri.substr(i + 1, n));
+//            }
+//            else
+//            {
+//                splitFileFragmentId.push_back("");
+//            }
+//
+//            //printf("=========== IRI FILE: %s\n", split.at(0).c_str());
+//            //printf("=========== IRI FRAGID: %s\n", split.at(1).c_str());
+//
+//            // RVO Return Value Optimisation should take care of moving the object reference from the local stack that of the callee's context?
+//            //return split;
         }
 
-        std::shared_ptr<ManifestItem> getReferencedManifestItem(const std::shared_ptr<Package> & package, string filepathInSmil, const std::shared_ptr<ManifestItem> & smilItem)
+        std::shared_ptr<ManifestItem> getReferencedManifestItem(const std::shared_ptr<Package> & package, string filepathInSmil, const std::shared_ptr<ManifestItem> & smilItem, std::map<std::shared_ptr<ManifestItem>, string> & cache_manifestItemToAbsolutePath)
         {
             if (filepathInSmil.empty())
             {
                 return nullptr;
             }
 
-            const string smilOPFPath = smilItem->AbsolutePath();
+            std::map<std::shared_ptr<ManifestItem>, string>::iterator iterator = cache_manifestItemToAbsolutePath.find(smilItem);
+            string smilOPFPath;
+            if (iterator != cache_manifestItemToAbsolutePath.end()
+                //cache_manifestItemToAbsolutePath.count(smilItem)
+            )
+            {
+                //smilOPFPath = cache_manifestItemToAbsolutePath[smilItem];
+                smilOPFPath = iterator->second;
+
+                //printf("=========== smilOPFPath FROM CACHE: %s\n", smilOPFPath.c_str());
+            }
+            else
+            {
+                smilOPFPath = smilItem->AbsolutePath();
+                cache_manifestItemToAbsolutePath[smilItem] = smilOPFPath;
+
+                //printf("=========== smilOPFPath CACHING: %s\n", smilOPFPath.c_str());
+            }
+
+
             //printf("=========== smilOPFPath: %s\n", smilOPFPath.c_str());
 
             string::size_type i = smilOPFPath.find_last_of('/');
@@ -588,7 +685,25 @@ EPUB3_BEGIN_NAMESPACE
             {
                 std::shared_ptr<ManifestItem> manItem = iter->second;
 
-                const string abs = manItem->AbsolutePath();
+                string abs;
+                iterator = cache_manifestItemToAbsolutePath.find(manItem);
+                if (iterator != cache_manifestItemToAbsolutePath.end()
+                        //cache_manifestItemToAbsolutePath.count(manItem)
+                        )
+                {
+                    //abs = cache_manifestItemToAbsolutePath[manItem];
+                    abs = iterator->second;
+
+                    //printf("=========== abs FROM CACHE: %s\n", abs.c_str());
+                }
+                else
+                {
+                    abs = manItem->AbsolutePath();
+                    cache_manifestItemToAbsolutePath[manItem] = abs;
+
+                    //printf("=========== abs CACHING: %s\n", abs.c_str());
+                }
+
                 if (abs.compare(refOPFPath) == 0)
                 {
                     //printf("------> manifest item path: %s\n", abs.c_str());
@@ -601,7 +716,7 @@ EPUB3_BEGIN_NAMESPACE
             return nullptr;
         }
 
-uint32_t MediaOverlaysSmilModel::parseSMIL(SMILDataPtr smilData, shared_ptr<SMILData::Sequence> sequence, shared_ptr<SMILData::Parallel> parallel, const ManifestItemPtr item, shared_ptr<xml::Node> element)
+        uint32_t MediaOverlaysSmilModel::parseSMIL(SMILDataPtr smilData, shared_ptr<SMILData::Sequence> sequence, shared_ptr<SMILData::Parallel> parallel, const ManifestItemPtr item, shared_ptr<xml::Node> element, std::map<std::shared_ptr<ManifestItem>, string> & cache_manifestItemToAbsolutePath, std::map<string, std::shared_ptr<ManifestItem>> & cache_smilRelativePathToManifestItem)
         {
             if (!bool(element) || !element->IsElementNode())
             {
@@ -619,13 +734,13 @@ uint32_t MediaOverlaysSmilModel::parseSMIL(SMILDataPtr smilData, shared_ptr<SMIL
             {
                 //printf("=========== TEXTREF: %s\n", textref.c_str());
 
-                std::vector<string> split = splitIriFileFragmentID(textref_);
+                splitIriFileFragmentID(textref_, splitFileFragmentId);
 
-                textref_file = split[0];
-                textref_fragmentID = split[1];
-
-                //printf("=========== TEXTREF FILE: %s\n", textref_file.c_str());
-                //printf("=========== TEXTREF FRAGID: %s\n", textref_fragmentID.c_str());
+                textref_file = splitFileFragmentId[0];
+                textref_fragmentID = splitFileFragmentId[1];
+//
+//                printf("=========== TEXTREF FILE: %s\n", textref_file.c_str());
+//                printf("=========== TEXTREF FRAGID: %s\n", textref_fragmentID.c_str());
             }
 
             string src_ = string(_getProp(element, "src", SMILNamespaceURI));
@@ -635,13 +750,13 @@ uint32_t MediaOverlaysSmilModel::parseSMIL(SMILDataPtr smilData, shared_ptr<SMIL
             {
                 //printf("=========== SRC: %s\n", src.c_str());
 
-                std::vector<string> split = splitIriFileFragmentID(src_);
+                splitIriFileFragmentID(src_, splitFileFragmentId);
 
-                src_file = split[0];
-                src_fragmentID = split[1];
-
-                //printf("=========== SRC FILE: %s\n", src_file.c_str());
-                //printf("=========== SRC FRAGID: %s\n", src_fragmentID.c_str());
+                src_file = splitFileFragmentId[0];
+                src_fragmentID = splitFileFragmentId[1];
+//
+//                printf("=========== SRC FILE: %s\n", src_file.c_str());
+//                printf("=========== SRC FRAGID: %s\n", src_fragmentID.c_str());
             }
 
             std::shared_ptr<Package> package = Owner(); // internally: std::weak_ptr<Package>.lock()
@@ -650,9 +765,43 @@ uint32_t MediaOverlaysSmilModel::parseSMIL(SMILDataPtr smilData, shared_ptr<SMIL
                 return 0;
             }
 
-            std::shared_ptr<ManifestItem> srcManifestItem = getReferencedManifestItem(package, src_file, item);
+            std::map<string, std::shared_ptr<ManifestItem>>::iterator iterator = cache_smilRelativePathToManifestItem.find(src_file);
+            std::shared_ptr<ManifestItem> srcManifestItem;
+            if (iterator != cache_smilRelativePathToManifestItem.end()
+                    //cache_smilRelativePathToManifestItem.count(src_file)
+                    )
+            {
+                //srcManifestItem = cache_smilRelativePathToManifestItem[src_file];
+                srcManifestItem = iterator->second;
 
-            std::shared_ptr<ManifestItem> textrefManifestItem = getReferencedManifestItem(package, textref_file, item);
+                //printf("=========== srcManifestItem FROM CACHE: %s\n", src_file.c_str());
+            }
+            else
+            {
+                srcManifestItem = getReferencedManifestItem(package, src_file, item, cache_manifestItemToAbsolutePath);
+                cache_smilRelativePathToManifestItem[src_file] = srcManifestItem;
+
+                //printf("=========== srcManifestItem CACHING: %s\n", src_file.c_str());
+            }
+
+            iterator = cache_smilRelativePathToManifestItem.find(textref_file);
+            std::shared_ptr<ManifestItem> textrefManifestItem;
+            if (iterator != cache_smilRelativePathToManifestItem.end()
+                    //cache_smilRelativePathToManifestItem.count(textref_file)
+                    )
+            {
+                //textrefManifestItem = cache_smilRelativePathToManifestItem[textref_file];
+                textrefManifestItem = iterator->second;
+
+                //printf("=========== textrefManifestItem FROM CACHE: %s\n", textref_file.c_str());
+            }
+            else
+            {
+                textrefManifestItem = getReferencedManifestItem(package, textref_file, item, cache_manifestItemToAbsolutePath);
+                cache_smilRelativePathToManifestItem[textref_file] = textrefManifestItem;
+
+                //printf("=========== textrefManifestItem CACHING: %s\n", textref_file.c_str());
+            }
 
             string type = string(_getProp(element, "type", ePub3NamespaceURI));
 
@@ -831,7 +980,7 @@ uint32_t MediaOverlaysSmilModel::parseSMIL(SMILDataPtr smilData, shared_ptr<SMIL
 
                 for (; bool(childNode); childNode = childNode->NextElementSibling())
                 {
-                    uint32_t time = parseSMIL(smilData, sequence, parallel, item, childNode);
+                    uint32_t time = parseSMIL(smilData, sequence, parallel, item, childNode, cache_manifestItemToAbsolutePath, cache_smilRelativePathToManifestItem);
 
                     if (elementName != "par" || !_excludeAudioDuration)
                     {

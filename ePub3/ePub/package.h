@@ -3,21 +3,20 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2012-11-28.
-//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
+//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  
-//  The Readium SDK is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, either version 3 of the License, or
-//  (at your option) any later version.
+//  This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+//  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 //  
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  Licensed under Gnu Affero General Public License Version 3 (provided, notwithstanding this notice, 
+//  Readium Foundation reserves the right to license this material under a different separate license, 
+//  and if you have done so, the terms of that separate license control and the following references 
+//  to GPL do not apply).
 //  
-//  You should have received a copy of the GNU General Public License
-//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+//  This program is free software: you can redistribute it and/or modify it under the terms of the GNU 
+//  Affero General Public License as published by the Free Software Foundation, either version 3 of 
+//  the License, or (at your option) any later version. You should have received a copy of the GNU 
+//  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef __ePub3__package__
 #define __ePub3__package__
@@ -29,7 +28,7 @@
 #include <list>
 #include <ePub3/xml/node.h>
 #include <ePub3/utilities/owned_by.h>
-#include <epub3/encryption.h>
+#include <ePub3/encryption.h>
 #include <ePub3/spine.h>
 #include <ePub3/manifest.h>
 #include <ePub3/cfi.h>
@@ -434,7 +433,7 @@ public:
     EPUB3_EXPORT
     const CFI               CFIForSpineItem(shared_ptr<SpineItem> item)          const;
     
-    // note that the CFI is purposely non-const so the package can correct it (cf. epub-cfi §3.5)
+    // note that the CFI is purposely non-const so the package can correct it (cf. epub-cfi ??3.5)
     /**
      Obtains the ManifestItem referenced by a given CFI.
      
@@ -494,7 +493,8 @@ public:
     unique_ptr<ArchiveReader>   ReaderForRelativePath(const string& path)       const;
 
     unique_ptr<ArchiveXmlReader>    XmlReaderForRelativePath(const string& path)    const {
-        return unique_ptr<ArchiveXmlReader>(new ArchiveXmlReader(ReaderForRelativePath(path)));
+        try { return unique_ptr<ArchiveXmlReader>(new ArchiveXmlReader(ReaderForRelativePath(path))); }
+        catch (std::invalid_argument&) { return nullptr; }
     }
 
     EPUB3_EXPORT

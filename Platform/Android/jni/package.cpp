@@ -3,21 +3,20 @@
 //  ePub3
 //
 //  Created by Pedro Reis Colaco (txtr) on 2013-07-02.
-//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
-//
-//  The Readium SDK is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, either version 3 of the License, or
-//  (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  
+//  This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+//  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+//  
+//  Licensed under Gnu Affero General Public License Version 3 (provided, notwithstanding this notice, 
+//  Readium Foundation reserves the right to license this material under a different separate license, 
+//  and if you have done so, the terms of that separate license control and the following references 
+//  to GPL do not apply).
+//  
+//  This program is free software: you can redistribute it and/or modify it under the terms of the GNU 
+//  Affero General Public License as published by the Free Software Foundation, either version 3 of 
+//  the License, or (at your option) any later version. You should have received a copy of the GNU 
+//  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #include <string>
@@ -597,9 +596,13 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetSpineIte
     do {
     	jni::StringUTF idr(env, (std::string&) spine->Idref().stl_str());
     	jstring idRef =  (jstring) idr;
+    	jni::StringUTF titleUTF(env, (std::string&) spine->Title().stl_str());
+    	jstring title =  (jstring) titleUTF;
         auto manifestItem = spine->ManifestItem();
     	jni::StringUTF hr(env, (std::string&) manifestItem->BaseHref().stl_str());
     	jstring href = (jstring) hr;
+    	jni::StringUTF mt(env, (std::string&) manifestItem->MediaType().stl_str());
+    	jstring mediaType = (jstring) mt;
     	const char* _page_spread;
     	ePub3::PageSpread spread = spine->Spread();
     	switch (spread) {
@@ -620,18 +623,21 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetSpineIte
     	ePub3::string _renditionLayout = getProperty((&*PCKG(pckgPtr)), (char *) "layout", (char *) "rendition", (&*spine));
     	jstring renditionLayout = env->NewStringUTF(_renditionLayout.c_str());
 
-    	ePub3::string _media_overlay_id = spine->ManifestItem()->MediaOverlayID();
+    	ePub3::string _media_overlay_id = manifestItem->MediaOverlayID();
     	jstring media_overlay_id = env->NewStringUTF(_media_overlay_id.c_str());
 
     	jobject spineItem = env->CallStaticObjectMethod(javaJavaObjectsFactoryClass, createSpineItem_ID,
-    			idRef, href, pageSpread, renditionLayout, media_overlay_id);
+    			idRef, title, href, mediaType, pageSpread, renditionLayout, media_overlay_id);
 
 		env->CallStaticVoidMethod(javaJavaObjectsFactoryClass, addSpineItemToList_ID,
 				spineItemList, spineItem);
 		env->DeleteLocalRef(idRef);
+		env->DeleteLocalRef(title);
 		env->DeleteLocalRef(href);
+		env->DeleteLocalRef(mediaType);
 		env->DeleteLocalRef(pageSpread);
 		env->DeleteLocalRef(renditionLayout);
+		env->DeleteLocalRef(media_overlay_id);
 		env->DeleteLocalRef(spineItem);
 
     } while ((spine = spine->Next()) != nullptr);

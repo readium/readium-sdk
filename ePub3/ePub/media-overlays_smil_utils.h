@@ -3,24 +3,25 @@
 //  ePub3
 //
 //  Created by Daniel Weck on 2013-09-11.
-//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
+//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  
-//  The Readium SDK is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, either version 3 of the License, or
-//  (at your option) any later version.
+//  This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+//  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 //  
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  Licensed under Gnu Affero General Public License Version 3 (provided, notwithstanding this notice, 
+//  Readium Foundation reserves the right to license this material under a different separate license, 
+//  and if you have done so, the terms of that separate license control and the following references 
+//  to GPL do not apply).
 //  
-//  You should have received a copy of the GNU General Public License
-//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+//  This program is free software: you can redistribute it and/or modify it under the terms of the GNU 
+//  Affero General Public License as published by the Free Software Foundation, either version 3 of 
+//  the License, or (at your option) any later version. You should have received a copy of the GNU 
+//  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef ePub3_mo_smil_utils_h
 #define ePub3_mo_smil_utils_h
+
+#define USE_CHAR_STRING
 
 #include <ePub3/base.h>
 
@@ -81,12 +82,28 @@ public:
 
     //EPUB3_EXPORT
     static
-    double ToSeconds(const string& str)
+    double ToSeconds(const string&
+#ifdef USE_CHAR_STRING
+            strstr
+#else
+            str
+#endif
+    )
     {
-        if (str.length() == 0)
+        if (
+#ifdef USE_CHAR_STRING
+            strstr
+#else
+            str
+#endif
+.length() == 0)
         {
             return 0;
         }
+
+#ifdef USE_CHAR_STRING
+        const char* str = (char*)strstr.c_str(); //&strstr[0];
+#endif
 
         //printf("SMIL CLOCK VALUE STRING: %s\n", str.c_str());
 
@@ -175,7 +192,13 @@ private:
      */
 
     static
-    void checkDigit(char current, const string& str, size_t *index)
+    void checkDigit(char current,
+#ifdef USE_CHAR_STRING
+            const char*
+#else
+            const string&
+#endif
+            str, size_t *index)
     {
         if (current < '0' || current > '9')
         {
@@ -188,7 +211,13 @@ private:
     }
 
     static
-    void badChar(char current, const string& str, size_t *index)
+    void badChar(char current,
+#ifdef USE_CHAR_STRING
+            const char*
+#else
+            const string&
+#endif
+            str, size_t *index)
     {
         std::stringstream s;
         s << "The character '" << current << "' at position [" << index << "] in string \"" << str << "\" is not valid !";
@@ -196,13 +225,31 @@ private:
     }
 
     static
-    char advanceChar(const string& str, size_t *index)
+    char advanceChar(
+#ifdef USE_CHAR_STRING
+            const char*
+#else
+            const string&
+#endif
+            str, size_t *index)
     {
-        return (*index) == (str.length() - 1) ? '\0' : str[++(*index)];
+        return (*index) == (
+#ifdef USE_CHAR_STRING
+            strlen(str)
+#else
+            str.length()
+#endif
+- 1) ? '\0' : str[++(*index)];
     }
 
     static
-    uint32_t parseDigits(const string& str, size_t *index)
+    uint32_t parseDigits(
+#ifdef USE_CHAR_STRING
+            const char*
+#else
+            const string&
+#endif
+            str, size_t *index)
     {
         char current = str[*index];
 
@@ -221,7 +268,13 @@ private:
     }
 
     static
-    double parseFraction(const string& str, size_t *index)
+    double parseFraction(
+#ifdef USE_CHAR_STRING
+            const char*
+#else
+            const string&
+#endif
+            str, size_t *index)
     {
         char current = str[*index];
 
@@ -247,7 +300,13 @@ private:
     }
 
     static
-    double parseUnit(const string& str, size_t *index)
+    double parseUnit(
+#ifdef USE_CHAR_STRING
+            const char*
+#else
+            const string&
+#endif
+            str, size_t *index)
     {
         char current = str[*index];
 

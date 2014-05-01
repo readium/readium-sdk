@@ -3,21 +3,20 @@
 //  ePub3
 //
 //  Created by Pedro Reis Colaco (txtr) on 2013-05-29.
-//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
-//
-//  The Readium SDK is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, either version 3 of the License, or
-//  (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  
+//  This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+//  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+//  
+//  Licensed under Gnu Affero General Public License Version 3 (provided, notwithstanding this notice, 
+//  Readium Foundation reserves the right to license this material under a different separate license, 
+//  and if you have done so, the terms of that separate license control and the following references 
+//  to GPL do not apply).
+//  
+//  This program is free software: you can redistribute it and/or modify it under the terms of the GNU 
+//  Affero General Public License as published by the Free Software Foundation, either version 3 of 
+//  the License, or (at your option) any later version. You should have received a copy of the GNU 
+//  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #include <string.h>
@@ -274,7 +273,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 	INIT_STATIC_METHOD_ID_RETVAL(createSpineItemList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
 			"createSpineItemList", "()Ljava/util/List;", ONLOAD_ERROR);
 	INIT_STATIC_METHOD_ID_RETVAL(createSpineItem_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
-			"createSpineItem", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/readium/sdk/android/SpineItem;", ONLOAD_ERROR);
+			"createSpineItem", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/readium/sdk/android/SpineItem;", ONLOAD_ERROR);
 	INIT_STATIC_METHOD_ID_RETVAL(addSpineItemToList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
 			"addSpineItemToList", "(Ljava/util/List;Lorg/readium/sdk/android/SpineItem;)V", ONLOAD_ERROR);
 
@@ -317,6 +316,61 @@ Java_org_readium_sdk_android_EPub3_setCachePath(JNIEnv* env, jobject thiz, jstri
 	strlcpy(gAndroidCacheDir, str, PATH_MAX);
 	// Release the c string
 	RELEASE_UTF8(cachePath, str);
+}
+
+/*
+ * Class:     org_readium_sdk_android_EPub3
+ * Method:    isEpub3Book
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_readium_sdk_android_EPub3_isEpub3Book(JNIEnv* env, jobject thiz, jstring path) {
+	// Initialize core ePub3 SDK
+	initializeReadiumSDK();
+
+	std::string _path = jni::StringUTF(env, path);
+	LOGD("EPub3.isEpub3Book(): path received is '%s'", _path.c_str());
+
+    shared_ptr<ePub3::Container> _container = nullptr;
+    try {
+        _container = ePub3::Container::OpenContainer(_path);
+
+        shared_ptr<ePub3::Package> _package = nullptr;
+        try {
+        	_package = _container->DefaultPackage();
+
+        	if(_package != nullptr) {
+        		ePub3::string versionStr;
+        		int version = 0;
+
+        		versionStr = _package->Version();
+        	    if(versionStr.empty()) {
+                	LOGE("EPub3.isEpub3Book(): couldn't get package version");
+        	    } else {
+        	        // GNU libstdc++ seems to not want to let us use these C++11 routines...
+#ifndef _LIBCPP_VERSION
+        	        version = (int)strtol(versionStr.c_str(), nullptr, 10);
+#else
+        			version = std::stoi(versionStr.stl_str());
+#endif
+
+        			if(version >= 3) {
+        				LOGD("EPub3.isEpub3Book(): returning true");
+        				return JNI_TRUE;
+        			}
+        		}
+
+        	}
+        }
+        catch(const std::invalid_argument& ex) {
+        	LOGE("EPub3.isEpub3Book(): failed to open package: %s\n", ex.what());
+        }
+    }
+    catch (const std::invalid_argument& ex) {
+    	LOGE("EPub3.isEpub3Book(): failed to open container: %s\n", ex.what());
+    }
+
+	LOGD("EPub3.isEpub3Book(): returning false");
+	return JNI_FALSE;
 }
 
 /*

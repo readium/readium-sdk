@@ -3,21 +3,20 @@
 //  ePub3
 //
 //  Created by Yonathan Teitelbaum (Mantano) on 2013-09-09.
-//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
-//
-//  The Readium SDK is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, either version 3 of the License, or
-//  (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  
+//  This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+//  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+//  
+//  Licensed under Gnu Affero General Public License Version 3 (provided, notwithstanding this notice, 
+//  Readium Foundation reserves the right to license this material under a different separate license, 
+//  and if you have done so, the terms of that separate license control and the following references 
+//  to GPL do not apply).
+//  
+//  This program is free software: you can redistribute it and/or modify it under the terms of the GNU 
+//  Affero General Public License as published by the Free Software Foundation, either version 3 of 
+//  the License, or (at your option) any later version. You should have received a copy of the GNU 
+//  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 //#include <ePub3/utilities/resource_stream.h>
@@ -51,7 +50,7 @@ extern "C" {
  * Internal constants
  **************************************************/
 
-static const int BUFFER_SIZE = 32768;
+static const int BUFFER_SIZE = 128*1024;
 static const char *java_class_ResourceInputStream_name = "org/readium/sdk/android/util/ResourceInputStream";
 
 static const char *java_method_ResourceInputStream_createResourceInputStream_name = "createResourceInputStream";
@@ -110,14 +109,9 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_
 
 	ResourceStream* stream = (ResourceStream*) nativePtr;
     auto byteStream = stream->getPtr();
-    // Read the stream to set the reader to the offset value
-    char tmpBuffer[BUFFER_SIZE];
-    ssize_t unreadBytes = byteStream->ReadBytes(&tmpBuffer, std::min(byteCount, BUFFER_SIZE));
-    int currentOffset = unreadBytes;
-    while (currentOffset < byteCount) {
-    	unreadBytes = byteStream->ReadBytes(&tmpBuffer, std::min(byteCount - currentOffset, BUFFER_SIZE));
-    	currentOffset += unreadBytes;
-    }
+    ePub3::SeekableByteStream *seekableStream = dynamic_cast<ePub3::SeekableByteStream*>(byteStream);
+
+    seekableStream->Seek(byteCount, std::ios::beg);
 }
 
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeGetBytes
