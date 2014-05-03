@@ -32,9 +32,21 @@
 #import <ePub3/spine.h>
 
 
-@interface RDSpineItem() {
+@interface RDSpineItem () {
+	@private NSString *m_baseHref;
+	@private NSDictionary *m_dict;
+	@private NSString *m_idref;
+	@private NSString *m_mediaOverlayId;
+	@private NSString *m_mediaType;
+	@private NSString *m_pageSpread;
+	@private NSString *m_renditionFlow;
+	@private NSString *m_renditionLayout;
+	@private NSString *m_renditionSpread;
 	@private ePub3::SpineItem *m_spineItem;
 }
+
+- (NSString *)findProperty:(NSString *)propName withOptionalPrefix:(NSString *)prefix;
+- (NSString *)findProperty:(NSString *)propName withPrefix:(NSString *)prefix;
 
 @end
 
@@ -42,63 +54,78 @@
 @implementation RDSpineItem
 
 
-@synthesize renditionLayout = m_renditionLayout;
+@synthesize baseHref = m_baseHref;
+@synthesize idref = m_idref;
 @synthesize mediaOverlayId = m_mediaOverlayId;
 @synthesize mediaType = m_mediaType;
-
-
-- (NSString *)baseHref {
-	std::shared_ptr<ePub3::ManifestItem> manifestItem = m_spineItem->ManifestItem();
-
-	if (manifestItem != NULL) {
-		const ePub3::string s = manifestItem->BaseHref();
-		return [NSString stringWithUTF8String:s.c_str()];
-	}
-
-	return nil;
-}
+@synthesize pageSpread = m_pageSpread;
+@synthesize renditionFlow = m_renditionFlow;
+@synthesize renditionLayout = m_renditionLayout;
+@synthesize renditionSpread = m_renditionSpread;
 
 
 - (NSDictionary *)dictionary {
-	NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+	if (m_dict == nil) {
+		NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
 
-	NSString *s = self.baseHref;
+		if (self.baseHref != nil) {
+			[dict setObject:self.baseHref forKey:@"href"];
+		}
 
-	if (s != nil) {
-		[dict setObject:s forKey:@"href"];
+		if (self.idref != nil) {
+			[dict setObject:self.idref forKey:@"idref"];
+		}
+
+		if (self.mediaOverlayId != nil) {
+			[dict setObject:self.mediaOverlayId forKey:@"media_overlay_id"];
+		}
+
+		if (self.mediaType != nil) {
+			[dict setObject:self.mediaType forKey:@"media_type"];
+		}
+
+		if (self.pageSpread != nil) {
+			[dict setObject:self.pageSpread forKey:@"page_spread"];
+		}
+
+		if (self.renditionFlow != nil) {
+			[dict setObject:self.renditionFlow forKey:@"rendition_flow"];
+		}
+
+		if (self.renditionLayout != nil) {
+			[dict setObject:self.renditionLayout forKey:@"rendition_layout"];
+		}
+
+		if (self.renditionSpread != nil) {
+			[dict setObject:self.renditionSpread forKey:@"rendition_spread"];
+		}
+
+		m_dict = dict;
 	}
 
-	s = self.idref;
-
-	if (s != nil) {
-		[dict setObject:s forKey:@"idref"];
-	}
-
-	s = self.pageSpread;
-
-	if (s != nil) {
-		[dict setObject:s forKey:@"page_spread"];
-	}
-
-	if (self.renditionLayout != nil) {
-		[dict setObject:self.renditionLayout forKey:@"rendition_layout"];
-	}
-
-	if (self.mediaOverlayId != nil) {
-		[dict setObject:self.mediaOverlayId forKey:@"media_overlay_id"];
-	}
-
-	if (self.mediaType != nil) {
-		[dict setObject:self.mediaType forKey:@"media_type"];
-	}
-
-	return dict;
+	return m_dict;
 }
 
 
-- (NSString *)idref {
-	const ePub3::string s = m_spineItem->Idref();
-	return [NSString stringWithUTF8String:s.c_str()];
+- (NSString *)findProperty:(NSString *)propName withOptionalPrefix:(NSString *)prefix {
+	NSString *value = [self findProperty:propName withPrefix:prefix];
+
+	if (value.length == 0) {
+		value = [self findProperty:propName withPrefix:@""];
+	}
+
+	return value;
+}
+
+
+- (NSString *)findProperty:(NSString *)propName withPrefix:(NSString *)prefix {
+	auto prop = m_spineItem->PropertyMatching([propName UTF8String], [prefix UTF8String]);
+
+	if (prop != nullptr) {
+		return [NSString stringWithUTF8String:prop->Value().c_str()];
+	}
+
+	return @"";
 }
 
 
@@ -109,36 +136,23 @@
 
 	if (self = [super init]) {
 		m_spineItem = (ePub3::SpineItem *)spineItem;
-		ePub3::PropertyPtr prop = m_spineItem->PropertyMatching("layout", "rendition");
+		std::shared_ptr<ePub3::ManifestItem> manifestItem = m_spineItem->ManifestItem();
 
-		if (prop == nullptr) {
-			m_renditionLayout = @"";
-		}
-		else {
-			m_renditionLayout = [[NSString alloc] initWithUTF8String:prop->Value().c_str()];
+		if (manifestItem == nullptr) {
+			return nil;
 		}
 
-		auto mediaOverlayID = m_spineItem->ManifestItem()->MediaOverlayID();
-		m_mediaOverlayId = [[NSString alloc] initWithUTF8String: mediaOverlayID.c_str()];
-
-		auto mediaType = m_spineItem->ManifestItem()->MediaType();
-		m_mediaType = [[NSString alloc] initWithUTF8String:mediaType.c_str()];
+		m_baseHref = [[NSString alloc] initWithUTF8String:manifestItem->BaseHref().c_str()];
+		m_idref = [[NSString alloc] initWithUTF8String:m_spineItem->Idref().c_str()];
+		m_mediaOverlayId = [[NSString alloc] initWithUTF8String:manifestItem->MediaOverlayID().c_str()];
+		m_mediaType = [[NSString alloc] initWithUTF8String:manifestItem->MediaType().c_str()];
+		m_pageSpread = [self findProperty:@"page-spread" withOptionalPrefix:@"rendition"];
+		m_renditionFlow = [self findProperty:@"flow" withPrefix:@"rendition"];
+		m_renditionLayout = [self findProperty:@"layout" withPrefix:@"rendition"];
+		m_renditionSpread = [self findProperty:@"spread" withPrefix:@"rendition"];
 	}
 
 	return self;
-}
-
-
-- (NSString *)pageSpread  {
-	if (m_spineItem->Spread() == ePub3::PageSpread::Left) {
-		return @"page-spread-left";
-	}
-
-	if (m_spineItem->Spread() == ePub3::PageSpread::Right) {
-		return @"page-spread-right";
-	}
-
-	return @"";
 }
 
 

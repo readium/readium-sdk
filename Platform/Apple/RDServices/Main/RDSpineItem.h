@@ -29,19 +29,17 @@
 
 #import <Foundation/Foundation.h>
 
-@interface RDSpineItem : NSObject {
-	@private NSString *m_renditionLayout;
-	@private NSString *m_mediaOverlayId;
-	@private NSString *m_mediaType;
-}
+@interface RDSpineItem : NSObject
 
 @property (nonatomic, readonly) NSString *baseHref;
 @property (nonatomic, readonly) NSDictionary *dictionary;
 @property (nonatomic, readonly) NSString *idref;
-@property (nonatomic, readonly) NSString *pageSpread;
-@property (nonatomic, readonly) NSString *renditionLayout;
 @property (nonatomic, readonly) NSString *mediaOverlayId;
 @property (nonatomic, readonly) NSString *mediaType;
+@property (nonatomic, readonly) NSString *pageSpread;
+@property (nonatomic, readonly) NSString *renditionFlow;
+@property (nonatomic, readonly) NSString *renditionLayout;
+@property (nonatomic, readonly) NSString *renditionSpread;
 
 - (id)initWithSpineItem:(void *)spineItem;
 
