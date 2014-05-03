@@ -922,39 +922,41 @@ bool Package::Unpack()
 		}
 		else
 		{
-			try
-			{
-				ManifestItemPtr tocItem = ManifestItemWithID(tocNames[0]);
-				if (!bool(tocItem))
-					throw EPUBError::OPFNoNavDocument;
-
-				NavigationList tables = NavTablesFromManifestItem(sharedMe, tocItem);
-				for (auto& table : tables)
-				{
-					// have to dynamic_cast these guys to get the right pointer type
-					NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
+            if (!tocNames.empty()) {
+                try
+                {
+                    ManifestItemPtr tocItem = ManifestItemWithID(tocNames[0]);
+                    if (!bool(tocItem))
+                        throw EPUBError::OPFNoNavDocument;
+                    
+                    NavigationList tables = NavTablesFromManifestItem(sharedMe, tocItem);
+                    for (auto& table : tables)
+                    {
+                        // have to dynamic_cast these guys to get the right pointer type
+                        NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
-					_navigation.emplace(navTable->Type(), navTable);
+                        _navigation.emplace(navTable->Type(), navTable);
 #else
-					_navigation[navTable->Type()] = navTable;
+                        _navigation[navTable->Type()] = navTable;
 #endif
-				}
-			}
-			catch (std::exception& exc)
-			{
-				std::cerr << "Exception locating or processing NCX navigation document: " << exc.what() << std::endl;
-				throw;
-			}
-			catch (EPUBError errCode)
-			{
-				// a 'break'-style mechanism here
-				// the error handler will determine if it's safe to continue
-				HandleError(errCode);
-			}
-			catch (...)
-			{
-				HandleError(EPUBError::OPFNoNavDocument);
-			}
+                    }
+                }
+                catch (std::exception& exc)
+                {
+                    std::cerr << "Exception locating or processing NCX navigation document: " << exc.what() << std::endl;
+                    throw;
+                }
+                catch (EPUBError errCode)
+                {
+                    // a 'break'-style mechanism here
+                    // the error handler will determine if it's safe to continue
+                    HandleError(errCode);
+                }
+                catch (...)
+                {
+                    HandleError(EPUBError::OPFNoNavDocument);
+                }
+            }
 		}
 	}
 
