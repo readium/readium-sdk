@@ -3,30 +3,20 @@
 // THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
 // PARTICULAR PURPOSE.
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
-//
-//
-// Emulates a subset of the Win32 threading API as a layer on top of WinRT threadpools.
-//
-// Supported features:
-//
-//    - CreateThread (returns a standard Win32 handle which can be waited on, then closed)
-//    - CREATE_SUSPENDED and ResumeThread
-//    - Partial support for SetThreadPriority (see below)
-//    - Sleep
-//    - Thread local storage (TlsAlloc, TlsFree, TlsGetValue, TlsSetValue)
-//
-// Differences from Win32:
-//
-//    - If using TLS other than from this CreateThread emulation, call TlsShutdown before thread/task exit
-//    - No ExitThread or TerminateThread (just return from the thread function to exit)
-//    - No SuspendThread, so ResumeThread is only useful in combination with CREATE_SUSPENDED
-//    - SetThreadPriority is only available while a thread is in CREATE_SUSPENDED state
-//    - SetThreadPriority only supports three priority levels (negative, zero, or positive)
-//    - No thread identifier APIs (GetThreadId, GetCurrentThreadId, OpenThread)
-//    - No affinity APIs
-//    - No GetExitCodeThread
-//    - Failure cases return error codes but do not always call SetLastError
+//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  
+//  This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+//  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+//  
+//  Licensed under Gnu Affero General Public License Version 3 (provided, notwithstanding this notice, 
+//  Readium Foundation reserves the right to license this material under a different separate license, 
+//  and if you have done so, the terms of that separate license control and the following references 
+//  to GPL do not apply).
+//  
+//  This program is free software: you can redistribute it and/or modify it under the terms of the GNU 
+//  Affero General Public License as published by the Free Software Foundation, either version 3 of 
+//  the License, or (at your option) any later version. You should have received a copy of the GNU 
+//  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
