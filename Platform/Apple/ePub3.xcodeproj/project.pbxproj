@@ -1916,7 +1916,7 @@
 		ABA72C1B1655382E003125FF /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0460;
+				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "The Readium Foundation and contributors";
 			};
 			buildConfigurationList = ABA72C1E1655382E003125FF /* Build configuration list for PBXProject "ePub3" */;
@@ -2313,7 +2313,6 @@
 		ABA4BAEC16ADF5A600161B77 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
 				DSTROOT = /tmp/ePub3_iOS.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "../../ePub3-iOS/ePub3-iOS-Prefix.pch";
@@ -2324,10 +2323,9 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
 					"$(SRCROOT)/include",
-					"$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/lib";
+				LIBRARY_SEARCH_PATHS = "";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -2338,7 +2336,6 @@
 		ABA4BAED16ADF5A600161B77 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
 				DSTROOT = /tmp/ePub3_iOS.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "../../ePub3-iOS/ePub3-iOS-Prefix.pch";
@@ -2349,10 +2346,9 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
 					"$(SRCROOT)/include",
-					"$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/lib";
+				LIBRARY_SEARCH_PATHS = "";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -2365,7 +2361,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -2395,7 +2390,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -2431,10 +2425,9 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
 					"$(SRCROOT)/include",
-					"$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/include",
 				);
 				LD_DYLIB_INSTALL_NAME = "$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)";
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/lib";
+				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -2453,10 +2446,9 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
 					"$(SRCROOT)/include",
-					"$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/include",
 				);
 				LD_DYLIB_INSTALL_NAME = "$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)";
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/lib";
+				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
