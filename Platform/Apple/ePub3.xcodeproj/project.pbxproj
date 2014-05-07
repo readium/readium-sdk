@@ -6,6 +6,20 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		A883B4D0191AC38700BB22CE /* ePub3-iOS-universal */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = A883B4D3191AC38700BB22CE /* Build configuration list for PBXAggregateTarget "ePub3-iOS-universal" */;
+			buildPhases = (
+				A883B4D4191AC39500BB22CE /* Build Universal Library */,
+			);
+			dependencies = (
+			);
+			name = "ePub3-iOS-universal";
+			productName = "ePub3-iOS-universal";
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		1ED0083B17A9B7F800819EBD /* byte_buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED0083A17A9B7F800819EBD /* byte_buffer.cpp */; };
 		1ED0083C17A9B7F800819EBD /* byte_buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED0083A17A9B7F800819EBD /* byte_buffer.cpp */; };
@@ -1929,12 +1943,27 @@
 			targets = (
 				ABA72C231655382E003125FF /* ePub3 */,
 				ABA4BADF16ADF5A600161B77 /* ePub3-iOS */,
+				A883B4D0191AC38700BB22CE /* ePub3-iOS-universal */,
 				AB61CE491694845700299BB1 /* UnitTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		A883B4D4191AC39500BB22CE /* Build Universal Library */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Build Universal Library";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "TARGET=ePub3-iOS\nLIBRARY_NAME=${PROJECT_NAME}-iOS\n\n# Define output folder environment variable\nUNIVERSAL_OUTPUTFOLDER=${BUILD_DIR}/${CONFIGURATION}-universal\n\n# Build Device and Simulator versions\nxcodebuild -target ${TARGET} ONLY_ACTIVE_ARCH=NO -configuration ${CONFIGURATION} -sdk iphoneos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\"\nxcodebuild -target ${TARGET} -configuration ${CONFIGURATION} -sdk iphonesimulator -arch i386 BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\"\n\n# Make sure the output directory exists\nmkdir -p \"${UNIVERSAL_OUTPUTFOLDER}\"\n\n# Create universal binary file using lipo\nlipo -create -output \"${UNIVERSAL_OUTPUTFOLDER}/lib${LIBRARY_NAME}.a\" \"${BUILD_DIR}/${CONFIGURATION}-iphoneos/lib${LIBRARY_NAME}.a\" \"${BUILD_DIR}/${CONFIGURATION}-iphonesimulator/lib${LIBRARY_NAME}.a\"";
+		};
 		AB5D106F172AD46E001D3C95 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -2284,6 +2313,20 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		A883B4D1191AC38700BB22CE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		A883B4D2191AC38700BB22CE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		AB61CE521694845700299BB1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2452,6 +2495,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		A883B4D3191AC38700BB22CE /* Build configuration list for PBXAggregateTarget "ePub3-iOS-universal" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A883B4D1191AC38700BB22CE /* Debug */,
+				A883B4D2191AC38700BB22CE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		AB61CE511694845700299BB1 /* Build configuration list for PBXNativeTarget "UnitTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
