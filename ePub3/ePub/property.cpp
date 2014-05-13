@@ -104,7 +104,12 @@ static const std::map<string, RenditionPropertyBits> RenditionSplitPropertyLooku
     {"http://www.idpf.org/vocab/rendition/#spread-landscape", {"spread", "landscape"}},
     {"http://www.idpf.org/vocab/rendition/#spread-portrait", {"spread", "portrait"}},
     {"http://www.idpf.org/vocab/rendition/#spread-both", {"spread", "both"}},
-    {"http://www.idpf.org/vocab/rendition/#spread-auto", {"spread", "auto"}}
+    {"http://www.idpf.org/vocab/rendition/#spread-auto", {"spread", "auto"}},
+    {"http://www.idpf.org/vocab/rendition/#flow-auto", {"flow", "auto"}},
+    {"http://www.idpf.org/vocab/rendition/#flow-paginated", {"flow", "paginated"}},
+    {"http://www.idpf.org/vocab/rendition/#flow-scrolled-doc", {"flow", "scrolled-doc"}},
+    {"http://www.idpf.org/vocab/rendition/#flow-scrolled-continuous", {"flow", "scrolled-continuous"}}
+
 };
 #else
 typedef std::pair<string, DCType> __to_code_pair;
@@ -160,7 +165,11 @@ static __to_rendition_pair __to_rendition_pairs[10] = {
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#spread-landscape", RenditionPropertyBits("spread", "landscape")),
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#spread-portrait", RenditionPropertyBits("spread", "portrait")),
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#spread-both", RenditionPropertyBits("spread", "both")),
-    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#spread-auto", RenditionPropertyBits("spread", "auto"))
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#spread-auto", RenditionPropertyBits("spread", "auto")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#flow-auto", RenditionPropertyBits("flow", "auto")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#flow-paginated", RenditionPropertyBits("flow", "paginated")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#flow-scrolled-doc", RenditionPropertyBits("flow", "scrolled-doc")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#flow-scrolled-continuous", RenditionPropertyBits("flow", "scrolled-continuous"))
 };
 static std::map<string, RenditionPropertyBits> RenditionSplitPropertyLookup(&__to_rendition_pairs[0], &__to_rendition_pairs[9]);
 #endif
