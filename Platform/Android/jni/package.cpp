@@ -723,12 +723,16 @@ JNIEXPORT jint JNICALL Java_org_readium_sdk_android_Package_nativeGetArchiveInfo
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeInputStreamForRelativePath
 		(JNIEnv* env, jobject thiz, jlong pckgPtr, jlong contnrPtr, jstring jrelativePath) {
 	char *relativePath = (char *) env->GetStringUTFChars(jrelativePath, NULL);
-    auto path = ePub3::string(PCKG(pckgPtr)->BasePath()).append(relativePath);
+	LOGI("Package.nativeInputStreamForRelativePath(): received relative path '%s'", relativePath);
+	auto basePath = ePub3::string(PCKG(pckgPtr)->BasePath());
+	LOGI("Package.nativeInputStreamForRelativePath(): package base path '%s'", basePath.c_str());
+    auto path = basePath.append(relativePath);
 	env->ReleaseStringUTFChars(jrelativePath, relativePath);
+	LOGI("Package.nativeInputStreamForRelativePath(): final path '%s'", path.c_str());
     auto archive = contnr->GetArchive();
     bool containsPath = archive->ContainsItem(path);
     if (!containsPath) {
-        LOGE("Package.nativeReadStreamForRelativePath(): no archive found for path '%s'", path.c_str());
+        LOGE("Package.nativeInputStreamForRelativePath(): no archive found for path '%s'", path.c_str());
         return NULL;
     }
     auto archiveInfo = archive->InfoAtPath(path);
