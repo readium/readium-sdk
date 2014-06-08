@@ -105,3 +105,28 @@ Trident/IE10 (needed for apps to be able to support screen readers on Windows).
 
 - master - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-Mac-Master)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-Mac-Master/)
 - develop - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-Mac-Develop)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-Mac-Develop/)
+
+## Windows 32
+
+- master - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-Windows-32-Master)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-Windows-32-Master/)
+- develop - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-Windows-32-Develop)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-Windows-32-Develop/)
+
+## Windows 64
+
+- master - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-Windows-64-Master)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-Windows-64-Master/)
+- develop - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-Windows-64-Develop)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-Windows-64-Develop/)
+
+## WinRT 32
+
+- master - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-WinRT-32-Master)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-WinRT-32-Master/)
+- develop - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-WinRT-32-Develop)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-WinRT-32-Develop/)
+
+## WinRT 64
+
+- master - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-WinRT-64-Master)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-WinRT-64-Master/)
+- develop - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-WinRT-64-Develop)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-WinRT-64-Develop/)
+
+## WinRT ARM
+
+- master - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-WinRT-ARM-Master)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-WinRT-ARM-Master/)
+- develop - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-WinRT-ARM-Develop)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-WinRT-ARM-Develop/)
