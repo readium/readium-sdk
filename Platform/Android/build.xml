@@ -72,6 +72,12 @@
             <arg value="build" />
         </exec>
     </target>
+
+    <!-- After Readium SDK has been built for Android, built the documentation -->
+    <target name="-post-build" >
+        <ant dir="../../api-docs/" antfile="build.xml" />
+    </target>
+
     <import file="custom_rules.xml" optional="true" />
 
     <!-- Import the actual build file.
