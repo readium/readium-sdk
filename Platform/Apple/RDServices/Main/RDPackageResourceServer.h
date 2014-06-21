@@ -32,14 +32,12 @@
 @class HTTPServer;
 @class RDPackage;
 
-@interface RDPackageResourceServer : NSObject {
-	@private HTTPServer *m_httpServer;
-	@private RDPackage *m_package;
-}
+@interface RDPackageResourceServer : NSObject
+
+- (instancetype)initWithPackage:(RDPackage *)package;
+
++ (id)resourceLock;
 
 @property (nonatomic, readonly) int port;
-
-- (id)initWithPackage:(RDPackage *)package;
-+ (id)resourceLock;
 
 @end

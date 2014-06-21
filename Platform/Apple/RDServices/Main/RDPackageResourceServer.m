@@ -34,42 +34,41 @@
 #import "RDPackageResourceConnection.h"
 
 
-static id m_resourceLock = nil;
+@interface RDPackageResourceServer ()
 
+@property (nonatomic, strong) HTTPServer *httpServer;
+@property (nonatomic, strong) RDPackage *package;
+
+@end
 
 @implementation RDPackageResourceServer
 
+#pragma mark - Global var
+static id gResourceLock = nil;
 
-- (void)dealloc {
-	[m_httpServer stop];
-	[RDPackageResourceConnection setPackage:nil];
-}
-
+#pragma mark - Init methods
 
 + (void)initialize {
-	m_resourceLock = [[NSObject alloc] init];
+	gResourceLock = [NSObject new];
 }
 
+- (instancetype)initWithPackage:(RDPackage *)package {
+    NSParameterAssert(package);
+    self = [super init];
+	if (self) {
+		self.package = package;
+		self.httpServer = [HTTPServer new];
 
-- (id)initWithPackage:(RDPackage *)package {
-	if (package == nil) {
-		return nil;
-	}
-
-	if (self = [super init]) {
-		m_package = package;
-		m_httpServer = [[HTTPServer alloc] init];
-
-		if (m_httpServer == nil) {
+		if (!self.httpServer) {
 			NSLog(@"The HTTP server is nil!");
 			return nil;
 		}
 
-		m_httpServer.documentRoot = @"";
-		[m_httpServer setConnectionClass:[RDPackageResourceConnection class]];
+		self.httpServer.documentRoot = @"";
+		[self.httpServer setConnectionClass:[RDPackageResourceConnection class]];
 
 		NSError *error = nil;
-		BOOL success = [m_httpServer start:&error];
+		BOOL success = [self.httpServer start:&error];
 
 		if (!success || error != nil) {
 			if (error != nil) {
@@ -85,15 +84,24 @@ static id m_resourceLock = nil;
 	return self;
 }
 
+#pragma mark - Dealloc method
 
-- (int)port {
-	return m_httpServer.listeningPort;
+- (void)dealloc {
+	[self.httpServer stop];
+	[RDPackageResourceConnection setPackage:nil];
 }
 
+
+#pragma mark - Public methods
 
 + (id)resourceLock {
-	return m_resourceLock;
+	return gResourceLock;
 }
 
+#pragma mark - Property
+
+- (int)port {
+	return self.httpServer.listeningPort;
+}
 
 @end
