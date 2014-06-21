@@ -38,30 +38,25 @@
 
 @end
 
-@interface RDPackageResource : NSObject {
-	@private UInt8 m_buffer[4096];
-	@private NSData *m_data;
-	@private __weak id <RDPackageResourceDelegate> m_delegate;
-	@private RDPackage *m_package;
-	@private NSString *m_relativePath;
-}
 
-@property (nonatomic, readonly) void *byteStream;
-@property (nonatomic, readonly) NSUInteger contentLength;
-@property (nonatomic, readonly) NSData *data;
+@interface RDPackageResource : NSObject
+
+- (instancetype)initWithDelegate:(id <RDPackageResourceDelegate>)delegate
+                      byteStream:(void *)byteStream
+                         package:(RDPackage *)package
+                    relativePath:(NSString *)relativePath;
+
+@property (nonatomic, assign, readonly) id<RDPackageResourceDelegate> delegate;
+@property (nonatomic, assign, readonly) NSUInteger contentLength;
 @property (nonatomic, copy) NSString *mimeType;
-@property (nonatomic, readonly) RDPackage *package;
+@property (nonatomic, strong, readonly) RDPackage *package;
+@property (nonatomic, strong, readonly) NSData *data;
 
 // The relative path associated with this resource.
-@property (nonatomic, readonly) NSString *relativePath;
-
-- (id)
-	initWithDelegate:(id <RDPackageResourceDelegate>)delegate
-	byteStream:(void *)byteStream
-	package:(RDPackage *)package
-	relativePath:(NSString *)relativePath;
+@property (nonatomic, copy, readonly) NSString *relativePath;
 
 - (NSData *)readDataOfLength:(NSUInteger)length;
 - (void)setOffset:(UInt64)offset;
+- (void *)byteStream;
 
 @end
