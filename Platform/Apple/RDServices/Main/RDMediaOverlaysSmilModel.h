@@ -29,21 +29,20 @@
 
 #import <Foundation/Foundation.h>
 
-@interface RDMediaOverlaysSmilModel : NSObject {
-	@private NSArray *m_escapables;
-	@private NSArray *m_skippables;
-	@private NSArray *m_smilDatas;
-}
+@interface RDMediaOverlaysSmilModel : NSObject
 
-@property (nonatomic, readonly) NSString *activeClass;
-@property (nonatomic, readonly) NSDictionary *dictionary;
-@property (nonatomic, readonly) NSTimeInterval duration;
-@property (nonatomic, readonly) NSArray *escapables;
-@property (nonatomic, readonly) NSString *narrator;
-@property (nonatomic, readonly) NSString *playbackActiveClass;
-@property (nonatomic, readonly) NSArray *skippables;
-@property (nonatomic, readonly) NSArray *smilDatas;
+- (instancetype)initWithMediaOverlaysSmilModel:(void *)smilModel;
 
-- (id)initWithMediaOverlaysSmilModel:(void *)smilModel;
+@property (nonatomic, copy, readonly) NSString *activeClass;
+@property (nonatomic, copy, readonly) NSString *narrator;
+@property (nonatomic, copy, readonly) NSString *playbackActiveClass;
+
+@property (nonatomic, strong, readonly) NSDictionary *dictionary;
+@property (nonatomic, strong, readonly) NSArray *escapables;
+@property (nonatomic, strong, readonly) NSArray *skippables;
+@property (nonatomic, strong, readonly) NSArray *smilDatas;
+
+@property (nonatomic, assign, readonly) NSTimeInterval duration;
+
 
 @end
