@@ -277,18 +277,22 @@
 - (RDNavigationElement *)listOfFigures {
 	if (!_listOfFigures) {
 		ePub3::NavigationTable *navTable = _package->ListOfFigures().get();
-		_listOfFigures = [[RDNavigationElement alloc] initWithNavigationElement:navTable
-                                                                     sourceHref:[self sourceHrefForNavigationTable:navTable]];
+        if (navTable) {
+            _listOfFigures = [[RDNavigationElement alloc] initWithNavigationElement:navTable
+                                                                         sourceHref:[self sourceHrefForNavigationTable:navTable]];
+        }
 	}
-    
+
 	return _listOfFigures;
 }
 
 - (RDNavigationElement *)listOfIllustrations {
 	if (!_listOfIllustrations) {
 		ePub3::NavigationTable *navTable = _package->ListOfIllustrations().get();
-		_listOfIllustrations = [[RDNavigationElement alloc] initWithNavigationElement:navTable
-                                                                           sourceHref:[self sourceHrefForNavigationTable:navTable]];
+        if (navTable) {
+            _listOfIllustrations = [[RDNavigationElement alloc] initWithNavigationElement:navTable
+                                                                               sourceHref:[self sourceHrefForNavigationTable:navTable]];
+        }
 	}
     
 	return _listOfIllustrations;
@@ -297,8 +301,10 @@
 - (RDNavigationElement *)listOfTables {
 	if (!_listOfTables) {
 		ePub3::NavigationTable *navTable = _package->ListOfTables().get();
-		_listOfTables = [[RDNavigationElement alloc] initWithNavigationElement:navTable
-                                                                    sourceHref:[self sourceHrefForNavigationTable:navTable]];
+        if (navTable) {
+            _listOfTables = [[RDNavigationElement alloc] initWithNavigationElement:navTable
+                                                                        sourceHref:[self sourceHrefForNavigationTable:navTable]];
+        }
 	}
     
 	return _listOfTables;
