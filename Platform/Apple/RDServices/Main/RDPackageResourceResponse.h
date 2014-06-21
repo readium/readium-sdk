@@ -28,15 +28,13 @@
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #import <Foundation/Foundation.h>
+
 #import "HTTPResponse.h"
 
 @class RDPackageResource;
 
-@interface RDPackageResourceResponse : NSObject <HTTPResponse> {
-	@private UInt64 m_offset;
-	@private RDPackageResource *m_resource;
-}
+@interface RDPackageResourceResponse : NSObject <HTTPResponse>
 
-- (id)initWithResource:(RDPackageResource *)resource;
+- (instancetype)initWithResource:(RDPackageResource *)resource;
 
 @end
