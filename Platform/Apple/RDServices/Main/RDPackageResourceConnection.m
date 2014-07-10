@@ -51,8 +51,11 @@ static RDPackage *m_package = nil;
 		return nil;
 	}
 
-	if (path != nil && [path hasPrefix:@"/"]) {
-		path = [path substringFromIndex:1];
+	if (path != nil) {
+        if ([path hasPrefix:@"/"]) {
+            path = [path substringFromIndex:1];
+        }
+        path = [path stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 	}
 
 	NSObject <HTTPResponse> *response = nil;
