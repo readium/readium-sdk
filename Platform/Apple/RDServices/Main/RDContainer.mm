@@ -27,16 +27,21 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#import "RDContainer.h"
 #import <ePub3/container.h>
 #import <ePub3/initialization.h>
+
+#import "RDContainer.h"
 #import "RDPackage.h"
 
 
 @interface RDContainer() {
-	@private std::shared_ptr<ePub3::Container> m_container;
-	@private ePub3::Container::PackageList m_packageList;
+    @private std::shared_ptr<ePub3::Container> _container;
+    @private ePub3::Container::PackageList _packageList;
 }
+
+@property (nonatomic, strong, readwrite) RDPackage *firstPackage;
+@property (nonatomic, strong, readwrite) NSMutableArray *allPackages;
+@property (nonatomic, copy, readwrite) NSString *path;
 
 @end
 
@@ -44,45 +49,64 @@
 @implementation RDContainer
 
 
-@synthesize packages = m_packages;
-@synthesize path = m_path;
-
-
-- (RDPackage *)firstPackage {
-	return m_packages.count == 0 ? nil : [m_packages objectAtIndex:0];
-}
+#pragma mark - Init methods
 
 
 + (void)initialize {
-	ePub3::InitializeSdk();
-	ePub3::PopulateFilterManager();
+    ePub3::InitializeSdk();
+    ePub3::PopulateFilterManager();
+}
+
+- (instancetype)initWithPath:(NSString *)path {
+    
+    NSParameterAssert(path);
+    NSParameterAssert([path length]);
+    if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
+        return nil;
+    }
+
+    if (self = [super init]) {
+        self.path = path;
+        _container = ePub3::Container::OpenContainer(path.UTF8String);
+        
+    }
+    [self loadPackages];
+    return self;
+}
+
++ (instancetype)containerWithPath:(NSString *)path {
+    return [[[self class] alloc] initWithPath:path];
 }
 
 
-- (id)initWithPath:(NSString *)path {
-	if (path == nil || ![[NSFileManager defaultManager] fileExistsAtPath:path]) {
-		return nil;
-	}
+#pragma mark - Property methods
 
-	if (self = [super init]) {
-		m_path = path;
-		m_container = ePub3::Container::OpenContainer(path.UTF8String);
-
-		if (m_container == nullptr) {
-			return nil;
-		}
-
-		m_packageList = m_container->Packages();
-		m_packages = [[NSMutableArray alloc] initWithCapacity:4];
-
-		for (auto i = m_packageList.begin(); i != m_packageList.end(); i++) {
-			RDPackage *package = [[RDPackage alloc] initWithPackage:i->get()];
-			[m_packages addObject:package];
-		}
-	}
-
-	return self;
+- (RDPackage *)firstPackage {
+    if (!_firstPackage){
+        _firstPackage = [self.allPackages firstObject];
+    }
+    return _firstPackage;
 }
 
+- (NSArray *)packages {
+    return self.allPackages;
+}
+
+- (NSMutableArray *)allPackages {
+    if (!_allPackages) {
+        _allPackages = [[NSMutableArray alloc] initWithCapacity:4];
+    }
+    return _allPackages;
+}
+
+#pragma mark - Private methods
+
+- (void)loadPackages {
+    _packageList = _container->Packages();
+    for (auto i = _packageList.begin(); i != _packageList.end(); i++) {
+        RDPackage *package = [[RDPackage alloc] initWithPackage:i->get()];
+        [self.allPackages addObject:package];
+    }
+}
 
 @end

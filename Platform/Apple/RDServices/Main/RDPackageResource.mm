@@ -35,9 +35,17 @@
 
 
 @interface RDPackageResource() {
-	@private ePub3::ByteStream *m_byteStream;
-	@private NSUInteger m_contentLength;
+    @private ePub3::ByteStream *_byteStream;
+    @private UInt8 _buffer[4096];
+
 }
+
+
+@property (nonatomic, assign, readwrite) NSUInteger contentLength;
+@property (nonatomic, strong, readwrite) RDPackage *package;
+@property (nonatomic, strong, readwrite) NSData *data;
+@property (nonatomic, copy, readwrite) NSString *relativePath;
+@property (nonatomic, assign, readwrite) id<RDPackageResourceDelegate> delegate;
 
 @end
 
@@ -45,94 +53,92 @@
 @implementation RDPackageResource
 
 
-@synthesize byteStream = m_byteStream;
-@synthesize contentLength = m_contentLength;
-@synthesize package = m_package;
-@synthesize relativePath = m_relativePath;
+#pragma mark - Init methods
 
+- (instancetype)initWithDelegate:(id <RDPackageResourceDelegate>)delegate
+                      byteStream:(void *)byteStream
+                         package:(RDPackage *)package
+                    relativePath:(NSString *)relativePath {
+    NSParameterAssert(byteStream);
+    NSParameterAssert(package);
+    NSParameterAssert(relativePath);
+    NSParameterAssert(relativePath.length);
 
-- (NSData *)data {
-	if (m_data == nil) {
-		NSMutableData *md = [[NSMutableData alloc] initWithCapacity:
-			m_contentLength == 0 ? 1 : m_contentLength];
+    if (self = [super init]) {
+        _byteStream = (ePub3::ByteStream *)byteStream;
+        self.contentLength = _byteStream->BytesAvailable();
+        self.delegate = delegate;
+        self.package = package;
+        self.relativePath = relativePath;
 
-		while (YES) {
-			std::size_t count = m_byteStream->ReadBytes(m_buffer, sizeof(m_buffer));
+        if (!self.contentLength) {
+            NSLog(@"The resource content length is zero! %@", self.relativePath);
+        }
+    }
 
-			if (count == 0) {
-				break;
-			}
-
-			[md appendBytes:m_buffer length:count];
-		}
-
-		m_data = md;
-	}
-
-	return m_data;
+    return self;
 }
 
+#pragma mark - Dealloc method
 
 - (void)dealloc {
-	[m_delegate rdpackageResourceWillDeallocate:self];
+    [_delegate rdpackageResourceWillDeallocate:self];
 }
 
-
-- (id)
-	initWithDelegate:(id <RDPackageResourceDelegate>)delegate
-	byteStream:(void *)byteStream
-	package:(RDPackage *)package
-	relativePath:(NSString *)relativePath
-{
-	if (byteStream == nil || package == nil || relativePath == nil || relativePath.length == 0) {
-		return nil;
-	}
-
-	if (self = [super init]) {
-		m_byteStream = (ePub3::ByteStream *)byteStream;
-		m_contentLength = m_byteStream->BytesAvailable();
-		m_delegate = delegate;
-		m_package = package;
-		m_relativePath = relativePath;
-
-		if (m_contentLength == 0) {
-			NSLog(@"The resource content length is zero! %@", m_relativePath);
-		}
-	}
-
-	return self;
-}
-
+#pragma mark - Public methods
 
 - (NSData *)readDataOfLength:(NSUInteger)length {
-	NSMutableData *md = [[NSMutableData alloc] initWithCapacity:length == 0 ? 1 : length];
-	NSUInteger totalRead = 0;
+    NSMutableData *md = [[NSMutableData alloc] initWithCapacity:length == 0 ? 1 : length];
+    NSUInteger totalRead = 0;
 
-	while (totalRead < length) {
-		NSUInteger thisLength = MIN(sizeof(m_buffer), length - totalRead);
-		std::size_t count = m_byteStream->ReadBytes(m_buffer, thisLength);
-		totalRead += count;
-		[md appendBytes:m_buffer length:count];
+    while (totalRead < length) {
+        NSUInteger thisLength = MIN(sizeof(_buffer), length - totalRead);
+        std::size_t count = _byteStream->ReadBytes(_buffer, thisLength);
+        totalRead += count;
+        [md appendBytes:_buffer length:count];
+        
+        if (count != thisLength) {
+            NSLog(@"Did not read the expected number of bytes! (%lu %lu)", count, (unsigned long)thisLength);
+            break;
+        }
+    }
 
-		if (count != thisLength) {
-			NSLog(@"Did not read the expected number of bytes! (%lu %lu)",
-				count, (unsigned long)thisLength);
-			break;
-		}
-	}
-
-	return md;
+    return md;
 }
-
 
 - (void)setOffset:(UInt64)offset {
-	ePub3::SeekableByteStream* seekStream = dynamic_cast<ePub3::SeekableByteStream*>(m_byteStream);
-	ePub3::ByteStream::size_type pos = seekStream->Seek(offset, std::ios::beg);
-
-	if (pos != offset) {
-		NSLog(@"Setting the byte stream offset failed! pos = %lu, offset = %llu", pos, offset);
-	}
+    ePub3::SeekableByteStream* seekStream = dynamic_cast<ePub3::SeekableByteStream*>(_byteStream);
+    ePub3::ByteStream::size_type pos = seekStream->Seek(offset, std::ios::beg);
+    
+    if (pos != offset) {
+        NSLog(@"Setting the byte stream offset failed! pos = %lu, offset = %llu", pos, offset);
+    }
 }
 
+- (void *)byteStream {
+    return _byteStream;
+}
+
+#pragma mark - Property
+
+- (NSData *)data {
+    if (!_data) {
+        NSMutableData *md = [[NSMutableData alloc] initWithCapacity:MAX(self.contentLength, 1)];
+
+        while (YES) {
+            std::size_t count = _byteStream->ReadBytes(_buffer, sizeof(_buffer));
+
+            if (count == 0) {
+                break;
+            }
+
+            [md appendBytes:_buffer length:count];
+        }
+
+        _data = [NSData dataWithData:md];
+    }
+
+    return _data;
+}
 
 @end

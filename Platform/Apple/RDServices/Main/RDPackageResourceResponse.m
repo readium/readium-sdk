@@ -31,72 +31,66 @@
 #import "RDPackageResource.h"
 #import "RDPackageResourceServer.h"
 
+@interface RDPackageResourceResponse ()
+
+@property (nonatomic, assign) UInt64 offset;
+@property (nonatomic, strong) RDPackageResource *resource;
+
+@end
 
 @implementation RDPackageResourceResponse
 
+#pragma mark - Init methods
 
-- (UInt64)contentLength {
-	return m_resource.contentLength;
-}
+- (instancetype)initWithResource:(RDPackageResource *)resource {
+    NSParameterAssert(resource);
 
-
-- (NSDictionary *)httpHeaders {
-	NSString *contentType = self->m_resource.mimeType;
-
-	if (contentType) {
-		return @{@"Content-Type": contentType};
-	}
-	else {
-		return @{};
-	}
-}
-
-
-- (id)initWithResource:(RDPackageResource *)resource {
-	if (resource == nil) {
-		return nil;
-	}
-
-	if (self = [super init]) {
-		m_resource = resource;
+    self = [super init];
+	if (self) {
+        self.resource = resource;
 	}
 
 	return self;
 }
 
+#pragma mark - HTTPResponse methods
+
+- (void)setOffset:(UInt64)offset {
+	_offset = offset;
+    
+	@synchronized ([RDPackageResourceServer resourceLock]) {
+		[self.resource setOffset:offset];
+	}
+}
+
+
+- (UInt64)contentLength {
+	return self.resource.contentLength;
+}
+
+- (NSDictionary *)httpHeaders {
+	NSString *contentType = _resource.mimeType;
+	return contentType? @{@"Content-Type": contentType} : @{};
+}
 
 - (BOOL)isDone {
-	return m_offset == m_resource.contentLength;
+	return self.offset == self.resource.contentLength;
 }
-
-
-- (UInt64)offset {
-	return m_offset;
-}
-
 
 - (NSData *)readDataOfLength:(NSUInteger)length {
 	NSData *data = nil;
 
 	@synchronized ([RDPackageResourceServer resourceLock]) {
-		data = [m_resource readDataOfLength:length];
+		data = [self.resource readDataOfLength:length];
 	}
 
-	if (data != nil) {
-		m_offset += data.length;
+	if (data) {
+		self.offset += data.length;
 	}
 
 	return data;
 }
 
-
-- (void)setOffset:(UInt64)offset {
-	m_offset = offset;
-
-	@synchronized ([RDPackageResourceServer resourceLock]) {
-		[m_resource setOffset:offset];
-	}
-}
 
 
 @end

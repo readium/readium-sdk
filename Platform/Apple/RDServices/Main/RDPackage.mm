@@ -27,22 +27,47 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#import "RDPackage.h"
+
 #import <ePub3/media-overlays_smil_model.h>
 #import <ePub3/nav_table.h>
 #import <ePub3/package.h>
 #import <ePub3/utilities/byte_stream.h>
+
+#import "RDPackage.h"
 #import "RDMediaOverlaysSmilModel.h"
 #import "RDNavigationElement.h"
-#import "RDPackageResource.h"
 #import "RDSpineItem.h"
 
 
-@interface RDPackage() <RDPackageResourceDelegate> {
-	@private std::vector<std::unique_ptr<ePub3::ByteStream>> m_byteStreamVector;
-	@private ePub3::Package *m_package;
-	@private std::vector<std::shared_ptr<ePub3::SpineItem>> m_spineItemVector;
+@interface RDPackage() {
+    @private std::vector<std::unique_ptr<ePub3::ByteStream>> _byteStreamVector;
+    @private ePub3::Package *_package;
+    @private std::vector<std::shared_ptr<ePub3::SpineItem>> _spineItemVector;
 }
+
+@property (nonatomic, copy, readwrite)   NSString *authors;
+@property (nonatomic, copy, readwrite)   NSString *basePath;
+@property (nonatomic, copy, readwrite)   NSString *copyrightOwner;
+@property (nonatomic, copy, readwrite)   NSString *fullTitle;
+@property (nonatomic, copy, readwrite)   NSString *isbn;
+@property (nonatomic, copy, readwrite)   NSString *language;
+@property (nonatomic, copy, readwrite)   NSString *modificationDateString;
+@property (nonatomic, copy, readwrite)   NSString *packageID;
+@property (nonatomic, copy, readwrite)   NSString *packageUUID;
+@property (nonatomic, copy, readwrite)   NSString *renditionLayout;
+@property (nonatomic, copy, readwrite)   NSString *source;
+@property (nonatomic, copy, readwrite)   NSString *subtitle;
+@property (nonatomic, copy, readwrite)   NSString *title;
+
+@property (nonatomic, strong, readwrite) NSDictionary *dictionary;
+@property (nonatomic, strong, readwrite) RDNavigationElement *listOfFigures;
+@property (nonatomic, strong, readwrite) RDNavigationElement *listOfIllustrations;
+@property (nonatomic, strong, readwrite) RDNavigationElement *listOfTables;
+@property (nonatomic, strong, readwrite) RDMediaOverlaysSmilModel *mediaOverlaysSmilModel;
+@property (nonatomic, strong, readwrite) RDNavigationElement *pageList;
+@property (nonatomic, strong, readwrite) NSMutableArray *allSpineItems;
+@property (nonatomic, strong, readwrite) NSMutableArray *allSubjects;
+@property (nonatomic, strong, readwrite) RDNavigationElement *tableOfContents;
 
 - (NSString *)sourceHrefForNavigationTable:(ePub3::NavigationTable *)navTable;
 
@@ -51,296 +76,328 @@
 
 @implementation RDPackage
 
+- (instancetype)initWithPackage:(void *)package {
+    NSParameterAssert(package);
 
-@synthesize packageUUID = m_packageUUID;
-@synthesize spineItems = m_spineItems;
-@synthesize subjects = m_subjects;
+    self = [super init];
+    if (self) {
+        _package = (ePub3::Package *)package;
 
+        // Package ID.
+        CFUUIDRef uuid = CFUUIDCreate(NULL);
+        self.packageUUID = CFBridgingRelease(CFUUIDCreateString(NULL, uuid));
+        CFRelease(uuid);
+    }
+
+    return self;
+}
+
+
+#pragma mark - RDPackageResourceDelegate methods
+
+- (void)rdpackageResourceWillDeallocate:(RDPackageResource *)packageResource {
+    for (auto i = _byteStreamVector.begin(); i != _byteStreamVector.end(); i++) {
+        if (i->get() == packageResource.byteStream) {
+            _byteStreamVector.erase(i);
+            return;
+        }
+    }
+
+    NSLog(@"The byte stream was not found!");
+}
+
+#pragma mark - Public methods
+
+- (RDPackageResource *)resourceAtRelativePath:(NSString *)relativePath {
+    if (relativePath == nil || relativePath.length == 0) {
+        return nil;
+    }
+
+    NSRange range = [relativePath rangeOfString:@"#"];
+
+    if (range.location != NSNotFound) {
+        relativePath = [relativePath substringToIndex:range.location];
+    }
+
+    ePub3::string s = ePub3::string(relativePath.UTF8String);
+    std::unique_ptr<ePub3::ByteStream> byteStream = _package->ReadStreamForRelativePath(s);
+
+    if (byteStream == nullptr) {
+        NSLog(@"Relative path '%@' does not have a byte stream!", relativePath);
+        return nil;
+    }
+
+    RDPackageResource *resource = [[RDPackageResource alloc] initWithDelegate:self
+                                                                   byteStream:byteStream.get()
+                                                                      package:self
+                                                                 relativePath:relativePath];
+
+    if (resource) {
+        _byteStreamVector.push_back(std::move(byteStream));
+        ePub3::ConstManifestItemPtr item = _package->ManifestItemAtRelativePath(s);
+        if (item) {
+            const ePub3::ManifestItem::MimeType &mediaType = item->MediaType();
+            resource.mimeType = [NSString stringWithUTF8String:mediaType.c_str()];
+        }
+    }
+
+    return resource;
+}
+
+#pragma mark - Property
+
+- (NSMutableArray *)allSpineItems {
+    if (!_allSpineItems) {
+        std::shared_ptr<ePub3::SpineItem> firstSpineItem = _package->FirstSpineItem();
+        size_t count = (firstSpineItem == NULL) ? 0 : firstSpineItem->Count();
+        _allSpineItems = [[NSMutableArray alloc] initWithCapacity:(count == 0) ? 1 : count];
+
+        for (size_t i = 0; i < count; i++) {
+            std::shared_ptr<ePub3::SpineItem> spineItem = _package->SpineItemAt(i);
+            _spineItemVector.push_back(spineItem);
+            RDSpineItem *item = [[RDSpineItem alloc] initWithSpineItem:spineItem.get()];
+            [_allSpineItems addObject:item];
+        }
+    }
+    return _allSpineItems;
+}
+
+- (NSMutableArray *)allSubjects {
+    if (!_allSubjects) {
+        ePub3::Package::StringList vec = _package->Subjects();
+        _allSubjects = [[NSMutableArray alloc] initWithCapacity:4];
+
+        for (auto i = vec.begin(); i != vec.end(); i++) {
+            ePub3::string s = *i;
+            [_allSubjects addObject:[NSString stringWithUTF8String:s.c_str()]];
+        }
+    }
+    return _allSubjects;
+}
+
+- (NSArray *)spineItems {
+    return self.allSpineItems;
+}
+
+- (NSArray *)subjects {
+    return self.allSubjects;
+}
 
 - (NSString *)authors {
-	const ePub3::string s = m_package->Authors();
-	return [NSString stringWithUTF8String:s.c_str()];
+    if (!_authors) {
+        const ePub3::string s = _package->Authors();
+        _authors = [NSString stringWithUTF8String:s.c_str()];
+    }
+    return _authors;
 }
-
 
 - (NSString *)basePath {
-	const ePub3::string s = m_package->BasePath();
-	return [NSString stringWithUTF8String:s.c_str()];
+    if (!_basePath) {
+        const ePub3::string s = _package->BasePath();
+        _basePath = [NSString stringWithUTF8String:s.c_str()];
+    }
+    return _basePath;
 }
-
 
 - (NSString *)copyrightOwner {
-	const ePub3::string s = m_package->CopyrightOwner();
-	return [NSString stringWithUTF8String:s.c_str()];
+    if (!_copyrightOwner) {
+        const ePub3::string s = _package->CopyrightOwner();
+        _copyrightOwner = [NSString stringWithUTF8String:s.c_str()];
+    }
+    return _copyrightOwner;
 }
-
 
 - (NSDictionary *)dictionary {
-	NSMutableDictionary *dictRoot = [NSMutableDictionary dictionary];
+    if (!_dictionary) {
+        NSMutableDictionary *dictRoot = [NSMutableDictionary new];
+        
+        NSString *rootURL = (self.rootURL == nil ? @"" : self.rootURL);
+        dictRoot[@"rootUrl"] = rootURL;
+        dictRoot[@"media_overlay"] = self.mediaOverlaysSmilModel.dictionary;
+        
+        NSString *s = self.renditionLayout;
 
-	NSString *rootURL = (self.rootURL == nil ? @"" : self.rootURL);
-	[dictRoot setObject:rootURL forKey:@"rootUrl"];
+        if (s) {
+            [dictRoot setObject:s forKey:@"rendition_layout"];
+            dictRoot[@"rendition_layout"] = s;
+        }
 
-	[dictRoot setObject:self.mediaOverlaysSmilModel.dictionary forKey:@"media_overlay"];
+        NSMutableDictionary *dictSpine = [NSMutableDictionary dictionary];
+        dictRoot[@"spine"] = dictSpine;
+        
+        NSString *direction = @"default";
+        ePub3::PageProgression pageProgression = _package->PageProgressionDirection();
 
-	NSString *s = self.renditionLayout;
+        if (pageProgression == ePub3::PageProgression::LeftToRight) {
+            direction = @"ltr";
+        }
+        else if (pageProgression == ePub3::PageProgression::RightToLeft) {
+            direction = @"rtl";
+        }
 
-	if (s != nil) {
-		[dictRoot setObject:s forKey:@"rendition_layout"];
-	}
+        dictSpine[@"direction"] = direction;
+        
+        NSMutableArray *items = [NSMutableArray arrayWithCapacity:[self.spineItems count]];
+        dictSpine[@"items"] = items;
 
-	NSMutableDictionary *dictSpine = [NSMutableDictionary dictionary];
-	[dictRoot setObject:dictSpine forKey:@"spine"];
-
-	NSString *direction = @"default";
-	ePub3::PageProgression pageProgression = m_package->PageProgressionDirection();
-
-	if (pageProgression == ePub3::PageProgression::LeftToRight) {
-		direction = @"ltr";
-	}
-	else if (pageProgression == ePub3::PageProgression::RightToLeft) {
-		direction = @"rtl";
-	}
-
-	[dictSpine setObject:direction forKey:@"direction"];
-
-	NSMutableArray *items = [NSMutableArray arrayWithCapacity:m_spineItems.count];
-	[dictSpine setObject:items forKey:@"items"];
-
-	for (RDSpineItem *spineItem in self.spineItems) {
-		[items addObject:spineItem.dictionary];
-	}
-
-	return dictRoot;
+        for (RDSpineItem *spineItem in self.spineItems) {
+            [items addObject:spineItem.dictionary];
+        }
+        
+        _dictionary = [NSDictionary dictionaryWithDictionary:dictRoot];
+    }
+    
+    return _dictionary;
 }
-
 
 - (NSString *)fullTitle {
-	const ePub3::string s = m_package->FullTitle();
-	return [NSString stringWithUTF8String:s.c_str()];
+    if (!_fullTitle) {
+        const ePub3::string s = _package->FullTitle();
+        _fullTitle = [NSString stringWithUTF8String:s.c_str()];
+    }
+    return _fullTitle;
 }
-
-
-- (id)initWithPackage:(void *)package {
-	if (package == nil) {
-		return nil;
-	}
-
-	if (self = [super init]) {
-		m_package = (ePub3::Package *)package;
-
-		// Package ID.
-
-		CFUUIDRef uuid = CFUUIDCreate(NULL);
-		m_packageUUID = CFBridgingRelease(CFUUIDCreateString(NULL, uuid));
-		CFRelease(uuid);
-
-		// Spine items.
-
-		std::shared_ptr<ePub3::SpineItem> firstSpineItem = m_package->FirstSpineItem();
-		size_t count = (firstSpineItem == NULL) ? 0 : firstSpineItem->Count();
-		m_spineItems = [[NSMutableArray alloc] initWithCapacity:(count == 0) ? 1 : count];
-
-		for (size_t i = 0; i < count; i++) {
-			std::shared_ptr<ePub3::SpineItem> spineItem = m_package->SpineItemAt(i);
-			m_spineItemVector.push_back(spineItem);
-			RDSpineItem *item = [[RDSpineItem alloc] initWithSpineItem:spineItem.get()];
-			[m_spineItems addObject:item];
-		}
-
-		// Subjects.
-
-		ePub3::Package::StringList vec = m_package->Subjects();
-		m_subjects = [[NSMutableArray alloc] initWithCapacity:4];
-
-		for (auto i = vec.begin(); i != vec.end(); i++) {
-			ePub3::string s = *i;
-			[m_subjects addObject:[NSString stringWithUTF8String:s.c_str()]];
-		}
-	}
-
-	return self;
-}
-
 
 - (NSString *)isbn {
-	const ePub3::string s = m_package->ISBN();
-	return [NSString stringWithUTF8String:s.c_str()];
+    if (!_isbn) {
+        const ePub3::string s = _package->ISBN();
+       _isbn = [NSString stringWithUTF8String:s.c_str()];
+    }
+    return _isbn;
 }
-
 
 - (NSString *)language {
-	const ePub3::string s = m_package->Language();
-	return [NSString stringWithUTF8String:s.c_str()];
+    if (!_language) {
+        const ePub3::string s = _package->Language();
+        _language =  [NSString stringWithUTF8String:s.c_str()];
+    }
+    return _language;
 }
-
 
 - (RDNavigationElement *)listOfFigures {
-	if (m_navElemListOfFigures == nil) {
-		ePub3::NavigationTable *navTable = m_package->ListOfFigures().get();
-		m_navElemListOfFigures = [[RDNavigationElement alloc]
-			initWithNavigationElement:navTable
-			sourceHref:[self sourceHrefForNavigationTable:navTable]];
-	}
+    if (!_listOfFigures) {
+        ePub3::NavigationTable *navTable = _package->ListOfFigures().get();
+        if (navTable) {
+            _listOfFigures = [[RDNavigationElement alloc] initWithNavigationElement:navTable
+                                                                         sourceHref:[self sourceHrefForNavigationTable:navTable]];
+        }
+    }
 
-	return m_navElemListOfFigures;
+    return _listOfFigures;
 }
-
 
 - (RDNavigationElement *)listOfIllustrations {
-	if (m_navElemListOfIllustrations == nil) {
-		ePub3::NavigationTable *navTable = m_package->ListOfIllustrations().get();
-		m_navElemListOfIllustrations = [[RDNavigationElement alloc]
-			initWithNavigationElement:navTable
-			sourceHref:[self sourceHrefForNavigationTable:navTable]];
-	}
-
-	return m_navElemListOfIllustrations;
+    if (!_listOfIllustrations) {
+        ePub3::NavigationTable *navTable = _package->ListOfIllustrations().get();
+        if (navTable) {
+            _listOfIllustrations = [[RDNavigationElement alloc] initWithNavigationElement:navTable
+                                                                               sourceHref:[self sourceHrefForNavigationTable:navTable]];
+        }
+    }
+    
+    return _listOfIllustrations;
 }
-
 
 - (RDNavigationElement *)listOfTables {
-	if (m_navElemListOfTables == nil) {
-		ePub3::NavigationTable *navTable = m_package->ListOfTables().get();
-		m_navElemListOfTables = [[RDNavigationElement alloc]
-			initWithNavigationElement:navTable
-			sourceHref:[self sourceHrefForNavigationTable:navTable]];
-	}
-
-	return m_navElemListOfTables;
+    if (!_listOfTables) {
+        ePub3::NavigationTable *navTable = _package->ListOfTables().get();
+        if (navTable) {
+            _listOfTables = [[RDNavigationElement alloc] initWithNavigationElement:navTable
+                                                                        sourceHref:[self sourceHrefForNavigationTable:navTable]];
+        }
+    }
+    
+    return _listOfTables;
 }
-
 
 - (RDMediaOverlaysSmilModel *)mediaOverlaysSmilModel {
-	if (m_mediaOverlaysSmilModel == nil) {
-		ePub3::MediaOverlaysSmilModel *smilModel = m_package->MediaOverlaysSmilModel().get();
-		m_mediaOverlaysSmilModel = [[RDMediaOverlaysSmilModel alloc]
-			initWithMediaOverlaysSmilModel:smilModel];
-	}
-
-	return m_mediaOverlaysSmilModel;
+    if (!_mediaOverlaysSmilModel) {
+        ePub3::MediaOverlaysSmilModel *smilModel = _package->MediaOverlaysSmilModel().get();
+        _mediaOverlaysSmilModel = [[RDMediaOverlaysSmilModel alloc] initWithMediaOverlaysSmilModel:smilModel];
+    }
+    
+    return _mediaOverlaysSmilModel;
 }
-
 
 - (NSString *)modificationDateString {
-	const ePub3::string s = m_package->ModificationDate();
-	return [NSString stringWithUTF8String:s.c_str()];
+    if (!_modificationDateString) {
+        const ePub3::string s = _package->ModificationDate();
+        _modificationDateString = [NSString stringWithUTF8String:s.c_str()];
+    }
+    return _modificationDateString;
 }
 
-
 - (NSString *)packageID {
-	const ePub3::string s = m_package->PackageID();
-	return [NSString stringWithUTF8String:s.c_str()];
+    if (!_packageID) {
+        const ePub3::string s = _package->PackageID();
+        _packageID = [NSString stringWithUTF8String:s.c_str()];
+    }
+    return _packageID;
 }
 
 
 - (RDNavigationElement *)pageList {
-	if (m_navElemPageList == nil) {
-		ePub3::NavigationTable *navTable = m_package->PageList().get();
-		m_navElemPageList = [[RDNavigationElement alloc]
-			initWithNavigationElement:navTable
-			sourceHref:[self sourceHrefForNavigationTable:navTable]];
-	}
-
-	return m_navElemPageList;
+    if (!_pageList) {
+        ePub3::NavigationTable *navTable = _package->PageList().get();
+        _pageList = [[RDNavigationElement alloc] initWithNavigationElement:navTable
+                                                                sourceHref:[self sourceHrefForNavigationTable:navTable]];
+    }
+    
+    return _pageList;
 }
-
-
-- (void)rdpackageResourceWillDeallocate:(RDPackageResource *)packageResource {
-	for (auto i = m_byteStreamVector.begin(); i != m_byteStreamVector.end(); i++) {
-		if (i->get() == packageResource.byteStream) {
-			m_byteStreamVector.erase(i);
-			return;
-		}
-	}
-
-	NSLog(@"The byte stream was not found!");
-}
-
 
 - (NSString *)renditionLayout {
-	ePub3::PropertyPtr prop = m_package->PropertyMatching("layout", "rendition");
-	return (prop == nullptr) ? @"" : [NSString stringWithUTF8String:prop->Value().c_str()];
+    if (!_renditionLayout) {
+        ePub3::PropertyPtr prop = _package->PropertyMatching("layout", "rendition");
+        _renditionLayout = (prop == nullptr) ? @"" : [NSString stringWithUTF8String:prop->Value().c_str()];
+    }
+    return _renditionLayout;
 }
-
-
-- (RDPackageResource *)resourceAtRelativePath:(NSString *)relativePath {
-	if (relativePath == nil || relativePath.length == 0) {
-		return nil;
-	}
-
-	NSRange range = [relativePath rangeOfString:@"#"];
-
-	if (range.location != NSNotFound) {
-		relativePath = [relativePath substringToIndex:range.location];
-	}
-
-	ePub3::string s = ePub3::string(relativePath.UTF8String);
-	std::unique_ptr<ePub3::ByteStream> byteStream = m_package->ReadStreamForRelativePath(s);
-
-	if (byteStream == nullptr) {
-		NSLog(@"Relative path '%@' does not have a byte stream!", relativePath);
-		return nil;
-	}
-
-	RDPackageResource *resource = [[RDPackageResource alloc]
-		initWithDelegate:self
-		byteStream:byteStream.get()
-		package:self
-		relativePath:relativePath];
-
-	if (resource != nil) {
-		m_byteStreamVector.push_back(std::move(byteStream));
-		ePub3::ConstManifestItemPtr item = m_package->ManifestItemAtRelativePath(s);
-
-		if (item) {
-			const ePub3::ManifestItem::MimeType &mediaType = item->MediaType();
-			resource.mimeType = [NSString stringWithUTF8String:mediaType.c_str()];
-		}
-	}
-
-	return resource;
-}
-
 
 - (NSString *)source {
-	const ePub3::string s = m_package->Source();
-	return [NSString stringWithUTF8String:s.c_str()];
+    if (!_source) {
+        const ePub3::string s = _package->Source();
+        _source = [NSString stringWithUTF8String:s.c_str()];
+    }
+    return _source;
 }
-
-
-- (NSString *)sourceHrefForNavigationTable:(ePub3::NavigationTable *)navTable {
-	if (navTable == nil) {
-		return nil;
-	}
-
-	const ePub3::string s = navTable->SourceHref();
-	return [NSString stringWithUTF8String:s.c_str()];
-}
-
 
 - (NSString *)subtitle {
-	const ePub3::string s = m_package->Subtitle();
-	return [NSString stringWithUTF8String:s.c_str()];
+    if (!_subtitle) {
+        const ePub3::string s = _package->Subtitle();
+        _subtitle = [NSString stringWithUTF8String:s.c_str()];
+    }
+    return _subtitle;
 }
 
 
 - (RDNavigationElement *)tableOfContents {
-	if (m_navElemTableOfContents == nil) {
-		ePub3::NavigationTable *navTable = m_package->TableOfContents().get();
-		m_navElemTableOfContents = [[RDNavigationElement alloc]
-			initWithNavigationElement:navTable
-			sourceHref:[self sourceHrefForNavigationTable:navTable]];
-	}
+    if (!_tableOfContents) {
+        ePub3::NavigationTable *navTable = _package->TableOfContents().get();
+        _tableOfContents = [[RDNavigationElement alloc] initWithNavigationElement:navTable
+                                                                       sourceHref:[self sourceHrefForNavigationTable:navTable]];
+    }
 
-	return m_navElemTableOfContents;
+    return _tableOfContents;
 }
-
 
 - (NSString *)title {
-	const ePub3::string s = m_package->Title();
-	return [NSString stringWithUTF8String:s.c_str()];
+    if (!_title) {
+        const ePub3::string s = _package->Title();
+        _title = [NSString stringWithUTF8String:s.c_str()];
+    }
+    return _title;
 }
 
+#pragma mark - Private methods
+
+- (NSString *)sourceHrefForNavigationTable:(ePub3::NavigationTable *)navTable {
+    if (!navTable) {
+        return nil;
+    }
+
+    const ePub3::string s = navTable->SourceHref();
+    return [NSString stringWithUTF8String:s.c_str()];
+}
 
 @end

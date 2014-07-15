@@ -35,14 +35,13 @@
 #import "RDPackageResourceServer.h"
 
 
-static RDPackage *m_package = nil;
-
-
 @implementation RDPackageResourceConnection
 
 
+static RDPackage *gPackage = nil;
+
 - (NSObject <HTTPResponse> *)httpResponseForMethod:(NSString *)method URI:(NSString *)path {
-	if (m_package == nil ||
+	if (gPackage == nil ||
 		method == nil ||
 		![method isEqualToString:@"GET"] ||
 		path == nil ||
@@ -64,7 +63,7 @@ static RDPackage *m_package = nil;
 	// resource byte stream, which may lead to instability.
 
 	@synchronized ([RDPackageResourceServer resourceLock]) {
-		RDPackageResource *resource = [m_package resourceAtRelativePath:path];
+		RDPackageResource *resource = [gPackage resourceAtRelativePath:path];
 
 		if (resource == nil) {
 			NSLog(@"No resource found! (%@)", path);
@@ -99,7 +98,7 @@ static RDPackage *m_package = nil;
 
 
 + (void)setPackage:(RDPackage *)package {
-	m_package = package;
+	gPackage = package;
 }
 
 

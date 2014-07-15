@@ -33,127 +33,116 @@
 
 
 @interface RDSpineItem () {
-	@private NSString *m_baseHref;
-	@private NSDictionary *m_dict;
-	@private NSString *m_idref;
-	@private NSString *m_mediaOverlayId;
-	@private NSString *m_mediaType;
-	@private NSString *m_pageSpread;
-	@private NSString *m_renditionFlow;
-	@private NSString *m_renditionLayout;
-	@private NSString *m_renditionSpread;
-	@private ePub3::SpineItem *m_spineItem;
+    @private ePub3::SpineItem *_spineItem;
 }
 
-- (NSString *)findProperty:(NSString *)propName withOptionalPrefix:(NSString *)prefix;
-- (NSString *)findProperty:(NSString *)propName withPrefix:(NSString *)prefix;
+@property (nonatomic, strong, readwrite) NSDictionary *dictionary;
+
+@property (nonatomic, copy, readwrite) NSString *baseHref;
+@property (nonatomic, copy, readwrite) NSString *idref;
+@property (nonatomic, copy, readwrite) NSString *mediaOverlayId;
+@property (nonatomic, copy, readwrite) NSString *mediaType;
+@property (nonatomic, copy, readwrite) NSString *pageSpread;
+@property (nonatomic, copy, readwrite) NSString *renditionFlow;
+@property (nonatomic, copy, readwrite) NSString *renditionLayout;
+@property (nonatomic, copy, readwrite) NSString *renditionSpread;
 
 @end
 
 
 @implementation RDSpineItem
 
+#pragma mark - Init methods
 
-@synthesize baseHref = m_baseHref;
-@synthesize idref = m_idref;
-@synthesize mediaOverlayId = m_mediaOverlayId;
-@synthesize mediaType = m_mediaType;
-@synthesize pageSpread = m_pageSpread;
-@synthesize renditionFlow = m_renditionFlow;
-@synthesize renditionLayout = m_renditionLayout;
-@synthesize renditionSpread = m_renditionSpread;
+- (instancetype)initWithSpineItem:(void *)spineItem {
+    NSParameterAssert(spineItem);
 
+    self = [super init];
+    if (self) {
+        _spineItem = (ePub3::SpineItem *)spineItem;
+        std::shared_ptr<ePub3::ManifestItem> manifestItem = _spineItem->ManifestItem();
+        
+        if (manifestItem == nullptr) {
+            return nil;
+        }
 
-- (NSDictionary *)dictionary {
-	if (m_dict == nil) {
-		NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
-
-		if (self.baseHref != nil) {
-			[dict setObject:self.baseHref forKey:@"href"];
-		}
-
-		if (self.idref != nil) {
-			[dict setObject:self.idref forKey:@"idref"];
-		}
-
-		if (self.mediaOverlayId != nil) {
-			[dict setObject:self.mediaOverlayId forKey:@"media_overlay_id"];
-		}
-
-		if (self.mediaType != nil) {
-			[dict setObject:self.mediaType forKey:@"media_type"];
-		}
-
-		if (self.pageSpread != nil) {
-			[dict setObject:self.pageSpread forKey:@"page_spread"];
-		}
-
-		if (self.renditionFlow != nil) {
-			[dict setObject:self.renditionFlow forKey:@"rendition_flow"];
-		}
-
-		if (self.renditionLayout != nil) {
-			[dict setObject:self.renditionLayout forKey:@"rendition_layout"];
-		}
-
-		if (self.renditionSpread != nil) {
-			[dict setObject:self.renditionSpread forKey:@"rendition_spread"];
-		}
-
-		m_dict = dict;
-	}
-
-	return m_dict;
+        self.baseHref = [[NSString alloc] initWithUTF8String:manifestItem->BaseHref().c_str()];
+        self.idref = [[NSString alloc] initWithUTF8String:_spineItem->Idref().c_str()];
+        self.mediaOverlayId = [[NSString alloc] initWithUTF8String:manifestItem->MediaOverlayID().c_str()];
+        self.mediaType = [[NSString alloc] initWithUTF8String:manifestItem->MediaType().c_str()];
+        self.pageSpread = [self findProperty:@"page-spread" withOptionalPrefix:@"rendition"];
+        self.renditionFlow = [self findProperty:@"flow" withPrefix:@"rendition"];
+        self.renditionLayout = [self findProperty:@"layout" withPrefix:@"rendition"];
+        self.renditionSpread = [self findProperty:@"spread" withPrefix:@"rendition"];
+    }
+    
+    return self;
 }
 
+#pragma mark - Property
+
+- (NSDictionary *)dictionary {
+    if (!_dictionary) {
+        NSMutableDictionary *dict = [NSMutableDictionary new];
+
+        if (self.baseHref) {
+            dict[@"href"] = self.baseHref;
+        }
+
+        if (self.idref) {
+            dict[@"idref"] = self.idref;
+        }
+
+        if (self.mediaOverlayId) {
+            dict[@"media_overlay_id"] = self.mediaOverlayId;
+        }
+
+        if (self.mediaType) {
+            dict[@"media_type"] = self.mediaType;
+        }
+
+        if (self.pageSpread) {
+            dict[@"page_spread"] = self.pageSpread;
+        }
+
+        if (self.renditionFlow) {
+            dict[@"rendition_flow"] = self.renditionFlow;
+        }
+
+        if (self.renditionLayout) {
+            dict[@"rendition_layout"] = self.renditionLayout;
+        }
+
+        if (self.renditionSpread) {
+            dict[@"rendition_spread"] = self.renditionSpread;
+        }
+        _dictionary = [NSDictionary dictionaryWithDictionary:dict];
+    }
+
+    return _dictionary;
+}
+
+#pragma mark - Private methods
 
 - (NSString *)findProperty:(NSString *)propName withOptionalPrefix:(NSString *)prefix {
-	NSString *value = [self findProperty:propName withPrefix:prefix];
+    NSString *value = [self findProperty:propName withPrefix:prefix];
 
-	if (value.length == 0) {
-		value = [self findProperty:propName withPrefix:@""];
-	}
+    if (!value.length) {
+        value = [self findProperty:propName withPrefix:@""];
+    }
 
-	return value;
+    return value;
 }
 
 
 - (NSString *)findProperty:(NSString *)propName withPrefix:(NSString *)prefix {
-	auto prop = m_spineItem->PropertyMatching([propName UTF8String], [prefix UTF8String]);
+    auto prop = _spineItem->PropertyMatching([propName UTF8String], [prefix UTF8String]);
 
-	if (prop != nullptr) {
-		return [NSString stringWithUTF8String:prop->Value().c_str()];
-	}
+    if (prop != nullptr) {
+        return [NSString stringWithUTF8String:prop->Value().c_str()];
+    }
 
-	return @"";
+    return @"";
 }
-
-
-- (id)initWithSpineItem:(void *)spineItem {
-	if (spineItem == nil) {
-		return nil;
-	}
-
-	if (self = [super init]) {
-		m_spineItem = (ePub3::SpineItem *)spineItem;
-		std::shared_ptr<ePub3::ManifestItem> manifestItem = m_spineItem->ManifestItem();
-
-		if (manifestItem == nullptr) {
-			return nil;
-		}
-
-		m_baseHref = [[NSString alloc] initWithUTF8String:manifestItem->BaseHref().c_str()];
-		m_idref = [[NSString alloc] initWithUTF8String:m_spineItem->Idref().c_str()];
-		m_mediaOverlayId = [[NSString alloc] initWithUTF8String:manifestItem->MediaOverlayID().c_str()];
-		m_mediaType = [[NSString alloc] initWithUTF8String:manifestItem->MediaType().c_str()];
-		m_pageSpread = [self findProperty:@"page-spread" withOptionalPrefix:@"rendition"];
-		m_renditionFlow = [self findProperty:@"flow" withPrefix:@"rendition"];
-		m_renditionLayout = [self findProperty:@"layout" withPrefix:@"rendition"];
-		m_renditionSpread = [self findProperty:@"spread" withPrefix:@"rendition"];
-	}
-
-	return self;
-}
-
 
 @end
