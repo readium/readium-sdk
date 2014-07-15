@@ -33,7 +33,7 @@
 
 
 @interface RDMediaOverlaysSmilModel () {
-	@private ePub3::MediaOverlaysSmilModel *_smilModel;
+    @private ePub3::MediaOverlaysSmilModel *_smilModel;
 }
 
 @property (nonatomic, copy, readwrite) NSString *activeClass;
@@ -63,29 +63,29 @@
 - (instancetype)initWithMediaOverlaysSmilModel:(void *)smilModel {
     NSParameterAssert(smilModel);
     self = [super init];
-	if (self) {
-		_smilModel = (ePub3::MediaOverlaysSmilModel *)smilModel;
-	}
+    if (self) {
+        _smilModel = (ePub3::MediaOverlaysSmilModel *)smilModel;
+    }
 
-	return self;
+    return self;
 }
 
 #pragma mark - Property
 
 - (NSMutableArray *)allEscapables {
-	if (!_allEscapables) {
-		std::vector<ePub3::string>::size_type count =
+    if (!_allEscapables) {
+        std::vector<ePub3::string>::size_type count =
         ePub3::MediaOverlaysSmilModel::GetEscapablesCount();
         
-		_allEscapables = [[NSMutableArray alloc] initWithCapacity:count];
+        _allEscapables = [[NSMutableArray alloc] initWithCapacity:count];
         
-		for (int i = 0; i < count; i++) {
-			ePub3::string s = ePub3::MediaOverlaysSmilModel::GetEscapable(i);
-			[_allEscapables addObject:[NSString stringWithUTF8String:s.c_str()]];
-		}
-	}
+        for (int i = 0; i < count; i++) {
+            ePub3::string s = ePub3::MediaOverlaysSmilModel::GetEscapable(i);
+            [_allEscapables addObject:[NSString stringWithUTF8String:s.c_str()]];
+        }
+    }
 
-	return _allEscapables;
+    return _allEscapables;
 }
 
 - (NSArray *)escapables {
@@ -93,18 +93,18 @@
 }
 
 - (NSMutableArray *)allSkippables {
-	if (!_allSkippables) {
-		std::vector<ePub3::string>::size_type count =
+    if (!_allSkippables) {
+        std::vector<ePub3::string>::size_type count =
         ePub3::MediaOverlaysSmilModel::GetSkippablesCount();
 
-		_allSkippables = [[NSMutableArray alloc] initWithCapacity:count];
-		for (int i = 0; i < count; i++) {
-			ePub3::string s = ePub3::MediaOverlaysSmilModel::GetSkippable(i);
-			[_allSkippables addObject:[NSString stringWithUTF8String:s.c_str()]];
-		}
-	}
+        _allSkippables = [[NSMutableArray alloc] initWithCapacity:count];
+        for (int i = 0; i < count; i++) {
+            ePub3::string s = ePub3::MediaOverlaysSmilModel::GetSkippable(i);
+            [_allSkippables addObject:[NSString stringWithUTF8String:s.c_str()]];
+        }
+    }
     
-	return _allSkippables;
+    return _allSkippables;
 }
 
 - (NSArray *)skippables {
@@ -112,18 +112,18 @@
 }
 
 - (NSMutableArray *)allSmilDatas {
-	if (!_allSmilDatas) {
-		std::vector<std::shared_ptr<ePub3::SMILData>>::size_type count = _smilModel->GetSmilCount();
-		_allSmilDatas = [[NSMutableArray alloc] initWithCapacity:count];
+    if (!_allSmilDatas) {
+        std::vector<std::shared_ptr<ePub3::SMILData>>::size_type count = _smilModel->GetSmilCount();
+        _allSmilDatas = [[NSMutableArray alloc] initWithCapacity:count];
 
-		for (int i = 0; i < count; i++) {
-			ePub3::SMILData *p = _smilModel->GetSmil(i).get();
-			RDSmilData *smilData = [[RDSmilData alloc] initWithSmilData:p];
-			[_allSmilDatas addObject:smilData];
-		}
-	}
+        for (int i = 0; i < count; i++) {
+            ePub3::SMILData *p = _smilModel->GetSmil(i).get();
+            RDSmilData *smilData = [[RDSmilData alloc] initWithSmilData:p];
+            [_allSmilDatas addObject:smilData];
+        }
+    }
     
-	return _allSmilDatas;
+    return _allSmilDatas;
 }
 
 - (NSArray *)smilDatas {
@@ -177,8 +177,8 @@
 }
 
 - (NSTimeInterval)duration {
-	NSTimeInterval ms = _smilModel->DurationMilliseconds_Calculated();
-	_duration = ms / 1000.0;
+    NSTimeInterval ms = _smilModel->DurationMilliseconds_Calculated();
+    _duration = ms / 1000.0;
     return _duration;
 }
 

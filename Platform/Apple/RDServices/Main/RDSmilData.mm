@@ -32,7 +32,7 @@
 
 
 @interface RDSmilData () {
-	@private ePub3::SMILData *_smilData;
+    @private ePub3::SMILData *_smilData;
 }
 
 @property (nonatomic, strong, readwrite) NSDictionary *bodyDictionary;
@@ -53,21 +53,21 @@
 - (instancetype)initWithSmilData:(void *)smilData {
     NSParameterAssert(smilData);
     self = [super init];
-	if (self) {
-		_smilData = (ePub3::SMILData *)smilData;
-	}
-	return self;
+    if (self) {
+        _smilData = (ePub3::SMILData *)smilData;
+    }
+    return self;
 }
 
 #pragma mark - Property
 
 - (NSDictionary *)bodyDictionary {
-	if (!_bodyDictionary) {
-		const ePub3::SMILData::Sequence *sequence = _smilData->Body().get();
+    if (!_bodyDictionary) {
+        const ePub3::SMILData::Sequence *sequence = _smilData->Body().get();
         _bodyDictionary = (sequence == nullptr)? @{} : [self parseTreeSequence:sequence];
-	}
+    }
 
-	return _bodyDictionary;
+    return _bodyDictionary;
 }
 
 
@@ -86,8 +86,8 @@
 }
 
 - (NSTimeInterval)duration {
-	NSTimeInterval ms = _smilData->DurationMilliseconds_Metadata();
-	_duration = ms / 1000.0;
+    NSTimeInterval ms = _smilData->DurationMilliseconds_Metadata();
+    _duration = ms / 1000.0;
     return _duration;
 }
 
@@ -114,7 +114,7 @@
     if (!_smilVersion) {
         _smilVersion = @"3.0";
     }
-	return _smilVersion;
+    return _smilVersion;
 }
 
 - (NSString *)spineItemID {
@@ -128,108 +128,108 @@
 #pragma mark - Private methods
 
 - (NSDictionary *)parseTreeAudio:(const ePub3::SMILData::Audio *)node {
-	std::string src("");
-	src.append(node->SrcFile().c_str());
+    std::string src("");
+    src.append(node->SrcFile().c_str());
 
-	if (!node->SrcFragmentId().empty()) {
-		src.append("#");
-		src.append(node->SrcFragmentId().c_str());
-	}
+    if (!node->SrcFragmentId().empty()) {
+        src.append("#");
+        src.append(node->SrcFragmentId().c_str());
+    }
 
-	return @{
-		@"clipBegin" : [NSNumber numberWithDouble:node->ClipBeginMilliseconds() / 1000.0],
-		@"clipEnd" : [NSNumber numberWithDouble:node->ClipEndMilliseconds() / 1000.0],
-		@"nodeType" : [NSString stringWithUTF8String:node->Name().c_str()],
-		@"src" : [NSString stringWithUTF8String:src.c_str()],
-	};
+    return @{
+        @"clipBegin" : [NSNumber numberWithDouble:node->ClipBeginMilliseconds() / 1000.0],
+        @"clipEnd" : [NSNumber numberWithDouble:node->ClipEndMilliseconds() / 1000.0],
+        @"nodeType" : [NSString stringWithUTF8String:node->Name().c_str()],
+        @"src" : [NSString stringWithUTF8String:src.c_str()],
+    };
 }
 
 
 - (NSDictionary *)parseTreeParallel:(ePub3::SMILData::Parallel *)node {
-	NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-	NSMutableArray *children = [NSMutableArray array];
+    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+    NSMutableArray *children = [NSMutableArray array];
 
-	dict[@"nodeType"] = [NSString stringWithUTF8String:node->Name().c_str()];
-	dict[@"epubtype"] = [NSString stringWithUTF8String:node->Type().c_str()];
+    dict[@"nodeType"] = [NSString stringWithUTF8String:node->Name().c_str()];
+    dict[@"epubtype"] = [NSString stringWithUTF8String:node->Type().c_str()];
 
-	auto textMedia = node->Text();
+    auto textMedia = node->Text();
 
-	if (textMedia != nullptr && textMedia->IsText()) {
-		[children addObject:[self parseTreeText:textMedia.get()]];
-	}
+    if (textMedia != nullptr && textMedia->IsText()) {
+        [children addObject:[self parseTreeText:textMedia.get()]];
+    }
 
-	auto audioMedia = node->Audio();
+    auto audioMedia = node->Audio();
 
-	if (audioMedia != nullptr && audioMedia->IsAudio()) {
-		[children addObject:[self parseTreeAudio:audioMedia.get()]];
-	}
+    if (audioMedia != nullptr && audioMedia->IsAudio()) {
+        [children addObject:[self parseTreeAudio:audioMedia.get()]];
+    }
 
-	dict[@"children"] = children;
-	return dict;
+    dict[@"children"] = children;
+    return dict;
 }
 
 
 - (NSDictionary *)parseTreeSequence:(const ePub3::SMILData::Sequence *)node {
-	std::string textref("");
-	textref.append(node->TextRefFile().c_str());
+    std::string textref("");
+    textref.append(node->TextRefFile().c_str());
 
-	if (!node->TextRefFragmentId().empty()) {
-		textref.append("#");
-		textref.append(node->TextRefFragmentId().c_str());
-	}
+    if (!node->TextRefFragmentId().empty()) {
+        textref.append("#");
+        textref.append(node->TextRefFragmentId().c_str());
+    }
 
-	NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
 
-	dict[@"epubtype"] = [NSString stringWithUTF8String:node->Type().c_str()];
-	dict[@"nodeType"] = [NSString stringWithUTF8String:node->Name().c_str()];
-	dict[@"textref"] = [NSString stringWithUTF8String:textref.c_str()];
+    dict[@"epubtype"] = [NSString stringWithUTF8String:node->Type().c_str()];
+    dict[@"nodeType"] = [NSString stringWithUTF8String:node->Name().c_str()];
+    dict[@"textref"] = [NSString stringWithUTF8String:textref.c_str()];
 
-	NSMutableArray *children = [NSMutableArray array];
-	auto count = node->GetChildrenCount();
+    NSMutableArray *children = [NSMutableArray array];
+    auto count = node->GetChildrenCount();
 
-	for (int i = 0; i < count; i++) {
-		const ePub3::SMILData::TimeContainer *container = node->GetChild(i).get();
+    for (int i = 0; i < count; i++) {
+        const ePub3::SMILData::TimeContainer *container = node->GetChild(i).get();
 
-		if (container->IsSequence()) {
-			[children addObject:[self parseTreeSequence:(ePub3::SMILData::Sequence *)container]];
-		}
-		else if (container->IsParallel()) {
-			[children addObject:[self parseTreeParallel:(ePub3::SMILData::Parallel *)container]];
-		}
-		else {
-			NSLog(@"The child is not a sequence or a parallel!");
-		}
-	}
+        if (container->IsSequence()) {
+            [children addObject:[self parseTreeSequence:(ePub3::SMILData::Sequence *)container]];
+        }
+        else if (container->IsParallel()) {
+            [children addObject:[self parseTreeParallel:(ePub3::SMILData::Parallel *)container]];
+        }
+        else {
+            NSLog(@"The child is not a sequence or a parallel!");
+        }
+    }
 
-	if (children.count > 0) {
-		dict[@"children"] = children;
-	}
+    if (children.count > 0) {
+        dict[@"children"] = children;
+    }
 
-	return dict;
+    return dict;
 }
 
 - (NSDictionary *)parseTreeText:(const ePub3::SMILData::Text *)node {
-	std::string src("");
-	src.append(node->SrcFile().c_str());
-	NSString *srcFragmentID = nil;
+    std::string src("");
+    src.append(node->SrcFile().c_str());
+    NSString *srcFragmentID = nil;
 
-	if (!node->SrcFragmentId().empty()) {
-		srcFragmentID = [NSString stringWithUTF8String:node->SrcFragmentId().c_str()];
-		src.append("#");
-		src.append(node->SrcFragmentId().c_str());
-	}
+    if (!node->SrcFragmentId().empty()) {
+        srcFragmentID = [NSString stringWithUTF8String:node->SrcFragmentId().c_str()];
+        src.append("#");
+        src.append(node->SrcFragmentId().c_str());
+    }
 
-	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:@{
-		@"nodeType" : [NSString stringWithUTF8String:node->Name().c_str()],
-		@"src" : [NSString stringWithUTF8String:src.c_str()],
-		@"srcFile" : [NSString stringWithUTF8String:node->SrcFile().c_str()],
-	}];
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:@{
+        @"nodeType" : [NSString stringWithUTF8String:node->Name().c_str()],
+        @"src" : [NSString stringWithUTF8String:src.c_str()],
+        @"srcFile" : [NSString stringWithUTF8String:node->SrcFile().c_str()],
+    }];
 
-	if (srcFragmentID != nil) {
-		dict[@"srcFragmentId"] = srcFragmentID;
-	}
+    if (srcFragmentID != nil) {
+        dict[@"srcFragmentId"] = srcFragmentID;
+    }
 
-	return dict;
+    return dict;
 }
 
 @end

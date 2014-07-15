@@ -33,7 +33,7 @@
 
 
 @interface RDNavigationElement() {
-	@private ePub3::NavigationElement *_element;
+    @private ePub3::NavigationElement *_element;
 }
 
 @property (nonatomic, strong, readwrite) NSArray *children;
@@ -53,31 +53,31 @@
     NSParameterAssert(element);
 
     self = [super init];
-	if (self) {
-		_element = (ePub3::NavigationElement *)element;
-		self.sourceHref = sourceHref;
-	}
+    if (self) {
+        _element = (ePub3::NavigationElement *)element;
+        self.sourceHref = sourceHref;
+    }
     
-	return self;
+    return self;
 }
 
 #pragma mark - Property
 
 - (NSArray *)children {
-	if (!_children) {
-		NSMutableArray *array = [NSMutableArray new];
+    if (!_children) {
+        NSMutableArray *array = [NSMutableArray new];
         ePub3::NavigationList navigationList;
-		navigationList = _element->Children();
+        navigationList = _element->Children();
 
-		for (auto i = navigationList.begin(); i != navigationList.end(); i++) {
-			RDNavigationElement *element = [[RDNavigationElement alloc]
-				initWithNavigationElement:i->get() sourceHref:self.sourceHref];
-			[array addObject:element];
-		}
+        for (auto i = navigationList.begin(); i != navigationList.end(); i++) {
+            RDNavigationElement *element = [[RDNavigationElement alloc]
+                initWithNavigationElement:i->get() sourceHref:self.sourceHref];
+            [array addObject:element];
+        }
         _children = [NSArray arrayWithArray:array];
-	}
+    }
 
-	return _children;
+    return _children;
 }
 
 

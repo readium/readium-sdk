@@ -35,8 +35,8 @@
 
 
 @interface RDContainer() {
-	@private std::shared_ptr<ePub3::Container> _container;
-	@private ePub3::Container::PackageList _packageList;
+    @private std::shared_ptr<ePub3::Container> _container;
+    @private ePub3::Container::PackageList _packageList;
 }
 
 @property (nonatomic, strong, readwrite) RDPackage *firstPackage;
@@ -53,25 +53,25 @@
 
 
 + (void)initialize {
-	ePub3::InitializeSdk();
-	ePub3::PopulateFilterManager();
+    ePub3::InitializeSdk();
+    ePub3::PopulateFilterManager();
 }
 
 - (instancetype)initWithPath:(NSString *)path {
     
     NSParameterAssert(path);
     NSParameterAssert([path length]);
-	if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
-		return nil;
-	}
+    if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
+        return nil;
+    }
 
-	if (self = [super init]) {
-		self.path = path;
-		_container = ePub3::Container::OpenContainer(path.UTF8String);
+    if (self = [super init]) {
+        self.path = path;
+        _container = ePub3::Container::OpenContainer(path.UTF8String);
         
-	}
+    }
     [self loadPackages];
-	return self;
+    return self;
 }
 
 + (instancetype)containerWithPath:(NSString *)path {
@@ -85,7 +85,7 @@
     if (!_firstPackage){
         _firstPackage = [self.allPackages firstObject];
     }
-	return _firstPackage;
+    return _firstPackage;
 }
 
 - (NSArray *)packages {

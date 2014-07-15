@@ -33,7 +33,7 @@
 
 
 @interface RDSpineItem () {
-	@private ePub3::SpineItem *_spineItem;
+    @private ePub3::SpineItem *_spineItem;
 }
 
 @property (nonatomic, strong, readwrite) NSDictionary *dictionary;
@@ -58,91 +58,91 @@
     NSParameterAssert(spineItem);
 
     self = [super init];
-	if (self) {
-		_spineItem = (ePub3::SpineItem *)spineItem;
-		std::shared_ptr<ePub3::ManifestItem> manifestItem = _spineItem->ManifestItem();
+    if (self) {
+        _spineItem = (ePub3::SpineItem *)spineItem;
+        std::shared_ptr<ePub3::ManifestItem> manifestItem = _spineItem->ManifestItem();
         
-		if (manifestItem == nullptr) {
-			return nil;
-		}
+        if (manifestItem == nullptr) {
+            return nil;
+        }
 
-		self.baseHref = [[NSString alloc] initWithUTF8String:manifestItem->BaseHref().c_str()];
-		self.idref = [[NSString alloc] initWithUTF8String:_spineItem->Idref().c_str()];
-		self.mediaOverlayId = [[NSString alloc] initWithUTF8String:manifestItem->MediaOverlayID().c_str()];
-		self.mediaType = [[NSString alloc] initWithUTF8String:manifestItem->MediaType().c_str()];
-		self.pageSpread = [self findProperty:@"page-spread" withOptionalPrefix:@"rendition"];
-		self.renditionFlow = [self findProperty:@"flow" withPrefix:@"rendition"];
-		self.renditionLayout = [self findProperty:@"layout" withPrefix:@"rendition"];
-		self.renditionSpread = [self findProperty:@"spread" withPrefix:@"rendition"];
-	}
+        self.baseHref = [[NSString alloc] initWithUTF8String:manifestItem->BaseHref().c_str()];
+        self.idref = [[NSString alloc] initWithUTF8String:_spineItem->Idref().c_str()];
+        self.mediaOverlayId = [[NSString alloc] initWithUTF8String:manifestItem->MediaOverlayID().c_str()];
+        self.mediaType = [[NSString alloc] initWithUTF8String:manifestItem->MediaType().c_str()];
+        self.pageSpread = [self findProperty:@"page-spread" withOptionalPrefix:@"rendition"];
+        self.renditionFlow = [self findProperty:@"flow" withPrefix:@"rendition"];
+        self.renditionLayout = [self findProperty:@"layout" withPrefix:@"rendition"];
+        self.renditionSpread = [self findProperty:@"spread" withPrefix:@"rendition"];
+    }
     
-	return self;
+    return self;
 }
 
 #pragma mark - Property
 
 - (NSDictionary *)dictionary {
-	if (!_dictionary) {
-		NSMutableDictionary *dict = [NSMutableDictionary new];
+    if (!_dictionary) {
+        NSMutableDictionary *dict = [NSMutableDictionary new];
 
-		if (self.baseHref) {
-			dict[@"href"] = self.baseHref;
-		}
+        if (self.baseHref) {
+            dict[@"href"] = self.baseHref;
+        }
 
-		if (self.idref) {
-			dict[@"idref"] = self.idref;
-		}
+        if (self.idref) {
+            dict[@"idref"] = self.idref;
+        }
 
-		if (self.mediaOverlayId) {
+        if (self.mediaOverlayId) {
             dict[@"media_overlay_id"] = self.mediaOverlayId;
-		}
+        }
 
-		if (self.mediaType) {
-			dict[@"media_type"] = self.mediaType;
-		}
+        if (self.mediaType) {
+            dict[@"media_type"] = self.mediaType;
+        }
 
-		if (self.pageSpread) {
-			dict[@"page_spread"] = self.pageSpread;
-		}
+        if (self.pageSpread) {
+            dict[@"page_spread"] = self.pageSpread;
+        }
 
-		if (self.renditionFlow) {
-			dict[@"rendition_flow"] = self.renditionFlow;
-		}
+        if (self.renditionFlow) {
+            dict[@"rendition_flow"] = self.renditionFlow;
+        }
 
-		if (self.renditionLayout) {
-			dict[@"rendition_layout"] = self.renditionLayout;
-		}
+        if (self.renditionLayout) {
+            dict[@"rendition_layout"] = self.renditionLayout;
+        }
 
-		if (self.renditionSpread) {
-			dict[@"rendition_spread"] = self.renditionSpread;
-		}
-		_dictionary = [NSDictionary dictionaryWithDictionary:dict];
-	}
+        if (self.renditionSpread) {
+            dict[@"rendition_spread"] = self.renditionSpread;
+        }
+        _dictionary = [NSDictionary dictionaryWithDictionary:dict];
+    }
 
-	return _dictionary;
+    return _dictionary;
 }
 
 #pragma mark - Private methods
 
 - (NSString *)findProperty:(NSString *)propName withOptionalPrefix:(NSString *)prefix {
-	NSString *value = [self findProperty:propName withPrefix:prefix];
+    NSString *value = [self findProperty:propName withPrefix:prefix];
 
-	if (!value.length) {
-		value = [self findProperty:propName withPrefix:@""];
-	}
+    if (!value.length) {
+        value = [self findProperty:propName withPrefix:@""];
+    }
 
-	return value;
+    return value;
 }
 
 
 - (NSString *)findProperty:(NSString *)propName withPrefix:(NSString *)prefix {
-	auto prop = _spineItem->PropertyMatching([propName UTF8String], [prefix UTF8String]);
+    auto prop = _spineItem->PropertyMatching([propName UTF8String], [prefix UTF8String]);
 
-	if (prop != nullptr) {
-		return [NSString stringWithUTF8String:prop->Value().c_str()];
-	}
+    if (prop != nullptr) {
+        return [NSString stringWithUTF8String:prop->Value().c_str()];
+    }
 
-	return @"";
+    return @"";
 }
 
 @end
