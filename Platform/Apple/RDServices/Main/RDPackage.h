@@ -29,48 +29,40 @@
 
 #import <Foundation/Foundation.h>
 
+#import "RDPackageResource.h"
+
 @class RDContainer;
 @class RDMediaOverlaysSmilModel;
 @class RDNavigationElement;
-@class RDPackageResource;
 
-@interface RDPackage : NSObject {
-	@private RDMediaOverlaysSmilModel *m_mediaOverlaysSmilModel;
-	@private RDNavigationElement *m_navElemListOfFigures;
-	@private RDNavigationElement *m_navElemListOfIllustrations;
-	@private RDNavigationElement *m_navElemListOfTables;
-	@private RDNavigationElement *m_navElemPageList;
-	@private RDNavigationElement *m_navElemTableOfContents;
-	@private NSString *m_packageUUID;
-	@private NSMutableArray *m_spineItems;
-	@private NSMutableArray *m_subjects;
-}
+@interface RDPackage : NSObject <RDPackageResourceDelegate>
 
-@property (nonatomic, readonly) NSString *authors;
-@property (nonatomic, readonly) NSString *basePath;
-@property (nonatomic, readonly) NSString *copyrightOwner;
-@property (nonatomic, readonly) NSDictionary *dictionary;
-@property (nonatomic, readonly) NSString *fullTitle;
-@property (nonatomic, readonly) NSString *isbn;
-@property (nonatomic, readonly) NSString *language;
-@property (nonatomic, readonly) RDNavigationElement *listOfFigures;
-@property (nonatomic, readonly) RDNavigationElement *listOfIllustrations;
-@property (nonatomic, readonly) RDNavigationElement *listOfTables;
-@property (nonatomic, readonly) RDMediaOverlaysSmilModel *mediaOverlaysSmilModel;
-@property (nonatomic, readonly) NSString *modificationDateString;
-@property (nonatomic, readonly) NSString *packageID;
-@property (nonatomic, readonly) NSString *packageUUID;
-@property (nonatomic, readonly) RDNavigationElement *pageList;
-@property (nonatomic, readonly) NSString *renditionLayout;
-@property (nonatomic, strong) NSString *rootURL;
-@property (nonatomic, readonly) NSString *source;
-@property (nonatomic, readonly) NSArray *spineItems;
-@property (nonatomic, readonly) NSArray *subjects;
-@property (nonatomic, readonly) NSString *subtitle;
-@property (nonatomic, readonly) RDNavigationElement *tableOfContents;
-@property (nonatomic, readonly) NSString *title;
+- (instancetype)initWithPackage:(void *)package;
 
-- (id)initWithPackage:(void *)package;
+@property (nonatomic, copy, readonly)   NSString *authors;
+@property (nonatomic, copy, readonly)   NSString *basePath;
+@property (nonatomic, copy, readonly)   NSString *copyrightOwner;
+@property (nonatomic, copy, readonly)   NSString *fullTitle;
+@property (nonatomic, copy, readonly)   NSString *isbn;
+@property (nonatomic, copy, readonly)   NSString *language;
+@property (nonatomic, copy, readonly)   NSString *modificationDateString;
+@property (nonatomic, copy, readonly)   NSString *packageID;
+@property (nonatomic, copy, readonly)   NSString *packageUUID;
+@property (nonatomic, copy, readonly)   NSString *renditionLayout;
+@property (nonatomic, copy)             NSString *rootURL;
+@property (nonatomic, copy, readonly)   NSString *source;
+@property (nonatomic, copy, readonly)   NSString *subtitle;
+@property (nonatomic, copy, readonly)   NSString *title;
+
+@property (nonatomic, strong, readonly) NSDictionary *dictionary;
+@property (nonatomic, strong, readonly) RDNavigationElement *listOfFigures;
+@property (nonatomic, strong, readonly) RDNavigationElement *listOfIllustrations;
+@property (nonatomic, strong, readonly) RDNavigationElement *listOfTables;
+@property (nonatomic, strong, readonly) RDMediaOverlaysSmilModel *mediaOverlaysSmilModel;
+@property (nonatomic, strong, readonly) RDNavigationElement *pageList;
+@property (nonatomic, strong, readonly) NSArray *spineItems;
+@property (nonatomic, strong, readonly) NSArray *subjects;
+@property (nonatomic, strong, readonly) RDNavigationElement *tableOfContents;
 
 // Returns the resource at the given relative path or nil if it doesn't exist.
 - (RDPackageResource *)resourceAtRelativePath:(NSString *)relativePath;

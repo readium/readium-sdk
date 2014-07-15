@@ -29,16 +29,13 @@
 
 #import <Foundation/Foundation.h>
 
-@interface RDNavigationElement : NSObject {
-	@private NSArray *m_children;
-	@private NSString *m_sourceHref;
-}
+@interface RDNavigationElement : NSObject
 
-@property (nonatomic, readonly) NSArray *children;
-@property (nonatomic, readonly) NSString *content;
-@property (nonatomic, readonly) NSString *sourceHref;
-@property (nonatomic, readonly) NSString *title;
+- (instancetype)initWithNavigationElement:(void *)element sourceHref:(NSString *)sourceHref;
 
-- (id)initWithNavigationElement:(void *)element sourceHref:(NSString *)sourceHref;
+@property (nonatomic, strong, readonly) NSArray *children;
+@property (nonatomic, copy, readonly) NSString *content;
+@property (nonatomic, copy, readonly) NSString *sourceHref;
+@property (nonatomic, copy, readonly) NSString *title;
 
 @end

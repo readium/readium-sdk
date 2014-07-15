@@ -32,80 +32,100 @@
 
 
 @interface RDSmilData () {
-	@private ePub3::SMILData *m_smilData;
+	@private ePub3::SMILData *_smilData;
 }
 
-- (NSDictionary *)parseTreeAudio:(const ePub3::SMILData::Audio *)node;
-- (NSDictionary *)parseTreeParallel:(ePub3::SMILData::Parallel *)node;
-- (NSDictionary *)parseTreeSequence:(const ePub3::SMILData::Sequence *)node;
-- (NSDictionary *)parseTreeText:(const ePub3::SMILData::Text *)node;
+@property (nonatomic, strong, readwrite) NSDictionary *bodyDictionary;
+@property (nonatomic, strong, readwrite) NSDictionary *dictionary;
+@property (nonatomic, assign, readwrite) NSTimeInterval duration;
+@property (nonatomic, copy, readwrite) NSString *href;
+@property (nonatomic, copy, readwrite) NSString *identifier;
+@property (nonatomic, copy, readwrite) NSString *smilVersion;
+@property (nonatomic, copy, readwrite) NSString *spineItemID;
 
 @end
 
 
 @implementation RDSmilData
 
+#pragma mark - Init methods
+
+- (instancetype)initWithSmilData:(void *)smilData {
+    NSParameterAssert(smilData);
+    self = [super init];
+	if (self) {
+		_smilData = (ePub3::SMILData *)smilData;
+	}
+	return self;
+}
+
+#pragma mark - Property
 
 - (NSDictionary *)bodyDictionary {
-	if (m_bodyDictionary == nil) {
-		const ePub3::SMILData::Sequence *sequence = m_smilData->Body().get();
-
-		if (sequence == nullptr) {
-			m_bodyDictionary = [[NSDictionary alloc] init];
-		}
-		else {
-			m_bodyDictionary = [self parseTreeSequence:sequence];
-		}
+	if (!_bodyDictionary) {
+		const ePub3::SMILData::Sequence *sequence = _smilData->Body().get();
+        _bodyDictionary = (sequence == nullptr)? @{} : [self parseTreeSequence:sequence];
 	}
 
-	return m_bodyDictionary;
+	return _bodyDictionary;
 }
 
 
 - (NSDictionary *)dictionary {
-	return @{
-		@"children" : @[ self.bodyDictionary ],
-		@"duration" : [NSNumber numberWithDouble:self.duration],
-		@"href" : self.href,
-		@"id" : self.identifier,
-		@"smilVersion" : self.smilVersion,
-		@"spineItemId" : self.spineItemID,
-	};
+    if (!_dictionary) {
+        _dictionary = @{
+                        @"children" : @[self.bodyDictionary],
+                        @"duration" : @(self.duration),
+                        @"href" : self.href,
+                        @"id" : self.identifier,
+                        @"smilVersion" : self.smilVersion,
+                        @"spineItemId" : self.spineItemID,
+                    };
+    }
+    return _dictionary;
 }
 
-
 - (NSTimeInterval)duration {
-	NSTimeInterval ms = m_smilData->DurationMilliseconds_Metadata();
-	return ms / 1000.0;
+	NSTimeInterval ms = _smilData->DurationMilliseconds_Metadata();
+	_duration = ms / 1000.0;
+    return _duration;
 }
 
 
 - (NSString *)href {
-	ePub3::ManifestItemPtr manifestItem = m_smilData->SmilManifestItem();
-	const ePub3::string s = manifestItem == nullptr ? "fake.smil" : manifestItem->Href();
-	return [NSString stringWithUTF8String:s.c_str()];
+    if (!_href) {
+        ePub3::ManifestItemPtr manifestItem = _smilData->SmilManifestItem();
+        const ePub3::string s = manifestItem == nullptr ? "fake.smil" : manifestItem->Href();
+        _href = [NSString stringWithUTF8String:s.c_str()];
+    }
+    return _href;
 }
-
 
 - (NSString *)identifier {
-	ePub3::ManifestItemPtr manifestItem = m_smilData->SmilManifestItem();
-	const ePub3::string s = manifestItem == nullptr ? "" : manifestItem->Identifier();
-	return [NSString stringWithUTF8String:s.c_str()];
+    if (!_identifier) {
+        ePub3::ManifestItemPtr manifestItem = _smilData->SmilManifestItem();
+        const ePub3::string s = manifestItem == nullptr ? "" : manifestItem->Identifier();
+        _identifier = [NSString stringWithUTF8String:s.c_str()];
+    }
+    return _identifier;
 }
 
-
-- (id)initWithSmilData:(void *)smilData {
-	if (smilData == nil) {
-		return nil;
-	}
-
-	if (self = [super init]) {
-		m_smilData = (ePub3::SMILData *)smilData;
-	}
-
-	return self;
+- (NSString *)smilVersion {
+    if (!_smilVersion) {
+        _smilVersion = @"3.0";
+    }
+	return _smilVersion;
 }
 
+- (NSString *)spineItemID {
+    if (!_spineItemID) {
+        const ePub3::string s = _smilData->XhtmlSpineItem()->Idref();
+        _spineItemID = [NSString stringWithUTF8String:s.c_str()];
+    }
+    return _spineItemID;
+}
+
+#pragma mark - Private methods
 
 - (NSDictionary *)parseTreeAudio:(const ePub3::SMILData::Audio *)node {
 	std::string src("");
@@ -188,7 +208,6 @@
 	return dict;
 }
 
-
 - (NSDictionary *)parseTreeText:(const ePub3::SMILData::Text *)node {
 	std::string src("");
 	src.append(node->SrcFile().c_str());
@@ -212,17 +231,5 @@
 
 	return dict;
 }
-
-
-- (NSString *)smilVersion {
-	return @"3.0";
-}
-
-
-- (NSString *)spineItemID {
-	const ePub3::string s = m_smilData->XhtmlSpineItem()->Idref();
-	return [NSString stringWithUTF8String:s.c_str()];
-}
-
 
 @end

@@ -31,16 +31,19 @@
 
 @interface RDSpineItem : NSObject
 
-@property (nonatomic, readonly) NSString *baseHref;
-@property (nonatomic, readonly) NSDictionary *dictionary;
-@property (nonatomic, readonly) NSString *idref;
-@property (nonatomic, readonly) NSString *mediaOverlayId;
-@property (nonatomic, readonly) NSString *mediaType;
-@property (nonatomic, readonly) NSString *pageSpread;
-@property (nonatomic, readonly) NSString *renditionFlow;
-@property (nonatomic, readonly) NSString *renditionLayout;
-@property (nonatomic, readonly) NSString *renditionSpread;
 
-- (id)initWithSpineItem:(void *)spineItem;
+- (instancetype)initWithSpineItem:(void *)spineItem;
+
+
+@property (nonatomic, strong, readonly) NSDictionary *dictionary;
+
+@property (nonatomic, copy, readonly) NSString *baseHref;
+@property (nonatomic, copy, readonly) NSString *idref;
+@property (nonatomic, copy, readonly) NSString *mediaOverlayId;
+@property (nonatomic, copy, readonly) NSString *mediaType;
+@property (nonatomic, copy, readonly) NSString *pageSpread;
+@property (nonatomic, copy, readonly) NSString *renditionFlow;
+@property (nonatomic, copy, readonly) NSString *renditionLayout;
+@property (nonatomic, copy, readonly) NSString *renditionSpread;
 
 @end

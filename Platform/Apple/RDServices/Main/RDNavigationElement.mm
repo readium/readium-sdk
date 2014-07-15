@@ -33,9 +33,13 @@
 
 
 @interface RDNavigationElement() {
-	@private ePub3::NavigationElement *m_element;
-	@private ePub3::NavigationList m_navigationList;
+	@private ePub3::NavigationElement *_element;
 }
+
+@property (nonatomic, strong, readwrite) NSArray *children;
+@property (nonatomic, copy, readwrite) NSString *content;
+@property (nonatomic, copy, readwrite) NSString *sourceHref;
+@property (nonatomic, copy, readwrite) NSString *title;
 
 @end
 
@@ -43,55 +47,57 @@
 @implementation RDNavigationElement
 
 
-@synthesize sourceHref = m_sourceHref;
+#pragma mark - Init methods
 
+- (instancetype)initWithNavigationElement:(void *)element sourceHref:(NSString *)sourceHref {
+    NSParameterAssert(element);
+
+    self = [super init];
+	if (self) {
+		_element = (ePub3::NavigationElement *)element;
+		self.sourceHref = sourceHref;
+	}
+    
+	return self;
+}
+
+#pragma mark - Property
 
 - (NSArray *)children {
-	if (m_children == nil) {
-		NSMutableArray *array = [[NSMutableArray alloc] init];
-		m_children = array;
-		m_navigationList = m_element->Children();
+	if (!_children) {
+		NSMutableArray *array = [NSMutableArray new];
+        ePub3::NavigationList navigationList;
+		navigationList = _element->Children();
 
-		for (auto i = m_navigationList.begin(); i != m_navigationList.end(); i++) {
+		for (auto i = navigationList.begin(); i != navigationList.end(); i++) {
 			RDNavigationElement *element = [[RDNavigationElement alloc]
-				initWithNavigationElement:i->get() sourceHref:m_sourceHref];
+				initWithNavigationElement:i->get() sourceHref:self.sourceHref];
 			[array addObject:element];
 		}
+        _children = [NSArray arrayWithArray:array];
 	}
 
-	return m_children;
+	return _children;
 }
 
 
 - (NSString *)content {
-	ePub3::NavigationPoint *point = dynamic_cast<ePub3::NavigationPoint *>(m_element);
-
-	if (point == nil) {
-		return nil;
-	}
-
-	const ePub3::string s = point->Content();
-	return [NSString stringWithUTF8String:s.c_str()];
+    if (!_content) {
+        ePub3::NavigationPoint *point = dynamic_cast<ePub3::NavigationPoint *>(_element);
+        if (!point) {
+            const ePub3::string s = point->Content();
+            _content = [NSString stringWithUTF8String:s.c_str()];
+        }
+    }
+    return _content;
 }
-
-
-- (id)initWithNavigationElement:(void *)element sourceHref:(NSString *)sourceHref {
-	if (element == nil) {
-		return nil;
-	}
-
-	if (self = [super init]) {
-		m_element = (ePub3::NavigationElement *)element;
-		m_sourceHref = sourceHref;
-	}
-
-	return self;
-}
-
 
 - (NSString *)title {
-	const ePub3::string s = m_element->Title();
-	return [NSString stringWithUTF8String:s.c_str()];
+    if (!_title) {
+        const ePub3::string s = _element->Title();
+        _title = [NSString stringWithUTF8String:s.c_str()];
+    }
+    return _title;
 }
 
 

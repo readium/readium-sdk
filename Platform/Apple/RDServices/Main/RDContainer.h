@@ -31,15 +31,16 @@
 
 @class RDPackage;
 
-@interface RDContainer : NSObject {
-	@private NSMutableArray *m_packages;
-	@private NSString *m_path;
-}
+@interface RDContainer : NSObject
 
-@property (nonatomic, readonly) RDPackage *firstPackage;
-@property (nonatomic, readonly) NSArray *packages;
-@property (nonatomic, readonly) NSString *path;
+- NS_UNAVAILABLE init;
++ NS_UNAVAILABLE new;
 
-- (id)initWithPath:(NSString *)path;
+- (instancetype)initWithPath:(NSString *)path;
++ (instancetype)containerWithPath:(NSString *)path;
+
+@property (nonatomic, strong, readonly) RDPackage *firstPackage;
+@property (nonatomic, strong, readonly) NSArray *packages;
+@property (nonatomic, copy, readonly) NSString *path;
 
 @end

@@ -29,18 +29,16 @@
 
 #import <Foundation/Foundation.h>
 
-@interface RDSmilData : NSObject {
-	@private NSDictionary *m_bodyDictionary;
-}
+@interface RDSmilData : NSObject
 
-@property (nonatomic, readonly) NSDictionary *bodyDictionary;
-@property (nonatomic, readonly) NSDictionary *dictionary;
-@property (nonatomic, readonly) NSTimeInterval duration;
-@property (nonatomic, readonly) NSString *href;
-@property (nonatomic, readonly) NSString *identifier;
-@property (nonatomic, readonly) NSString *smilVersion;
-@property (nonatomic, readonly) NSString *spineItemID;
+- (instancetype)initWithSmilData:(void *)smilData;
 
-- (id)initWithSmilData:(void *)smilData;
+@property (nonatomic, strong, readonly) NSDictionary *bodyDictionary;
+@property (nonatomic, strong, readonly) NSDictionary *dictionary;
+@property (nonatomic, assign, readonly) NSTimeInterval duration;
+@property (nonatomic, copy, readonly) NSString *href;
+@property (nonatomic, copy, readonly) NSString *identifier;
+@property (nonatomic, copy, readonly) NSString *smilVersion;
+@property (nonatomic, copy, readonly) NSString *spineItemID;
 
 @end
