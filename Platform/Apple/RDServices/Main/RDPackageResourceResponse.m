@@ -56,7 +56,7 @@
 #pragma mark - HTTPResponse methods
 
 - (void)setOffset:(UInt64)offset {
-	self.offset = offset;
+	_offset = offset;
     
 	@synchronized ([RDPackageResourceServer resourceLock]) {
 		[self.resource setOffset:offset];
