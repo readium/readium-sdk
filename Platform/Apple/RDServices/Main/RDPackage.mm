@@ -84,9 +84,23 @@
 	[dictRoot setObject:self.mediaOverlaysSmilModel.dictionary forKey:@"media_overlay"];
 
 	NSString *s = self.renditionLayout;
-
 	if (s != nil) {
 		[dictRoot setObject:s forKey:@"rendition_layout"];
+	}
+
+	NSString *ss = self.renditionFlow;
+	if (ss != nil) {
+		[dictRoot setObject:ss forKey:@"rendition_flow"];
+	}
+
+	NSString *sss = self.renditionSpread;
+	if (sss != nil) {
+		[dictRoot setObject:sss forKey:@"rendition_spread"];
+	}
+    
+	NSString *ssss = self.renditionOrientation;
+	if (ssss != nil) {
+		[dictRoot setObject:ssss forKey:@"rendition_orientation"];
 	}
 
 	NSMutableDictionary *dictSpine = [NSMutableDictionary dictionary];
@@ -260,6 +274,18 @@
 
 - (NSString *)renditionLayout {
 	ePub3::PropertyPtr prop = m_package->PropertyMatching("layout", "rendition");
+	return (prop == nullptr) ? @"" : [NSString stringWithUTF8String:prop->Value().c_str()];
+}
+- (NSString *)renditionFlow {
+	ePub3::PropertyPtr prop = m_package->PropertyMatching("flow", "rendition");
+	return (prop == nullptr) ? @"" : [NSString stringWithUTF8String:prop->Value().c_str()];
+}
+- (NSString *)renditionSpread {
+	ePub3::PropertyPtr prop = m_package->PropertyMatching("spread", "rendition");
+	return (prop == nullptr) ? @"" : [NSString stringWithUTF8String:prop->Value().c_str()];
+}
+- (NSString *)renditionOrientation {
+	ePub3::PropertyPtr prop = m_package->PropertyMatching("orientation", "rendition");
 	return (prop == nullptr) ? @"" : [NSString stringWithUTF8String:prop->Value().c_str()];
 }
 

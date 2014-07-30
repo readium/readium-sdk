@@ -39,9 +39,12 @@
 	@private NSString *m_mediaOverlayId;
 	@private NSString *m_mediaType;
 	@private NSString *m_pageSpread;
-	@private NSString *m_renditionFlow;
+	
+    @private NSString *m_renditionFlow;
+    @private NSString *m_renditionOrientation;
 	@private NSString *m_renditionLayout;
 	@private NSString *m_renditionSpread;
+    
 	@private ePub3::SpineItem *m_spineItem;
 }
 
@@ -60,6 +63,7 @@
 @synthesize mediaType = m_mediaType;
 @synthesize pageSpread = m_pageSpread;
 @synthesize renditionFlow = m_renditionFlow;
+@synthesize renditionOrientation = m_renditionOrientation;
 @synthesize renditionLayout = m_renditionLayout;
 @synthesize renditionSpread = m_renditionSpread;
 
@@ -90,6 +94,10 @@
 
 		if (self.renditionFlow != nil) {
 			[dict setObject:self.renditionFlow forKey:@"rendition_flow"];
+		}
+
+		if (self.renditionOrientation != nil) {
+			[dict setObject:self.renditionOrientation forKey:@"rendition_orientation"];
 		}
 
 		if (self.renditionLayout != nil) {
@@ -147,7 +155,9 @@
 		m_mediaOverlayId = [[NSString alloc] initWithUTF8String:manifestItem->MediaOverlayID().c_str()];
 		m_mediaType = [[NSString alloc] initWithUTF8String:manifestItem->MediaType().c_str()];
 		m_pageSpread = [self findProperty:@"page-spread" withOptionalPrefix:@"rendition"];
+        
 		m_renditionFlow = [self findProperty:@"flow" withPrefix:@"rendition"];
+		m_renditionOrientation = [self findProperty:@"orientation" withPrefix:@"rendition"];
 		m_renditionLayout = [self findProperty:@"layout" withPrefix:@"rendition"];
 		m_renditionSpread = [self findProperty:@"spread" withPrefix:@"rendition"];
 	}

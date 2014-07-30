@@ -61,7 +61,12 @@
 @property (nonatomic, readonly) NSString *packageID;
 @property (nonatomic, readonly) NSString *packageUUID;
 @property (nonatomic, readonly) RDNavigationElement *pageList;
+
 @property (nonatomic, readonly) NSString *renditionLayout;
+@property (nonatomic, readonly) NSString *renditionFlow;
+@property (nonatomic, readonly) NSString *renditionSpread;
+@property (nonatomic, readonly) NSString *renditionOrientation;
+
 @property (nonatomic, strong) NSString *rootURL;
 @property (nonatomic, readonly) NSString *source;
 @property (nonatomic, readonly) NSArray *spineItems;

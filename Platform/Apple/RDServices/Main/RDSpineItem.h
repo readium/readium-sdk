@@ -37,7 +37,9 @@
 @property (nonatomic, readonly) NSString *mediaOverlayId;
 @property (nonatomic, readonly) NSString *mediaType;
 @property (nonatomic, readonly) NSString *pageSpread;
+
 @property (nonatomic, readonly) NSString *renditionFlow;
+@property (nonatomic, readonly) NSString *renditionOrientation;
 @property (nonatomic, readonly) NSString *renditionLayout;
 @property (nonatomic, readonly) NSString *renditionSpread;
 
