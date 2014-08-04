@@ -680,6 +680,20 @@ public:
 
             //printf("=========== refOPFPath AFTER: %s\n", refOPFPath.c_str());
 
+
+            // When content does not have a root folder such as "OEBPS" or "EPUB", manifest absolute paths have a '/' prefix!!
+// //std::shared_ptr<Package> package = Owner(); // internally: std::weak_ptr<Package>.lock()
+//            if (package != nullptr)
+//            {
+//                string basePath = package->BasePath();
+//                printf("=========== basePath: %s\n", basePath.c_str());
+//            }
+            if (smilOPFPath.at(0) == '/' && refOPFPath.at(0) != '/')
+            {
+                //refOPFPath = _Str(smilOPFPath.substr(0, 1), refOPFPath);
+                refOPFPath.insert(0, "/");
+            }
+
             const ManifestTable & manifestTable = package->Manifest();
             for (ManifestTable::const_iterator iter = manifestTable.begin(); iter != manifestTable.end(); iter++)
             {
