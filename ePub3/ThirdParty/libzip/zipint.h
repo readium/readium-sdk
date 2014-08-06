@@ -135,8 +135,8 @@ struct zip_file {
 
     int method;			/* compression method */
     off_t fpos;			/* position within zip file (fread/fwrite) */
-    unsigned long bytes_left;	/* number of bytes left to read */
-    unsigned long cbytes_left;  /* number of bytes of compressed data left */
+    size_t bytes_left;	/* number of bytes left to read */
+    size_t cbytes_left;  /* number of bytes of compressed data left */
     
     unsigned long crc;		/* CRC so far */
     unsigned long crc_orig;	/* CRC recorded in archive */
