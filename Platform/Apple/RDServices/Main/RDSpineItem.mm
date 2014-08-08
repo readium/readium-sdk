@@ -36,6 +36,7 @@
 	@private NSString *m_baseHref;
 	@private NSDictionary *m_dict;
 	@private NSString *m_idref;
+    @private NSString *m_linear;
 	@private NSString *m_mediaOverlayId;
 	@private NSString *m_mediaType;
 	@private NSString *m_pageSpread;
@@ -59,6 +60,7 @@
 
 @synthesize baseHref = m_baseHref;
 @synthesize idref = m_idref;
+@synthesize linear = m_linear;
 @synthesize mediaOverlayId = m_mediaOverlayId;
 @synthesize mediaType = m_mediaType;
 @synthesize pageSpread = m_pageSpread;
@@ -76,9 +78,13 @@
 			[dict setObject:self.baseHref forKey:@"href"];
 		}
 
-		if (self.idref != nil) {
-			[dict setObject:self.idref forKey:@"idref"];
-		}
+        if (self.idref != nil) {
+            [dict setObject:self.idref forKey:@"idref"];
+        }
+
+        if (self.linear!= nil) {
+            [dict setObject:self.linear forKey:@"linear"];
+        }
 
 		if (self.mediaOverlayId != nil) {
 			[dict setObject:self.mediaOverlayId forKey:@"media_overlay_id"];
@@ -149,6 +155,9 @@
 		if (manifestItem == nullptr) {
 			return nil;
 		}
+
+        bool l = m_spineItem->Linear();
+        m_linear = l ? @"yes" : @"no";
 
 		m_baseHref = [[NSString alloc] initWithUTF8String:manifestItem->BaseHref().c_str()];
 		m_idref = [[NSString alloc] initWithUTF8String:m_spineItem->Idref().c_str()];

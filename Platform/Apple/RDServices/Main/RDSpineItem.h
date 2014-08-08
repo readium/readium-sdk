@@ -34,6 +34,7 @@
 @property (nonatomic, readonly) NSString *baseHref;
 @property (nonatomic, readonly) NSDictionary *dictionary;
 @property (nonatomic, readonly) NSString *idref;
+@property (nonatomic, readonly) NSString *linear;
 @property (nonatomic, readonly) NSString *mediaOverlayId;
 @property (nonatomic, readonly) NSString *mediaType;
 @property (nonatomic, readonly) NSString *pageSpread;
