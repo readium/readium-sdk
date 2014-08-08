@@ -40,7 +40,7 @@ bool SpineItem::ParseXML(shared_ptr<xml::Node> node)
 {
     SetXMLIdentifier(_getProp(node, "id"));
     _idref = _getProp(node, "idref");
-    if ( _getProp(node, "linear").tolower() == "false" )
+    if ( _getProp(node, "linear").tolower() == "no" )
         _linear = false;
     
     auto holder = CastPtr<PropertyHolder>();
