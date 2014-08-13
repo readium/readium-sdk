@@ -114,7 +114,7 @@ int _zip_fseek_bytes(struct zip_file* zf, off_t abspos, off_t flen)
     /* not at or past EOF? ensure EOF is unset and update bytes_left */
     else {
         zf->flags &= ~ZIP_ZF_EOF;
-        zf->bytes_left = flen - abspos;
+        zf->bytes_left = (size_t)(flen - abspos);
     }
     zf->file_fpos = abspos;
     return 0;
@@ -132,7 +132,7 @@ int _zip_fseek_comp(struct zip_file* zf, off_t abspos, off_t flen)
     }
     else if (abspos > zf->file_fpos) {
         // read & decompress bytes until we reach the right position
-        return _zip_fseek_by_reading(zf, abspos-zf->file_fpos);
+        return _zip_fseek_by_reading(zf, (size_t)(abspos-zf->file_fpos));
     }
     
     /* at this point, we're definitely moving backwards */
@@ -147,7 +147,7 @@ int _zip_fseek_comp(struct zip_file* zf, off_t abspos, off_t flen)
         return -1;      /* error already set */
     
     /* this is a no-op for abspos == 0 */
-    return _zip_fseek_by_reading(zf, abspos);
+    return _zip_fseek_by_reading(zf, (size_t)abspos);
 }
 
 int _zip_fseek_to_start(struct zip_file* zf)
