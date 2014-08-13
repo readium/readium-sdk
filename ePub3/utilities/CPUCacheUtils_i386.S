@@ -13,8 +13,8 @@
 
 /* void epub_sys_cache_invalidate(void* start, size_t len) */
 
-    .globl  _epub_sys_cache_invalidate
-_epub_sys_cache_invalidate:
+    .globl  epub_sys_cache_invalidate
+epub_sys_cache_invalidate:
     // this is a NOP on Intel processors, since the intent is to make data executable
     // and Intel L1Is are coherent with L1D.
     ret
@@ -23,8 +23,8 @@ _epub_sys_cache_invalidate:
 
 /* void epub_sys_cache_flush(void* start, size_t len) */
 
-    .globl  _epub_sys_cache_flush
-_epub_sys_cache_flush:
+    .globl epub_sys_cache_flush
+epub_sys_cache_flush:
     movl    8(%esp),%ecx        // %exc <- len
     movl    4(%esp),%edx        // %edx <- start
     testl   %ecx,%ecx           // length == 0 ?
