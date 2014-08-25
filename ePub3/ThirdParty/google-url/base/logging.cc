@@ -332,27 +332,27 @@ void DisplayDebugMessage(const std::string& str) {
 #endif
 }
 
-LogMessage::LogMessage(const char* file, int line, LogSeverity severity,
-                       int ctr)
-    : severity_(severity) {
-  Init(file, line);
-}
+// LogMessage::LogMessage(const char* file, int line, LogSeverity severity,
+//                        int ctr)
+//     : severity_(severity) {
+//   Init(file, line);
+// }
 
-LogMessage::LogMessage(const char* file, int line, const CheckOpString& result)
-    : severity_(LOG_FATAL) {
-  Init(file, line);
-  stream_ << "Check failed: " << (*result.str_);
-}
+// LogMessage::LogMessage(const char* file, int line, const CheckOpString& result)
+//     : severity_(LOG_FATAL) {
+//   Init(file, line);
+//   stream_ << "Check failed: " << (*result.str_);
+// }
 
-LogMessage::LogMessage(const char* file, int line)
-     : severity_(LOG_INFO) {
-  Init(file, line);
-}
+// LogMessage::LogMessage(const char* file, int line)
+//      : severity_(LOG_INFO) {
+//   Init(file, line);
+// }
 
-LogMessage::LogMessage(const char* file, int line, LogSeverity severity)
-    : severity_(severity) {
-  Init(file, line);
-}
+// LogMessage::LogMessage(const char* file, int line, LogSeverity severity)
+//     : severity_(severity) {
+//   Init(file, line);
+// }
     
 #if !defined(_WIN32) && !defined(_WIN64)
 # define GetCurrentProcessId() getpid()
@@ -412,115 +412,115 @@ void LogMessage::Init(const char* file, int line) {
 #endif
 }
 
-LogMessage::~LogMessage() {
-  if (severity_ < min_log_level)
-    return;
+// LogMessage::~LogMessage() {
+//   if (severity_ < min_log_level)
+//     return;
 
-  std::string str_newline(stream_.str());
-  str_newline.append(NEWLINE);
+//   std::string str_newline(stream_.str());
+//   str_newline.append(NEWLINE);
 
-  if (log_filter_prefix && severity_ <= kMaxFilteredLogLevel &&
-      str_newline.compare(message_start_, strlen(log_filter_prefix),
-                          log_filter_prefix) != 0) {
-#if _WIN32 || _WIN64
-      goto cleanup;
-#else
-      return;
-#endif
-  }
+//   if (log_filter_prefix && severity_ <= kMaxFilteredLogLevel &&
+//       str_newline.compare(message_start_, strlen(log_filter_prefix),
+//                           log_filter_prefix) != 0) {
+// #if _WIN32 || _WIN64
+//       goto cleanup;
+// #else
+//       return;
+// #endif
+//   }
 
-  if (logging_destination != LOG_ONLY_TO_FILE)
-  {
-#if _WIN32 || _WIN64
-    OutputDebugStringA(str_newline.c_str());
-#else
-      fprintf(stderr, "%s", str_newline.c_str());
-#endif
-  }
+//   if (logging_destination != LOG_ONLY_TO_FILE)
+//   {
+// #if _WIN32 || _WIN64
+//     OutputDebugStringA(str_newline.c_str());
+// #else
+//       fprintf(stderr, "%s", str_newline.c_str());
+// #endif
+//   }
 
-  // write to log file
-  if (logging_destination != LOG_ONLY_TO_SYSTEM_DEBUG_LOG &&
-      InitializeLogFileHandle()) {
-    // we can have multiple threads and/or processes, so try to prevent them from
-    // clobbering each other's writes
-    if (lock_log_file == LOCK_LOG_FILE) {
-      // Ensure that the mutex is initialized in case the client app did not
-      // call InitLogging. This is not thread safe. See below
-      InitLogMutex();
-#if _WIN32 || _WIN64
-      DWORD r = ::WaitForSingleObject(log_mutex, INFINITE);
-      DCHECK(r != WAIT_ABANDONED);
-#else
-        pthread_mutex_lock(&log_mutex);
-#endif
-    }
-#if _WIN32 || _WIN64
-    else {
-      // use the critical section
-      if (!initialized_critical_section) {
-        // The client app did not call InitLogging, and so the critical section
-        // has not been created. We do this on demand, but if two threads try to
-        // do this at the same time, there will be a race condition to create
-        // the critical section. This is why InitLogging should be called from
-        // the main thread at the beginning of execution.
-        InitializeCriticalSection(&log_critical_section);
-        initialized_critical_section = true;
-      }
-      EnterCriticalSection(&log_critical_section);
-    }
-#endif
+//   // write to log file
+//   if (logging_destination != LOG_ONLY_TO_SYSTEM_DEBUG_LOG &&
+//       InitializeLogFileHandle()) {
+//     // we can have multiple threads and/or processes, so try to prevent them from
+//     // clobbering each other's writes
+//     if (lock_log_file == LOCK_LOG_FILE) {
+//       // Ensure that the mutex is initialized in case the client app did not
+//       // call InitLogging. This is not thread safe. See below
+//       InitLogMutex();
+// #if _WIN32 || _WIN64
+//       DWORD r = ::WaitForSingleObject(log_mutex, INFINITE);
+//       DCHECK(r != WAIT_ABANDONED);
+// #else
+//         pthread_mutex_lock(&log_mutex);
+// #endif
+//     }
+// #if _WIN32 || _WIN64
+//     else {
+//       // use the critical section
+//       if (!initialized_critical_section) {
+//         // The client app did not call InitLogging, and so the critical section
+//         // has not been created. We do this on demand, but if two threads try to
+//         // do this at the same time, there will be a race condition to create
+//         // the critical section. This is why InitLogging should be called from
+//         // the main thread at the beginning of execution.
+//         InitializeCriticalSection(&log_critical_section);
+//         initialized_critical_section = true;
+//       }
+//       EnterCriticalSection(&log_critical_section);
+//     }
+// #endif
 
-#if _WIN32 || _WIN64
-    SetFilePointer(log_file, 0, 0, SEEK_END);
-    DWORD num_written;
-    WriteFile(log_file, (void*)str_newline.c_str(), (DWORD)str_newline.length(), &num_written, NULL);
+// #if _WIN32 || _WIN64
+//     SetFilePointer(log_file, 0, 0, SEEK_END);
+//     DWORD num_written;
+//     WriteFile(log_file, (void*)str_newline.c_str(), (DWORD)str_newline.length(), &num_written, NULL);
 
-    if (lock_log_file == LOCK_LOG_FILE) {
-      ReleaseMutex(log_mutex);
-    } else {
-      LeaveCriticalSection(&log_critical_section);
-    }
-#else
-      fprintf(log_file, "%s", str_newline.c_str());
-#endif
-  }
+//     if (lock_log_file == LOCK_LOG_FILE) {
+//       ReleaseMutex(log_mutex);
+//     } else {
+//       LeaveCriticalSection(&log_critical_section);
+//     }
+// #else
+//       fprintf(log_file, "%s", str_newline.c_str());
+// #endif
+//   }
 
-  if (severity_ == LOG_FATAL) {
-#if _WIN32 || _WIN64
-    // display a message or break into the debugger on a fatal error
-    if (::IsDebuggerPresent()) {
-      DebugBreak();
-    } else {
-      if (log_assert_handler) {
-        log_assert_handler(std::string(stream_.str(), stream_.pcount()));
-      } else {
-        // don't use the string with the newline, get a fresh version to send to
-        // the debug message process
-        DisplayDebugMessage(std::string(stream_.str(), stream_.pcount()));
-        TerminateProcess(GetCurrentProcess(), 1);
-      }
-    }
-#else
-# ifndef NDEBUG
-      __builtin_trap();
-# else
-      if ( log_assert_handler != nullptr )
-      {
-          log_assert_handler(stream_.str());
-      }
-      else
-      {
-          abort();
-      }
-# endif // NDEBUG
-#endif
-  }
+//   if (severity_ == LOG_FATAL) {
+// #if _WIN32 || _WIN64
+//     // display a message or break into the debugger on a fatal error
+//     if (::IsDebuggerPresent()) {
+//       DebugBreak();
+//     } else {
+//       if (log_assert_handler) {
+//         log_assert_handler(std::string(stream_.str(), stream_.pcount()));
+//       } else {
+//         // don't use the string with the newline, get a fresh version to send to
+//         // the debug message process
+//         DisplayDebugMessage(std::string(stream_.str(), stream_.pcount()));
+//         TerminateProcess(GetCurrentProcess(), 1);
+//       }
+//     }
+// #else
+// # ifndef NDEBUG
+//       __builtin_trap();
+// # else
+//       if ( log_assert_handler != nullptr )
+//       {
+//           log_assert_handler(stream_.str());
+//       }
+//       else
+//       {
+//           abort();
+//       }
+// # endif // NDEBUG
+// #endif
+//   }
 
-#if _WIN32 || _WIN64
-cleanup:
-  stream_.freeze(false);
-#endif
-}
+// #if _WIN32 || _WIN64
+// cleanup:
+//   stream_.freeze(false);
+// #endif
+// }
 
 void CloseLogFile() {
   if (!log_file)
