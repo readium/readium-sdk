@@ -522,7 +522,7 @@ void __DispatchError(const std::system_error& __err)
 static inline FORCE_INLINE
 void __DispatchError(const epub_spec_error& __err)
 {
-    if ( ErrorHandler()(error_details(__err)) == false )
+     if ( ErrorHandler()(error_details(__err)) == false )
         throw __err;
 }
 

@@ -208,7 +208,12 @@ void fail(const char* expr, const char* file, unsigned line)
 # elif defined(__GNUC__) || EPUB_PLATFORM(ANDROID)
     __assert(file, line, expr);
 # else
-#  warning I dont know how to fire assertion internals on this compiler.
+    // #warning is not supported in MSVC++: http://stackoverflow.com/a/279669/608884
+    #if EPUB_COMPILER(MSVC)
+      #pragma message ( "WARNING: I dont know how to fire assertion internals on this compiler." )
+    #else
+      #warning I dont know how to fire assertion internals on this compiler.
+    #endif
 # endif
 }
 #endif
