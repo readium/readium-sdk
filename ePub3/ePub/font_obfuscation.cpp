@@ -27,6 +27,7 @@
 #elif EPUB_PLATFORM(WIN)
 #include <windows.h>
 #include <Wincrypt.h>
+#include <ePub3/utilities/error_handler.h>
 #elif EPUB_PLATFORM(WINRT)
 using namespace ::Platform;
 using namespace ::Windows::Security::Cryptography;
@@ -89,14 +90,16 @@ bool FontObfuscator::BuildKey(ConstContainerPtr container)
     HCRYPTPROV csp;
     if ( ::CryptAcquireContext(&csp, NULL, NULL, PROV_DSS, CRYPT_VERIFYCONTEXT) == FALSE )
     {
-        _THROW_LAST_ERROR_();
+        //_THROW_LAST_ERROR_();
+        HandleError(::GetLastError(), std::system_category());
     }
 
     HCRYPTHASH hasher;
     if ( ::CryptCreateHash(csp, CALG_SHA, 0, 0, &hasher) == FALSE )
     {
         ::CryptReleaseContext(csp, 0);
-        _THROW_LAST_ERROR_();
+        //_THROW_LAST_ERROR_();
+        HandleError(::GetLastError(), std::system_category());
     }
 
     DWORD winerr = NO_ERROR;
@@ -114,8 +117,10 @@ bool FontObfuscator::BuildKey(ConstContainerPtr container)
     ::CryptDestroyHash(hasher);
     ::CryptReleaseContext(csp, 0);
 
-    if ( winerr != NO_ERROR )
-        _THROW_WIN_ERROR_(winerr);
+	if (winerr != NO_ERROR) {
+		//_THROW_WIN_ERROR_(winerr);
+		HandleError(winerr, std::system_category());
+	}
 #elif EPUB_PLATFORM(WINRT)
 	auto byteArray = ArrayReference<byte>(reinterpret_cast<byte*>(const_cast<char*>(str.data())), str.length());
 	auto inBuf = CryptographicBuffer::CreateFromByteArray(byteArray);
