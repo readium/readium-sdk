@@ -9,3 +9,5 @@
 - Once the code compiles there are a TON of linker issues. This is resolved but adding the correct source code files to the project (a lot of require .cpp/.h/etc files are on the file system but not included in the project).
 - The Windows Launcher app will not build the included ePub3 project (it doesn't generate a .lib nor .dll). I'm getting around this for now by building the SDK using the plain ole SDK project and manually copying the lib and dll for the launcher.
 - Launcher will still not run as certain bits of the SDK are not properly exported. The way around this is explained in the HACKING document found in the root of the SDK repo. Basically I just added "EPUB3_EXPORT" to everything that the launcher project complained about.
+
+- IMPORTANT: commented out L414-426 in CPP2JS.cpp in the launcher project as GetSkippablesCount() and GetEscapablesCount() were blowing up the linker.
