@@ -342,6 +342,9 @@
     <ClInclude Include="..\..\..\..\ePub3\ePub\media-overlays_smil_utils.h">
       <Filter>Source Files\ePub\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\initialization.h">
+      <Filter>Source Files\ePub\Library</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -730,6 +733,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ePub\media-overlays_smil_model.cpp">
       <Filter>Source Files\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\initialization.cpp">
+      <Filter>Source Files\ePub\Library</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

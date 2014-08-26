@@ -195,6 +195,7 @@ cscript MakeHeaders.js</Command>
     <ClInclude Include="..\..\..\..\ePub3\ePub\filter_manager_impl.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\font_obfuscation.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\glossary.h" />
+    <ClInclude Include="..\..\..\..\ePub3\ePub\initialization.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\library.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\link.h" />
     <ClInclude Include="..\..\..\..\ePub3\ePub\manifest.h" />
@@ -284,6 +285,7 @@ cscript MakeHeaders.js</Command>
     <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager_impl.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\font_obfuscation.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\glossary.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\initialization.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\library.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\link.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\manifest.cpp" />

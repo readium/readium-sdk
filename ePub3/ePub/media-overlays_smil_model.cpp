@@ -1152,26 +1152,27 @@ public:
 
         // http://www.idpf.org/epub/vocab/structure
         // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-skippability
-        const std::vector<string> MediaOverlaysSmilModel::_Skippables = {
-                "sidebar",
-                "practice",
-                "marginalia",
-                "annotation",
-                "help",
-                "note",
-                "footnote",
-                "rearnote",
-                "table",
-                "table-row",
-                "table-cell",
-                "list",
-                "list-item",
-                "pagebreak"
-        };
+        EPUB3_EXPORT const std::vector<string> MediaOverlaysSmilModel::_Skippables; 
+        // = {
+        //         "sidebar",
+        //         "practice",
+        //         "marginalia",
+        //         "annotation",
+        //         "help",
+        //         "note",
+        //         "footnote",
+        //         "rearnote",
+        //         "table",
+        //         "table-row",
+        //         "table-cell",
+        //         "list",
+        //         "list-item",
+        //         "pagebreak"
+        // };
 
         // http://www.idpf.org/epub/vocab/structure
         // http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html#sec-escabaility
-        const std::vector<string> MediaOverlaysSmilModel::_Escapables = {
+        EPUB3_EXPORT const std::vector<string> MediaOverlaysSmilModel::_Escapables = {
                 "sidebar",
                 "bibliography",
                 "toc",
