@@ -23,6 +23,7 @@
 #include "user_action.h"
 #include "credential_request.h"
 #include <thread>
+#include <future>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -75,7 +76,7 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
         return make_ready_future<ContainerPtr>(ContainerPtr(nullptr));
     }
     
-    future<ContainerPtr> result;
+	future<ContainerPtr> result;
     for (auto& item : _known_modules)
     {
         auto modulePtr = item.second;
@@ -83,7 +84,7 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
         
         // check the state of the future -- has it already been set?
         future_status status = result.wait_for(std::chrono::system_clock::duration(0));
-        
+		
         // if it's ready, the call to get() will never block
         if (status == future_status::ready) {
 			// unpack the future
@@ -97,6 +98,7 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
                     modulePtr->RegisterContentFilters();
                     return ptr;
                 });
+				
                 break;
             } else {
                 continue;       // no container, so try the next module
@@ -109,6 +111,7 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
                 modulePtr->RegisterContentFilters();
                 return ptr;
             });
+			
             break;
         }
     }

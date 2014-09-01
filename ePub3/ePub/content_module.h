@@ -24,6 +24,7 @@
 #include <ePub3/epub3.h>
 #include <ePub3/user_action.h>
 #include <ePub3/utilities/future.h>
+#include <future>
 #include <memory>
 
 EPUB3_BEGIN_NAMESPACE
@@ -57,8 +58,9 @@ public:
     //////////////////////////////////////////////
     // Token files
     
+	
     virtual
-    async_result<ContainerPtr>
+	async_result<ContainerPtr>
     ProcessFile(const string& path,
                 launch policy=launch::any)                  = 0;
     
@@ -73,7 +75,7 @@ public:
     // User actions
     
     virtual
-    async_result<bool>
+	async_result<bool>
     ApproveUserAction(const UserAction& action)             = 0;
     
 };

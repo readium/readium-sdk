@@ -27,10 +27,15 @@
 #include "ExceptionWrapper.h"
 #include <ePub3/content_module.h>
 
+#ifndef async_result
+#define async_result ePub3::future
+#endif
+
 BEGIN_READIUM_API
 
 template <typename _Result, typename _NativeResult = _Result>
-static void __process_operation_completion(::Windows::Foundation::IAsyncOperation<_Result>^ operation, ::Windows::Foundation::AsyncStatus status, std::promise<_NativeResult>& promise,
+//static void __process_operation_completion(::Windows::Foundation::IAsyncOperation<_Result>^ operation, ::Windows::Foundation::AsyncStatus status, std::promise<_NativeResult>& promise,
+static void __process_operation_completion(::Windows::Foundation::IAsyncOperation<_Result>^ operation, ::Windows::Foundation::AsyncStatus status, ePub3::promise<_NativeResult>& promise,
 	std::function<void()> process_result)
 {
 	using namespace ::Windows::Foundation;
@@ -107,12 +112,15 @@ public:
 	//////////////////////////////////////////////
 	// User actions
 
+	//std::future<bool>
 	virtual
-	std::future<bool>
+	async_result<bool>
 	ApproveUserAction(const ::ePub3::UserAction& action)
 		{
 			using namespace ::Windows::Foundation;
-			auto promise = new std::promise<bool>();
+			//std::promise<bool> *promise = new std::promise<bool>();
+			//auto promise = new std::promise<bool>();
+			auto promise = new ePub3::promise<bool>();
 			auto op = __winrt_->ApproveUserAction(ref new UserAction(action));
 
 			op->Completed = ref new AsyncOperationCompletedHandler<bool>([promise](IAsyncOperation<bool>^ operation, AsyncStatus status) {
@@ -126,11 +134,13 @@ public:
 		}
 
 private:
-	std::future<ePub3::ContainerPtr> ProcessFileAsyncInternal(const ePub3::string& path)
+	/*std::future<ePub3::ContainerPtr> ProcessFileAsyncInternal(const ePub3::string& path)*/
+	ePub3::future<ePub3::ContainerPtr> ProcessFileAsyncInternal(const ePub3::string& path)
 		{
 			using namespace ::Windows::Foundation;
 			auto op = __winrt_->ProcessFile(StringFromNative(path));
-			auto promise = new std::promise<::ePub3::ContainerPtr>();
+			//auto promise = new std::promise<::ePub3::ContainerPtr>();
+			auto promise = new ePub3::promise<::ePub3::ContainerPtr>();
 
 			op->Completed = ref new AsyncOperationCompletedHandler<Container^>([promise](IAsyncOperation<Container^>^ operation, AsyncStatus status) {
 				__process_operation_completion(operation, status, *promise, [operation, promise]() {
@@ -179,8 +189,10 @@ public:
 	{
 		using namespace ::concurrency;
 		auto __fut = _native->ProcessFile(StringToNative(path)).share();
-		return create_async([__fut]() -> Container^ {
-			return Container::Wrapper(__fut.get());
+		auto __nat = __fut.get();
+		return create_async([__fut, __nat]() -> Container^ {
+			/*return Container::Wrapper(__fut.get());*/
+			return Container::Wrapper(__nat);
 		});
 	}
 
@@ -202,8 +214,11 @@ public:
 	{
 		using namespace ::concurrency;
 		auto __fut = _native->ApproveUserAction(action->Native).share();
-		return create_async([__fut]() -> bool {
-			return __fut.get();
+		auto tmp = __fut.get();
+
+		return create_async([__fut, tmp]() -> bool {
+			//return __fut.get();
+			return tmp;
 		});
 	}
 

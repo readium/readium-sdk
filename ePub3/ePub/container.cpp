@@ -151,10 +151,12 @@ future<ContainerPtr> Container::OpenContainerAsync(const string& path, launch po
 #if EPUB_PLATFORM(WINRT)
 ContainerPtr Container::OpenSynchronouslyForWinRT(const string& path)
 {
-	auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, std::launch::deferred);
+	/*auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, std::launch::deferred);*/
+	auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, launch::deferred);
 
 	// see if it's complete with a nil value
-	if (future.wait_for(std::chrono::system_clock::duration(0)) == std::future_status::ready)
+	//if (future.wait_for(std::chrono::system_clock::duration(0)) == std::future_status::ready)
+	if (future.wait_for(std::chrono::system_clock::duration(0)) == future_status::ready)
 	{
 		ContainerPtr result = future.get();
 		if (bool(result))
