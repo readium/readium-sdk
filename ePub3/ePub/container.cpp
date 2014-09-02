@@ -58,6 +58,7 @@ Container::~Container()
 bool Container::Open(const string& path)
 {
 	_archive = Archive::Open(path.stl_str());
+	//_archive = Archive::Open(path);
 	if (_archive == nullptr)
 		throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
 	_path = path;

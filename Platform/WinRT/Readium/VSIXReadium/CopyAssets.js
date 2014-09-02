@@ -24,15 +24,15 @@ var deployRoot = fso.GetFolder("..\\").Path;
 
 var configurations =
     [
-        ["Debug", "Debug"],
-        ["Release", "Retail"]
+        ["Debug", "Debug"]
+        //["Release", "Retail"]
     ]
 
 var architectures = 
     [
         ["ARM", "arm"],
-        ["Win32", "x86"],
-        ["x64", "x64"]
+        ["Win32", "x86"]
+        //["x64", "x64"]
     ]
 
 
