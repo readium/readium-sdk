@@ -58,10 +58,10 @@ public:
     //////////////////////////////////////////////
     // Token files
     
-	
+	//async_result<ContainerPtr>
     virtual
-	async_result<ContainerPtr>
-    ProcessFile(const string& path,
+	future<ContainerPtr>
+    ProcessFile(const ePub3::string& path,
                 launch policy=launch::any)                  = 0;
     
     //////////////////////////////////////////////
@@ -74,8 +74,9 @@ public:
     //////////////////////////////////////////////
     // User actions
     
+	//async_result<bool>
     virtual
-	async_result<bool>
+	std::future<bool>
     ApproveUserAction(const UserAction& action)             = 0;
     
 };
