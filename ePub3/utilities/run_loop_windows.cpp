@@ -919,7 +919,9 @@ void RunLoop::InitRunLoopTLSKey() {
 	RunLoopTLSKey = TlsAlloc();
 	if (RunLoopTLSKey == TLS_OUT_OF_INDEXES)
 	{
-		OutputDebugString(L"No TLS Indexes for RunLoop!\n");
+#ifdef _DEBUG 
+			OutputDebugString(L"No TLS Indexes for RunLoop!\n");
+#endif
 		std::terminate();
 	}
 	atexit(RunLoop::KillRunLoopTLSKey);
