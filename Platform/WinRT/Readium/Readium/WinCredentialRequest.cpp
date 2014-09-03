@@ -22,7 +22,8 @@
 #include "ExceptionWrapper.h"
 #include "CollectionBridges.h"
 
-using namespace ::Platform;
+//using namespace ::Platform;
+using namespace Platform;
 
 BEGIN_READIUM_API
 
@@ -74,9 +75,10 @@ void CredentialRequest::SignalCompletion()
 	_native.SignalCompletion();
 }
 
-void CredentialRequest::SignalException(Exception^ exc)
-{
-	_native.SignalException(std::make_exception_ptr(__WinRTException(exc)));
-}
+/// !!! Commented out to pass Windows Store Cert.
+//void CredentialRequest::SignalException(Exception^ exc)
+//{
+//	_native.SignalException(std::make_exception_ptr(__WinRTException(exc)));
+//}
 
 END_READIUM_API
