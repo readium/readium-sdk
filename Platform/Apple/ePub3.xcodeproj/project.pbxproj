@@ -1946,7 +1946,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd ${SRCROOT}/../..\nsh MakeHeaders.sh Apple";
+			shellScript = "cd \"${SRCROOT}/../..\"\nsh MakeHeaders.sh Apple";
 			showEnvVarsInLog = 0;
 		};
 		AB5D1071172AD540001D3C95 /* ShellScript */ = {
@@ -1960,7 +1960,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd ${SRCROOT}/../..\nsh MakeHeaders.sh Apple";
+			shellScript = "cd \"${SRCROOT}/../..\"\nsh MakeHeaders.sh Apple";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
