@@ -3,21 +3,20 @@
 //  ePub3
 //
 //  Created by Daniel Weck on 2013-09-15.
-//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
+//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  
-//  The Readium SDK is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, either version 3 of the License, or
-//  (at your option) any later version.
+//  This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+//  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 //  
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  Licensed under Gnu Affero General Public License Version 3 (provided, notwithstanding this notice, 
+//  Readium Foundation reserves the right to license this material under a different separate license, 
+//  and if you have done so, the terms of that separate license control and the following references 
+//  to GPL do not apply).
 //  
-//  You should have received a copy of the GNU General Public License
-//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+//  This program is free software: you can redistribute it and/or modify it under the terms of the GNU 
+//  Affero General Public License as published by the Free Software Foundation, either version 3 of 
+//  the License, or (at your option) any later version. You should have received a copy of the GNU 
+//  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "media-overlays_smil_model.h"
 #include "package.h"
@@ -680,6 +679,20 @@ public:
             }
 
             //printf("=========== refOPFPath AFTER: %s\n", refOPFPath.c_str());
+
+
+            // When content does not have a root folder such as "OEBPS" or "EPUB", manifest absolute paths have a '/' prefix!!
+// //std::shared_ptr<Package> package = Owner(); // internally: std::weak_ptr<Package>.lock()
+//            if (package != nullptr)
+//            {
+//                string basePath = package->BasePath();
+//                printf("=========== basePath: %s\n", basePath.c_str());
+//            }
+            if (smilOPFPath.at(0) == '/' && refOPFPath.at(0) != '/')
+            {
+                //refOPFPath = _Str(smilOPFPath.substr(0, 1), refOPFPath);
+                refOPFPath.insert(0, "/");
+            }
 
             const ManifestTable & manifestTable = package->Manifest();
             for (ManifestTable::const_iterator iter = manifestTable.begin(); iter != manifestTable.end(); iter++)

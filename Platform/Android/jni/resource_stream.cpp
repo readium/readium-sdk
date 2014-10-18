@@ -3,21 +3,20 @@
 //  ePub3
 //
 //  Created by Yonathan Teitelbaum (Mantano) on 2013-09-09.
-//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
-//
-//  The Readium SDK is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, either version 3 of the License, or
-//  (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  
+//  This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+//  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+//  
+//  Licensed under Gnu Affero General Public License Version 3 (provided, notwithstanding this notice, 
+//  Readium Foundation reserves the right to license this material under a different separate license, 
+//  and if you have done so, the terms of that separate license control and the following references 
+//  to GPL do not apply).
+//  
+//  This program is free software: you can redistribute it and/or modify it under the terms of the GNU 
+//  Affero General Public License as published by the Free Software Foundation, either version 3 of 
+//  the License, or (at your option) any later version. You should have received a copy of the GNU 
+//  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 //#include <ePub3/utilities/resource_stream.h>
@@ -30,6 +29,7 @@
 #include "jni/jni.h"
 
 #include "epub3.h"
+#include "helpers.h"
 #include <resource_stream.h>
 
 ePub3::ByteStream* ResourceStream::getPtr() {
@@ -77,11 +77,14 @@ static jni::StaticMethod<jobject> java_method_ResourceInputStream_createResource
  * Initialize the cached java elements for ResourceInputStream class
  */
 int onLoad_cacheJavaElements_ResourceInputStream(JNIEnv *env) {
+
 	// Cache IRI class
-	java_class_ResourceInputStream = jni::Class(env, java_class_ResourceInputStream_name);
+	jclass java_class_ResourceInputStream_ = NULL;
+	INIT_CLASS_RETVAL(java_class_ResourceInputStream_, java_class_ResourceInputStream_name, ONLOAD_ERROR);
+	java_class_ResourceInputStream = jni::Class(env, java_class_ResourceInputStream_);
+
 	// Cache IRI class methods
-	java_method_ResourceInputStream_createResourceInputStream = jni::StaticMethod<jobject>(env, java_class_ResourceInputStream,
-			java_method_ResourceInputStream_createResourceInputStream_name, java_method_ResourceInputStream_createResourceInputStream_sign);
+	java_method_ResourceInputStream_createResourceInputStream = jni::StaticMethod<jobject>(env, java_class_ResourceInputStream, java_method_ResourceInputStream_createResourceInputStream_name, java_method_ResourceInputStream_createResourceInputStream_sign);
 
 	// Return JNI_VERSION for OK, if not one of the lines above already returned ONLOAD_ERROR
 	return JNI_VERSION;

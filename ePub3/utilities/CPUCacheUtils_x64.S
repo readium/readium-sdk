@@ -19,7 +19,6 @@ _epub_sys_cache_invalidate:
     // and Intel L1Is are coherent with L1D.
     ret
 
-
 /* void epub_sys_cache_flush(void* start, size_t len) */
 
     .globl  _epub_sys_cache_flush

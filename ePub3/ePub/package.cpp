@@ -3,21 +3,20 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2012-11-28.
-//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
+//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  
-//  The Readium SDK is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, either version 3 of the License, or
-//  (at your option) any later version.
+//  This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+//  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 //  
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  Licensed under Gnu Affero General Public License Version 3 (provided, notwithstanding this notice, 
+//  Readium Foundation reserves the right to license this material under a different separate license, 
+//  and if you have done so, the terms of that separate license control and the following references 
+//  to GPL do not apply).
 //  
-//  You should have received a copy of the GNU General Public License
-//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+//  This program is free software: you can redistribute it and/or modify it under the terms of the GNU 
+//  Affero General Public License as published by the Free Software Foundation, either version 3 of 
+//  the License, or (at your option) any later version. You should have received a copy of the GNU 
+//  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "container.h"
 #include "package.h"
@@ -807,7 +806,7 @@ bool Package::Unpack()
                     continue;
                 
                 ////////////////////////////////////////////////////////////
-                // ePub Publications 3.0 §3.4.16: The `mediaType` Element
+                // ePub Publications 3.0 ??3.4.16: The `mediaType` Element
                 
                 // The media-type attribute is required.
                 string mediaType = _getProp(node, "media-type");
@@ -923,39 +922,41 @@ bool Package::Unpack()
 		}
 		else
 		{
-			try
-			{
-				ManifestItemPtr tocItem = ManifestItemWithID(tocNames[0]);
-				if (!bool(tocItem))
-					throw EPUBError::OPFNoNavDocument;
-
-				NavigationList tables = NavTablesFromManifestItem(sharedMe, tocItem);
-				for (auto& table : tables)
-				{
-					// have to dynamic_cast these guys to get the right pointer type
-					NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
+            if (!tocNames.empty()) {
+                try
+                {
+                    ManifestItemPtr tocItem = ManifestItemWithID(tocNames[0]);
+                    if (!bool(tocItem))
+                        throw EPUBError::OPFNoNavDocument;
+                    
+                    NavigationList tables = NavTablesFromManifestItem(sharedMe, tocItem);
+                    for (auto& table : tables)
+                    {
+                        // have to dynamic_cast these guys to get the right pointer type
+                        NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
-					_navigation.emplace(navTable->Type(), navTable);
+                        _navigation.emplace(navTable->Type(), navTable);
 #else
-					_navigation[navTable->Type()] = navTable;
+                        _navigation[navTable->Type()] = navTable;
 #endif
-				}
-			}
-			catch (std::exception& exc)
-			{
-				std::cerr << "Exception locating or processing NCX navigation document: " << exc.what() << std::endl;
-				throw;
-			}
-			catch (EPUBError errCode)
-			{
-				// a 'break'-style mechanism here
-				// the error handler will determine if it's safe to continue
-				HandleError(errCode);
-			}
-			catch (...)
-			{
-				HandleError(EPUBError::OPFNoNavDocument);
-			}
+                    }
+                }
+                catch (std::exception& exc)
+                {
+                    std::cerr << "Exception locating or processing NCX navigation document: " << exc.what() << std::endl;
+                    throw;
+                }
+                catch (EPUBError errCode)
+                {
+                    // a 'break'-style mechanism here
+                    // the error handler will determine if it's safe to continue
+                    HandleError(errCode);
+                }
+                catch (...)
+                {
+                    HandleError(EPUBError::OPFNoNavDocument);
+                }
+            }
 		}
 	}
 

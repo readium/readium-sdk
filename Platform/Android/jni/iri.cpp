@@ -3,21 +3,20 @@
 //  ePub3
 //
 //  Created by Pedro Reis Colaco (txtr) on 2013-08-19.
-//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
-//
-//  The Readium SDK is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, either version 3 of the License, or
-//  (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  
+//  This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+//  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+//  
+//  Licensed under Gnu Affero General Public License Version 3 (provided, notwithstanding this notice, 
+//  Readium Foundation reserves the right to license this material under a different separate license, 
+//  and if you have done so, the terms of that separate license control and the following references 
+//  to GPL do not apply).
+//  
+//  This program is free software: you can redistribute it and/or modify it under the terms of the GNU 
+//  Affero General Public License as published by the Free Software Foundation, either version 3 of 
+//  the License, or (at your option) any later version. You should have received a copy of the GNU 
+//  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #include <ePub3/utilities/iri.h>
@@ -27,7 +26,7 @@
 #include "jni/jni.h"
 
 #include "epub3.h"
-
+#include "helpers.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -73,7 +72,10 @@ static jni::StaticMethod<jobject> java_method_IRI_createIRIurl;
  */
 int onLoad_cacheJavaElements_iri(JNIEnv *env) {
 	// Cache IRI class
-	java_class_IRI = jni::Class(env, java_class_IRI_name);
+	jclass java_class_IRI_ = NULL;
+	INIT_CLASS_RETVAL(java_class_IRI_, java_class_IRI_name, ONLOAD_ERROR);
+	java_class_IRI = jni::Class(env, java_class_IRI_);
+
 	// Cache IRI class methods
 	java_method_IRI_createIRIempty = jni::StaticMethod<jobject>(env, java_class_IRI,
 			java_method_IRI_createIRIempty_name, java_method_IRI_createIRIempty_sign);
