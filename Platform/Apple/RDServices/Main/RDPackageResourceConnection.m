@@ -149,6 +149,25 @@ static long m_injectCounter = 0;
         }
     }
 
+    NSString * annotationsCSS = @"readium_Annotations.css";
+    if ([path hasPrefix:annotationsCSS]) {
+        NSString *filePath = [[NSBundle mainBundle] pathForResource:@"annotations" ofType:@"css"];
+        if (filePath != nil) {
+            NSString *code = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
+            if (code != nil) {
+                NSData *data = [code dataUsingEncoding:NSUTF8StringEncoding];
+                if (data != nil) {
+                    RDPackageResourceDataResponse *dataResponse = [[RDPackageResourceDataResponse alloc]
+                            initWithData:data];
+                    dataResponse.contentType = @"text/css";
+
+                    response = dataResponse;
+                    return response;
+                }
+            }
+        }
+    }
+
 	// Synchronize using a process-level lock to guard against multiple threads accessing a
 	// resource byte stream, which may lead to instability.
 
