@@ -108,8 +108,10 @@ static const std::map<string, RenditionPropertyBits> RenditionSplitPropertyLooku
     {"http://www.idpf.org/vocab/rendition/#flow-auto", {"flow", "auto"}},
     {"http://www.idpf.org/vocab/rendition/#flow-paginated", {"flow", "paginated"}},
     {"http://www.idpf.org/vocab/rendition/#flow-scrolled-doc", {"flow", "scrolled-doc"}},
-    {"http://www.idpf.org/vocab/rendition/#flow-scrolled-continuous", {"flow", "scrolled-continuous"}}
-
+    {"http://www.idpf.org/vocab/rendition/#flow-scrolled-continuous", {"flow", "scrolled-continuous"}},
+    {"http://idpf.org/epub/vocab/package/#page-spread-left", {"page-spread", "page-spread-left"}},
+    {"http://idpf.org/epub/vocab/package/#page-spread-right", {"page-spread", "page-spread-right"}},
+    {"http://www.idpf.org/vocab/rendition/#page-spread-center", {"page-spread", "page-spread-center"}}
 };
 #else
 typedef std::pair<string, DCType> __to_code_pair;
@@ -155,7 +157,7 @@ static __to_str_pair __to_str_pairs[16] = {
 };
 static std::map<DCType, string> IDToNameMap(&__to_str_pairs[0], &__to_str_pairs[16]);
 
-static __to_rendition_pair __to_rendition_pairs[10] = {
+static __to_rendition_pair __to_rendition_pairs[13] = {
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#orientation-landscape", RenditionPropertyBits("orientation", "landscape")),
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#orientation-portrait", RenditionPropertyBits("orientation", "portrait")),
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#orientation-auto", RenditionPropertyBits("orientation", "auto")),
@@ -169,9 +171,13 @@ static __to_rendition_pair __to_rendition_pairs[10] = {
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#flow-auto", RenditionPropertyBits("flow", "auto")),
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#flow-paginated", RenditionPropertyBits("flow", "paginated")),
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#flow-scrolled-doc", RenditionPropertyBits("flow", "scrolled-doc")),
-    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#flow-scrolled-continuous", RenditionPropertyBits("flow", "scrolled-continuous"))
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#flow-scrolled-continuous", RenditionPropertyBits("flow", "scrolled-continuous")),
+    __to_rendition_pair("http://idpf.org/epub/vocab/package/#page-spread-left", RenditionPropertyBits("page-spread", "page-spread-left")),
+    __to_rendition_pair("http://idpf.org/epub/vocab/package/#page-spread-right", RenditionPropertyBits("page-spread", "page-spread-right")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#page-spread-center", RenditionPropertyBits("page-spread", "page-spread-center"))
 };
-static std::map<string, RenditionPropertyBits> RenditionSplitPropertyLookup(&__to_rendition_pairs[0], &__to_rendition_pairs[9]);
+
+static std::map<string, RenditionPropertyBits> RenditionSplitPropertyLookup(&__to_rendition_pairs[0], &__to_rendition_pairs[12]);
 #endif
 
 EPUB3_EXPORT
@@ -255,8 +261,9 @@ void Property::SetPropertyIdentifier(const IRI& iri)
     // Le sigh...
     _identifier = iri;
     _type = DCTypeFromIRI(iri);
-    
-    auto found = RenditionSplitPropertyLookup.find(iri.URIString());
+
+    auto iriString = iri.URIString();
+    auto found = RenditionSplitPropertyLookup.find(iriString);
     if ( found != RenditionSplitPropertyLookup.end() )
     {
         _identifier.SetFragment(found->second.first);
