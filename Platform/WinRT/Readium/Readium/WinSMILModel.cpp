@@ -63,13 +63,15 @@ double MediaOverlaysSMILModel::PositionToPercent(SMILPosition position)
 }
 SMILPosition MediaOverlaysSMILModel::PercentToPosition(double percent, SMILData^* outSmilData, ISMILParallel^* outPar)
 {
-	std::vector<::ePub3::SMILDataPtr>::size_type idx = 0;
+	//std::vector<::ePub3::SMILDataPtr>::size_type idx = 0;
+	uint32_t idx = 0;
 	uint32_t parIdx = 0;
 	uint32_t milliseconds = 0;
 	::ePub3::SMILDataPtr outDataPtr;
 	std::shared_ptr<const ::ePub3::SMILData::Parallel> outParPtr;
 
 	_native->PercentToPosition(percent, outDataPtr, idx, outParPtr, parIdx, milliseconds);
+	// double, SMILDataPtr, size_type, *Parallel, uint32_t, uint32_t
 	
 	if (outSmilData != nullptr)
 		*outSmilData = SMILData::Wrapper(outDataPtr);
