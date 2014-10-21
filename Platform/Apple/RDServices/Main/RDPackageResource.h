@@ -63,5 +63,6 @@
 
 - (NSData *)readDataOfLength:(NSUInteger)length;
 - (void)setOffset:(UInt64)offset;
+- (BOOL)isByteRangeResource;
 
 @end

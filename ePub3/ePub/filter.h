@@ -39,6 +39,50 @@ typedef std::shared_ptr<Package>    PackagePtr;
 class ContentFilter;
 typedef std::shared_ptr<ContentFilter>  ContentFilterPtr;
 
+// -------------------------------------------------------------------------------------------
+
+class ByteRange
+{
+public:
+    ByteRange()
+    {
+        Reset();
+    }
+    
+    uint32_t Location() const { return m_location; }
+    void Location(uint32_t location) { m_isFullRange = false; m_location = location; }
+    uint32_t Length() const { return m_length; }
+    void Length(uint32_t length) { m_isFullRange = false; m_length = length; }
+    bool IsFullRange() const { return m_isFullRange; }
+    void Reset() { m_location = 0; m_length = 0; m_isFullRange = true; }
+    
+    ByteRange &operator=(const ByteRange &b)
+    {
+        if (b.m_isFullRange)
+        {
+            Reset();
+        }
+        else
+        {
+            m_location = b.m_location;
+            m_length = b.m_length;
+            m_isFullRange = false;
+        }
+        return (*this);
+    }
+    
+private:
+    ByteRange(const ByteRange &b) _DELETED_; // Delete copy constructor
+    ByteRange(ByteRange &&b) _DELETED_; // Delete move constructor
+    ByteRange &operator=(ByteRange &&b) _DELETED_; // Delete move assignment operator
+    
+    uint32_t m_location;
+    uint32_t m_length;
+    bool m_isFullRange;
+};
+
+// -------------------------------------------------------------------------------------------
+
 /**
  The FilterContext abstract class can be extended by individual filters to hold
  data unique to each pass across a single stream of data.
@@ -57,9 +101,43 @@ typedef std::shared_ptr<ContentFilter>  ContentFilterPtr;
 class FilterContext
 {
 public:
-    FilterContext() {}
-    virtual ~FilterContext() {}
+    FilterContext() { }
+    virtual ~FilterContext() { }
 };
+
+// -------------------------------------------------------------------------------------------
+
+class SeekableByteStream;
+
+/**
+ The RangeFilterContext abstract class is an extension of the FilterContext class, and it is
+ used to pass data needed for extracting ranges of bytes from a given resource.
+ 
+ As you may imagine, one piece of data that we need to pass is the range of bytes that is being
+ requested. That is passed by the ByteRange object that it is included in this class. In
+ addition to that, the FilterContext object will need direct access to the ZIP file so that it
+ can read only the pieces that it needs (after all, the whole idea was that we didn't want to
+ cram a whole 1 GB video file in memory). That reference is kept the m_byteStream member
+ variable.
+ */
+
+class RangeFilterContext : public FilterContext
+{
+public:
+    RangeFilterContext() : FilterContext(), m_byteStream(nullptr) { }
+    virtual ~RangeFilterContext() { }
+    
+    ByteRange &GetByteRange() { return m_byteRange; }
+    void SetSeekableByteStream(SeekableByteStream *byteStream) { m_byteStream = byteStream; }
+    SeekableByteStream *GetSeekableByteStream() const { return m_byteStream; }
+    void ResetSeekableByteStream() { m_byteStream = nullptr; }
+    
+private:
+    ByteRange m_byteRange;
+    SeekableByteStream *m_byteStream;
+};
+
+// -------------------------------------------------------------------------------------------
 
 /**
  ContentFilter is an abstract base class from which all content filters must be
@@ -172,6 +250,9 @@ public:
     ///
     /// Subclasses can return `true` if they need all data in one chunk.
     virtual bool RequiresCompleteData() const { return false; }
+    
+    /// Subclasses can return `true` if this filter supports filtering of ranges instead of full resource
+    virtual bool SupportsByteRanges() const { return false; }
     
     ///
     /// Obtains the type-sniffer for this filter.

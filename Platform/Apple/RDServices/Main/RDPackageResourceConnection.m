@@ -69,7 +69,7 @@ static RDPackage *m_package = nil;
 		if (resource == nil) {
 			NSLog(@"No resource found! (%@)", path);
 		}
-		else if (resource.contentLength < 1000000) {
+        else if (!resource.isByteRangeResource) {
 
 			// This resource is small enough that we can just fetch the entire thing in memory,
 			// which simplifies access into the byte stream.  Adjust the threshold to taste.

@@ -302,13 +302,32 @@
 	}
 
 	ePub3::string s = ePub3::string(relativePath.UTF8String);
-	std::unique_ptr<ePub3::ByteStream> byteStream = m_package->ReadStreamForRelativePath(s);
+	ePub3::ConstManifestItemPtr manifestItem = m_package->ManifestItemAtRelativePath(s);
 
-	if (byteStream == nullptr) {
-		NSLog(@"Relative path '%@' does not have a byte stream!", relativePath);
+	if (manifestItem == nullptr) {
+		NSLog(@"Relative path '%@' does not have a manifest item!", relativePath);
 		return nil;
 	}
 
+	ePub3::ManifestItemPtr m = std::const_pointer_cast<ePub3::ManifestItem>(manifestItem);
+    ePub3::ByteStreamPtr byteStream = m_package->SyncContentStreamForItem(m);
+    if (byteStream == nullptr)
+    {
+        NSLog(@"Relative path '%@' does not have a byte stream!", relativePath);
+        return nil;
+    }
+    /*
+    TODO: uncomment and enable the following block of code. This piece of code will allow
+          the use of Byte Ranges. For resources above a given size, a ByteRangeFilterSyncStream
+          will be returned, which allows reading just ranges of bytes from a given resource.
+          However, currently this block of code is currently disabled because we are seeing
+          crashes when playing a Quicktime video using byte ranges.
+    */
+    /* if (byteStream->BytesAvailable() > 1000000)
+    {
+        byteStream = m_package->SyncByteRangeForItem(m);
+    } */
+    
 	RDPackageResource *resource = [[RDPackageResource alloc]
 		initWithDelegate:self
 		byteStream:byteStream.get()
@@ -317,12 +336,8 @@
 
 	if (resource != nil) {
 		m_byteStreamVector.push_back(std::move(byteStream));
-		ePub3::ConstManifestItemPtr item = m_package->ManifestItemAtRelativePath(s);
-
-		if (item) {
-			const ePub3::ManifestItem::MimeType &mediaType = item->MediaType();
-			resource.mimeType = [NSString stringWithUTF8String:mediaType.c_str()];
-		}
+		const ePub3::ManifestItem::MimeType &mediaType = manifestItem->MediaType();
+		resource.mimeType = [NSString stringWithUTF8String:mediaType.c_str()];
 	}
 
 	return resource;

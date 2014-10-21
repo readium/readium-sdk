@@ -35,6 +35,11 @@
 EPUB3_BEGIN_NAMESPACE
 
 class FilterContext;
+struct ByteRange;
+
+typedef std::pair<ContentFilterPtr, std::unique_ptr<FilterContext>>	FilterNode;
+
+// -------------------------------------------------------------------------------------------
 
 class FilterChain : public PointerType<FilterChain>
 #if EPUB_PLATFORM(WINRT)
@@ -64,6 +69,8 @@ public:
     // obtains a stream which can be used to read filtered bytes from the chain
     std::shared_ptr<AsyncByteStream> GetFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const;
 	std::shared_ptr<ByteStream> GetSyncFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const;
+    /// Returns stream with the data only from the given range while reading. Also returns nullptr if there is no ContentFilter supporting ranges.
+    std::shared_ptr<ByteStream> GetSyncFilteredByteRangeOfManifestItem(ConstManifestItemPtr item) const;
     
 protected:
     typedef std::shared_ptr<AsyncByteStream>    ChainLink;
@@ -97,6 +104,97 @@ protected:
 private:
     FilterList              _filters;
 
+};
+
+// -------------------------------------------------------------------------------------------
+
+class ByteRangeFilterSyncStream : public ByteStream
+{
+public:
+    ByteRangeFilterSyncStream(std::unique_ptr<SeekableByteStream> &&input, ContentFilterPtr &filter, ConstManifestItemPtr manifestItem);
+    ByteRangeFilterSyncStream(std::unique_ptr<SeekableByteStream> &&input);
+    virtual ~ByteRangeFilterSyncStream() { }
+    
+    virtual size_type BytesAvailable() const _NOEXCEPT OVERRIDE;
+    virtual size_type SpaceAvailable() const _NOEXCEPT OVERRIDE { return 0; }
+    virtual bool IsOpen() const _NOEXCEPT OVERRIDE { return m_input->IsOpen(); }
+    virtual void Close() OVERRIDE { m_input->Close(); }
+    virtual size_type ReadBytes(void *bytes, size_type len) OVERRIDE;
+    virtual size_type ReadBytes(void *bytes, size_type len, ByteRange &byteRange);
+    virtual size_type WriteBytes(const void *bytes, size_type len) OVERRIDE;
+    virtual bool AtEnd() const _NOEXCEPT OVERRIDE { return m_input->AtEnd(); }
+    virtual int Error() const _NOEXCEPT OVERRIDE { return m_input->Error(); }
+    
+private:
+    size_type ReadRawBytes(void *bytes, size_type len, ByteRange &byteRange);
+    
+    unique_ptr<SeekableByteStream> m_input;
+    shared_ptr<FilterNode> m_filterNode;
+    ByteBuffer m_readCache;
+};
+
+// -------------------------------------------------------------------------------------------
+
+class FilterChainSyncStream : public ByteStream
+{
+private:
+	std::unique_ptr<ByteStream>		_input;
+	std::vector<FilterNode>		_filters;
+    
+	bool							_needs_cache;
+	ByteBuffer						_cache;
+	ByteBuffer						_read_cache;
+    
+public:
+    FilterChainSyncStream(std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr &manifestItem);
+	FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem);
+	virtual ~FilterChainSyncStream() {}
+    
+	virtual size_type BytesAvailable() const _NOEXCEPT OVERRIDE
+	{
+		if (_needs_cache && _input->AtEnd()) {
+			return _cache.GetBufferSize();
+		} else {
+			return _input->BytesAvailable();
+		}
+	}
+	virtual size_type SpaceAvailable() const _NOEXCEPT OVERRIDE
+	{
+		return 0;
+	}
+	virtual bool IsOpen() const _NOEXCEPT OVERRIDE
+	{
+		return _input->IsOpen();
+	}
+	virtual void Close() OVERRIDE
+	{
+		_input->Close();
+	}
+	virtual size_type ReadBytes(void* bytes, size_type len) OVERRIDE;
+    virtual size_type ReadBytes(void* bytes, size_type len, ByteRange &byteRange);
+	virtual size_type WriteBytes(const void* bytes, size_type len) OVERRIDE
+	{
+		throw std::system_error(std::make_error_code(std::errc::operation_not_supported));
+	}
+    
+	virtual bool AtEnd() const _NOEXCEPT OVERRIDE
+	{
+		if (_needs_cache && _input->AtEnd()) {
+			return _cache.IsEmpty();
+		} else {
+			return _input->AtEnd();
+		}
+	}
+	virtual int Error() const _NOEXCEPT OVERRIDE
+	{
+		return _input->Error();
+	}
+    
+private:
+	size_type ReadBytesFromCache(void* bytes, size_type len);
+	void CacheBytes();
+	size_type FilterBytes(void* bytes, size_type len);
+    size_type FilterBytes(void* bytes, ByteRange &byteRange);
 };
 
 EPUB3_END_NAMESPACE

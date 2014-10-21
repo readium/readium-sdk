@@ -35,67 +35,123 @@ EPUB3_BEGIN_NAMESPACE
 
 std::unique_ptr<thread_pool> FilterChain::_filterThreadPool(nullptr);
 
-class FilterChainSyncStream : public ByteStream
+// -------------------------------------------------------------------------------------------
+
+ByteRangeFilterSyncStream::ByteRangeFilterSyncStream(std::unique_ptr<SeekableByteStream> &&input, ContentFilterPtr &filter, ConstManifestItemPtr manifestItem) : m_input(std::move(input)), m_filterNode(new FilterNode(filter, std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem))))
 {
-private:
-	typedef std::pair<ContentFilterPtr, std::unique_ptr<FilterContext>>	_FilterNode;
+}
 
-	std::unique_ptr<ByteStream>		_input;
-	std::vector<_FilterNode>		_filters;
+ByteRangeFilterSyncStream::ByteRangeFilterSyncStream(std::unique_ptr<SeekableByteStream> &&input) : m_input(std::move(input))
+{
+}
 
-	bool							_needs_cache;
-	ByteBuffer						_cache;
-	ByteBuffer						_read_cache;
+ByteStream::size_type ByteRangeFilterSyncStream::BytesAvailable() const _NOEXCEPT
+{
+    return m_input->BytesAvailable();
+}
 
-public:
-	FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem);
-	virtual ~FilterChainSyncStream() {}
+ByteStream::size_type ByteRangeFilterSyncStream::WriteBytes(const void *bytes, size_type len)
+{
+    throw std::system_error(std::make_error_code(std::errc::operation_not_supported));
+}
 
-	virtual size_type BytesAvailable() const _NOEXCEPT OVERRIDE
-	{
-		if (_needs_cache && _input->AtEnd()) {
-			return _cache.GetBufferSize();
-		} else {
-			return _input->BytesAvailable();
-		}
-	}
-	virtual size_type SpaceAvailable() const _NOEXCEPT OVERRIDE
-	{
-		return 0;
-	}
-	virtual bool IsOpen() const _NOEXCEPT OVERRIDE
-	{
-		return _input->IsOpen();
-	}
-	virtual void Close() OVERRIDE
-	{
-		_input->Close();
-	}
-	virtual size_type ReadBytes(void* bytes, size_type len) OVERRIDE;
-	virtual size_type WriteBytes(const void* bytes, size_type len) OVERRIDE
-	{
-		throw std::system_error(std::make_error_code(std::errc::operation_not_supported));
-	}
+ByteStream::size_type ByteRangeFilterSyncStream::ReadBytes(void *bytes, size_type len)
+{
+    ByteRange fullByteRange;
+    return ReadBytes(bytes, len, fullByteRange);
+}
 
-	virtual bool AtEnd() const _NOEXCEPT OVERRIDE
-	{
-		if (_needs_cache && _input->AtEnd()) {
-			return _cache.IsEmpty();
-		} else {
-			return _input->AtEnd();
-		}
-	}
-	virtual int Error() const _NOEXCEPT OVERRIDE
-	{
-		return _input->Error();
-	}
+ByteStream::size_type ByteRangeFilterSyncStream::ReadBytes(void *bytes, size_type len, ByteRange &byteRange)
+{
+    if (byteRange.Length() == 0 && !byteRange.IsFullRange()) // invalid range
+    {
+        return 0;
+    }
+    
+    if (byteRange.Length() > len && !byteRange.IsFullRange()) // too small buffer
+    {
+        return 0;
+    }
+    
+    if (!m_filterNode)
+    {
+        // There are no ContentFilters that applied. In this case, the caller is just interested
+        // in getting the raw bytes out of the ZIP file. So, then, just read the raw bytes.
+        return ReadRawBytes(bytes, len, byteRange);
+    }
+    
+    size_type filteredLen = 0;
+    RangeFilterContext *filterContext = dynamic_cast<RangeFilterContext *>(m_filterNode->second.get());
+    if (filterContext != nullptr)
+    {
+        filterContext->GetByteRange() = byteRange;
+        filterContext->SetSeekableByteStream(m_input.get());
+    }
+    
+    void *filteredData = m_filterNode->first->FilterData(m_filterNode->second.get(), nullptr, 0, &filteredLen);
+    if (filterContext != nullptr)
+    {
+        filterContext->GetByteRange().Reset();
+        filterContext->ResetSeekableByteStream();
+    }
+    
+    if (filteredData == nullptr || filteredLen == 0)
+    {
+        if (filteredData != nullptr && filteredData != bytes)
+        {
+            delete[] reinterpret_cast<uint8_t*>(filteredData);
+        }
+        throw std::logic_error("ContentFilter::FilterData() returned no data!");
+    }
+    
+    if (filteredData != bytes)
+    {
+        ::memcpy_s(bytes, len, filteredData, filteredLen);
+        delete[] reinterpret_cast<uint8_t *>(filteredData);
+    }
 
-private:
-	size_type ReadBytesFromCache(void* bytes, size_type len);
-	void CacheBytes();
-	size_type FilterBytes(void* bytes, size_type len);
+    return filteredLen;
+}
 
-};
+ByteStream::size_type ByteRangeFilterSyncStream::ReadRawBytes(void *bytes, size_type len, ePub3::ByteRange &byteRange)
+{
+    size_type bytesToRead = 0;
+    if (!byteRange.IsFullRange())
+    {
+        m_input->Seek(byteRange.Location(), std::ios::seekdir::beg);
+        bytesToRead = std::min(len, (size_type)byteRange.Length());
+    }
+    else
+    {
+        m_input->Seek(0, std::ios::seekdir::beg);
+        if (m_input->BytesAvailable() > len)
+        {
+            return 0; // Buffer is not big enough to take the entire file.
+        }
+        bytesToRead = len;
+    }
+    
+    size_type readBytes = m_input->ReadBytes(bytes, bytesToRead);
+    m_input->Seek(0, std::ios::seekdir::beg);
+    return readBytes;
+}
+
+// -------------------------------------------------------------------------------------------
+
+FilterChainSyncStream::FilterChainSyncStream(std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr &manifestItem)
+: _filters(), _needs_cache(false), _cache(), _read_cache()
+{
+    _input = NULL;
+	_cache.SetUsesSecureErasure();
+	_read_cache.SetUsesSecureErasure();
+    
+	for (auto& filter : filters)
+	{
+		_filters.emplace_back(filter, std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem)));
+		if (filter->RequiresCompleteData() && !_needs_cache)
+			_needs_cache = true;
+	}
+}
 
 FilterChainSyncStream::FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem)
 : _input(std::move(input)), _filters(), _needs_cache(false), _cache(), _read_cache()
@@ -110,6 +166,7 @@ FilterChainSyncStream::FilterChainSyncStream(std::unique_ptr<ByteStream>&& input
 			_needs_cache = true;
 	}
 }
+
 ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type len)
 {
 	if (_needs_cache)
@@ -137,6 +194,7 @@ ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type le
 		return toMove;
 	}
 }
+
 ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, size_type len)
 {
 	size_type result = len;
@@ -164,6 +222,67 @@ ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, size_type 
 
 	return result;
 }
+
+ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type len, ByteRange &byteRange)
+{
+    if (byteRange.Length() == 0) { // invalid range
+        return 0;
+    }
+    if (byteRange.Length() > len)  { // too small buffer
+        return 0;
+    }
+    ByteStream::size_type result = FilterBytes(bytes, byteRange);
+    if (result == 0)    {
+        return 0;
+    }
+    
+    size_type toMove = std::min(result, _read_cache.GetBufferSize());
+    ::memcpy_s(bytes, len, _read_cache.GetBytes(), toMove);
+    _read_cache.RemoveBytes(toMove);
+    return toMove;
+}
+
+ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, ByteRange &byteRange)
+{
+    uint32_t result = byteRange.Length();
+	ByteBuffer buf(reinterpret_cast<uint8_t*>(bytes), result);
+	buf.SetUsesSecureErasure();
+    
+	for (auto& pair : _filters)
+	{
+		size_type filteredLen = 0;
+        // memcpy(&(pair.second->byteRange), &byteRange, sizeof(ByteRange)); // Set ranges inside FilterContext
+        RangeFilterContext *filterContext = dynamic_cast<RangeFilterContext *>(pair.second.get());
+        if (filterContext != nullptr)
+        {
+            filterContext->GetByteRange() = byteRange;
+        }
+        
+		void* filteredData = pair.first->FilterData(pair.second.get(), buf.GetBytes(), buf.GetBufferSize(), &filteredLen);
+        //memset(&(pair.second->byteRange), 0, sizeof(ByteRange)); // reset ranges due to possibility of calling original FilterBytes right after
+        if (filterContext != nullptr)
+        {
+            filterContext->GetByteRange().Reset();
+        }
+        
+		if (filteredData == nullptr || filteredLen == 0) {
+			if (filteredData != nullptr && filteredData != bytes)
+				delete[] reinterpret_cast<uint8_t*>(filteredData);
+			throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
+		}
+        
+        if (filteredData != bytes)
+		{
+			buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), filteredLen);
+			result = filteredLen;
+//			delete[] reinterpret_cast<uint8_t*>(filteredData);
+		}
+	}
+    _read_cache = std::move(buf);
+    
+	return result;
+}
+
 ByteStream::size_type FilterChainSyncStream::ReadBytesFromCache(void* bytes, size_type len)
 {
 	size_type numToRead = std::min(len, size_type(_cache.GetBufferSize()));
@@ -171,6 +290,7 @@ ByteStream::size_type FilterChainSyncStream::ReadBytesFromCache(void* bytes, siz
 	_cache.RemoveBytes(numToRead);
 	return numToRead;
 }
+
 void FilterChainSyncStream::CacheBytes()
 {
 	// read everything from the input stream
@@ -197,6 +317,8 @@ void FilterChainSyncStream::CacheBytes()
 	// this potentially contains decrypted data, so use secure erasure
 	_cache.SetUsesSecureErasure();
 }
+
+// -------------------------------------------------------------------------------------------
 
 std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const
 {
@@ -258,6 +380,7 @@ std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifest
     // return the output pipe
     return linkPipe.second;
 }
+
 std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const
 {
 	std::unique_ptr<ByteStream> rawInput = item->Reader();
@@ -274,6 +397,48 @@ std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredOutputStreamForManifestI
 	return std::make_shared<FilterChainSyncStream>(std::move(rawInput), thisChain, item);
 }
 
+std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredByteRangeOfManifestItem(ConstManifestItemPtr item) const
+{
+    unique_ptr<SeekableByteStream> byteStream(dynamic_cast<SeekableByteStream *>(item->Reader().release()));
+    if (!byteStream)
+    {
+        return nullptr;
+    }
+    
+    shared_ptr<ByteRangeFilterSyncStream> resultStream;
+    bool doesMoreThanOneFilterApply = false;
+    for (ContentFilterPtr filter : _filters)
+    {
+        if (filter->TypeSniffer()(item) && filter->SupportsByteRanges())
+        {
+            if (!resultStream)
+            {
+                resultStream.reset(new ByteRangeFilterSyncStream(std::move(byteStream), filter, item));
+            }
+            else
+            {
+                doesMoreThanOneFilterApply = true;
+            }
+        }
+    }
+    
+    if (doesMoreThanOneFilterApply)
+    {
+        return nullptr;
+    }
+    
+    // There are no ContentFilter classes that curretly apply.
+    // In this case, return an empty ByteRangeFilterSyncStream, that will simply put out raw bytes.
+    if (!resultStream)
+    {
+        resultStream.reset(new ByteRangeFilterSyncStream(std::move(byteStream)));
+    }
+    
+    return resultStream;
+}
+
+// -------------------------------------------------------------------------------------------
+
 FilterChain::ChainLinkProcessor::ChainLinkProcessor(ContentFilterPtr filter, ChainLink input, ConstManifestItemPtr item)
   : _filter(filter),
     _context(filter->MakeFilterContext(item)),
@@ -282,6 +447,7 @@ FilterChain::ChainLinkProcessor::ChainLinkProcessor(ContentFilterPtr filter, Cha
     _collectionBuffer()
 {
 }
+
 FilterChain::ChainLinkProcessor::~ChainLinkProcessor()
 {
 }
