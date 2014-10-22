@@ -513,7 +513,14 @@ public:
 	}
 	EPUB3_EXPORT
 	shared_ptr<ByteStream>			SyncContentStreamForItem(ManifestItemPtr manifestItem)  const;
-    
+
+	EPUB3_EXPORT
+	shared_ptr<ByteStream>			SyncByteRangeForItem(SpineItemPtr spineItem)    const {
+		return SyncByteRangeForItem(spineItem->ManifestItem());
+	}
+	EPUB3_EXPORT
+	shared_ptr<ByteStream>			SyncByteRangeForItem(ManifestItemPtr manifestItem)  const;
+
     /// @}
     
     /// @{

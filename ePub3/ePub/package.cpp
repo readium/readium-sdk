@@ -1169,6 +1169,10 @@ shared_ptr<ByteStream> Package::SyncContentStreamForItem(ManifestItemPtr manifes
 {
 	return _filterChain->GetSyncFilteredOutputStreamForManifestItem(manifestItem);
 }
+shared_ptr<ByteStream> Package::SyncByteRangeForItem(ManifestItemPtr manifestItem) const
+{
+    return _filterChain->GetSyncFilteredByteRangeOfManifestItem(manifestItem);
+}
 const string& Package::Title(bool localized) const
 {
     IRI titleTypeIRI(MakePropertyIRI("title-type"));      // http://idpf.org/epub/vocab/package/#title-type
