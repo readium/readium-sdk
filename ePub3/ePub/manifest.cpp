@@ -217,7 +217,12 @@ bool ManifestItem::HasProperty(const std::vector<IRI>& properties) const
 EncryptionInfoPtr ManifestItem::GetEncryptionInfo() const
 {
     ContainerPtr container = GetPackage()->GetContainer();
-    return container->EncryptionInfoForPath(AbsolutePath());
+    string abs = AbsolutePath();
+    if (abs.at(0) == '/')
+    {
+        abs = abs.substr(1, abs.length()-1);
+    }
+    return container->EncryptionInfoForPath(abs);
 }
 bool ManifestItem::CanLoadDocument() const
 {
