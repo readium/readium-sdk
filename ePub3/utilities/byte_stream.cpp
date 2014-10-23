@@ -147,6 +147,8 @@ void AsyncByteStream::Open(std::ios::openmode mode)
 }
 ByteStream::size_type AsyncByteStream::ReadBytes(void *buf, size_type len)
 {
+    if (len == 0) return 0;
+
     if ( !bool(_readbuf) )
         throw InvalidDuplexStreamOperationError("Stream not opened for reading");
     
@@ -415,6 +417,8 @@ void AsyncPipe::CounterpartClosed()
 }
 AsyncPipe::size_type AsyncPipe::ReadBytes(void *buf, size_type len)
 {
+    if (len == 0) return 0;
+
     size_type result = AsyncByteStream::ReadBytes(buf, len);
     if ( _readbuf->BytesAvailable() == 0 && _pair_closed )
     {
@@ -645,6 +649,8 @@ void FileByteStream::Close()
 }
 ByteStream::size_type FileByteStream::ReadBytes(void *buf, size_type len)
 {
+    if (len == 0) return 0;
+
     if ( _file == nullptr )
         return 0;
     return ::fread(buf, 1, len, _file);
@@ -777,6 +783,8 @@ void ZipFileByteStream::Close()
 }
 ByteStream::size_type ZipFileByteStream::ReadBytes(void *buf, size_type len)
 {
+    if (len == 0) return 0;
+
     if ( _file == nullptr )
         return 0;
     

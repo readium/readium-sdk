@@ -61,7 +61,10 @@ protected:
         EncryptionInfoPtr encInfo = item->GetEncryptionInfo();
         if ( encInfo == nullptr || encInfo->Algorithm() != FontObfuscationAlgorithmID )
             return false;
-        return REGEX_NS::regex_match(item->MediaType().stl_str(), TypeCheck);
+
+        auto mediaType = item->MediaType();
+        bool ret = REGEX_NS::regex_match(mediaType.stl_str(), TypeCheck);
+        return ret;
     }
     
     static ContentFilterPtr FontObfuscatorFactory(ConstPackagePtr item);

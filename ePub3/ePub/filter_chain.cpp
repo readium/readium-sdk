@@ -63,6 +63,8 @@ ByteStream::size_type ByteRangeFilterSyncStream::ReadBytes(void *bytes, size_typ
 
 ByteStream::size_type ByteRangeFilterSyncStream::ReadBytes(void *bytes, size_type len, ByteRange &byteRange)
 {
+    if (len == 0) return 0;
+
     if (byteRange.Length() == 0 && !byteRange.IsFullRange()) // invalid range
     {
         return 0;
@@ -115,6 +117,8 @@ ByteStream::size_type ByteRangeFilterSyncStream::ReadBytes(void *bytes, size_typ
 
 ByteStream::size_type ByteRangeFilterSyncStream::ReadRawBytes(void *bytes, size_type len, ePub3::ByteRange &byteRange)
 {
+    if (len == 0) return 0;
+
     size_type bytesToRead = 0;
     if (!byteRange.IsFullRange())
     {
@@ -130,7 +134,9 @@ ByteStream::size_type ByteRangeFilterSyncStream::ReadRawBytes(void *bytes, size_
         }
         bytesToRead = len;
     }
-    
+
+    if (bytesToRead == 0) return 0;
+
     size_type readBytes = m_input->ReadBytes(bytes, bytesToRead);
     m_input->Seek(0, std::ios::seekdir::beg);
     return readBytes;
@@ -169,6 +175,8 @@ FilterChainSyncStream::FilterChainSyncStream(std::unique_ptr<ByteStream>&& input
 
 ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type len)
 {
+    if (len == 0) return 0;
+
 	if (_needs_cache)
 	{
 		if (_cache.GetBufferSize() == 0 && _input->AtEnd() == false)
@@ -187,6 +195,8 @@ ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type le
 	else 
 	{
 		size_type result = _input->ReadBytes(bytes, len);
+        if (result == 0) return 0;
+
 		result = FilterBytes(bytes, result);
 		size_type toMove = std::min(len, _read_cache.GetBufferSize());
 		::memcpy_s(bytes, len, _read_cache.GetBytes(), toMove);
@@ -197,6 +207,8 @@ ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type le
 
 ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, size_type len)
 {
+    if (len == 0) return 0;
+
 	size_type result = len;
 	ByteBuffer buf(reinterpret_cast<uint8_t*>(bytes), len);
 	buf.SetUsesSecureErasure();
@@ -225,6 +237,8 @@ ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, size_type 
 
 ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type len, ByteRange &byteRange)
 {
+    if (len == 0) return 0;
+
     if (byteRange.Length() == 0) { // invalid range
         return 0;
     }
@@ -245,6 +259,8 @@ ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type le
 ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, ByteRange &byteRange)
 {
     uint32_t result = byteRange.Length();
+    if (result == 0) return 0;
+
 	ByteBuffer buf(reinterpret_cast<uint8_t*>(bytes), result);
 	buf.SetUsesSecureErasure();
     
@@ -285,6 +301,8 @@ ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, ByteRange 
 
 ByteStream::size_type FilterChainSyncStream::ReadBytesFromCache(void* bytes, size_type len)
 {
+    if (len == 0) return 0;
+
 	size_type numToRead = std::min(len, size_type(_cache.GetBufferSize()));
 	::memcpy_s(bytes, len, _cache.GetBytes(), numToRead);
 	_cache.RemoveBytes(numToRead);
@@ -304,6 +322,8 @@ void FilterChainSyncStream::CacheBytes()
 		if (numRead > 0)
 			_cache.AddBytes(buf, numRead);
 	}
+
+    if (_cache.GetBufferSize() == 0) return;
 
 	// filter everything completely
 	size_type filtered = FilterBytes(_cache.GetBytes(), _cache.GetBufferSize());
