@@ -51,6 +51,11 @@ const char * const kBytesFiltered = "FontObfuscator::bytesFiltered";
 
 const REGEX_NS::regex FontObfuscator::TypeCheck("(?:font/.*|application/(?:x-font-.*|font-.*|vnd.ms-(?:opentype|fontobject)))");
 
+bool FontObfuscator::SupportsByteRanges() const
+{
+    return true;
+}
+
 void * FontObfuscator::FilterData(FilterContext* context, void *data, size_t len, size_t *outputLen)
 {
     FontObfuscationContext* p = dynamic_cast<FontObfuscationContext*>(context);

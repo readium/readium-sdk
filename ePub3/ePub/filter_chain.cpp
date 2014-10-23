@@ -429,15 +429,18 @@ std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredByteRangeOfManifestItem(
     bool doesMoreThanOneFilterApply = false;
     for (ContentFilterPtr filter : _filters)
     {
-        if (filter->TypeSniffer()(item) && filter->SupportsByteRanges())
+        if (filter->TypeSniffer()(item))
         {
-            if (!resultStream)
+            if (filter->SupportsByteRanges())
             {
-                resultStream.reset(new ByteRangeFilterSyncStream(std::move(byteStream), filter, item));
-            }
-            else
-            {
-                doesMoreThanOneFilterApply = true;
+                if (!resultStream)
+                {
+                    resultStream.reset(new ByteRangeFilterSyncStream(std::move(byteStream), filter, item));
+                }
+                else
+                {
+                    doesMoreThanOneFilterApply = true;
+                }
             }
         }
     }

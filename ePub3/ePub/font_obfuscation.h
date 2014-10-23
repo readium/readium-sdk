@@ -68,7 +68,9 @@ protected:
     }
     
     static ContentFilterPtr FontObfuscatorFactory(ConstPackagePtr item);
-    
+
+    bool SupportsByteRanges() const;
+
 private:
     ///
     /// There is no default constructor.
