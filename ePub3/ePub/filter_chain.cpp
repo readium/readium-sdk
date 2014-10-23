@@ -206,12 +206,12 @@ ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, size_type 
 		size_type filteredLen = 0;
 		void* filteredData = pair.first->FilterData(pair.second.get(), buf.GetBytes(), buf.GetBufferSize(), &filteredLen);
 		if (filteredData == nullptr || filteredLen == 0) {
-			if (filteredData != nullptr && filteredData != bytes)
+			if (filteredData != nullptr && filteredData != buf.GetBytes())
 				delete[] reinterpret_cast<uint8_t*>(filteredData);
 			throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
 		}
 
-		if (filteredData != bytes)
+		if (filteredData != buf.GetBytes())
 		{
 			buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), filteredLen);
 			result = filteredLen;
@@ -491,12 +491,11 @@ void FilterChain::ChainLinkProcessor::ScheduleProcessor(RunLoopPtr runLoop)
                     size_t filteredLen = 0;
                     void* filteredData = _filter->FilterData(_context.get(), _collectionBuffer.GetBytes(), _collectionBuffer.GetBufferSize(), &filteredLen);
                     if ( filteredData == nullptr || filteredLen == 0 ) {
+                        if (filteredData != nullptr && filteredData != _collectionBuffer.GetBytes())
+                            delete[] reinterpret_cast<uint8_t*>(filteredData);
                         throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
                     }
-                    
-                    // (securely) remove all bytes from the buffer
-                    _collectionBuffer.RemoveBytes(_collectionBuffer.GetBufferSize());
-                    
+
                     // forward the data
                     uint8_t *outputData = reinterpret_cast<uint8_t*>(filteredData);
                     size_t offset = 0;
@@ -507,6 +506,12 @@ void FilterChain::ChainLinkProcessor::ScheduleProcessor(RunLoopPtr runLoop)
                         if ( offset < filteredLen )
                             std::this_thread::yield();
                     }
+
+                    if (filteredData != _collectionBuffer.GetBytes())
+                        delete[] reinterpret_cast<uint8_t*>(filteredData);
+
+                    // (securely) remove all bytes from the buffer
+                    _collectionBuffer.RemoveBytes(_collectionBuffer.GetBufferSize());
                 }
                 
                 _output->Close();
@@ -577,14 +582,14 @@ ssize_t FilterChain::ChainLinkProcessor::FunnelBytes()
             void* filteredData = _filter->FilterData(_context.get(), buf, thisChunk, &filteredLen);
             if ( filteredData == nullptr || filteredLen == 0 ) {
 				if (filteredData != nullptr && filteredData != buf)
-					delete[] reinterpret_cast<char*>(filteredData);
+					delete[] reinterpret_cast<uint8_t*>(filteredData);
                 throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
             }
 
             _output->WriteBytes(filteredData, filteredLen);
 
 			if (filteredData != buf)
-				delete[] reinterpret_cast<char*>(filteredData);
+				delete[] reinterpret_cast<uint8_t*>(filteredData);
         }
         
         bytesToMove -= thisChunk;
