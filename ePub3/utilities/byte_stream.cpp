@@ -3,20 +3,21 @@
 //  ePub3
 //
 //  Created by Jim Dovey on 2013-02-05.
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2012-2013 The Readium Foundation and contributors.
 //  
-//  This program is distributed in the hope that it will be useful, but WITHOUT ANY 
-//  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+//  The Readium SDK is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
 //  
-//  Licensed under Gnu Affero General Public License Version 3 (provided, notwithstanding this notice, 
-//  Readium Foundation reserves the right to license this material under a different separate license, 
-//  and if you have done so, the terms of that separate license control and the following references 
-//  to GPL do not apply).
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
 //  
-//  This program is free software: you can redistribute it and/or modify it under the terms of the GNU 
-//  Affero General Public License as published by the Free Software Foundation, either version 3 of 
-//  the License, or (at your option) any later version. You should have received a copy of the GNU 
-//  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 
 #include "byte_stream.h"
 #include <cstdio>
@@ -732,6 +733,7 @@ std::shared_ptr<SeekableByteStream> FileByteStream::Clone() const
 
 ZipFileByteStream::ZipFileByteStream(struct zip* archive, const string& path, int flags) : SeekableByteStream(), _file(nullptr), _mode(0)
 {
+	bytes_left = total_size = 0;
     Open(archive, path, flags);
 }
 ZipFileByteStream::~ZipFileByteStream()
@@ -740,9 +742,14 @@ ZipFileByteStream::~ZipFileByteStream()
 }
 ByteStream::size_type ZipFileByteStream::BytesAvailable() const _NOEXCEPT
 {
+	
+	//assert(0);
+	//return 0;
+#if 1
     if ( _file == nullptr )
         return 0;
-    return _file->bytes_left;
+    return /*_file->*/bytes_left;
+#endif
 }
 ByteStream::size_type ZipFileByteStream::SpaceAvailable() const _NOEXCEPT
 {
@@ -765,6 +772,16 @@ bool ZipFileByteStream::Open(struct zip *archive, const string &path, int flags)
         Close();
     
     _file = zip_fopen(archive, Sanitized(path).c_str(), flags);
+
+	if (_file != nullptr)
+	{
+		struct zip_stat st;
+		if (zip_source_stat(_file->src, &st)==0)
+		{
+			total_size = st.size;
+			bytes_left = total_size;
+		}
+	}
     return ( _file != nullptr );
 }
 void ZipFileByteStream::Close()
@@ -787,7 +804,9 @@ ByteStream::size_type ZipFileByteStream::ReadBytes(void *buf, size_type len)
         return 0;
     }
 
-	_eof = (_file->bytes_left == 0);
+	bytes_left -= numRead;
+
+	_eof = (/*_file->*/bytes_left == 0);
     
     return numRead;
 }
@@ -798,7 +817,10 @@ ByteStream::size_type ZipFileByteStream::WriteBytes(const void *buf, size_type l
 }
 ByteStream::size_type ZipFileByteStream::Seek(size_type by, std::ios::seekdir dir)
 {
-    int whence = ZIP_SEEK_SET;
+	assert(0);
+	return 0;
+#if 0    
+	int whence = ZIP_SEEK_SET;
     switch (dir)
     {
         case std::ios::beg:
@@ -816,13 +838,21 @@ ByteStream::size_type ZipFileByteStream::Seek(size_type by, std::ios::seekdir di
     zip_fseek(_file, long(by), whence);
 	_eof = (_file->bytes_left == 0);
     return Position();
+#endif
 }
 ByteStream::size_type ZipFileByteStream::Position() const
 {
+	assert(0);
+	return 0;
+#if 0 
     return size_type(zip_ftell(_file));
+#endif
 }
 std::shared_ptr<SeekableByteStream> ZipFileByteStream::Clone() const
 {
+	assert(0);
+	return nullptr;
+#if 0
 	if (_file == nullptr)
 		return nullptr;
 
@@ -840,6 +870,7 @@ std::shared_ptr<SeekableByteStream> ZipFileByteStream::Clone() const
 	}
 
 	return result;
+#endif
 }
 
 #if 0
@@ -930,6 +961,9 @@ void AsyncZipFileByteStream::Close()
 }
 std::shared_ptr<SeekableByteStream> AsyncZipFileByteStream::Clone() const
 {
+	assert(0);
+	return 0;
+#if 0
 	if (_file == nullptr)
 		return nullptr;
 
@@ -946,6 +980,7 @@ std::shared_ptr<SeekableByteStream> AsyncZipFileByteStream::Clone() const
 	}
 
 	return result;
+#endif
 }
 
 EPUB3_END_NAMESPACE

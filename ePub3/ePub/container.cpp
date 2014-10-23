@@ -141,8 +141,13 @@ future<ContainerPtr> Container::OpenContainerAsync(const string& path, launch po
 		ContainerPtr container = result.get();
 		if (container)
 			result = make_ready_future<ContainerPtr>(std::move(container));
-		else
-            result = async(policy, &Container::OpenContainerForContentModule, path);
+#if !EPUB_COMPILER(MSVC)		
+	else
+		result = async(policy, &Container::OpenContainerForContentModule, path);
+#else
+#pragma message ("COMPILER is (MSVC), ePub3::async() is disabled, because of MSVC SFINAE issue? fixme!!")
+#endif
+
     }
     
     return result;

@@ -19,6 +19,6 @@
 //  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #if BUILDING_EPUB3 || !EPUB_COMPILER_SUPPORTS(CXX_CONSTEXPR)
-#include <ePub3/utilities/ref_counted.h>
-const adopt_ref_t adopt_ref = {};
+//#include <ePub3/utilities/ref_counted.h>
+//const adopt_ref_t adopt_ref = {};
 #endif

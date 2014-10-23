@@ -29,6 +29,7 @@
 #include "jni/jni.h"
 
 #include "epub3.h"
+#include "helpers.h"
 #include <resource_stream.h>
 
 ePub3::ByteStream* ResourceStream::getPtr() {
@@ -76,11 +77,14 @@ static jni::StaticMethod<jobject> java_method_ResourceInputStream_createResource
  * Initialize the cached java elements for ResourceInputStream class
  */
 int onLoad_cacheJavaElements_ResourceInputStream(JNIEnv *env) {
+
 	// Cache IRI class
-	java_class_ResourceInputStream = jni::Class(env, java_class_ResourceInputStream_name);
+	jclass java_class_ResourceInputStream_ = NULL;
+	INIT_CLASS_RETVAL(java_class_ResourceInputStream_, java_class_ResourceInputStream_name, ONLOAD_ERROR);
+	java_class_ResourceInputStream = jni::Class(env, java_class_ResourceInputStream_);
+
 	// Cache IRI class methods
-	java_method_ResourceInputStream_createResourceInputStream = jni::StaticMethod<jobject>(env, java_class_ResourceInputStream,
-			java_method_ResourceInputStream_createResourceInputStream_name, java_method_ResourceInputStream_createResourceInputStream_sign);
+	java_method_ResourceInputStream_createResourceInputStream = jni::StaticMethod<jobject>(env, java_class_ResourceInputStream, java_method_ResourceInputStream_createResourceInputStream_name, java_method_ResourceInputStream_createResourceInputStream_sign);
 
 	// Return JNI_VERSION for OK, if not one of the lines above already returned ONLOAD_ERROR
 	return JNI_VERSION;

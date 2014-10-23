@@ -26,7 +26,7 @@
 #include "jni/jni.h"
 
 #include "epub3.h"
-
+#include "helpers.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,7 +72,10 @@ static jni::StaticMethod<jobject> java_method_IRI_createIRIurl;
  */
 int onLoad_cacheJavaElements_iri(JNIEnv *env) {
 	// Cache IRI class
-	java_class_IRI = jni::Class(env, java_class_IRI_name);
+	jclass java_class_IRI_ = NULL;
+	INIT_CLASS_RETVAL(java_class_IRI_, java_class_IRI_name, ONLOAD_ERROR);
+	java_class_IRI = jni::Class(env, java_class_IRI_);
+
 	// Cache IRI class methods
 	java_method_IRI_createIRIempty = jni::StaticMethod<jobject>(env, java_class_IRI,
 			java_method_IRI_createIRIempty_name, java_method_IRI_createIRIempty_sign);

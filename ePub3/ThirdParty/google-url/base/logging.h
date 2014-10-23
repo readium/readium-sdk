@@ -415,45 +415,86 @@ enum { DEBUG_MODE = 0 };
 // You shouldn't actually use LogMessage's constructor to log things,
 // though.  You should use the LOG() macro (and variants thereof)
 // above.
+#if 0
 class LogMessage {
- public:
-	 LogMessage(const char* file, int line, LogSeverity severity, int ctr) {}
+public:
+	LogMessage(const char* file, int line, LogSeverity severity, int ctr); {}
 
-  // Two special constructors that generate reduced amounts of code at
-  // LOG call sites for common cases.
-  //
-  // Used for LOG(INFO): Implied are:
-  // severity = LOG_INFO, ctr = 0
-  //
-  // Using this constructor instead of the more complex constructor above
-  // saves a couple of bytes per call site.
-	 LogMessage(const char* file, int line) {}
+	// Two special constructors that generate reduced amounts of code at
+	// LOG call sites for common cases.
+	//
+	// Used for LOG(INFO): Implied are:
+	// severity = LOG_INFO, ctr = 0
+	//
+	// Using this constructor instead of the more complex constructor above
+	// saves a couple of bytes per call site.
+	LogMessage(const char* file, int line) {}
 
-  // Used for LOG(severity) where severity != INFO.  Implied
-  // are: ctr = 0
-  //
-  // Using this constructor instead of the more complex constructor above
-  // saves a couple of bytes per call site.
-	 LogMessage(const char* file, int line, LogSeverity severity) {}
+	// Used for LOG(severity) where severity != INFO.  Implied
+	// are: ctr = 0
+	//
+	// Using this constructor instead of the more complex constructor above
+	// saves a couple of bytes per call site.
+	LogMessage(const char* file, int line, LogSeverity severity) {}
 
-  // A special constructor used for check failures.
-  // Implied severity = LOG_FATAL
-	 LogMessage(const char* file, int line, const CheckOpString& result) {}
+	// A special constructor used for check failures.
+	// Implied severity = LOG_FATAL
+	LogMessage(const char* file, int line, const CheckOpString& result) {}
 
-	 ~LogMessage() {}
+	~LogMessage() {}
 
-  std::ostream& stream() { return stream_; }
+	std::ostream& stream() { return stream_; }
 
- private:
-  void Init(const char* file, int line);
+private:
+	void Init(const char* file, int line);
 
-  LogSeverity severity_;
-  STR_STREAM stream_;
-  int message_start_;  // offset of the start of the message (past prefix info).
+	LogSeverity severity_;
+	STR_STREAM stream_;
+	int message_start_;  // offset of the start of the message (past prefix info).
 
-  DISALLOW_EVIL_CONSTRUCTORS(LogMessage);
+	DISALLOW_EVIL_CONSTRUCTORS(LogMessage);
+};
+#else // Den: fixed this
+class LogMessage {
+public:
+	LogMessage(const char* file, int line, LogSeverity severity, int ctr);
+
+	// Two special constructors that generate reduced amounts of code at
+	// LOG call sites for common cases.
+	//
+	// Used for LOG(INFO): Implied are:
+	// severity = LOG_INFO, ctr = 0
+	//
+	// Using this constructor instead of the more complex constructor above
+	// saves a couple of bytes per call site.
+	LogMessage(const char* file, int line);// {}
+
+	// Used for LOG(severity) where severity != INFO.  Implied
+	// are: ctr = 0
+	//
+	// Using this constructor instead of the more complex constructor above
+	// saves a couple of bytes per call site.
+	LogMessage(const char* file, int line, LogSeverity severity);// {}
+
+	// A special constructor used for check failures.
+	// Implied severity = LOG_FATAL
+	LogMessage(const char* file, int line, const CheckOpString& result);// {}
+
+	~LogMessage();// {}
+
+	std::ostream& stream() { return stream_; }
+
+private:
+	void Init(const char* file, int line);
+
+	LogSeverity severity_;
+	STR_STREAM stream_;
+	int message_start_;  // offset of the start of the message (past prefix info).
+
+	DISALLOW_EVIL_CONSTRUCTORS(LogMessage);
 };
 
+#endif
 // A non-macro interface to the log facility; (useful
 // when the logging level is not a compile-time constant).
 inline void LogAtLevel(int const log_level, std::string const &msg) {
