@@ -209,7 +209,7 @@ protected:
         /// Bitfield values identifying special status for a CFI component.
         enum Flags : uint8_t
         {
-            Qualifier        = 1<<0,    ///< The component contains an `id` or `idref` qualifier, i.e. `[bob]`
+            Qualifier        = 1<<0,    ///< The component contains an `id` qualifier, i.e. `[bob]`
             CharacterOffset  = 1<<1,    ///< The component has a character offset value, i.e. `:12`
             TemporalOffset   = 1<<2,    ///< The component has a temporal offset value, i.e. `~87.24`.
             SpatialOffset    = 1<<3,    ///< The component has a spatial offset value, i.e. `@150:220`
@@ -239,7 +239,7 @@ protected:
         
         uint8_t         flags;              ///< The bitfield containing values from the Flags enumeration.
         uint32_t        nodeIndex;          ///< The numeric index for the node identified by component.
-        string          qualifier;          ///< The value of any `id` or `idref` qualifier.
+        string          qualifier;          ///< The value of any `id` qualifier.
         uint32_t        characterOffset;    ///< The value of any character offset.
         float           temporalOffset;     ///< The value, in seconds, of any temporal offset.
         Point           spatialOffset;      ///< The value of any spatial offset.

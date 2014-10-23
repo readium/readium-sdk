@@ -196,7 +196,7 @@ unique_ptr<ByteStream> PackageBase::ReadStreamForItemAtPath(const string &path) 
 }
 shared_ptr<SpineItem> PackageBase::ConfirmOrCorrectSpineItemQualifier(shared_ptr<SpineItem> pItem, CFI::Component *pComponent) const
 {
-    if ( pComponent->HasQualifier() && pItem->Idref() != pComponent->qualifier )
+    if ( pComponent->HasQualifier() && pItem->Identifier() != pComponent->qualifier )
     {
         // find the item with the qualifier
         pItem = _spine;
@@ -204,7 +204,7 @@ shared_ptr<SpineItem> PackageBase::ConfirmOrCorrectSpineItemQualifier(shared_ptr
         
         while ( pItem != nullptr )
         {
-            if ( pItem->Idref() == pComponent->qualifier )
+            if ( pItem->Identifier() == pComponent->qualifier )
             {
                 // found it-- correct the CFI
                 pComponent->nodeIndex = idx;
@@ -1098,7 +1098,12 @@ const CFI Package::CFIForSpineItem(shared_ptr<SpineItem> item) const
 {
     CFI result;
     result._components.emplace_back(_spineCFIIndex);
-    result._components.emplace_back(_Str((item->Index()+1)*2, "[", item->Idref(), "]!"));
+    if ( item->Identifier().empty() )
+    {
+        result._components.emplace_back(_Str((item->Index()+1)*2, "!"));
+    } else {
+        result._components.emplace_back(_Str((item->Index()+1)*2, "[", item->Identifier(), "]!"));
+    }
     return result;
 }
 shared_ptr<ManifestItem> Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRemainingCFI) const
