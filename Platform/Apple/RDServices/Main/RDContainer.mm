@@ -30,6 +30,7 @@
 #import "RDContainer.h"
 #import <ePub3/container.h>
 #import <ePub3/initialization.h>
+#import <ePub3/utilities/error_handler.h>
 #import "RDPackage.h"
 
 
@@ -52,8 +53,18 @@
 	return m_packages.count == 0 ? nil : [m_packages objectAtIndex:0];
 }
 
+bool LauncherErrorHandler(const ePub3::error_details& err)
+{
+    const char * msg = err.message();
+    NSLog(@"%s\n", msg);
+
+    return ePub3::DefaultErrorHandler(err);
+}
 
 + (void)initialize {
+    ePub3::ErrorHandlerFn launcherErrorHandler = LauncherErrorHandler;
+    ePub3::SetErrorHandler(launcherErrorHandler);
+
 	ePub3::InitializeSdk();
 	ePub3::PopulateFilterManager();
 }
