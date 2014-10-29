@@ -42,7 +42,7 @@ static id m_resourceLock = nil;
 
 - (void)dealloc {
 	[m_httpServer stop];
-	[RDPackageResourceConnection setPackage:nil];
+	[RDPackageResourceConnection setPackage:nil javascriptExecutor:nil];
 }
 
 
