@@ -29,9 +29,14 @@
 
 #import <Foundation/Foundation.h>
 
+@protocol RDContainerDelegate
+- (void)handleSdkError:(NSString*)message;
+@end
+
 @class RDPackage;
 
 @interface RDContainer : NSObject {
+    @private __weak id <RDContainerDelegate> m_delegate;
 	@private NSMutableArray *m_packages;
 	@private NSString *m_path;
 }
@@ -40,6 +45,6 @@
 @property (nonatomic, readonly) NSArray *packages;
 @property (nonatomic, readonly) NSString *path;
 
-- (id)initWithPath:(NSString *)path;
+- (id)initWithDelegate:(id <RDContainerDelegate>)delegate path:(NSString *)path;
 
 @end
