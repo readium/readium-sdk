@@ -37,6 +37,8 @@
 static RDPackage *m_package = nil;
 static RDJavascriptExecutor *m_javascriptExecutor = nil;
 
+static long m_epubReadingSystem_Counter = 0;
+
 @implementation RDPackageResourceConnection
 
 //
@@ -153,7 +155,7 @@ static RDJavascriptExecutor *m_javascriptExecutor = nil;
     // Fake script request, immediately invoked after epubReadingSystem hook is in place,
     // => push the global window.navigator.epubReadingSystem into the iframe(s)
     NSString * eprs = @"readium_epubReadingSystem_inject.js";
-    if ([path hasPrefix:eprs]) {
+    if ([path hasSuffix:eprs]) {
 
         // Iterate top-level iframes, inject global window.navigator.epubReadingSystem if the expected hook function exists ( readium_set_epubReadingSystem() ).
         NSString* cmd = @"for (var i = 0; i < window.frames.length; i++) { var iframe = window.frames[i]; if (iframe.readium_set_epubReadingSystem) { iframe.readium_set_epubReadingSystem(window.navigator.epubReadingSystem); }}";
@@ -205,7 +207,7 @@ static RDJavascriptExecutor *m_javascriptExecutor = nil;
                                 \n};"];
 
                             // Fake script, generates HTTP request => triggers the push of window.navigator.epubReadingSystem into this HTML document's iframe (see LOXWebViewController.mm where the "readium_epubReadingSystem_inject" UIWebView URI query is handled)
-                            NSString *inject_epubReadingSystem2 = @"<script id=\"readium_epubReadingSystem_inject2\" type=\"text/javascript\" src=\"/readium_epubReadingSystem_inject.js\"> </script>";
+                            NSString *inject_epubReadingSystem2 = [NSString stringWithFormat:@"<script id=\"readium_epubReadingSystem_inject2\" type=\"text/javascript\" src=\"/%ld/readium_epubReadingSystem_inject.js\"> </script>", m_epubReadingSystem_Counter++];
 
                             NSString *inject_mathJax = @"";
                             if ([source rangeOfString:@"<math"].location != NSNotFound) {
