@@ -35,10 +35,6 @@
 -(void)executeJavascript:(NSString *)js;
 @end
 
-@implementation RDJavascriptExecutor
-@end
-
-
 @class HTTPServer;
 @class RDPackage;
 

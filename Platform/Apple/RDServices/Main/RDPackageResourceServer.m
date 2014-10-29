@@ -34,6 +34,14 @@
 #import "RDPackageResourceConnection.h"
 
 
+@implementation RDJavascriptExecutor
+-(void)executeJavascript:(NSString *)js {
+    // noop
+    NSLog(@"RDJavascriptExecutor executeJavascript NOOP %@", js);
+}
+@end
+
+
 static id m_resourceLock = nil;
 
 
