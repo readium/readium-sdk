@@ -29,6 +29,16 @@
 
 #import <Foundation/Foundation.h>
 
+// TODO: extract in its own file RDJavascriptExecutor.h
+@interface RDJavascriptExecutor : NSObject {
+}
+-(void)executeJavascript:(NSString *)js;
+@end
+
+@implementation RDJavascriptExecutor
+@end
+
+
 @class HTTPServer;
 @class RDPackage;
 
@@ -39,7 +49,7 @@
 
 @property (nonatomic, readonly) int port;
 
-- (id)initWithPackage:(RDPackage *)package;
+- (id)initWithPackage:(RDPackage *)package javascriptExecutor:(RDJavascriptExecutor*)javascriptExecutor;
 + (id)resourceLock;
 
 @end

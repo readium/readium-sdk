@@ -35,25 +35,7 @@
 #import "RDPackageResourceServer.h"
 
 static RDPackage *m_package = nil;
-
-// The incremental numeral below is needed to prevent
-// iOS UIWebView / NSURLCache from auto-caching requests to "readium_epubReadingSystem_inject.js"
-// See implementation of:
-// -(NSCachedURLResponse *)cachedResponseForRequest:(NSURLRequest *)request
-// ... in NSURLCacheInterceptor
-// Note that OSX implementation does not require this hack,
-// as the following request interceptor method is provided natively by WebView (no caching):
-/*
-- (NSURLRequest*) webView:(WebView*)sender
-        resource:(id)identifier
-        willSendRequest:(NSURLRequest*)request
-        redirectResponse:(NSURLResponse*)redirectResponse
-        fromDataSource:(WebDataSource*)dataSource
-{
-...
-}
-*/
-static long m_injectCounter = 0;
+static RDJavascriptExecutor *m_javascriptExecutor = nil;
 
 @implementation RDPackageResourceConnection
 
@@ -168,6 +150,17 @@ static long m_injectCounter = 0;
         }
     }
 
+    // Fake script request, immediately invoked after epubReadingSystem hook is in place,
+    // => push the global window.navigator.epubReadingSystem into the iframe(s)
+    NSString * eprs = @"/readium_epubReadingSystem_inject.js";
+    if ([path hasSuffix:eprs]) {
+
+        // Iterate top-level iframes, inject global window.navigator.epubReadingSystem if the expected hook function exists ( readium_set_epubReadingSystem() ).
+        NSString* cmd = @"for (var i = 0; i < window.frames.length; i++) { var iframe = window.frames[i]; if (iframe.readium_set_epubReadingSystem) { iframe.readium_set_epubReadingSystem(window.navigator.epubReadingSystem); }}";
+
+        [m_javascriptExecutor executeJavascript:cmd];
+    }
+
 	// Synchronize using a process-level lock to guard against multiple threads accessing a
 	// resource byte stream, which may lead to instability.
 
@@ -210,10 +203,7 @@ static long m_injectCounter = 0;
                                 \n};"];
 
                             // Fake script, generates HTTP request => triggers the push of window.navigator.epubReadingSystem into this HTML document's iframe (see LOXWebViewController.mm where the "readium_epubReadingSystem_inject" UIWebView URI query is handled)
-                            NSString *inject_epubReadingSystem2 =
-                                    [NSString stringWithFormat:
-                                    @"<script id=\"readium_epubReadingSystem_inject2\" type=\"text/javascript\" src=\"/%ld/readium_epubReadingSystem_inject.js\"> </script>",
-                                                    m_injectCounter++];
+                            NSString *inject_epubReadingSystem2 = @"<script id=\"readium_epubReadingSystem_inject2\" type=\"text/javascript\" src=\"/readium_epubReadingSystem_inject.js\"> </script>";
 
                             NSString *inject_mathJax = @"";
                             if ([source rangeOfString:@"<math"].location != NSNotFound) {
@@ -279,9 +269,9 @@ static long m_injectCounter = 0;
 }
 
 
-+ (void)setPackage:(RDPackage *)package {
++ (void)setPackage:(RDPackage *)package javascriptExecutor:(RDJavascriptExecutor*)javascriptExecutor {
 	m_package = package;
-    //m_injectCounter = 0;
+    m_javascriptExecutor = javascriptExecutor;
 }
 
 

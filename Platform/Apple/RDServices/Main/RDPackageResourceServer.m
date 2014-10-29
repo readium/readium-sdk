@@ -51,7 +51,7 @@ static id m_resourceLock = nil;
 }
 
 
-- (id)initWithPackage:(RDPackage *)package {
+- (id)initWithPackage:(RDPackage *)package javascriptExecutor:(RDJavascriptExecutor*)javascriptExecutor {
 	if (package == nil) {
 		return nil;
 	}
@@ -79,7 +79,7 @@ static id m_resourceLock = nil;
 			return nil;
 		}
 
-		[RDPackageResourceConnection setPackage:package];
+		[RDPackageResourceConnection setPackage:package javascriptExecutor:javascriptExecutor];
 	}
 
 	return self;

@@ -30,9 +30,10 @@
 #import "HTTPConnection.h"
 
 @class RDPackage;
+@class RDJavascriptExecutor;
 
 @interface RDPackageResourceConnection : HTTPConnection
 
-+ (void)setPackage:(RDPackage *)package;
++ (void)setPackage:(RDPackage *)package javascriptExecutor:(RDJavascriptExecutor*)javascriptExecutor;
 
 @end
