@@ -63,7 +63,7 @@
         ePub3::ErrorHandlerFn sdkErrorHandler = ^(const ePub3::error_details& err) {
 
             const char * msg = err.message();
-            [m_delegate handleSdkError:[NSString stringWithUTF8String:msg]];
+            [m_delegate rdcontainer:self handleSdkError:[NSString stringWithUTF8String:msg]];
 
             //TODO? pass to delegate more information from ePub3::error_details (see error_handler.h)
 

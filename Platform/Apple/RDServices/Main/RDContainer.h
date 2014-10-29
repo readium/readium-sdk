@@ -29,8 +29,10 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol RDContainerDelegate
-- (void)handleSdkError:(NSString*)message;
+@class RDContainer;
+
+@protocol RDContainerDelegate <NSObject>
+- (void)rdcontainer:(RDContainer *)container handleSdkError:(NSString*)message;
 @end
 
 @class RDPackage;
