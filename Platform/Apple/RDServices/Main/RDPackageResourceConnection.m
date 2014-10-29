@@ -34,12 +34,10 @@
 #import "RDPackageResourceResponse.h"
 #import "RDPackageResourceServer.h"
 
-static RDPackage *m_package = nil;
-static RDJavascriptExecutor *m_javascriptExecutor = nil;
-static NSData* m_specialPayload_MathJaxJS = nil;
-static NSData* m_specialPayload_AnnotationsCSS = nil;
 
 static long m_epubReadingSystem_Counter = 0;
+static __weak RDPackageResourceServer *m_packageResourceServer = nil;
+
 
 @implementation RDPackageResourceConnection
 
@@ -98,7 +96,7 @@ static long m_epubReadingSystem_Counter = 0;
 }
 
 - (NSObject <HTTPResponse> *)httpResponseForMethod:(NSString *)method URI:(NSString *)path {
-	if (m_package == nil ||
+	if (m_packageResourceServer == nil ||
 		method == nil ||
 		![method isEqualToString:@"GET"] ||
 		path == nil ||
@@ -115,13 +113,15 @@ static long m_epubReadingSystem_Counter = 0;
 	}
 
 	NSObject <HTTPResponse> *response = nil;
+	NSData *specialPayloadAnnotationsCSS = m_packageResourceServer.specialPayloadAnnotationsCSS;
+	NSData *specialPayloadMathJaxJS = m_packageResourceServer.specialPayloadMathJaxJS;
 
-    if (m_specialPayload_MathJaxJS != nil)
-    {
+	if (specialPayloadMathJaxJS != nil && specialPayloadMathJaxJS.length > 0) {
         NSString * math = @"readium_MathJax.js";
         if ([path hasPrefix:math]) {
 
-            RDPackageResourceDataResponse *dataResponse = [[RDPackageResourceDataResponse alloc] initWithData:m_specialPayload_MathJaxJS];
+            RDPackageResourceDataResponse *dataResponse = [[RDPackageResourceDataResponse alloc]
+				initWithData:specialPayloadMathJaxJS];
             dataResponse.contentType = @"text/javascript";
 
             response = dataResponse;
@@ -129,13 +129,12 @@ static long m_epubReadingSystem_Counter = 0;
         }
     }
 
-    if (m_specialPayload_AnnotationsCSS != nil)
-    {
+	if (specialPayloadAnnotationsCSS != nil && specialPayloadAnnotationsCSS.length > 0) {
         NSString * annotationsCSS = @"readium_Annotations.css";
         if ([path hasPrefix:annotationsCSS]) {
 
             RDPackageResourceDataResponse *dataResponse = [[RDPackageResourceDataResponse alloc]
-                    initWithData:m_specialPayload_AnnotationsCSS];
+				initWithData:specialPayloadAnnotationsCSS];
             dataResponse.contentType = @"text/css";
 
             response = dataResponse;
@@ -149,9 +148,13 @@ static long m_epubReadingSystem_Counter = 0;
     if ([path hasSuffix:eprs]) {
 
         // Iterate top-level iframes, inject global window.navigator.epubReadingSystem if the expected hook function exists ( readium_set_epubReadingSystem() ).
-        NSString* cmd = @"for (var i = 0; i < window.frames.length; i++) { var iframe = window.frames[i]; if (iframe.readium_set_epubReadingSystem) { iframe.readium_set_epubReadingSystem(window.navigator.epubReadingSystem); }}";
-
-        [m_javascriptExecutor executeJavascript:cmd];
+		[m_packageResourceServer executeJavaScript:
+			@"for (var i = 0; i < window.frames.length; i++) { "
+				@"var iframe = window.frames[i]; "
+				@"if (iframe.readium_set_epubReadingSystem) { "
+					@"iframe.readium_set_epubReadingSystem(window.navigator.epubReadingSystem); "
+				@"}"
+			@"}"];
 
         NSString* noop = @"var noop = true;"; // prevents 404 (WebConsole message)
         NSData *data = [noop dataUsingEncoding:NSUTF8StringEncoding];
@@ -164,7 +167,7 @@ static long m_epubReadingSystem_Counter = 0;
 	// resource byte stream, which may lead to instability.
 
 	@synchronized ([RDPackageResourceServer resourceLock]) {
-		RDPackageResource *resource = [m_package resourceAtRelativePath:path];
+		RDPackageResource *resource = [m_packageResourceServer.package resourceAtRelativePath:path];
 
 		if (resource == nil) {
 			NSLog(@"No resource found! (%@)", path);
@@ -268,26 +271,8 @@ static long m_epubReadingSystem_Counter = 0;
 }
 
 
-+ (void)clearStatics {
-    [RDPackageResourceConnection setPackage:nil];
-    [RDPackageResourceConnection setJavascriptExecutor:nil];
-    [RDPackageResourceConnection setSpecialPayload_AnnotationsCSS:nil];
-    [RDPackageResourceConnection setSpecialPayload_MathJaxJS:nil];
-}
-
-+ (void)setPackage:(RDPackage *)package {
-    m_package = package;
-}
-
-+ (void)setJavascriptExecutor:(RDJavascriptExecutor*)javascriptExecutor {
-    m_javascriptExecutor = javascriptExecutor;
-}
-
-+ (void)setSpecialPayload_MathJaxJS:(NSData*)payload {
-    m_specialPayload_MathJaxJS = payload;
-}
-+ (void)setSpecialPayload_AnnotationsCSS:(NSData*)payload {
-    m_specialPayload_AnnotationsCSS = payload;
++ (void)setPackageResourceServer:(RDPackageResourceServer *)packageResourceServer {
+	m_packageResourceServer = packageResourceServer;
 }
 
 

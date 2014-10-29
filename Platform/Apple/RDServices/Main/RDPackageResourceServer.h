@@ -29,24 +29,31 @@
 
 #import <Foundation/Foundation.h>
 
-// TODO: extract in its own file RDJavascriptExecutor.h
-@interface RDJavascriptExecutor : NSObject {
-}
--(void)executeJavascript:(NSString *)js;
+@class RDPackage;
+@class RDPackageResourceServer;
+
+@protocol RDPackageResourceServerDelegate <NSObject>
+
+- (void)
+	rdpackageResourceServer:(RDPackageResourceServer *)packageResourceServer
+	executeJavaScript:(NSString *)javaScript;
+
 @end
 
-@class HTTPServer;
-@class RDPackage;
+@interface RDPackageResourceServer : NSObject
 
-@interface RDPackageResourceServer : NSObject {
-	@private HTTPServer *m_httpServer;
-	@private RDPackage *m_package;
-}
-
+@property (nonatomic, readonly) RDPackage *package;
 @property (nonatomic, readonly) int port;
+@property (nonatomic, readonly) NSData *specialPayloadAnnotationsCSS;
+@property (nonatomic, readonly) NSData *specialPayloadMathJaxJS;
 
-- (id)initWithPackage:(RDPackage *)package specialPayload_MathJaxJS:(NSData*)specialPayload_MathJaxJS specialPayload_AnnotationsCSS:(NSData*)specialPayload_AnnotationsCSS;
-- (void)setJavascriptExecutor:(RDJavascriptExecutor*)javascriptExecutor;
+- (void)executeJavaScript:(NSString *)javaScript;
+
+- (instancetype)
+	initWithDelegate:(id <RDPackageResourceServerDelegate>)delegate
+	package:(RDPackage *)package
+	specialPayloadAnnotationsCSS:(NSData *)specialPayloadAnnotationsCSS
+	specialPayloadMathJaxJS:(NSData *)specialPayloadMathJaxJS;
 
 + (id)resourceLock;
 
