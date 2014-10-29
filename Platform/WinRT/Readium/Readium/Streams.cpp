@@ -45,13 +45,18 @@ Stream::Stream(NativePtr native) : _native(native)
 IAsyncOperationWithProgress<IBuffer^, unsigned int>^ Stream::ReadAsync(IBuffer^ buffer, unsigned int count, InputStreamOptions options)
 {
 	return create_async([this, buffer, count, options](progress_reporter<unsigned int> reporter) -> IBuffer^ {
-		if (!IsOpen)
+		if (!IsOpen) {
+			String^ debugMsg = "File is closed.";
+			OutputDebugString(debugMsg->Data());
+			reporter.report(0);
 			return buffer;
+		}
 		auto byteBuffer = getByteAccessForBuffer(buffer);
 		byte* bytes = nullptr;
 		byteBuffer->Buffer(&bytes);
 
 		unsigned int toRead = ((options == InputStreamOptions::ReadAhead) ? std::max(count, buffer->Capacity) : std::min(count, buffer->Capacity));
+		toRead = std::min(toRead, _native->BytesAvailable());
 		ssize_t numRead = 0;
 		int total = 0;
 
@@ -190,7 +195,10 @@ IAsyncOperationWithProgress<IBuffer^, unsigned int>^ RandomAccessStream::ReadAsy
 		} while (numRead > 0 && toRead > 0 && options != InputStreamOptions::Partial);
 
 		buffer->Length = total;
-		return buffer;
+
+		return nullptr;
+
+		//return buffer;
 	});
 }
 IAsyncOperation<bool>^ RandomAccessStream::FlushAsync()

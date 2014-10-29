@@ -732,6 +732,7 @@ std::shared_ptr<SeekableByteStream> FileByteStream::Clone() const
 
 ZipFileByteStream::ZipFileByteStream(struct zip* archive, const string& path, int flags) : SeekableByteStream(), _file(nullptr), _mode(0)
 {
+	this->path = path;
     Open(archive, path, flags);
 }
 ZipFileByteStream::~ZipFileByteStream()
@@ -775,10 +776,18 @@ void ZipFileByteStream::Close()
     zip_fclose(_file);
     _file = nullptr;
 }
+using namespace Platform;
 ByteStream::size_type ZipFileByteStream::ReadBytes(void *buf, size_type len)
 {
     if ( _file == nullptr )
         return 0;
+
+	int numToRead = static_cast<int>(len);
+	int bytesLeft = static_cast<int>(_file->bytes_left);
+
+	if (_file->bytes_left <= 0 || len <= 0) {
+		return 0;
+	}
     
     ssize_t numRead = zip_fread(_file, buf, len);
     if ( numRead < 0 )
@@ -788,6 +797,18 @@ ByteStream::size_type ZipFileByteStream::ReadBytes(void *buf, size_type len)
     }
 
 	_eof = (_file->bytes_left == 0);
+
+	/** Start Debug Code 
+	int numReadInt = static_cast<int>(numRead);
+
+	const char* path_cstr = this->path.c_str();
+	wchar_t path_wchar[4096];
+	mbstowcs(path_wchar, path_cstr, 4096);
+	Platform::String^ path_platform_str = ref new Platform::String(path_wchar);
+	
+	Platform::String^ debugMsg = "path:" + path_platform_str + ";bytesRead:" + numReadInt + "; bytesAvailable:" + BytesAvailable() + "\n";
+	OutputDebugString(debugMsg->Data());
+	/** End Debug Code **/
     
     return numRead;
 }

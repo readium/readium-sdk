@@ -380,23 +380,42 @@ std::shared_ptr<Document> InputBuffer::ReadDocument(const char* url, const char*
 	uint8_t buf[BUF_SIZE];
 	Converter converter;
 	int numRead = 0;
+	bool firstPass = true;
 
 	do
 	{
 		numRead = static_cast<int>(this->read(buf, BUF_SIZE));
+
 		if (numRead > 0)
 		{
-			str.append(converter.from_bytes(reinterpret_cast<char*>(buf), reinterpret_cast<char*>(buf + numRead)));
+			uint8_t* buffer_pointer = buf;
+
+			// ignore first three bytes if they are the UTF-8 BOM
+			if (firstPass && numRead >= 3 && buf[0] == 0xEF && buf[1] == 0xBB && buf[2] == 0xBF) {
+				buffer_pointer = buf + 3;
+				numRead -= 3;
+			}
+			
+			str.append(converter.from_bytes(reinterpret_cast<char*>(buffer_pointer), reinterpret_cast<char*>(buffer_pointer + numRead)));
 		}
+		firstPass = false;
 
 	} while (numRead > 0);
 
 	this->close();
 
 	::Platform::String^ nstr = ref new String(str.data(), static_cast<unsigned int>(str.length()));
+
+	Platform::String^ debugStr = "[InputBuffer#ReadDocument] parsing xml: " + nstr;
+	OutputDebugString(debugStr->Data());
+
+	debugStr = "[InputBuffer#ReadDocument] xml in wstring: ";
+	OutputDebugString(debugStr->Data());
+	OutputDebugString(str.data());
+
 	str.clear();		// watch your memory
 	XmlDocument^ native = ref new XmlDocument;
-	XmlLoadSettings^ settings = ref new XmlLoadSettings;
+	XmlLoadSettings^ settings = ref new XmlLoadSettings();
 	settings->ElementContentWhiteSpace = false;
 	settings->MaxElementDepth = 100;
 	settings->ProhibitDtd = ((options & PROHIBIT_DTD) == PROHIBIT_DTD);
@@ -481,6 +500,13 @@ size_t StreamInputBuffer::read(uint8_t *buf, size_t len)
 	size_t num = 0;
 	if (_input.good())
 		num = static_cast<size_t>(_input.readsome(reinterpret_cast<std::istream::char_type*>(buf), len));
+
+	/*
+	const char* cBuffer
+	wchar_t debugBuffer[1024 * 1024 * 4];
+	mbstowcs(debugBuffer, buf, 1024 * 1024 * 4);
+	*/
+
 	return num;
 }
 bool StreamInputBuffer::close()

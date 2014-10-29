@@ -44,6 +44,7 @@ public interface class IClosableStream : IInputStream, IOutputStream
 public:
 	void Close();
 	property bool IsOpen { bool get(); }
+	property unsigned long long Size {unsigned long long get(); }
 };
 public interface class IClosableRandomAccessStream : IClosableStream, IRandomAccessStream
 {
@@ -76,6 +77,16 @@ public:
 			if (bool(_native))
 				return _native->IsOpen();
 			return false;
+		}
+	}
+
+	property unsigned long long Size
+	{
+		virtual unsigned long long get() {
+			if (!_native->IsOpen()) {
+				return 0;
+			}
+			return static_cast<unsigned long long>(_native->BytesAvailable());
 		}
 	}
 
