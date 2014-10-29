@@ -45,7 +45,9 @@
 
 @property (nonatomic, readonly) int port;
 
-- (id)initWithPackage:(RDPackage *)package javascriptExecutor:(RDJavascriptExecutor*)javascriptExecutor;
+- (id)initWithPackage:(RDPackage *)package;
+- (void)setJavascriptExecutor:(RDJavascriptExecutor*)javascriptExecutor;
+
 + (id)resourceLock;
 
 @end

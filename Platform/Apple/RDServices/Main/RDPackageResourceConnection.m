@@ -152,8 +152,8 @@ static RDJavascriptExecutor *m_javascriptExecutor = nil;
 
     // Fake script request, immediately invoked after epubReadingSystem hook is in place,
     // => push the global window.navigator.epubReadingSystem into the iframe(s)
-    NSString * eprs = @"/readium_epubReadingSystem_inject.js";
-    if ([path hasSuffix:eprs]) {
+    NSString * eprs = @"readium_epubReadingSystem_inject.js";
+    if ([path hasPrefix:eprs]) {
 
         // Iterate top-level iframes, inject global window.navigator.epubReadingSystem if the expected hook function exists ( readium_set_epubReadingSystem() ).
         NSString* cmd = @"for (var i = 0; i < window.frames.length; i++) { var iframe = window.frames[i]; if (iframe.readium_set_epubReadingSystem) { iframe.readium_set_epubReadingSystem(window.navigator.epubReadingSystem); }}";
@@ -271,8 +271,11 @@ static RDJavascriptExecutor *m_javascriptExecutor = nil;
 }
 
 
-+ (void)setPackage:(RDPackage *)package javascriptExecutor:(RDJavascriptExecutor*)javascriptExecutor {
-	m_package = package;
++ (void)setPackage:(RDPackage *)package {
+    m_package = package;
+}
+
++ (void)setJavascriptExecutor:(RDJavascriptExecutor*)javascriptExecutor {
     m_javascriptExecutor = javascriptExecutor;
 }
 

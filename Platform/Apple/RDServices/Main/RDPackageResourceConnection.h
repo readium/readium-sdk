@@ -34,6 +34,7 @@
 
 @interface RDPackageResourceConnection : HTTPConnection
 
-+ (void)setPackage:(RDPackage *)package javascriptExecutor:(RDJavascriptExecutor*)javascriptExecutor;
++ (void)setPackage:(RDPackage *)package;
++ (void)setJavascriptExecutor:(RDJavascriptExecutor*)javascriptExecutor;
 
 @end
