@@ -34,7 +34,11 @@
 
 @interface RDPackageResourceConnection : HTTPConnection
 
++ (void)clearStatics;
+
 + (void)setPackage:(RDPackage *)package;
 + (void)setJavascriptExecutor:(RDJavascriptExecutor*)javascriptExecutor;
++ (void)setSpecialPayload_MathJaxJS:(NSData*)payload;
++ (void)setSpecialPayload_AnnotationsCSS:(NSData*)payload;
 
 @end

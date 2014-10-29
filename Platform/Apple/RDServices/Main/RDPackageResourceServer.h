@@ -45,7 +45,7 @@
 
 @property (nonatomic, readonly) int port;
 
-- (id)initWithPackage:(RDPackage *)package;
+- (id)initWithPackage:(RDPackage *)package specialPayload_MathJaxJS:(NSData*)specialPayload_MathJaxJS specialPayload_AnnotationsCSS:(NSData*)specialPayload_AnnotationsCSS;
 - (void)setJavascriptExecutor:(RDJavascriptExecutor*)javascriptExecutor;
 
 + (id)resourceLock;

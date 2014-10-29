@@ -50,8 +50,8 @@ static id m_resourceLock = nil;
 
 - (void)dealloc {
 	[m_httpServer stop];
-	[RDPackageResourceConnection setPackage:nil];
-    [RDPackageResourceConnection setJavascriptExecutor:nil];
+
+    [RDPackageResourceConnection clearStatics];
 }
 
 
@@ -65,7 +65,7 @@ static id m_resourceLock = nil;
     [RDPackageResourceConnection setJavascriptExecutor:javascriptExecutor];
 }
 
-- (id)initWithPackage:(RDPackage *)package {
+- (id)initWithPackage:(RDPackage *)package specialPayload_MathJaxJS:(NSData*)specialPayload_MathJaxJS specialPayload_AnnotationsCSS:(NSData*)specialPayload_AnnotationsCSS {
 	if (package == nil) {
 		return nil;
 	}
@@ -93,7 +93,9 @@ static id m_resourceLock = nil;
 			return nil;
 		}
 
-		[RDPackageResourceConnection setPackage:package];
+        [RDPackageResourceConnection setPackage:package];
+        [RDPackageResourceConnection setSpecialPayload_MathJaxJS:specialPayload_MathJaxJS];
+        [RDPackageResourceConnection setSpecialPayload_AnnotationsCSS:specialPayload_AnnotationsCSS];
 	}
 
 	return self;
