@@ -159,6 +159,8 @@ static RDJavascriptExecutor *m_javascriptExecutor = nil;
         NSString* cmd = @"for (var i = 0; i < window.frames.length; i++) { var iframe = window.frames[i]; if (iframe.readium_set_epubReadingSystem) { iframe.readium_set_epubReadingSystem(window.navigator.epubReadingSystem); }}";
 
         [m_javascriptExecutor executeJavascript:cmd];
+        
+        return response; //nil
     }
 
 	// Synchronize using a process-level lock to guard against multiple threads accessing a
