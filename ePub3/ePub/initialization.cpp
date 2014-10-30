@@ -25,6 +25,7 @@
 #include <ePub3/font_obfuscation.h>
 #include <ePub3/switch_preprocessor.h>
 #include <ePub3/object_preprocessor.h>
+#include <ePub3/PassThroughFilter.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -42,6 +43,7 @@ void PopulateFilterManager()
     static std::once_flag __once;
     std::call_once(__once, []{
         FontObfuscator::Register();
+        PassThroughFilter::Register();
         SwitchPreprocessor::Register();
         ObjectPreprocessor::Register();
     });
