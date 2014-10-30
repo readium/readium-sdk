@@ -227,10 +227,9 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
                 }
             }
 
-            if (resource.contentLength < 1000000) {
-
-                // This resource is small enough that we can just fetch the entire thing in memory,
-                // which simplifies access into the byte stream.  Adjust the threshold to taste.
+            if (!resource.isByteRangeResource) { 
+                // This resource is not one that can be fetched by byte ranges,
+                // so just put the whole thing in memory.
 
                 NSData *data = resource.data;
 
