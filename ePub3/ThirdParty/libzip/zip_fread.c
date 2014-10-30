@@ -82,6 +82,9 @@ zip_fread(struct zip_file *zf, void *outbuf, size_t toread)
     
 	struct zip* zip_archive = zf->za;
 	const char* zip_name = zip_get_name(zip_archive, zf->file_index, 0);
+
+	int stream_end_count = 0;
+
     /* endless loop until something has been accomplished */
     for (int debugInt=0;;debugInt++) {
 		ret = inflate(zf->zstr, Z_SYNC_FLUSH);
@@ -103,6 +106,8 @@ zip_fread(struct zip_file *zf, void *outbuf, size_t toread)
 						return 0;
 				}
 
+				stream_end_count++;
+
 				/* fallthrough */
 
 			case Z_OK:
@@ -115,7 +120,7 @@ zip_fread(struct zip_file *zf, void *outbuf, size_t toread)
 					return (ssize_t)len;
 				}
 
-				if (debugInt > 5000) {
+				if (ret == Z_STREAM_END && stream_end_count > 10) {
 					return (ssize_t) (toread - out_before);
 				}
 
