@@ -33,6 +33,9 @@
 
 
 @interface RDMediaOverlaysSmilModel () {
+	@private NSArray *m_escapables;
+	@private NSArray *m_skippables;
+	@private NSArray *m_smilDatas;
 	@private ePub3::MediaOverlaysSmilModel *m_smilModel;
 }
 
@@ -91,7 +94,7 @@
 }
 
 
-- (id)initWithMediaOverlaysSmilModel:(void *)smilModel {
+- (instancetype)initWithMediaOverlaysSmilModel:(void *)smilModel {
 	if (smilModel == nil) {
 		return nil;
 	}

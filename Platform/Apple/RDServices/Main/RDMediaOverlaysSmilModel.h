@@ -29,11 +29,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface RDMediaOverlaysSmilModel : NSObject {
-	@private NSArray *m_escapables;
-	@private NSArray *m_skippables;
-	@private NSArray *m_smilDatas;
-}
+@interface RDMediaOverlaysSmilModel : NSObject
 
 @property (nonatomic, readonly) NSString *activeClass;
 @property (nonatomic, readonly) NSDictionary *dictionary;
@@ -44,6 +40,6 @@
 @property (nonatomic, readonly) NSArray *skippables;
 @property (nonatomic, readonly) NSArray *smilDatas;
 
-- (id)initWithMediaOverlaysSmilModel:(void *)smilModel;
+- (instancetype)initWithMediaOverlaysSmilModel:(void *)smilModel;
 
 @end

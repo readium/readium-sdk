@@ -32,6 +32,14 @@
 #import "RDPackageResourceServer.h"
 
 
+@interface RDPackageResourceResponse () {
+	@private UInt64 m_offset;
+	@private RDPackageResource *m_resource;
+}
+
+@end
+
+
 @implementation RDPackageResourceResponse
 
 
@@ -52,7 +60,7 @@
 }
 
 
-- (id)initWithResource:(RDPackageResource *)resource {
+- (instancetype)initWithResource:(RDPackageResource *)resource {
 	if (resource == nil) {
 		return nil;
 	}

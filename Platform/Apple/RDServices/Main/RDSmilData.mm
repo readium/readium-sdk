@@ -32,6 +32,7 @@
 
 
 @interface RDSmilData () {
+	@private NSDictionary *m_bodyDictionary;
 	@private ePub3::SMILData *m_smilData;
 }
 
@@ -94,7 +95,7 @@
 }
 
 
-- (id)initWithSmilData:(void *)smilData {
+- (instancetype)initWithSmilData:(void *)smilData {
 	if (smilData == nil) {
 		return nil;
 	}
