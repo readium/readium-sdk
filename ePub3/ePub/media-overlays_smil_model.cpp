@@ -277,6 +277,11 @@ public:
 
                 if (itemDurationStr.empty())
                 {
+                    allFake = false;
+
+                    const std::shared_ptr<SMILData> smilData = std::make_shared<class SMILData>(sharedMe, item, spineItem, 0);
+                    _smilDatas.push_back(smilData); // creates a *copy* of the shared smart pointer (reference count++)
+
                     HandleError(EPUBError::MediaOverlayMissingDurationMetadata, _Str(item->Href(), " => missing media:duration metadata"));
                 }
                 else
@@ -296,7 +301,9 @@ public:
                     }
                     catch (const std::invalid_argument & exc)
                     {
-                        const std::shared_ptr<SMILData> smilData = std::make_shared<class SMILData>(sharedMe, nullptr, spineItem, 0);
+                        allFake = false;
+
+                        const std::shared_ptr<SMILData> smilData = std::make_shared<class SMILData>(sharedMe, item, spineItem, 0);
                         _smilDatas.push_back(smilData); // creates a *copy* of the shared smart pointer (reference count++)
 
                         HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str(item->Href(), " -- media:duration=", itemDurationStr, " => invalid SMIL Clock Value syntax"));
