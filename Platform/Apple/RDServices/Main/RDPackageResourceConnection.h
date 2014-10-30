@@ -29,10 +29,10 @@
 
 #import "HTTPConnection.h"
 
-@class RDPackage;
+@class RDPackageResourceServer;
 
 @interface RDPackageResourceConnection : HTTPConnection
 
-+ (void)setPackage:(RDPackage *)package;
++ (void)setPackageResourceServer:(RDPackageResourceServer *)packageResourceServer;
 
 @end

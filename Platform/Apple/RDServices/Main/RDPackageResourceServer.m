@@ -29,20 +29,38 @@
 
 #import "RDPackageResourceServer.h"
 #import "HTTPServer.h"
-#import "RDPackage.h"
-#import "RDPackageResource.h"
 #import "RDPackageResourceConnection.h"
 
 
 static id m_resourceLock = nil;
 
 
+@interface RDPackageResourceServer () {
+	@private __weak id <RDPackageResourceServerDelegate> m_delegate;
+	@private HTTPServer *m_httpServer;
+	@private RDPackage *m_package;
+	@private NSData *m_specialPayloadAnnotationsCSS;
+	@private NSData *m_specialPayloadMathJaxJS;
+}
+
+@end
+
+
 @implementation RDPackageResourceServer
+
+
+@synthesize package = m_package;
+@synthesize specialPayloadAnnotationsCSS = m_specialPayloadAnnotationsCSS;
+@synthesize specialPayloadMathJaxJS = m_specialPayloadMathJaxJS;
 
 
 - (void)dealloc {
 	[m_httpServer stop];
-	[RDPackageResourceConnection setPackage:nil];
+}
+
+
+- (void)executeJavaScript:(NSString *)javaScript {
+	[m_delegate rdpackageResourceServer:self executeJavaScript:javaScript];
 }
 
 
@@ -51,14 +69,22 @@ static id m_resourceLock = nil;
 }
 
 
-- (id)initWithPackage:(RDPackage *)package {
-	if (package == nil) {
+- (instancetype)
+	initWithDelegate:(id <RDPackageResourceServerDelegate>)delegate
+	package:(RDPackage *)package
+	specialPayloadAnnotationsCSS:(NSData *)specialPayloadAnnotationsCSS
+	specialPayloadMathJaxJS:(NSData *)specialPayloadMathJaxJS
+{
+	if (delegate == nil || package == nil) {
 		return nil;
 	}
 
 	if (self = [super init]) {
-		m_package = package;
+		m_delegate = delegate;
 		m_httpServer = [[HTTPServer alloc] init];
+		m_package = package;
+		m_specialPayloadAnnotationsCSS = specialPayloadAnnotationsCSS;
+		m_specialPayloadMathJaxJS = specialPayloadMathJaxJS;
 
 		if (m_httpServer == nil) {
 			NSLog(@"The HTTP server is nil!");
@@ -79,7 +105,7 @@ static id m_resourceLock = nil;
 			return nil;
 		}
 
-		[RDPackageResourceConnection setPackage:package];
+		[RDPackageResourceConnection setPackageResourceServer:self];
 	}
 
 	return self;

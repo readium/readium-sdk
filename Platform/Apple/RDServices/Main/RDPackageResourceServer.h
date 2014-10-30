@@ -29,17 +29,32 @@
 
 #import <Foundation/Foundation.h>
 
-@class HTTPServer;
 @class RDPackage;
+@class RDPackageResourceServer;
 
-@interface RDPackageResourceServer : NSObject {
-	@private HTTPServer *m_httpServer;
-	@private RDPackage *m_package;
-}
+@protocol RDPackageResourceServerDelegate <NSObject>
 
+- (void)
+	rdpackageResourceServer:(RDPackageResourceServer *)packageResourceServer
+	executeJavaScript:(NSString *)javaScript;
+
+@end
+
+@interface RDPackageResourceServer : NSObject
+
+@property (nonatomic, readonly) RDPackage *package;
 @property (nonatomic, readonly) int port;
+@property (nonatomic, readonly) NSData *specialPayloadAnnotationsCSS;
+@property (nonatomic, readonly) NSData *specialPayloadMathJaxJS;
 
-- (id)initWithPackage:(RDPackage *)package;
+- (void)executeJavaScript:(NSString *)javaScript;
+
+- (instancetype)
+	initWithDelegate:(id <RDPackageResourceServerDelegate>)delegate
+	package:(RDPackage *)package
+	specialPayloadAnnotationsCSS:(NSData *)specialPayloadAnnotationsCSS
+	specialPayloadMathJaxJS:(NSData *)specialPayloadMathJaxJS;
+
 + (id)resourceLock;
 
 @end
