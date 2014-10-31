@@ -39,7 +39,7 @@
 
 
 @interface RDPackage() <RDPackageResourceDelegate> {
-	@private std::vector<std::unique_ptr<ePub3::ByteStream>> m_byteStreamVector;
+	@private std::vector<std::shared_ptr<ePub3::ByteStream>> m_byteStreamVector;
 	@private ePub3::Package *m_package;
 	@private std::vector<std::shared_ptr<ePub3::SpineItem>> m_spineItemVector;
 }
