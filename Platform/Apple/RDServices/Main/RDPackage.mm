@@ -40,8 +40,17 @@
 
 @interface RDPackage() <RDPackageResourceDelegate> {
 	@private std::vector<std::unique_ptr<ePub3::ByteStream>> m_byteStreamVector;
+	@private RDMediaOverlaysSmilModel *m_mediaOverlaysSmilModel;
+	@private RDNavigationElement *m_navElemListOfFigures;
+	@private RDNavigationElement *m_navElemListOfIllustrations;
+	@private RDNavigationElement *m_navElemListOfTables;
+	@private RDNavigationElement *m_navElemPageList;
+	@private RDNavigationElement *m_navElemTableOfContents;
 	@private ePub3::Package *m_package;
+	@private NSString *m_packageUUID;
+	@private NSMutableArray *m_spineItems;
 	@private std::vector<std::shared_ptr<ePub3::SpineItem>> m_spineItemVector;
+	@private NSMutableArray *m_subjects;
 }
 
 - (NSString *)sourceHrefForNavigationTable:(ePub3::NavigationTable *)navTable;
@@ -135,7 +144,7 @@
 }
 
 
-- (id)initWithPackage:(void *)package {
+- (instancetype)initWithPackage:(void *)package {
 	if (package == nil) {
 		return nil;
 	}
@@ -248,6 +257,18 @@
 }
 
 
+- (void)packageResourceWillDeallocate:(RDPackageResource *)packageResource {
+	for (auto i = m_byteStreamVector.begin(); i != m_byteStreamVector.end(); i++) {
+		if (i->get() == packageResource.byteStream) {
+			m_byteStreamVector.erase(i);
+			return;
+		}
+	}
+
+	NSLog(@"The byte stream was not found!");
+}
+
+
 - (RDNavigationElement *)pageList {
 	if (m_navElemPageList == nil) {
 		ePub3::NavigationTable *navTable = m_package->PageList().get();
@@ -257,18 +278,6 @@
 	}
 
 	return m_navElemPageList;
-}
-
-
-- (void)rdpackageResourceWillDeallocate:(RDPackageResource *)packageResource {
-	for (auto i = m_byteStreamVector.begin(); i != m_byteStreamVector.end(); i++) {
-		if (i->get() == packageResource.byteStream) {
-			m_byteStreamVector.erase(i);
-			return;
-		}
-	}
-
-	NSLog(@"The byte stream was not found!");
 }
 
 

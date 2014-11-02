@@ -35,7 +35,7 @@
 @protocol RDPackageResourceServerDelegate <NSObject>
 
 - (void)
-	rdpackageResourceServer:(RDPackageResourceServer *)packageResourceServer
+	packageResourceServer:(RDPackageResourceServer *)packageResourceServer
 	executeJavaScript:(NSString *)javaScript;
 
 @end

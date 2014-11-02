@@ -33,8 +33,10 @@
 
 
 @interface RDNavigationElement() {
+	@private NSArray *m_children;
 	@private ePub3::NavigationElement *m_element;
 	@private ePub3::NavigationList m_navigationList;
+	@private NSString *m_sourceHref;
 }
 
 @end
@@ -75,7 +77,7 @@
 }
 
 
-- (id)initWithNavigationElement:(void *)element sourceHref:(NSString *)sourceHref {
+- (instancetype)initWithNavigationElement:(void *)element sourceHref:(NSString *)sourceHref {
 	if (element == nil) {
 		return nil;
 	}

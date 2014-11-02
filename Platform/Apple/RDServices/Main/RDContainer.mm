@@ -30,13 +30,18 @@
 #import "RDContainer.h"
 #import <ePub3/container.h>
 #import <ePub3/initialization.h>
-#import "RDPackage.h"
 #import <ePub3/utilities/error_handler.h>
+#import "RDPackage.h"
 
-@interface RDContainer() {
+
+@interface RDContainer () {
 	@private std::shared_ptr<ePub3::Container> m_container;
+    @private __weak id <RDContainerDelegate> m_delegate;
+	@private NSMutableArray *m_packages;
 	@private ePub3::Container::PackageList m_packageList;
+	@private NSString *m_path;
 }
+
 @end
 
 
@@ -51,8 +56,8 @@
 	return m_packages.count == 0 ? nil : [m_packages objectAtIndex:0];
 }
 
-- (id)initWithDelegate:(id <RDContainerDelegate>)delegate path:(NSString *)path {
 
+- (instancetype)initWithDelegate:(id <RDContainerDelegate>)delegate path:(NSString *)path {
     if (path == nil || ![[NSFileManager defaultManager] fileExistsAtPath:path]) {
 		return nil;
 	}
@@ -63,7 +68,7 @@
         ePub3::ErrorHandlerFn sdkErrorHandler = ^(const ePub3::error_details& err) {
 
             const char * msg = err.message();
-            [m_delegate rdcontainer:self handleSdkError:[NSString stringWithUTF8String:msg]];
+            [m_delegate container:self handleSdkError:[NSString stringWithUTF8String:msg]];
 
             //TODO? pass to delegate more information from ePub3::error_details (see error_handler.h)
 

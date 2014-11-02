@@ -35,8 +35,13 @@
 
 
 @interface RDPackageResource() {
+	@private UInt8 m_buffer[4096];
 	@private ePub3::ByteStream *m_byteStream;
 	@private NSUInteger m_contentLength;
+	@private NSData *m_data;
+	@private __weak id <RDPackageResourceDelegate> m_delegate;
+	@private RDPackage *m_package;
+	@private NSString *m_relativePath;
 }
 
 @end
@@ -74,11 +79,11 @@
 
 
 - (void)dealloc {
-	[m_delegate rdpackageResourceWillDeallocate:self];
+	[m_delegate packageResourceWillDeallocate:self];
 }
 
 
-- (id)
+- (instancetype)
 	initWithDelegate:(id <RDPackageResourceDelegate>)delegate
 	byteStream:(void *)byteStream
 	package:(RDPackage *)package
