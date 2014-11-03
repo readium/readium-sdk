@@ -1,10 +1,10 @@
 # Readium SDK
 
-#### Copyright (c) 2012–2013 The Readium Foundation and contributors.
+#### Copyright (c) 2012–2014 The Readium Foundation and contributors.
 
 ### Release Notes
 
-Version 0.4 includes support for building a shared or static library for Android devices
+Version 0.14 includes support for building a shared or static library for Android devices
 using the Android NDK r8e. See the [Platform Support](#platform-support) section for more information.
 
 ## About
