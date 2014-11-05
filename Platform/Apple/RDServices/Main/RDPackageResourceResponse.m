@@ -79,6 +79,7 @@
 	NSData *data = nil;
 
 	@synchronized ([RDPackageResourceServer resourceLock]) {
+        [m_resource setOffset:m_offset]; // ensure resource has up-to-date offset before reading
 		data = [m_resource readDataOfLength:length];
 	}
 

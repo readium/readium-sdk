@@ -1434,7 +1434,6 @@ static NSMutableArray *recentNonces;
 		NSUInteger available = READ_CHUNKSIZE - writeQueueSize;
 		NSUInteger bytesToRead = bytesLeft < available ? (NSUInteger)bytesLeft : available;
 		
-        [httpResponse setOffset:offset]; // Set offset before each continuous reading
 		NSData *data = [httpResponse readDataOfLength:bytesToRead];
 		
 		if ([data length] > 0)
