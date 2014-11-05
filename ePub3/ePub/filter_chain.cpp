@@ -83,17 +83,7 @@ ByteStream::size_type ByteRangeFilterSyncStream::ReadBytes(void *bytes, size_typ
         // in getting the raw bytes out of the ZIP file. So, then, just read the raw bytes.
         return ReadRawBytes(bytes, len, byteRange);
     }
-//
-//    size_type result = _input->ReadBytes(bytes, len);
-//    if (result == 0) return 0;
-//
-//    result = FilterBytes(bytes, result);
-//    size_type toMove = std::min(len, _read_cache.GetBufferSize());
-//    ::memcpy_s(bytes, len, _read_cache.GetBytes(), toMove);
-//    _read_cache.RemoveBytes(toMove);
-//    return toMove;
-//
-    size_type filteredLen = 0;
+
     RangeFilterContext *filterContext = dynamic_cast<RangeFilterContext *>(m_filterNode->second.get());
     if (filterContext != nullptr)
     {
@@ -101,8 +91,16 @@ ByteStream::size_type ByteRangeFilterSyncStream::ReadBytes(void *bytes, size_typ
         filterContext->SetSeekableByteStream(m_input.get());
     }
 
-    // TODO passing nullptr and 0 is non-sensical, so this code seems incomplete at this stage.
-    void *filteredData = m_filterNode->first->FilterData(m_filterNode->second.get(), nullptr, 0, &filteredLen);
+    size_type result = m_input->ReadBytes(bytes, len);
+    if (result == 0) return 0;
+
+    len = result;
+
+    ByteBuffer buf(reinterpret_cast<uint8_t*>(bytes), len);
+    buf.SetUsesSecureErasure();
+
+    size_type filteredLen = 0;
+    void *filteredData = m_filterNode->first->FilterData(m_filterNode->second.get(), buf.GetBytes(), buf.GetBufferSize(), &filteredLen);
     if (filterContext != nullptr)
     {
         filterContext->GetByteRange().Reset();
@@ -247,6 +245,7 @@ ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, size_type 
 	return result;
 }
 
+/*
 ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type len, ByteRange &byteRange)
 {
     if (len == 0) return 0;
@@ -267,7 +266,8 @@ ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type le
     _read_cache.RemoveBytes(toMove);
     return toMove;
 }
-
+*/
+/*
 ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, ByteRange &byteRange)
 {
     uint32_t result = byteRange.Length();
@@ -310,6 +310,7 @@ ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, ByteRange 
     
 	return result;
 }
+*/
 
 ByteStream::size_type FilterChainSyncStream::ReadBytesFromCache(void* bytes, size_type len)
 {

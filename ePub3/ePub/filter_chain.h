@@ -171,7 +171,7 @@ public:
 		_input->Close();
 	}
 	virtual size_type ReadBytes(void* bytes, size_type len) OVERRIDE;
-    virtual size_type ReadBytes(void* bytes, size_type len, ByteRange &byteRange);
+    //virtual size_type ReadBytes(void* bytes, size_type len, ByteRange &byteRange);
 	virtual size_type WriteBytes(const void* bytes, size_type len) OVERRIDE
 	{
 		throw std::system_error(std::make_error_code(std::errc::operation_not_supported));
@@ -194,7 +194,7 @@ private:
 	size_type ReadBytesFromCache(void* bytes, size_type len);
 	void CacheBytes();
 	size_type FilterBytes(void* bytes, size_type len);
-    size_type FilterBytes(void* bytes, ByteRange &byteRange);
+    //size_type FilterBytes(void* bytes, ByteRange &byteRange);
 };
 
 EPUB3_END_NAMESPACE
