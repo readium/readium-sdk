@@ -32,19 +32,13 @@
 @class RDPackage;
 @class RDPackageResource;
 
-@protocol RDPackageResourceDelegate
+@protocol RDPackageResourceDelegate <NSObject>
 
-- (void)rdpackageResourceWillDeallocate:(RDPackageResource *)packageResource;
+- (void)packageResourceWillDeallocate:(RDPackageResource *)packageResource;
 
 @end
 
-@interface RDPackageResource : NSObject {
-	@private UInt8 m_buffer[4096];
-	@private NSData *m_data;
-	@private __weak id <RDPackageResourceDelegate> m_delegate;
-	@private RDPackage *m_package;
-	@private NSString *m_relativePath;
-}
+@interface RDPackageResource : NSObject
 
 @property (nonatomic, readonly) void *byteStream;
 @property (nonatomic, readonly) NSUInteger contentLength;
@@ -55,7 +49,7 @@
 // The relative path associated with this resource.
 @property (nonatomic, readonly) NSString *relativePath;
 
-- (id)
+- (instancetype)
 	initWithDelegate:(id <RDPackageResourceDelegate>)delegate
 	byteStream:(void *)byteStream
 	package:(RDPackage *)package

@@ -143,7 +143,7 @@
 }
 
 
-- (id)initWithSpineItem:(void *)spineItem {
+- (instancetype)initWithSpineItem:(void *)spineItem {
 	if (spineItem == nil) {
 		return nil;
 	}

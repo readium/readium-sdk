@@ -34,8 +34,30 @@
 
 @protocol RDPackageResourceServerDelegate <NSObject>
 
+/**
+ This function is called by a RDPackageResourceServer instance
+ (which corresponding reference is passed as a parameter)
+ to request the execution of the given Javascript
+ (which is passed as a string parameter).
+ 
+ The RDPackageResourceServer is agnostic to the actual mechanism used to run such code,
+ thus why this functionality is delegated to an object that implements the RDPackageResourceServerDelegate protocol
+ (which is passed as a parameter for the "initWithDelegate" function of the RDPackageResourceServer interface).
+ For example, this delegate object may be an application-level class
+ that utilizes a particular "Web View" browser component.
+ 
+ There is no guarantee that this function gets signaled on the main thread,
+ for example it may be invoked from background threads such as those allocated by HTTP server sockets.
+ Do not block code execution for long periods of time, as this may result in HTTP timeouts.
+ Make sure to execute the Javascript as soon as possible, as timing may be critical
+ (e.g. JS instructions meant to be performed immediately after an incoming HTTP request)
+ 
+ @param packageResourceServer a reference to the object instance that calls this function
+ @param javaScript the code to execute
+ @result N/A - the caller assumes that the Javascript was executed successfully (or is about to be)
+ */
 - (void)
-	rdpackageResourceServer:(RDPackageResourceServer *)packageResourceServer
+	packageResourceServer:(RDPackageResourceServer *)packageResourceServer
 	executeJavaScript:(NSString *)javaScript;
 
 @end

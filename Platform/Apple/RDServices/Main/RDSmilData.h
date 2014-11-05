@@ -29,9 +29,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface RDSmilData : NSObject {
-	@private NSDictionary *m_bodyDictionary;
-}
+@interface RDSmilData : NSObject
 
 @property (nonatomic, readonly) NSDictionary *bodyDictionary;
 @property (nonatomic, readonly) NSDictionary *dictionary;
@@ -41,6 +39,6 @@
 @property (nonatomic, readonly) NSString *smilVersion;
 @property (nonatomic, readonly) NSString *spineItemID;
 
-- (id)initWithSmilData:(void *)smilData;
+- (instancetype)initWithSmilData:(void *)smilData;
 
 @end

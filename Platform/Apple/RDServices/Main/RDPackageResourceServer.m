@@ -60,7 +60,7 @@ static id m_resourceLock = nil;
 
 
 - (void)executeJavaScript:(NSString *)javaScript {
-	[m_delegate rdpackageResourceServer:self executeJavaScript:javaScript];
+	[m_delegate packageResourceServer:self executeJavaScript:javaScript];
 }
 
 

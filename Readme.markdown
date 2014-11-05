@@ -1,10 +1,10 @@
 # Readium SDK
 
-#### Copyright (c) 2012–2013 The Readium Foundation and contributors.
+#### Copyright (c) 2012–2014 The Readium Foundation and contributors.
 
 ### Release Notes
 
-Version 0.4 includes support for building a shared or static library for Android devices
+Version 0.14 includes support for building a shared or static library for Android devices
 using the Android NDK r8e. See the [Platform Support](#platform-support) section for more information.
 
 ## About
@@ -27,14 +27,9 @@ is designed to be extensible in various areas, including in support for pluggabl
 encryption and digital signature modules which might be used to implement a form
 of DRM.
 
-The Readium SDK is at present dual-licensed under both a copyleft license (version
-3 of the *GNU General Public License*) and a commercial-use-enabling *Contributor's
-License*.  All copyright in the official form of the SDK (that found at
-<http://github.com/readium/readium-sdk/>) is assigned to the Readium Foundation. 
-A copy of the GPLv3 can be found in the [LICENSE](LICENSE) file.  A Contributor's License is
-available from the Readium Foundation directly; see the [CONTRIBUTING](CONTRIBUTING) file for
-information on how to apply to become an official contributor or sponsor, and to
-apply for a commercial license.
+### Licensing info
+
+Licensing information can be found in the file license.txt in the root of the repo, as well as in the source code itself.
 
 ### Platform Support<a id="platform-support"></a>
 
