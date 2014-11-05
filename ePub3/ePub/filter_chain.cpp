@@ -426,30 +426,34 @@ std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredByteRangeOfManifestItem(
     }
     
     shared_ptr<ByteRangeFilterSyncStream> resultStream;
-    bool doesMoreThanOneFilterApply = false;
+    uint nFilters = 0;
     for (ContentFilterPtr filter : _filters)
     {
         if (filter->TypeSniffer()(item))
         {
+            nFilters++;
+            if (nFilters > 1)
+            {
+                continue;
+            }
+
             if (filter->SupportsByteRanges())
             {
-                if (!resultStream)
-                {
-                    resultStream.reset(new ByteRangeFilterSyncStream(std::move(byteStream), filter, item));
-                }
-                else
-                {
-                    doesMoreThanOneFilterApply = true;
-                }
+                resultStream.reset(new ByteRangeFilterSyncStream(std::move(byteStream), filter, item));
+            }
+            else
+            {
+                return GetSyncFilteredOutputStreamForManifestItem(item);
             }
         }
     }
-    
-    if (doesMoreThanOneFilterApply)
+
+    if (nFilters > 1)
     {
+        // more than one filter...abort!
         return nullptr;
     }
-    
+
     // There are no ContentFilter classes that curretly apply.
     // In this case, return an empty ByteRangeFilterSyncStream, that will simply put out raw bytes.
     if (!resultStream)
