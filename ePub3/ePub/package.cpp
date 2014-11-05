@@ -493,7 +493,7 @@ bool Package::Unpack()
                 continue;
             
             idents[item->XMLIdentifier()] = true;
-            while ( !item->FallbackID().empty() )
+            while ( item != nullptr && !item->FallbackID().empty() )
             {
                 if ( idents[item->FallbackID()] )
                 {
