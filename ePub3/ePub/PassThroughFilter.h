@@ -39,7 +39,8 @@ public:
     
     virtual FilterContext *MakeFilterContext(ConstManifestItemPtr item) const OVERRIDE;
     virtual void *FilterData(FilterContext *context, void *data, size_t len, size_t *outputLen) OVERRIDE;
-    bool SupportsByteRanges() const { return true; }
+
+    bool SupportsByteRanges() const;
 
     static void Register();
     

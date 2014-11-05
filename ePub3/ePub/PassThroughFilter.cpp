@@ -31,21 +31,29 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+bool PassThroughFilter::SupportsByteRanges() const
+{
+    return true;
+}
 
 bool PassThroughFilter::SniffPassThoughContent(ConstManifestItemPtr item)
 {
-    // For the time being, we are going to test the Pass Through Filter solely
-    // with video content. However, notice that this can be changed to whatever
-    // we wanted, in order to test stuff.
-    return (item->MediaType() == "video/mp4");
+    auto mediaType = item->MediaType();
+    //printf("PASS THROUGH FILTER, MEDIA TYPE CHECK: %s\n", mediaType.c_str());
+
+    // This is just for testing, feel free to configure at will.
+    return (mediaType == "audio/mp4" || mediaType == "audio/mpeg" || mediaType == "video/mp4" || mediaType == "video/mpeg");
 }
 
 ContentFilterPtr PassThroughFilter::PassThroughFactory(ConstPackagePtr package)
 {
     // If you want to disable the PassThroughFilter for good, just hardcode the
     // value below to be nullptr. To turn the PassThroughFilter back on, just
-    // replace nullptr with New()
-    return nullptr; // New();
+    // replace nullptr with New().
+
+    // HOWEVER, a better method is to edit the PopulateFilterManager() function in initialization.cpp,
+    // and comment the call to PassThroughFilter::Register()
+    return New();
 }
 
 FilterContext *PassThroughFilter::MakeFilterContext(ConstManifestItemPtr item) const
