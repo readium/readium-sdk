@@ -743,7 +743,7 @@ public:
 //                printf("=========== TEXTREF FRAGID: %s\n", textref_fragmentID.c_str());
             }
 
-			string src_ = string(_getProp(element, "src"));
+			string src_ = string(_getProp(element, "src", SMILNamespaceURI));
             string src_file;
             string src_fragmentID;
             if (!src_.empty())

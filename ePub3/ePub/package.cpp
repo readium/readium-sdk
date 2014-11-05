@@ -398,9 +398,8 @@ bool Package::Unpack()
 		if (version < 3)
 			isEPUB3 = false;
 	}
-
-	auto val = _getProp(root, "prefix");
-    //auto val = _getProp(root, "prefix", ePub3NamespaceURI);
+	
+    auto val = _getProp(root, "prefix", ePub3NamespaceURI);
     InstallPrefixesFromAttributeValue(val);
     
     // go through children to determine the CFI index of the <spine> tag
