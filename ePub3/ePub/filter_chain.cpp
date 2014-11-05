@@ -58,8 +58,8 @@ ByteStream::size_type ByteRangeFilterSyncStream::WriteBytes(const void *bytes, s
 ByteStream::size_type ByteRangeFilterSyncStream::ReadBytes(void *bytes, size_type len)
 {
     ByteRange fullByteRange;
-    fullByteRange.Location(0);
-    fullByteRange.Length(len);
+//    fullByteRange.Location(0);
+//    fullByteRange.Length(len);
     return ReadBytes(bytes, len, fullByteRange);
 }
 

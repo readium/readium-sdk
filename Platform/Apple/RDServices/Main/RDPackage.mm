@@ -319,23 +319,33 @@
 	}
 
 	ePub3::ManifestItemPtr m = std::const_pointer_cast<ePub3::ManifestItem>(manifestItem);
-    ePub3::ByteStreamPtr byteStream = m_package->SyncContentStreamForItem(m);
-    if (byteStream == nullptr)
-    {
-        NSLog(@"Relative path '%@' does not have a byte stream!", relativePath);
-        return nil;
-    }
-    /*
-    TODO: uncomment and enable the following block of code. This piece of code will allow
-          the use of Byte Ranges. For resources above a given size, a ByteRangeFilterSyncStream
-          will be returned, which allows reading just ranges of bytes from a given resource.
-          However, currently this block of code is currently disabled because we are seeing
-          crashes when playing a Quicktime video using byte ranges.
-    */
-    /* if (byteStream->BytesAvailable() > 1000000)
+
+    ePub3::ByteStreamPtr byteStream = nullptr;
+    bool FORCE_BYTE_RANGE = true;
+    if (FORCE_BYTE_RANGE)
     {
         byteStream = m_package->SyncByteRangeForItem(m);
-    } */
+        if (byteStream == nullptr)
+        {
+            NSLog(@"Relative path '%@' does not have a byte stream!", relativePath);
+            return nil;
+        }
+    }
+    else
+    {
+        byteStream = m_package->SyncContentStreamForItem(m);
+        if (byteStream == nullptr)
+        {
+            NSLog(@"Relative path '%@' does not have a byte stream!", relativePath);
+            return nil;
+        }
+
+        if (byteStream->BytesAvailable() > 1024 * 1024) // 1MB
+        {
+            byteStream = nullptr;
+            byteStream = m_package->SyncByteRangeForItem(m);
+        }
+    }
     
 	RDPackageResource *resource = [[RDPackageResource alloc]
 		initWithDelegate:self

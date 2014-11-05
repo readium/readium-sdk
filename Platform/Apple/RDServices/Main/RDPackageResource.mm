@@ -64,16 +64,48 @@
 		NSMutableData *md = [[NSMutableData alloc] initWithCapacity:
 			m_contentLength == 0 ? 1 : m_contentLength];
 
-		while (YES) {
-			std::size_t count = m_byteStream->ReadBytes(m_buffer, sizeof(m_buffer));
+        ePub3::ByteRangeFilterSyncStream *filterStream = dynamic_cast<ePub3::ByteRangeFilterSyncStream *>(m_byteStream);
+        if (filterStream != nullptr) {
 
-			if (count == 0) {
-				break;
-			}
+            ePub3::ByteRange range;
+            range.Location(0);
+            range.Length(sizeof(m_buffer));
 
-			[md appendBytes:m_buffer length:count];
-		}
+            NSUInteger totalRead = 0;
 
+            std::size_t count = 1;
+            while (count > 0) {
+
+                count = filterStream->ReadBytes(m_buffer, sizeof(m_buffer), range);
+
+                if (count <= 0) break;
+
+                [md appendBytes:m_buffer length:count];
+
+                totalRead += count;
+
+                range.Location(range.Location() + count);
+            }
+
+            if (totalRead != m_contentLength) {
+                NSLog(@"2) length difference between filtered and raw bytes: (%lu %lu - %@)", totalRead, m_contentLength, m_relativePath);
+            }
+            else
+            {
+                NSLog(@"2) Correct: (%lu %lu - %@)", totalRead, m_contentLength, m_relativePath);
+            }
+        }
+        else {
+            while (YES) {
+                std::size_t count = m_byteStream->ReadBytes(m_buffer, sizeof(m_buffer));
+
+                if (count == 0) {
+                    break;
+                }
+
+                [md appendBytes:m_buffer length:count];
+            }
+        }
 		m_data = md;
 	}
 
