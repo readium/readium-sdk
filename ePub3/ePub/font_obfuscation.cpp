@@ -53,7 +53,7 @@ const REGEX_NS::regex FontObfuscator::TypeCheck("(?:font/.*|application/(?:x-fon
 
 bool FontObfuscator::SupportsByteRanges() const
 {
-    return true;
+    return false;
 }
 
 void * FontObfuscator::FilterData(FilterContext* context, void *data, size_t len, size_t *outputLen)
