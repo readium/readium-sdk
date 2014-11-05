@@ -91,16 +91,21 @@ ByteStream::size_type ByteRangeFilterSyncStream::ReadBytes(void *bytes, size_typ
         filterContext->SetSeekableByteStream(m_input.get());
     }
 
-    size_type result = m_input->ReadBytes(bytes, len);
-    if (result == 0) return 0;
-
-    len = result;
-
-    ByteBuffer buf(reinterpret_cast<uint8_t*>(bytes), len);
-    buf.SetUsesSecureErasure();
-
     size_type filteredLen = 0;
-    void *filteredData = m_filterNode->first->FilterData(m_filterNode->second.get(), buf.GetBytes(), buf.GetBufferSize(), &filteredLen);
+    void *filteredData = nullptr;
+
+    if (filterContext != nullptr) {
+        filteredData = m_filterNode->first->FilterData(m_filterNode->second.get(), nullptr, 0, &filteredLen);
+    } else {
+        size_type result = m_input->ReadBytes(bytes, len);
+        if (result == 0) return 0;
+        len = result;
+        ByteBuffer buf(reinterpret_cast<uint8_t*>(bytes), len);
+        buf.SetUsesSecureErasure();
+
+        filteredData = m_filterNode->first->FilterData(m_filterNode->second.get(), buf.GetBytes(), buf.GetBufferSize(), &filteredLen);
+    }
+
     if (filterContext != nullptr)
     {
         filterContext->GetByteRange().Reset();

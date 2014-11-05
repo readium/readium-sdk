@@ -251,7 +251,8 @@ public:
     /// Subclasses can return `true` if they need all data in one chunk.
     virtual bool RequiresCompleteData() const { return false; }
     
-    /// Subclasses can return `true` if this filter supports filtering of ranges instead of full resource
+    /// Subclasses can return `true` if this filter supports filtering of ranges instead of full resource,
+    /// FilterContext should extend RangeFilterContext to pass the required ByteStream data
     virtual bool SupportsByteRanges() const { return false; }
     
     ///

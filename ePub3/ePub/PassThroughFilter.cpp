@@ -103,9 +103,10 @@ void *PassThroughFilter::FilterData(FilterContext *context, void *data, size_t l
     {
         return nullptr;
     }
-    
-    unsigned char *buffer = new unsigned char[bytesToRead];
+
+    uint8_t *buffer = new uint8_t[bytesToRead];
     ByteStream::size_type readBytes = byteStream->ReadBytes(buffer, bytesToRead);
+
     byteStream->Seek(0, std::ios::seekdir::beg);
     *outputLen = readBytes;
     return buffer;
