@@ -40,7 +40,7 @@ EPUB3_BEGIN_NAMESPACE
 class FilterContext;
 struct ByteRange;
 
-class FilterChainSyncStream : public ByteStream
+class FilterChainByteStream : public ByteStream
 {
 private:
 	std::unique_ptr<ByteStream>		_input;
@@ -51,9 +51,9 @@ private:
 	ByteBuffer						_read_cache;
     
 public:
-    FilterChainSyncStream(std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr &manifestItem);
-	FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem);
-	virtual ~FilterChainSyncStream() {}
+    FilterChainByteStream(std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr &manifestItem);
+	FilterChainByteStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem);
+	virtual ~FilterChainByteStream() {}
     
 	virtual size_type BytesAvailable() const _NOEXCEPT OVERRIDE
 	{

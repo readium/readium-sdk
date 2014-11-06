@@ -31,25 +31,25 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-ByteRangeFilterSyncStream::ByteRangeFilterSyncStream(std::unique_ptr<SeekableByteStream> &&input, ContentFilterPtr &filter, ConstManifestItemPtr manifestItem) : m_input(std::move(input)), m_filterNode(new FilterNode(filter, std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem))))
+FilterChainByteStreamRange::FilterChainByteStreamRange(std::unique_ptr<SeekableByteStream> &&input, ContentFilterPtr &filter, ConstManifestItemPtr manifestItem) : m_input(std::move(input)), m_filterNode(new FilterNode(filter, std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem))))
 {
 }
 
-ByteRangeFilterSyncStream::ByteRangeFilterSyncStream(std::unique_ptr<SeekableByteStream> &&input) : m_input(std::move(input))
+FilterChainByteStreamRange::FilterChainByteStreamRange(std::unique_ptr<SeekableByteStream> &&input) : m_input(std::move(input))
 {
 }
 
-ByteStream::size_type ByteRangeFilterSyncStream::BytesAvailable() const _NOEXCEPT
+ByteStream::size_type FilterChainByteStreamRange::BytesAvailable() const _NOEXCEPT
 {
     return m_input->BytesAvailable();
 }
 
-ByteStream::size_type ByteRangeFilterSyncStream::WriteBytes(const void *bytes, size_type len)
+ByteStream::size_type FilterChainByteStreamRange::WriteBytes(const void *bytes, size_type len)
 {
     throw std::system_error(std::make_error_code(std::errc::operation_not_supported));
 }
 
-ByteStream::size_type ByteRangeFilterSyncStream::ReadBytes(void *bytes, size_type len)
+ByteStream::size_type FilterChainByteStreamRange::ReadBytes(void *bytes, size_type len)
 {
     ByteRange fullByteRange;
 //    fullByteRange.Location(0);
@@ -57,7 +57,7 @@ ByteStream::size_type ByteRangeFilterSyncStream::ReadBytes(void *bytes, size_typ
     return ReadBytes(bytes, len, fullByteRange);
 }
 
-ByteStream::size_type ByteRangeFilterSyncStream::ReadBytes(void *bytes, size_type len, ByteRange &byteRange)
+ByteStream::size_type FilterChainByteStreamRange::ReadBytes(void *bytes, size_type len, ByteRange &byteRange)
 {
     if (len == 0) return 0;
 
@@ -124,7 +124,7 @@ ByteStream::size_type ByteRangeFilterSyncStream::ReadBytes(void *bytes, size_typ
     return filteredLen;
 }
 
-ByteStream::size_type ByteRangeFilterSyncStream::ReadRawBytes(void *bytes, size_type len, ePub3::ByteRange &byteRange)
+ByteStream::size_type FilterChainByteStreamRange::ReadRawBytes(void *bytes, size_type len, ePub3::ByteRange &byteRange)
 {
     if (len == 0) return 0;
 

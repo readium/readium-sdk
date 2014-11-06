@@ -510,18 +510,18 @@ public:
 #endif /* SUPPORT_ASYNC */
 
 	EPUB3_EXPORT
-	shared_ptr<ByteStream>			SyncContentStreamForItem(SpineItemPtr spineItem)    const {
-		return SyncContentStreamForItem(spineItem->ManifestItem());
+	shared_ptr<ByteStream>			GetFilterChainByteStream(SpineItemPtr spineItem)    const {
+		return GetFilterChainByteStream(spineItem->ManifestItem());
 	}
 	EPUB3_EXPORT
-	shared_ptr<ByteStream>			SyncContentStreamForItem(ManifestItemPtr manifestItem)  const;
+	shared_ptr<ByteStream>			GetFilterChainByteStream(ManifestItemPtr manifestItem)  const;
 
 	EPUB3_EXPORT
-	shared_ptr<ByteStream>			SyncByteRangeForItem(SpineItemPtr spineItem)    const {
-		return SyncByteRangeForItem(spineItem->ManifestItem());
+	shared_ptr<ByteStream>			GetFilterChainByteStreamRange(SpineItemPtr spineItem)    const {
+		return GetFilterChainByteStreamRange(spineItem->ManifestItem());
 	}
 	EPUB3_EXPORT
-	shared_ptr<ByteStream>			SyncByteRangeForItem(ManifestItemPtr manifestItem)  const;
+	shared_ptr<ByteStream>			GetFilterChainByteStreamRange(ManifestItemPtr manifestItem)  const;
 
     /// @}
     

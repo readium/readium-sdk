@@ -100,7 +100,7 @@ std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifest
 }
 #endif /* SUPPORT_ASYNC */
 
-std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const
+std::shared_ptr<ByteStream> FilterChain::GetFilterChainByteStream(ConstManifestItemPtr item) const
 {
 	std::unique_ptr<ByteStream> rawInput = item->Reader();
 	if (rawInput->IsOpen() == false)
@@ -113,10 +113,10 @@ std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredOutputStreamForManifestI
 			thisChain.push_back(filter);
 	}
 
-	return std::make_shared<FilterChainSyncStream>(std::move(rawInput), thisChain, item);
+	return std::make_shared<FilterChainByteStream>(std::move(rawInput), thisChain, item);
 }
 
-std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredByteRangeOfManifestItem(ConstManifestItemPtr item) const
+std::shared_ptr<ByteStream> FilterChain::GetFilterChainByteStreamRange(ConstManifestItemPtr item) const
 {
     unique_ptr<SeekableByteStream> byteStream(dynamic_cast<SeekableByteStream *>(item->Reader().release()));
     if (!byteStream)
@@ -124,7 +124,7 @@ std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredByteRangeOfManifestItem(
         return nullptr;
     }
     
-    shared_ptr<ByteRangeFilterSyncStream> resultStream;
+    shared_ptr<FilterChainByteStreamRange> resultStream;
     uint nFilters = 0;
     for (ContentFilterPtr filter : _filters)
     {
@@ -138,11 +138,11 @@ std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredByteRangeOfManifestItem(
 
             if (filter->SupportsByteRanges())
             {
-                resultStream.reset(new ByteRangeFilterSyncStream(std::move(byteStream), filter, item));
+                resultStream.reset(new FilterChainByteStreamRange(std::move(byteStream), filter, item));
             }
             else
             {
-                return GetSyncFilteredOutputStreamForManifestItem(item);
+                return GetFilterChainByteStream(item);
             }
         }
     }
@@ -154,10 +154,10 @@ std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredByteRangeOfManifestItem(
     }
 
     // There are no ContentFilter classes that curretly apply.
-    // In this case, return an empty ByteRangeFilterSyncStream, that will simply put out raw bytes.
+    // In this case, return an empty FilterChainByteStreamRange, that will simply put out raw bytes.
     if (!resultStream)
     {
-        resultStream.reset(new ByteRangeFilterSyncStream(std::move(byteStream)));
+        resultStream.reset(new FilterChainByteStreamRange(std::move(byteStream)));
     }
     
     return resultStream;

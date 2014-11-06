@@ -1169,13 +1169,13 @@ shared_ptr<AsyncByteStream> Package::ContentStreamForItem(ManifestItemPtr manife
 }
 #endif /* SUPPORT_ASYNC */
 
-shared_ptr<ByteStream> Package::SyncContentStreamForItem(ManifestItemPtr manifestItem) const
+shared_ptr<ByteStream> Package::GetFilterChainByteStream(ManifestItemPtr manifestItem) const
 {
-	return _filterChain->GetSyncFilteredOutputStreamForManifestItem(manifestItem);
+	return _filterChain->GetFilterChainByteStream(manifestItem);
 }
-shared_ptr<ByteStream> Package::SyncByteRangeForItem(ManifestItemPtr manifestItem) const
+shared_ptr<ByteStream> Package::GetFilterChainByteStreamRange(ManifestItemPtr manifestItem) const
 {
-    return _filterChain->GetSyncFilteredByteRangeOfManifestItem(manifestItem);
+    return _filterChain->GetFilterChainByteStreamRange(manifestItem);
 }
 const string& Package::Title(bool localized) const
 {

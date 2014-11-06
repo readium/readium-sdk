@@ -31,7 +31,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-FilterChainSyncStream::FilterChainSyncStream(std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr &manifestItem)
+FilterChainByteStream::FilterChainByteStream(std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr &manifestItem)
 : _filters(), _needs_cache(false), _cache(), _read_cache()
 {
     _input = NULL;
@@ -46,7 +46,7 @@ FilterChainSyncStream::FilterChainSyncStream(std::vector<ContentFilterPtr>& filt
 	}
 }
 
-FilterChainSyncStream::FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem)
+FilterChainByteStream::FilterChainByteStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem)
 : _input(std::move(input)), _filters(), _needs_cache(false), _cache(), _read_cache()
 {
 	_cache.SetUsesSecureErasure();
@@ -60,7 +60,7 @@ FilterChainSyncStream::FilterChainSyncStream(std::unique_ptr<ByteStream>&& input
 	}
 }
 
-ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type len)
+ByteStream::size_type FilterChainByteStream::ReadBytes(void* bytes, size_type len)
 {
     if (len == 0) return 0;
 
@@ -92,7 +92,7 @@ ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type le
 	}
 }
 
-ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, size_type len)
+ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type len)
 {
     if (len == 0) return 0;
 
@@ -123,7 +123,7 @@ ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, size_type 
 }
 
 /*
-ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type len, ByteRange &byteRange)
+ByteStream::size_type FilterChainByteStream::ReadBytes(void* bytes, size_type len, ByteRange &byteRange)
 {
     if (len == 0) return 0;
 
@@ -145,7 +145,7 @@ ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type le
 }
 */
 /*
-ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, ByteRange &byteRange)
+ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, ByteRange &byteRange)
 {
     uint32_t result = byteRange.Length();
     if (result == 0) return 0;
@@ -189,7 +189,7 @@ ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, ByteRange 
 }
 */
 
-ByteStream::size_type FilterChainSyncStream::ReadBytesFromCache(void* bytes, size_type len)
+ByteStream::size_type FilterChainByteStream::ReadBytesFromCache(void* bytes, size_type len)
 {
     if (len == 0) return 0;
 
@@ -199,7 +199,7 @@ ByteStream::size_type FilterChainSyncStream::ReadBytesFromCache(void* bytes, siz
 	return numToRead;
 }
 
-void FilterChainSyncStream::CacheBytes()
+void FilterChainByteStream::CacheBytes()
 {
 	// read everything from the input stream
 #define _TMP_BUF_LEN 16*1024

@@ -74,8 +74,8 @@ public:
     std::shared_ptr<AsyncByteStream> GetFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const;
 #endif /* SUPPORT_ASYNC */
 
-	std::shared_ptr<ByteStream> GetSyncFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const;
-    std::shared_ptr<ByteStream> GetSyncFilteredByteRangeOfManifestItem(ConstManifestItemPtr item) const;
+	std::shared_ptr<ByteStream> GetFilterChainByteStream(ConstManifestItemPtr item) const;
+    std::shared_ptr<ByteStream> GetFilterChainByteStreamRange(ConstManifestItemPtr item) const;
     
 protected:
 
