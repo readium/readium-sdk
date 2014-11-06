@@ -33,7 +33,6 @@
 #include <utility>
 
 #include <ePub3/filter.h>
-#include <ePub3/filter_chain.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -49,11 +48,18 @@ private:
 	bool							_needs_cache;
 	ByteBuffer						_cache;
 	ByteBuffer						_read_cache;
-    
+
+private:
+    FilterChainByteStream(const FilterChainByteStream& o)             _DELETED_;
+    FilterChainByteStream(FilterChainByteStream&& o)                  _DELETED_;
+    FilterChainByteStream&         operator=(FilterChainByteStream&)                          _DELETED_;
+    FilterChainByteStream&         operator=(FilterChainByteStream&&)                         _DELETED_;
+
 public:
-    FilterChainByteStream(std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr &manifestItem);
-	FilterChainByteStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem);
-	virtual ~FilterChainByteStream() {}
+    FilterChainByteStream() : ByteStream() {}
+    EPUB3_EXPORT FilterChainByteStream(std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr &manifestItem);
+    EPUB3_EXPORT FilterChainByteStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem);
+	virtual ~FilterChainByteStream();
     
 	virtual size_type BytesAvailable() const _NOEXCEPT OVERRIDE
 	{

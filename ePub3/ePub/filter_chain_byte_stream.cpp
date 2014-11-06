@@ -31,6 +31,10 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+FilterChainByteStream::~FilterChainByteStream()
+{
+}
+
 FilterChainByteStream::FilterChainByteStream(std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr &manifestItem)
 : _filters(), _needs_cache(false), _cache(), _read_cache()
 {

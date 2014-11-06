@@ -19,6 +19,8 @@
 		588D24201A02EF8F006A92BB /* PassThroughFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 588D241E1A02EF8F006A92BB /* PassThroughFilter.cpp */; };
 		588D24211A02EF8F006A92BB /* PassThroughFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 588D241E1A02EF8F006A92BB /* PassThroughFilter.cpp */; };
 		588D24221A02EF8F006A92BB /* PassThroughFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 588D241F1A02EF8F006A92BB /* PassThroughFilter.h */; };
+		834B09011A0BD015006AEB12 /* filter_chain_byte_stream_range.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250D33BAFB8E8EAEF5FE5B5 /* filter_chain_byte_stream_range.cpp */; };
+		834B09021A0BD018006AEB12 /* filter_chain_byte_stream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250DFDBD90C7E9C632B1E00 /* filter_chain_byte_stream.cpp */; };
 		850B1AE916A75AC600619C3C /* TestData in CopyFiles */ = {isa = PBXBuildFile; fileRef = 850B1AE816A75AB000619C3C /* TestData */; };
 		A250D0731D530005B0FFF5D5 /* media-overlays_smil_model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250D119DCB804938466E3D6 /* media-overlays_smil_model.cpp */; };
 		A250D23C6ABB9CD007A1D55C /* filter_chain_byte_stream.h in Headers */ = {isa = PBXBuildFile; fileRef = A250D26DB00356B591AEFC29 /* filter_chain_byte_stream.h */; };
@@ -2044,6 +2046,7 @@
 				ABA4BAFE16ADF64400161B77 /* url_canon_query.cc in Sources */,
 				ABA4BAFF16ADF64400161B77 /* url_canon_relative.cc in Sources */,
 				ABA4BB0016ADF64400161B77 /* url_canon_stdurl.cc in Sources */,
+				834B09011A0BD015006AEB12 /* filter_chain_byte_stream_range.cpp in Sources */,
 				ABA4BB0216ADF64400161B77 /* url_parse.cc in Sources */,
 				ABA4BB0316ADF64400161B77 /* url_parse_file.cc in Sources */,
 				ABA4BB0516ADF64400161B77 /* url_util.cc in Sources */,
@@ -2086,6 +2089,7 @@
 				ABA4BB2716ADF64400161B77 /* zip_new.c in Sources */,
 				ABA4BB2816ADF64400161B77 /* zip_open.c in Sources */,
 				ABB39517183D21AC00F19CA7 /* path_help.cpp in Sources */,
+				834B09021A0BD018006AEB12 /* filter_chain_byte_stream.cpp in Sources */,
 				ABA4BB2916ADF64400161B77 /* zip_rename.c in Sources */,
 				ABA4BB2A16ADF64400161B77 /* zip_replace.c in Sources */,
 				ABA4BB2B16ADF64400161B77 /* zip_set_archive_comment.c in Sources */,
@@ -2284,6 +2288,8 @@
 				ABA4BAAF16A7518B00161B77 /* url_canon_cpp11.cc in Sources */,
 				AB95447D16B9730B00EFD2FD /* content_handler.cpp in Sources */,
 				AB95448316BAD32000EFD2FD /* switch_preprocessor.cpp in Sources */,
+				A250D88B759805B9F12BB47A /* filter_chain_byte_stream.cpp in Sources */,
+				A250D7BA140B24A6ECC960D8 /* filter_chain_byte_stream_range.cpp in Sources */,
 				AB5284DB17CCDF8E003D7BBF /* filter_chain.cpp in Sources */,
 				AB95448816BAF11000EFD2FD /* object_preprocessor.cpp in Sources */,
 				ABA88FBE16C062BF00F2014B /* media_support_info.cpp in Sources */,
@@ -2302,8 +2308,6 @@
 				A250DCD0523C05493141CE3B /* media-overlays_smil_data.cpp in Sources */,
 				1ED0084817A9DC6F00819EBD /* initialization.cpp in Sources */,
 				1EFA3ACB17AB0BEF003A4BC2 /* filter_manager_impl.cpp in Sources */,
-				A250D7BA140B24A6ECC960D8 /* filter_chain_byte_stream_range.cpp in Sources */,
-				A250D88B759805B9F12BB47A /* filter_chain_byte_stream.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

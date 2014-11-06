@@ -31,6 +31,10 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+FilterChainByteStreamRange::~FilterChainByteStreamRange()
+{
+}
+
 FilterChainByteStreamRange::FilterChainByteStreamRange(std::unique_ptr<SeekableByteStream> &&input, ContentFilterPtr &filter, ConstManifestItemPtr manifestItem) : m_input(std::move(input)), m_filterNode(new FilterNode(filter, std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem))))
 {
 }

@@ -33,8 +33,8 @@
 #include <utility>
 
 #include <ePub3/filter.h>
-#include <ePub3/filter_chain_byte_stream.h>
-#include <ePub3/filter_chain_byte_stream_range.h>
+//#include <ePub3/filter_chain_byte_stream.h>
+//#include <ePub3/filter_chain_byte_stream_range.h>
 
 EPUB3_BEGIN_NAMESPACE
 

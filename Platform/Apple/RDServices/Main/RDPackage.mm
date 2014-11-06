@@ -324,7 +324,7 @@
     bool FORCE_BYTE_RANGE = true;
     if (FORCE_BYTE_RANGE)
     {
-        byteStream = m_package->SyncByteRangeForItem(m);
+        byteStream = m_package->GetFilterChainByteStreamRange(m);
         if (byteStream == nullptr)
         {
             NSLog(@"Relative path '%@' does not have a byte stream!", relativePath);
@@ -333,7 +333,7 @@
     }
     else
     {
-        byteStream = m_package->SyncContentStreamForItem(m);
+        byteStream = m_package->GetFilterChainByteStream(m);
         if (byteStream == nullptr)
         {
             NSLog(@"Relative path '%@' does not have a byte stream!", relativePath);
@@ -343,7 +343,7 @@
         if (byteStream->BytesAvailable() > 1024 * 1024) // 1MB
         {
             byteStream = nullptr;
-            byteStream = m_package->SyncByteRangeForItem(m);
+            byteStream = m_package->GetFilterChainByteStreamRange(m);
         }
     }
     

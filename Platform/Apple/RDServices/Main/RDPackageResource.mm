@@ -31,6 +31,8 @@
 #import <ePub3/archive.h>
 #import <ePub3/filter.h>
 #import <ePub3/filter_chain.h>
+#import <ePub3/filter_chain_byte_stream_range.h>
+#import <ePub3/filter_chain_byte_stream.h>
 #import <ePub3/package.h>
 #import <ePub3/utilities/byte_stream.h>
 #import "RDPackage.h"
@@ -87,12 +89,13 @@
                 range.Location(range.Location() + count);
             }
 
+            //TODO: comment/remove these debug messages
             if (totalRead != m_contentLength) {
-                NSLog(@"2) length difference between filtered and raw bytes: (%lu %lu - %@)", totalRead, m_contentLength, m_relativePath);
+                NSLog(@"2) length difference between filtered and raw bytes: (%lu %lu - %@)", (unsigned long)totalRead, (unsigned long)m_contentLength, m_relativePath);
             }
             else
             {
-                NSLog(@"2) Correct: (%lu %lu - %@)", totalRead, m_contentLength, m_relativePath);
+                NSLog(@"2) Correct: (%lu %lu - %@)", (unsigned long)totalRead, (unsigned long)m_contentLength, m_relativePath);
             }
         }
         else {
@@ -166,6 +169,8 @@
             range.Location(range.Location() + count);
 
 			if (count != range.Length()) {
+
+                //TODO: this seems to happen quite often? Is this expected?
 				NSLog(@"Did not read the expected number of bytes! (%lu %lu)",
 					count, (unsigned long)range.Length());
 				break;

@@ -33,7 +33,6 @@
 #include <utility>
 
 #include <ePub3/filter.h>
-#include <ePub3/filter_chain.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -42,10 +41,18 @@ struct ByteRange;
 
 class FilterChainByteStreamRange : public ByteStream
 {
+
+private:
+    FilterChainByteStreamRange(const FilterChainByteStreamRange& o)             _DELETED_;
+    FilterChainByteStreamRange(FilterChainByteStreamRange&& o)                  _DELETED_;
+    FilterChainByteStreamRange&         operator=(FilterChainByteStreamRange&)                          _DELETED_;
+    FilterChainByteStreamRange&         operator=(FilterChainByteStreamRange&&)                         _DELETED_;
+
 public:
-    FilterChainByteStreamRange(std::unique_ptr<SeekableByteStream> &&input, ContentFilterPtr &filter, ConstManifestItemPtr manifestItem);
-    FilterChainByteStreamRange(std::unique_ptr<SeekableByteStream> &&input);
-    virtual ~FilterChainByteStreamRange() { }
+    FilterChainByteStreamRange() : ByteStream() {}
+    EPUB3_EXPORT FilterChainByteStreamRange(std::unique_ptr<SeekableByteStream> &&input, ContentFilterPtr &filter, ConstManifestItemPtr manifestItem);
+    EPUB3_EXPORT FilterChainByteStreamRange(std::unique_ptr<SeekableByteStream> &&input);
+    virtual ~FilterChainByteStreamRange();
     
     virtual size_type BytesAvailable() const _NOEXCEPT OVERRIDE;
     virtual size_type SpaceAvailable() const _NOEXCEPT OVERRIDE { return 0; }
