@@ -11,6 +11,8 @@
 #include "../ePub3/ePub/package.h"
 #include "../ePub3/ePub/filter_manager.h"
 #include "../ePub3/ePub/filter_chain.h"
+#include "../ePub3/ePub/filter_chain_byte_stream.h"
+#include "../ePub3/ePub/filter_chain_byte_stream_range.h"
 #include "../ePub3/utilities/byte_stream.h"
 #include "../ePub3/utilities/byte_buffer.h"
 #include <atomic>

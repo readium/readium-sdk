@@ -21,13 +21,17 @@
 		588D24221A02EF8F006A92BB /* PassThroughFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 588D241F1A02EF8F006A92BB /* PassThroughFilter.h */; };
 		850B1AE916A75AC600619C3C /* TestData in CopyFiles */ = {isa = PBXBuildFile; fileRef = 850B1AE816A75AB000619C3C /* TestData */; };
 		A250D0731D530005B0FFF5D5 /* media-overlays_smil_model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250D119DCB804938466E3D6 /* media-overlays_smil_model.cpp */; };
+		A250D23C6ABB9CD007A1D55C /* filter_chain_byte_stream.h in Headers */ = {isa = PBXBuildFile; fileRef = A250D26DB00356B591AEFC29 /* filter_chain_byte_stream.h */; };
 		A250D39BB83E81FFA5B07633 /* xml_bridge_dtrace_probes.d in Sources */ = {isa = PBXBuildFile; fileRef = AB718C03184CEEA900F86C6B /* xml_bridge_dtrace_probes.d */; };
 		A250D3F4AFBE13B7B241F654 /* media-overlays_smil_data.h in Headers */ = {isa = PBXBuildFile; fileRef = A250D0D74FF2AD1AB643D2FA /* media-overlays_smil_data.h */; };
 		A250D56B70FC821E8B7B827C /* media-overlays_smil_model.h in Headers */ = {isa = PBXBuildFile; fileRef = A250D7FA4B5BDD384A4C802F /* media-overlays_smil_model.h */; };
 		A250D59027FBAC9390F2D39C /* media-overlays_smil_data.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250D2968F9E967CFEA89703 /* media-overlays_smil_data.cpp */; };
 		A250D734238DE7D230862196 /* media-overlays_smil_model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250D119DCB804938466E3D6 /* media-overlays_smil_model.cpp */; };
+		A250D7BA140B24A6ECC960D8 /* filter_chain_byte_stream_range.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250D33BAFB8E8EAEF5FE5B5 /* filter_chain_byte_stream_range.cpp */; };
+		A250D88B759805B9F12BB47A /* filter_chain_byte_stream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250DFDBD90C7E9C632B1E00 /* filter_chain_byte_stream.cpp */; };
 		A250DCD0523C05493141CE3B /* media-overlays_smil_data.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250D2968F9E967CFEA89703 /* media-overlays_smil_data.cpp */; };
 		A250DE10D82D8E57AF08A3B7 /* media-overlays_smil_utils.h in Headers */ = {isa = PBXBuildFile; fileRef = A250DAE420004486FD140F14 /* media-overlays_smil_utils.h */; };
+		A250DE25482354E16C06D932 /* filter_chain_byte_stream_range.h in Headers */ = {isa = PBXBuildFile; fileRef = A250D24D05706C9BB1AA54ED /* filter_chain_byte_stream_range.h */; };
 		AB0EDE7A17DE23D00007ED42 /* filter_chain_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB0EDE7917DE23D00007ED42 /* filter_chain_tests.cpp */; };
 		AB17B29B170C872E00FD5917 /* font_obfuscation_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB17B29A170C872E00FD5917 /* font_obfuscation_tests.cpp */; };
 		AB17B29E171301C800FD5917 /* run_loop_cf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB17B29C171301C700FD5917 /* run_loop_cf.cpp */; };
@@ -444,9 +448,13 @@
 		850B1AE816A75AB000619C3C /* TestData */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TestData; path = ../../TestData; sourceTree = "<group>"; };
 		A250D0D74FF2AD1AB643D2FA /* media-overlays_smil_data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "media-overlays_smil_data.h"; sourceTree = "<group>"; };
 		A250D119DCB804938466E3D6 /* media-overlays_smil_model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "media-overlays_smil_model.cpp"; sourceTree = "<group>"; };
+		A250D24D05706C9BB1AA54ED /* filter_chain_byte_stream_range.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = filter_chain_byte_stream_range.h; sourceTree = "<group>"; };
+		A250D26DB00356B591AEFC29 /* filter_chain_byte_stream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = filter_chain_byte_stream.h; sourceTree = "<group>"; };
 		A250D2968F9E967CFEA89703 /* media-overlays_smil_data.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "media-overlays_smil_data.cpp"; sourceTree = "<group>"; };
+		A250D33BAFB8E8EAEF5FE5B5 /* filter_chain_byte_stream_range.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filter_chain_byte_stream_range.cpp; sourceTree = "<group>"; };
 		A250D7FA4B5BDD384A4C802F /* media-overlays_smil_model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "media-overlays_smil_model.h"; sourceTree = "<group>"; };
 		A250DAE420004486FD140F14 /* media-overlays_smil_utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "media-overlays_smil_utils.h"; sourceTree = "<group>"; };
+		A250DFDBD90C7E9C632B1E00 /* filter_chain_byte_stream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filter_chain_byte_stream.cpp; sourceTree = "<group>"; };
 		AB0EDE7917DE23D00007ED42 /* filter_chain_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filter_chain_tests.cpp; sourceTree = "<group>"; };
 		AB17B29A170C872E00FD5917 /* font_obfuscation_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = font_obfuscation_tests.cpp; sourceTree = "<group>"; };
 		AB17B29C171301C700FD5917 /* run_loop_cf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = run_loop_cf.cpp; sourceTree = "<group>"; };
@@ -1084,6 +1092,10 @@
 				1EFA3ACA17AB0BEF003A4BC2 /* filter_manager_impl.cpp */,
 				AB5284D917CCDF8E003D7BBF /* filter_chain.cpp */,
 				AB5284DA17CCDF8E003D7BBF /* filter_chain.h */,
+				A250D33BAFB8E8EAEF5FE5B5 /* filter_chain_byte_stream_range.cpp */,
+				A250D24D05706C9BB1AA54ED /* filter_chain_byte_stream_range.h */,
+				A250DFDBD90C7E9C632B1E00 /* filter_chain_byte_stream.cpp */,
+				A250D26DB00356B591AEFC29 /* filter_chain_byte_stream.h */,
 			);
 			name = Filters;
 			sourceTree = "<group>";
@@ -1861,6 +1873,8 @@
 				A250DE10D82D8E57AF08A3B7 /* media-overlays_smil_utils.h in Headers */,
 				A250D56B70FC821E8B7B827C /* media-overlays_smil_model.h in Headers */,
 				A250D3F4AFBE13B7B241F654 /* media-overlays_smil_data.h in Headers */,
+				A250DE25482354E16C06D932 /* filter_chain_byte_stream_range.h in Headers */,
+				A250D23C6ABB9CD007A1D55C /* filter_chain_byte_stream.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2288,6 +2302,8 @@
 				A250DCD0523C05493141CE3B /* media-overlays_smil_data.cpp in Sources */,
 				1ED0084817A9DC6F00819EBD /* initialization.cpp in Sources */,
 				1EFA3ACB17AB0BEF003A4BC2 /* filter_manager_impl.cpp in Sources */,
+				A250D7BA140B24A6ECC960D8 /* filter_chain_byte_stream_range.cpp in Sources */,
+				A250D88B759805B9F12BB47A /* filter_chain_byte_stream.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
