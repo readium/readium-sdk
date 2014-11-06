@@ -74,8 +74,11 @@ public:
     virtual bool CreateFolder(const string & path);
     
     virtual unique_ptr<ByteStream> ByteStreamAtPath(const string& path) const;
+
+#ifdef SUPPORT_ASYNC
     virtual unique_ptr<AsyncByteStream> AsyncByteStreamAtPath(const string& path) const;
-    
+#endif /* SUPPORT_ASYNC */
+
     virtual unique_ptr<ArchiveReader> ReaderAtPath(const string & path) const;
     virtual unique_ptr<ArchiveWriter> WriterAtPath(const string & path, bool compress=true, bool create=true);
         

@@ -1161,10 +1161,14 @@ unique_ptr<ByteStream> Package::ReadStreamForRelativePath(const string &path) co
 {
     return _archive->ByteStreamAtPath(_Str(_pathBase, path.stl_str()));
 }
+
+#ifdef SUPPORT_ASYNC
 shared_ptr<AsyncByteStream> Package::ContentStreamForItem(ManifestItemPtr manifestItem) const
 {
     return _filterChain->GetFilteredOutputStreamForManifestItem(manifestItem);
 }
+#endif /* SUPPORT_ASYNC */
+
 shared_ptr<ByteStream> Package::SyncContentStreamForItem(ManifestItemPtr manifestItem) const
 {
 	return _filterChain->GetSyncFilteredOutputStreamForManifestItem(manifestItem);

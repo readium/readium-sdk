@@ -117,6 +117,7 @@ protected:
     
 };
 
+#ifdef SUPPORT_ASYNC
 /**
  Event codes for asynchronous stream events.
  @ingroup utilities
@@ -391,6 +392,7 @@ protected:
     virtual void                CounterpartClosed();
     
 };
+#endif /* SUPPORT_ASYNC */
 
 /**
  An abstract ByteStream subclass representing (potentially limited) random-access capability.
@@ -610,6 +612,7 @@ protected:
     string Sanitized(const string& path) const;
 };
 
+#ifdef SUPPORT_ASYNC
 /**
  A concrete AsyncByteStream subclass providing access to a filesystem resource.
  @ingroup utilities
@@ -767,6 +770,7 @@ protected:
     virtual size_type       read_for_async(void* buf, size_type len)        { return __F::ReadBytes(buf, len); }
     virtual size_type       write_for_async(const void* buf, size_type len) { return __F::WriteBytes(buf, len); }
 };
+#endif /* SUPPORT_ASYNC */
 
 EPUB3_END_NAMESPACE
 

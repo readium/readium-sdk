@@ -36,6 +36,7 @@
 
 #include <ePub3/utilities/make_unique.h>
 
+#ifdef SUPPORT_ASYNC
 // I'm putting this here because it's the AsyncFileByteStream class that needs it
 #if defined(_LIBCPP_VERSION) && _LIBCPP_VERSION <= 1101
 ////////////////////////////////////////////////////////////////////////////////////
@@ -49,9 +50,11 @@ extern "C" _LIBCPP_NORETURN void __cxa_deleted_virtual()
     abort();
 }
 #endif
+#endif /* SUPPORT_ASYNC */
 
 EPUB3_BEGIN_NAMESPACE
 
+#ifdef SUPPORT_ASYNC
 std::thread         AsyncByteStream::_asyncIOThread;
 RunLoopPtr          AsyncByteStream::_asyncRunLoop(nullptr);
 std::atomic_flag    AsyncByteStream::_asyncInited;
@@ -512,6 +515,7 @@ RunLoop::EventSourcePtr AsyncPipe::AsyncEventSource()
         }
     });
 }
+#endif /* SUPPORT_ASYNC */
 
 #if 0
 #pragma mark -
@@ -850,6 +854,7 @@ std::shared_ptr<SeekableByteStream> ZipFileByteStream::Clone() const
 	return result;
 }
 
+#ifdef SUPPORT_ASYNC
 #if 0
 #pragma mark -
 #endif
@@ -955,5 +960,6 @@ std::shared_ptr<SeekableByteStream> AsyncZipFileByteStream::Clone() const
 
 	return result;
 }
+#endif /* SUPPORT_ASYNC */
 
 EPUB3_END_NAMESPACE

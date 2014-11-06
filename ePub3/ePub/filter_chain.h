@@ -69,13 +69,19 @@ public:
     void swap(FilterChain&& __o) { _filters.swap(__o._filters); }
     
     // obtains a stream which can be used to read filtered bytes from the chain
+
+#ifdef SUPPORT_ASYNC
     std::shared_ptr<AsyncByteStream> GetFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const;
+#endif /* SUPPORT_ASYNC */
+
 	std::shared_ptr<ByteStream> GetSyncFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const;
     std::shared_ptr<ByteStream> GetSyncFilteredByteRangeOfManifestItem(ConstManifestItemPtr item) const;
     
 protected:
+
+#ifdef SUPPORT_ASYNC
     typedef std::shared_ptr<AsyncByteStream>    ChainLink;
-    
+
     class ChainLinkProcessor : public PointerType<ChainLinkProcessor>
     {
     public:
@@ -101,8 +107,9 @@ protected:
 
 	static
 	std::unique_ptr<thread_pool>		_filterThreadPool;
-    
-private:
+#endif /* SUPPORT_ASYNC */
+
+    private:
     FilterList              _filters;
 
 };

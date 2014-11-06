@@ -35,7 +35,10 @@ class Package;
 class ManifestItem;
 class ArchiveReader;
 class ByteStream;
+
+#ifdef SUPPORT_ASYNC
 class AsyncByteStream;
+#endif /* SUPPORT_ASYNC */
 
 typedef shared_ptr<Package>         PackagePtr;
 
@@ -309,10 +312,12 @@ public:
     // stream the data
     EPUB3_EXPORT
     unique_ptr<ByteStream>      Reader()                            const;
-    
+
+#ifdef SUPPORT_ASYNC
     EPUB3_EXPORT
     unique_ptr<AsyncByteStream> AsyncReader()                       const;
-    
+#endif /* SUPPORT_ASYNC */
+
 protected:
     string                  _href;
     MimeType                _mediaType;

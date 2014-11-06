@@ -499,13 +499,15 @@ public:
 
     EPUB3_EXPORT
     unique_ptr<ByteStream>        ReadStreamForRelativePath(const string& path)   const;
-    
+
+#ifdef SUPPORT_ASYNC
     EPUB3_EXPORT
     shared_ptr<AsyncByteStream>     ContentStreamForItem(SpineItemPtr spineItem)    const {
         return ContentStreamForItem(spineItem->ManifestItem());
     }
     EPUB3_EXPORT
     shared_ptr<AsyncByteStream>     ContentStreamForItem(ManifestItemPtr manifestItem)  const;
+#endif /* SUPPORT_ASYNC */
 
 	EPUB3_EXPORT
 	shared_ptr<ByteStream>			SyncContentStreamForItem(SpineItemPtr spineItem)    const {

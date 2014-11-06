@@ -35,6 +35,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+#ifdef SUPPORT_ASYNC
 std::unique_ptr<thread_pool> FilterChain::_filterThreadPool(nullptr);
 
 std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const
@@ -97,6 +98,7 @@ std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifest
     // return the output pipe
     return linkPipe.second;
 }
+#endif /* SUPPORT_ASYNC */
 
 std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const
 {
@@ -163,6 +165,8 @@ std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredByteRangeOfManifestItem(
 
 // -------------------------------------------------------------------------------------------
 
+
+#ifdef SUPPORT_ASYNC
 FilterChain::ChainLinkProcessor::ChainLinkProcessor(ContentFilterPtr filter, ChainLink input, ConstManifestItemPtr item)
   : _filter(filter),
     _context(filter->MakeFilterContext(item)),
@@ -321,5 +325,6 @@ ssize_t FilterChain::ChainLinkProcessor::FunnelBytes()
     
     return (ssize_t)bytesToMove;
 }
+#endif /* SUPPORT_ASYNC */
 
 EPUB3_END_NAMESPACE

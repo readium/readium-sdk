@@ -126,6 +126,9 @@ static void RegisterTestFilter()
         FilterManager::Instance()->RegisterFilter("ROT13", ContentFilter::ValidationComplete-1, ROT13Filter::Factory);
     }
 }
+
+
+#ifdef SUPPORT_ASYNC
 /*
 TEST_CASE("Filters apply automatically", "")
 {
@@ -301,3 +304,4 @@ TEST_CASE("Font de-obfuscation happens automatically", "")
     REQUIRE(filteredBuffer == rawBuf);
 }
 */
+#endif /* SUPPORT_ASYNC */
