@@ -299,7 +299,7 @@
 }
 
 
-- (RDPackageResource *)resourceAtRelativePath:(NSString *)relativePath {
+- (RDPackageResource *)resourceAtRelativePath:(NSString *)relativePath isRangeRequest:(BOOL)isRangeRequest {
 	if (relativePath == nil || relativePath.length == 0) {
 		return nil;
 	}
@@ -320,32 +320,33 @@
 
 	ePub3::ManifestItemPtr m = std::const_pointer_cast<ePub3::ManifestItem>(manifestItem);
 
+    // TODO: the following part of the code is still WORK IN PROGRESS.
+    //       We are currently in the middle of a refactoring process,
+    //       but we should check in to avoid losing all the other changes
+    //       that we already made. Therefore, this piece of code below should
+    //       change quite a lot in future checkins (or disappear completely).
+    
     ePub3::ByteStreamPtr byteStream = nullptr;
-    bool FORCE_BYTE_RANGE = true;
-    if (FORCE_BYTE_RANGE)
+    if (isRangeRequest)
     {
-        byteStream = m_package->GetFilterChainByteStreamRange(m);
+        byteStream = m_package->GetFilterChainByteStream(m);
         if (byteStream == nullptr)
         {
-            NSLog(@"Relative path '%@' does not have a byte stream!", relativePath);
-            return nil;
+            byteStream = m_package->GetFilterChainByteStreamRange(m);
         }
     }
     else
     {
         byteStream = m_package->GetFilterChainByteStream(m);
-        if (byteStream == nullptr)
-        {
-            NSLog(@"Relative path '%@' does not have a byte stream!", relativePath);
-            return nil;
-        }
-
-        if (byteStream->BytesAvailable() > 1024 * 1024) // 1MB
-        {
-            byteStream = nullptr;
-            byteStream = m_package->GetFilterChainByteStreamRange(m);
-        }
     }
+    
+    if (byteStream == nullptr)
+    {
+        NSLog(@"Relative path '%@' does not have a byte stream!", relativePath);
+        return nil;
+    }
+    
+    // ----- End of Work in Progress code (see previous comment) -----
     
 	RDPackageResource *resource = [[RDPackageResource alloc]
 		initWithDelegate:self

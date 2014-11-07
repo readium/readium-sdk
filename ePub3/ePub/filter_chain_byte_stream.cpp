@@ -45,7 +45,7 @@ FilterChainByteStream::FilterChainByteStream(std::vector<ContentFilterPtr>& filt
 	for (auto& filter : filters)
 	{
 		_filters.emplace_back(filter, std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem)));
-		if (filter->RequiresCompleteData() && !_needs_cache)
+        if (filter->GetOperatingMode() == ContentFilter::OperatingMode::RequiresCompleteData && !_needs_cache)
 			_needs_cache = true;
 	}
 }
@@ -59,7 +59,7 @@ FilterChainByteStream::FilterChainByteStream(std::unique_ptr<ByteStream>&& input
 	for (auto& filter : filters)
 	{
 		_filters.emplace_back(filter, std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem)));
-		if (filter->RequiresCompleteData() && !_needs_cache)
+		if (filter->GetOperatingMode() == ContentFilter::OperatingMode::RequiresCompleteData && !_needs_cache)
 			_needs_cache = true;
 	}
 }

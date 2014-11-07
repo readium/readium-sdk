@@ -213,6 +213,19 @@ public:
     
     typedef std::function<ContentFilterPtr(ConstPackagePtr package)> TypeFactoryFn;
     
+    /**
+     enum class OperatingMode
+     This enum class defines which way a given ContentFilter operates, in regards
+     of how it makes use of the bytes that it is given as input. More details are
+     given on each enum member.
+     */
+    enum class OperatingMode
+    {
+        Standard,              /** < This ContentFilter does not require the full range of bytes, nor it does work on specific byte ranges. */
+        RequiresCompleteData,  /** < This ContentFilter requires the full range of bytes of a given resource to operate. */
+        SupportsByteRanges     /** < This ContentFilter can operate on specific byte ranges. */
+    };
+    
 private:
     ///
     /// No default constructor.
@@ -228,19 +241,29 @@ public:
     
     /**
 	 Allocate and return a new FilterContext subclass. The default returns `nullptr`.
+     
+     This method actually calls InnerMakeFilterContext(), in order to allow the subclasses
+     of ContentFilter to return their own subclasses of FilterContext. Notice, though,
+     that subclasses of ContentFilter that support byte ranges must return a FilterContext
+     object that belongs to a subclass of RangeFilterContext, given that the RangeFilterContext
+     subclass contains data that is needed when processing a byte range request. Not doing so
+     will result in an exception being thrown.
 
-	 Each filter is instantiated once per Package. A filter can then be used to process
-	 data from multiple ManifestItems at any one time. Any information specific to a single
-	 ManifestItem can be encapsulated within a FilterContext pointer, which will be passed
-	 into each invocation of the FilterData() method. The prospective ManifestItem is
-	 passed into this function so that it can inform the creation of filter context data.
-
-	 Filter context objects can be anything that inherits from ContextFilter, which itself
-	 asserts no conditions on the structure or implementation of the object.
-	 @param item The Manifest Item being processed, and for which the context is created.
+     @param item The Manifest Item being processed, and for which the context is created.
 	 @result An object containing per-item data, or nullptr.
 	 */
-    virtual FilterContext* MakeFilterContext(ConstManifestItemPtr item) const { return nullptr; }
+    FilterContext *MakeFilterContext(ConstManifestItemPtr item) const
+    {
+        FilterContext *filterContext = InnerMakeFilterContext(item);
+        if (filterContext != nullptr &&
+            GetOperatingMode() == OperatingMode::SupportsByteRanges &&
+            dynamic_cast<RangeFilterContext *>(filterContext) == nullptr)
+        {
+            throw std::logic_error("A ContentFilter object that supports byte ranges should only make RangeFilterContext objects.");
+        }
+        
+        return filterContext;
+    }
     
     /**
      Create a new content filter with a (required) type sniffer.
@@ -249,14 +272,10 @@ public:
      */
     ContentFilter(TypeSnifferFn sniffer) : _sniffer(sniffer) {}
     virtual ~ContentFilter() {}
-    
-    ///
-    /// Subclasses can return `true` if they need all data in one chunk.
-    virtual bool RequiresCompleteData() const { return false; }
-    
-    /// Subclasses can return `true` if this filter supports filtering of ranges instead of full resource,
-    /// FilterContext should extend RangeFilterContext to pass the required ByteStream data
-    virtual bool SupportsByteRanges() const { return false; }
+        
+    /// Subclasses should override this method if they want to specify different
+    /// modes of operation.
+    virtual OperatingMode GetOperatingMode() const { return OperatingMode::Standard; }
     
     ///
     /// Obtains the type-sniffer for this filter.
@@ -285,10 +304,32 @@ public:
      @see ePub3::SwitchPreprocessor or ePub3::ObjectPreprocessor for full-data
      examples.
      */
-    virtual void * FilterData(FilterContext* context, void *data, size_t len, size_t *outputLen) = 0;
+    virtual void *FilterData(FilterContext* context, void *data, size_t len, size_t *outputLen) = 0;
     
 protected:
     TypeSnifferFn       _sniffer;
+    
+    /**
+     Allocate and return a new FilterContext subclass. The default returns `nullptr`.
+     
+     Each filter is instantiated once per Package. A filter can then be used to process
+     data from multiple ManifestItems at any one time. Any information specific to a single
+     ManifestItem can be encapsulated within a FilterContext pointer, which will be passed
+     into each invocation of the FilterData() method. The prospective ManifestItem is
+     passed into this function so that it can inform the creation of filter context data.
+     
+     Notice that each different ContentFilter subclass can create their own subclass of
+     FilterContext. One important note, though, is that ContentFilter classes that support
+     Byte Ranges should create a FilterContext class for themselves that it is actually a
+     subclass of RangeFilterContext. RangeFilterContext contains information that it is
+     needed when processing byte range requests, hence the imposition. Not doing so will
+     result in an exception being thrown.
+     
+     @param item The Manifest Item being processed, and for which the context is created.
+     @result An object containing per-item data, or nullptr.
+     */
+    virtual FilterContext *InnerMakeFilterContext(ConstManifestItemPtr item) const { return nullptr; }
+
 };
 
 EPUB3_END_NAMESPACE

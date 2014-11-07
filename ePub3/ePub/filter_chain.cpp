@@ -136,7 +136,7 @@ std::shared_ptr<ByteStream> FilterChain::GetFilterChainByteStreamRange(ConstMani
                 continue;
             }
 
-            if (filter->SupportsByteRanges())
+            if (filter->GetOperatingMode() == ContentFilter::OperatingMode::SupportsByteRanges)
             {
                 resultStream.reset(new FilterChainByteStreamRange(std::move(byteStream), filter, item));
             }

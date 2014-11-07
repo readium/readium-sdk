@@ -67,6 +67,6 @@
 - (instancetype)initWithPackage:(void *)package;
 
 // Returns the resource at the given relative path or nil if it doesn't exist.
-- (RDPackageResource *)resourceAtRelativePath:(NSString *)relativePath;
+- (RDPackageResource *)resourceAtRelativePath:(NSString *)relativePath isRangeRequest:(BOOL)isRangeRequest;
 
 @end

@@ -31,10 +31,6 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-bool PassThroughFilter::SupportsByteRanges() const
-{
-    return true;
-}
 
 bool PassThroughFilter::SniffPassThoughContent(ConstManifestItemPtr item)
 {
@@ -56,7 +52,7 @@ ContentFilterPtr PassThroughFilter::PassThroughFactory(ConstPackagePtr package)
     return New();
 }
 
-FilterContext *PassThroughFilter::MakeFilterContext(ConstManifestItemPtr item) const
+FilterContext *PassThroughFilter::InnerMakeFilterContext(ConstManifestItemPtr item) const
 {
     return new PassThroughContext;
 }

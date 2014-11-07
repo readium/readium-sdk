@@ -74,7 +74,7 @@ public:
     
     ///
     /// This preprocessor requires access to the entire content document at once.
-    virtual bool    RequiresCompleteData() const OVERRIDE   { return true; }
+    virtual OperatingMode GetOperatingMode() const OVERRIDE { return OperatingMode::RequiresCompleteData; }
     
     /**
      Performs the static replacement of `object` tags whose `type` attribute

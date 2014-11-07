@@ -68,9 +68,7 @@ protected:
     }
     
     static ContentFilterPtr FontObfuscatorFactory(ConstPackagePtr item);
-
-    bool SupportsByteRanges() const;
-
+    
 private:
     ///
     /// There is no default constructor.
@@ -114,8 +112,6 @@ public:
         std::memcpy(_key, o._key, KeySize);
     }
     
-    virtual FilterContext* MakeFilterContext(ConstManifestItemPtr) const OVERRIDE { return new FontObfuscationContext; }
-    
     /**
      Applies the font obfuscation algorithm to the resource data.
      @see http://www.idpf.org/epub/30/spec/epub30-ocf.html#font-obfuscation
@@ -140,6 +136,8 @@ protected:
      */
     EPUB3_EXPORT
     bool BuildKey(ConstContainerPtr container);
+    
+    virtual FilterContext *InnerMakeFilterContext(ConstManifestItemPtr) const OVERRIDE { return new FontObfuscationContext; }
 };
 
 EPUB3_END_NAMESPACE

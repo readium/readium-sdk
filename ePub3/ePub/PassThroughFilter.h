@@ -37,13 +37,14 @@ public:
     PassThroughFilter(const PassThroughFilter &o) : ContentFilter(o) { }
     PassThroughFilter(PassThroughFilter &&o) : ContentFilter(std::move(o)) { }
     
-    virtual FilterContext *MakeFilterContext(ConstManifestItemPtr item) const OVERRIDE;
     virtual void *FilterData(FilterContext *context, void *data, size_t len, size_t *outputLen) OVERRIDE;
-
-    bool SupportsByteRanges() const;
+    virtual OperatingMode GetOperatingMode() const OVERRIDE { return OperatingMode::SupportsByteRanges; }
 
     static void Register();
-    
+
+protected:
+    virtual FilterContext *InnerMakeFilterContext(ConstManifestItemPtr item) const OVERRIDE;
+
 private:
     static bool SniffPassThoughContent(ConstManifestItemPtr item);
     static ContentFilterPtr PassThroughFactory(ConstPackagePtr package);

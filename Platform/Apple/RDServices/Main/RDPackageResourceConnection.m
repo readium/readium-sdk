@@ -95,7 +95,7 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
     return html;
 }
 
-- (NSObject <HTTPResponse> *)httpResponseForMethod:(NSString *)method URI:(NSString *)path {
+- (NSObject <HTTPResponse> *)httpResponseForMethod:(NSString *)method URI:(NSString *)path isRangeRequest:(BOOL)isRangeRequest {
 	if (m_packageResourceServer == nil ||
 		method == nil ||
 		![method isEqualToString:@"GET"] ||
@@ -167,7 +167,7 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 	// resource byte stream, which may lead to instability.
 
 	@synchronized ([RDPackageResourceServer resourceLock]) {
-		RDPackageResource *resource = [m_packageResourceServer.package resourceAtRelativePath:path];
+        RDPackageResource *resource = [m_packageResourceServer.package resourceAtRelativePath:path isRangeRequest:isRangeRequest];
 
 		if (resource == nil) {
 			NSLog(@"No resource found! (%@)", path);
