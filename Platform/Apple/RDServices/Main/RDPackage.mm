@@ -329,10 +329,10 @@
     ePub3::ByteStreamPtr byteStream = nullptr;
     if (isRangeRequest)
     {
-        byteStream = m_package->GetFilterChainByteStream(m);
+        byteStream = m_package->GetFilterChainByteStreamRange(m);
         if (byteStream == nullptr)
         {
-            byteStream = m_package->GetFilterChainByteStreamRange(m);
+            byteStream = m_package->GetFilterChainByteStream(m);
         }
     }
     else
