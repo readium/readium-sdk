@@ -89,10 +89,7 @@ protected:
     
     typedef std::list<zip_source*>  ZipSourceList;
     ZipSourceList   _liveSources;   ///< A list of live zip sources, which must be cleaned up upon closing.
-    
-    ///
-    /// Sanitizes a path string, since `libzip` can be finnicky about them.
-    string Sanitized(const string& path) const;
+
 };
 
 EPUB3_END_NAMESPACE

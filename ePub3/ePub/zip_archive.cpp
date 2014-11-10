@@ -276,12 +276,6 @@ ArchiveItemInfo ZipArchive::InfoAtPath(const string & path) const
         throw std::runtime_error(std::string("zip_stat("+path.stl_str()+") - " + zip_strerror(_zip)));
     return ZipItemInfo(sbuf);
 }
-string ZipArchive::Sanitized(const string& path) const
-{
-    if ( path.find('/') == 0 )
-        return path.substr(1);
-    return path;
-}
 
 void ZipWriter::DataBlob::Append(const void *data, size_t len)
 {

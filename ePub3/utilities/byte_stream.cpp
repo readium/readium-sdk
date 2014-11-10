@@ -763,12 +763,7 @@ bool ZipFileByteStream::IsOpen() const _NOEXCEPT
 {
     return _file != nullptr;
 }
-string ZipFileByteStream::Sanitized(const string& path) const
-{
-    if ( path.find('/') == 0 )
-        return path.substr(1);
-    return path;
-}
+
 bool ZipFileByteStream::Open(struct zip *archive, const string &path, int flags)
 {
     if ( _file != nullptr )

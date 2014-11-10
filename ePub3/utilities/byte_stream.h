@@ -32,9 +32,31 @@
 struct zip;
 struct zip_file;
 
+//#include "iri.h"
+#include <google-url/url_canon.h>
+#include <google-url/url_util.h>
+
 EPUB3_BEGIN_NAMESPACE
 
-/**
+static string Sanitized(const string& path)
+{
+    if ( path.find("%") != std::string::npos )
+    {
+        url_canon::RawCanonOutputW<256> output;
+        url_util::DecodeURLEscapeSequences(path.c_str(), static_cast<int>(path.size()), &output);
+        string path_(output.data(), output.length());
+
+        if ( path_.find('/') == 0 )
+            return path_.substr(1);
+        return path_;
+    }
+
+    if ( path.find('/') == 0 )
+        return path.substr(1);
+    return path;
+}
+
+    /**
  The abstract base class for all stream and pipe objects used by the Readium SDK.
  
  This class declares the standard interface for a stream-- that is, an object to
@@ -57,7 +79,7 @@ public:
     ///
     /// A value to be returned when a real count is not possible.
     static const size_type          UnknownSize = 0;
-    
+
 public:
                              ByteStream() : _eof(false), _err(0)    {}
     virtual                 ~ByteStream()                           {}
@@ -606,10 +628,7 @@ public:
 protected:
     struct zip_file*        _file;      ///< The underlying Zip file stream.
 	std::ios::openmode		_mode;		///< The mode used to open the file (used by Clone()).
-    
-    ///
-    /// B
-    string Sanitized(const string& path) const;
+
 };
 
 #ifdef SUPPORT_ASYNC
