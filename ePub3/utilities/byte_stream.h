@@ -58,8 +58,6 @@ public:
     /// A value to be returned when a real count is not possible.
     static const size_type          UnknownSize = 0;
 
-	string path;
-    
 public:
                              ByteStream() : _eof(false), _err(0)    {}
     virtual                 ~ByteStream()                           {}

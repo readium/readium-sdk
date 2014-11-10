@@ -35,9 +35,6 @@
 
 #include "zipint.h"
 
-#define _X86_
-#include <debugapi.h>
-
 ZIP_EXTERN ssize_t
 zip_fread(struct zip_file *zf, void *outbuf, size_t toread)
 {
@@ -80,20 +77,11 @@ zip_fread(struct zip_file *zf, void *outbuf, size_t toread)
     zf->zstr->avail_out = (unsigned int)toread;
     out_before = zf->zstr->total_out;
     
-	struct zip* zip_archive = zf->za;
-	const char* zip_name = zip_get_name(zip_archive, zf->file_index, 0);
-
 	int stream_end_count = 0;
 
     /* endless loop until something has been accomplished */
-    for (int debugInt=0;;debugInt++) {
+	for (;;) {
 		ret = inflate(zf->zstr, Z_SYNC_FLUSH);
-
-		char debug_cstr[4096];
-		snprintf(debug_cstr, 4096, "[zip_fread] file %s, loop %d, ret=%d, total_out:%d,out_before:%d,toread:%d\n", zip_name, debugInt, ret, zf->zstr->total_out, out_before, toread);
-		wchar_t debug_wchar[4096];
-		mbstowcs(debug_wchar, debug_cstr, 4096);
-		OutputDebugString(debug_wchar);
 
 		switch (ret) {
 			case Z_STREAM_END:
@@ -120,6 +108,7 @@ zip_fread(struct zip_file *zf, void *outbuf, size_t toread)
 					return (ssize_t)len;
 				}
 
+				// hack: break out of read loop when Z_STREAM_END recieved more than 10 times
 				if (ret == Z_STREAM_END && stream_end_count > 10) {
 					return (ssize_t) (toread - out_before);
 				}

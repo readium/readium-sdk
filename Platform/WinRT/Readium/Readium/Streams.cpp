@@ -46,9 +46,6 @@ IAsyncOperationWithProgress<IBuffer^, unsigned int>^ Stream::ReadAsync(IBuffer^ 
 {
 	return create_async([this, buffer, count, options](progress_reporter<unsigned int> reporter) -> IBuffer^ {
 		if (!IsOpen) {
-			String^ debugMsg = "File is closed.";
-			OutputDebugString(debugMsg->Data());
-			reporter.report(0);
 			return buffer;
 		}
 		auto byteBuffer = getByteAccessForBuffer(buffer);
@@ -196,9 +193,7 @@ IAsyncOperationWithProgress<IBuffer^, unsigned int>^ RandomAccessStream::ReadAsy
 
 		buffer->Length = total;
 
-		return nullptr;
-
-		//return buffer;
+		return buffer;
 	});
 }
 IAsyncOperation<bool>^ RandomAccessStream::FlushAsync()
