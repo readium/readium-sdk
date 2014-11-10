@@ -120,11 +120,6 @@ UserInterfaceState.xcuserstate
 
 *.moved-aside
 
-###
-# VS2013 build output folders
-
-Platform/WinRT/Readium/deploy
-
 ####
 # UNKNOWN: recommended by others, but I can't discover what these files are
 #
