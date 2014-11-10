@@ -201,7 +201,9 @@ ConstManifestItemPtr PackageBase::ManifestItemAtRelativePath(const string& path)
             return item.second;
     }
 
-    printf("MISSING ManifestItemAtRelativePath %s (%s)\n", path.c_str(), absPath.c_str());
+    // DEBUG
+    //printf("MISSING ManifestItemAtRelativePath %s (%s)\n", path.c_str(), absPath.c_str());
+
 	return nullptr;
 }
 shared_ptr<NavigationTable> PackageBase::NavigationTable(const string &title) const
