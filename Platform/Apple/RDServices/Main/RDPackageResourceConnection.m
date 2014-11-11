@@ -109,7 +109,11 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
         if ([path hasPrefix:@"/"]) {
             path = [path substringFromIndex:1];
         }
-        path = [path stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
+        // See:
+        // ConstManifestItemPtr PackageBase::ManifestItemAtRelativePath(const string& path) const
+        // which compares with non-escaped source (OPF original manifest>item@src attribute value)
+        //path = [path stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 	}
 
 	NSObject <HTTPResponse> *response = nil;
@@ -174,11 +178,33 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 		}
 		else
         {
-            bool isHTML = [path hasSuffix:@".html"] || [path hasSuffix:@".xhtml"] || [resource.mimeType isEqualToString:@"application/xhtml+xml"];
-
+            NSString* ext = [[path pathExtension] lowercaseString];
+            bool isHTML = [ext isEqualToString:@"xhtml"] || [ext isEqualToString:@"html"] || [resource.mimeType isEqualToString:@"application/xhtml+xml"]; //[path hasSuffix:@".html"] || [path hasSuffix:@".xhtml"]
+            BOOL isXhtmlWellFormed = NO;
             if (isHTML) {
                 NSData *data = resource.data;
                 if (data != nil) {
+
+                    @try
+                    {
+                        NSXMLParser *xmlparser = [[NSXMLParser alloc] initWithData:data];
+                        //[xmlparser setDelegate:self];
+                        [xmlparser setShouldResolveExternalEntities:NO];
+                        isXhtmlWellFormed = [xmlparser parse];
+                    }
+                    @catch (NSException *ex)
+                    {
+                        NSLog(@"XHTML parse exception: %@", ex);
+                        isXhtmlWellFormed = NO;
+                    }
+
+                    if (isXhtmlWellFormed == NO)
+                    {
+                        // FORCE HTML WebView parser
+                        //@"application/xhtml+xml"
+                        resource.mimeType = @"text/html";
+                    }
+
                     NSString* source = [self htmlFromData:data];
                     if (source != nil) {
                         NSString *pattern = @"(<head.*>)";
