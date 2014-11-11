@@ -77,6 +77,7 @@ static std::map<string, DCType> NameToIDMap = {
 };
 
 static std::map<DCType, string> IDToNameMap = {
+    // {DCType::Custom, "meta"}, ?
     {DCType::Identifier, "identifier"},
     {DCType::Title, "title"},
     {DCType::Language, "language"},
@@ -136,9 +137,10 @@ static __to_code_pair __to_code_pairs[16] = {
     __to_code_pair("subject", DCType::Subject),
     __to_code_pair("type", DCType::Type)
 };
-static std::map<string, DCType> NameToIDMap(&__to_code_pairs[0], &__to_code_pairs[16]);
+static std::map<string, DCType> NameToIDMap(&__to_code_pairs[0], &__to_code_pairs[15]);
 
-static __to_str_pair __to_str_pairs[16] = {
+static __to_str_pair __to_str_pairs[15] = {
+    //__to_code_pair(DCType::Custom, "meta"), ?
     __to_str_pair(DCType::Identifier, "identifier"),
     __to_str_pair(DCType::Title, "title"),
     __to_str_pair(DCType::Language, "language"),
@@ -155,9 +157,9 @@ static __to_str_pair __to_str_pairs[16] = {
     __to_str_pair(DCType::Subject, "subject"),
     __to_str_pair(DCType::Type, "type")
 };
-static std::map<DCType, string> IDToNameMap(&__to_str_pairs[0], &__to_str_pairs[16]);
+static std::map<DCType, string> IDToNameMap(&__to_str_pairs[0], &__to_str_pairs[14]);
 
-static __to_rendition_pair __to_rendition_pairs[13] = {
+static __to_rendition_pair __to_rendition_pairs[17] = {
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#orientation-landscape", RenditionPropertyBits("orientation", "landscape")),
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#orientation-portrait", RenditionPropertyBits("orientation", "portrait")),
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#orientation-auto", RenditionPropertyBits("orientation", "auto")),
@@ -177,7 +179,7 @@ static __to_rendition_pair __to_rendition_pairs[13] = {
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#page-spread-center", RenditionPropertyBits("page-spread", "page-spread-center"))
 };
 
-static std::map<string, RenditionPropertyBits> RenditionSplitPropertyLookup(&__to_rendition_pairs[0], &__to_rendition_pairs[12]);
+static std::map<string, RenditionPropertyBits> RenditionSplitPropertyLookup(&__to_rendition_pairs[0], &__to_rendition_pairs[16]);
 #endif
 
 EPUB3_EXPORT
