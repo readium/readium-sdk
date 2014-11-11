@@ -53,6 +53,9 @@
 	@private NSMutableArray *m_subjects;
 }
 
+- (NSString *)findProperty:(NSString *)propName withOptionalPrefix:(NSString *)prefix;
+- (NSString *)findProperty:(NSString *)propName withPrefix:(NSString *)prefix;
+
 - (NSString *)sourceHrefForNavigationTable:(ePub3::NavigationTable *)navTable;
 
 @end
@@ -280,22 +283,38 @@
 	return m_navElemPageList;
 }
 
+- (NSString *)findProperty:(NSString *)propName withOptionalPrefix:(NSString *)prefix {
+    NSString *value = [self findProperty:propName withPrefix:prefix];
+
+    if (value.length == 0) {
+        value = [self findProperty:propName withPrefix:@""];
+    }
+
+    return value;
+}
+
+
+- (NSString *)findProperty:(NSString *)propName withPrefix:(NSString *)prefix {
+    auto prop = m_package->PropertyMatching([propName UTF8String], [prefix UTF8String]);
+
+    if (prop != nullptr) {
+        return [NSString stringWithUTF8String:prop->Value().c_str()];
+    }
+
+    return @"";
+}
 
 - (NSString *)renditionLayout {
-	ePub3::PropertyPtr prop = m_package->PropertyMatching("layout", "rendition");
-	return (prop == nullptr) ? @"" : [NSString stringWithUTF8String:prop->Value().c_str()];
+    return [self findProperty:@"layout" withPrefix:@"rendition"];
 }
 - (NSString *)renditionFlow {
-	ePub3::PropertyPtr prop = m_package->PropertyMatching("flow", "rendition");
-	return (prop == nullptr) ? @"" : [NSString stringWithUTF8String:prop->Value().c_str()];
+    return [self findProperty:@"flow" withPrefix:@"rendition"];
 }
 - (NSString *)renditionSpread {
-	ePub3::PropertyPtr prop = m_package->PropertyMatching("spread", "rendition");
-	return (prop == nullptr) ? @"" : [NSString stringWithUTF8String:prop->Value().c_str()];
+    return [self findProperty:@"spread" withPrefix:@"rendition"];
 }
 - (NSString *)renditionOrientation {
-	ePub3::PropertyPtr prop = m_package->PropertyMatching("orientation", "rendition");
-	return (prop == nullptr) ? @"" : [NSString stringWithUTF8String:prop->Value().c_str()];
+    return [self findProperty:@"orientation" withPrefix:@"rendition"];
 }
 
 

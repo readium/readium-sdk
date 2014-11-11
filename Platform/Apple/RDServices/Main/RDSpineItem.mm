@@ -133,7 +133,7 @@
 
 
 - (NSString *)findProperty:(NSString *)propName withPrefix:(NSString *)prefix {
-	auto prop = m_spineItem->PropertyMatching([propName UTF8String], [prefix UTF8String]);
+	auto prop = m_spineItem->PropertyMatching([propName UTF8String], [prefix UTF8String], false);
 
 	if (prop != nullptr) {
 		return [NSString stringWithUTF8String:prop->Value().c_str()];
