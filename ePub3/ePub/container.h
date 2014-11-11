@@ -181,7 +181,21 @@ public:
 			throw std::runtime_error("Attempt to set a second Creator on a Container instance");
 		_creator = creator;
 	}
-    
+
+protected:
+    ///
+    /// Check for vendor-specific metadata
+    /// http://www.idpf.org/epub/fxl/#mappings
+    /// TODO: currently only checks /META-INF/com.apple.ibooks.display-options.xml
+    /// (+ Sony, Amazon, etc.?)
+    void ParseVendorMetadata();
+    string _appleIBooksDisplayOption_FixedLayout; // true | false
+    string _appleIBooksDisplayOption_Orientation; // landscape-only | portrait-only | none
+public:
+    // TODO: this API does not need to be public, only used internally by Package::Open() to adjust OPF rendition:layout|orientation properties
+    const string GetVendorMetadata_AppleIBooksDisplayOption_FixedLayout() const { return _appleIBooksDisplayOption_FixedLayout; };
+    const string GetVendorMetadata_AppleIBooksDisplayOption_Orientation() const { return _appleIBooksDisplayOption_Orientation; };
+
 protected:
     ArchivePtr						_archive;
     shared_ptr<xml::Document>		_ocf;

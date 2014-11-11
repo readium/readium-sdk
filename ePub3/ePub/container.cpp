@@ -33,6 +33,7 @@ EPUB3_BEGIN_NAMESPACE
 
 static const char * gContainerFilePath = "META-INF/container.xml";
 static const char * gEncryptionFilePath = "META-INF/encryption.xml";
+static const char * gAppleiBooksDisplayOptionsFilePath = "META-INF/com.apple.ibooks.display-options.xml";
 static const char * gRootfilesXPath = "/ocf:container/ocf:rootfiles/ocf:rootfile";
 static const char * gRootfilePathsXPath = "/ocf:container/ocf:rootfiles/ocf:rootfile/@full-path";
 static const char * gVersionXPath = "/ocf:container/@version";
@@ -90,6 +91,8 @@ bool Container::Open(const string& path)
 		return false;
 
 	LoadEncryption();
+
+    ParseVendorMetadata();
 
 	for (auto n : nodes)
 	{
@@ -213,6 +216,54 @@ string Container::Version() const
     
     return std::move(strings[0]);
 }
+
+void Container::ParseVendorMetadata()
+{
+    unique_ptr<ArchiveReader> pZipReader = _archive->ReaderAtPath(gAppleiBooksDisplayOptionsFilePath);
+    if ( !pZipReader )
+        return;
+
+    ArchiveXmlReader reader(std::move(pZipReader));
+#if EPUB_USE(LIBXML2)
+    shared_ptr<xml::Document> docXml = reader.xmlReadDocument(gAppleiBooksDisplayOptionsFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
+#elif EPUB_USE(WIN_XML)
+	auto docXml = reader.ReadDocument(gAppleiBooksDisplayOptionsFilePath, nullptr, 0);
+#endif
+    if ( !bool(docXml) )
+        return;
+
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+    XPathWrangler xpath(docXml);
+#else
+    XPathWrangler::NamespaceList __ns;
+    XPathWrangler xpath(docXml, __ns);
+#endif
+
+    xml::NodeSet nodes = xpath.Nodes("/display_options/platform/option");
+    if ( nodes.empty() )
+    {
+        //xml::string str(docXml->XMLString());
+        //printf("%s\n", docXml->XMLString().utf8());
+        return;
+    }
+
+    for ( auto node : nodes )
+    {
+        string name = _getProp(node, "name");
+        if (name.empty())
+            continue;
+
+        if (name == "fixed-layout")
+        {
+            _appleIBooksDisplayOption_FixedLayout = node->Content(); // true | false
+        }
+        else if (name == "orientation-lock")
+        {
+            _appleIBooksDisplayOption_Orientation = node->Content(); // landscape-only | portrait-only | none
+        }
+    }
+}
+
 void Container::LoadEncryption()
 {
     unique_ptr<ArchiveReader> pZipReader = _archive->ReaderAtPath(gEncryptionFilePath);

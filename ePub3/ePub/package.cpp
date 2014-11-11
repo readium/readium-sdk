@@ -339,6 +339,45 @@ bool Package::Open(const string& path)
     __setupLibXML();
 #endif
     auto status = PackageBase::Open(path) && Unpack();
+
+    if (status)
+    {
+        ConstContainerPtr container = Owner();
+        //ConstContainerPtr sharedContainer = std::dynamic_pointer_cast<Container>(owner);
+
+        // See ReadiumJS package_document_parser.js updateMetadataWithIBookProperties()
+        // https://github.com/readium/readium-js/blob/develop/epub-modules/epub/src/models/package_document_parser.js#L91
+        // (vendor metadata takes precedence over OPF, to match rendering expectations with some commercial EPUBs that do not necessarily contains correct OPF metadata)
+
+        string fxl = container->GetVendorMetadata_AppleIBooksDisplayOption_FixedLayout();
+        if (fxl == "true")
+        {
+            this->RemoveProperty("layout", "rendition");
+
+            PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
+            PropertyPtr prop = Property::New(holderPtr);
+            prop->SetPropertyIdentifier(MakePropertyIRI("layout", "rendition"));
+            prop->SetValue("pre-paginated");
+            AddProperty(prop);
+        }
+
+        string orientation = container->GetVendorMetadata_AppleIBooksDisplayOption_Orientation();
+        bool landscape = orientation == "landscape-only";
+        bool portrait = !landscape && orientation == "portrait-only";
+        bool none = !landscape && !portrait && orientation == "none";
+        if (landscape || portrait || none)
+        {
+            this->RemoveProperty("orientation", "rendition");
+
+            PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
+            PropertyPtr prop = Property::New(holderPtr);
+            prop->SetPropertyIdentifier(MakePropertyIRI("orientation", "rendition"));
+            string val = landscape?"landscape":(portrait?"portrait":"auto");
+            prop->SetValue(val);
+            AddProperty(prop);
+        }
+    }
+
 #if _XML_OVERRIDE_SWITCHES
     __resetLibXMLOverrides();
 #endif
