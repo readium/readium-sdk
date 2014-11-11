@@ -352,6 +352,8 @@ bool Package::Open(const string& path)
         string fxl = container->GetVendorMetadata_AppleIBooksDisplayOption_FixedLayout();
         if (fxl == "true")
         {
+            this->RegisterPrefixIRIStem("rendition", "http://www.idpf.org/vocab/rendition/#");
+
             this->RemoveProperty("layout", "rendition");
 
             PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
@@ -367,6 +369,8 @@ bool Package::Open(const string& path)
         bool none = !landscape && !portrait && orientation == "none";
         if (landscape || portrait || none)
         {
+            this->RegisterPrefixIRIStem("rendition", "http://www.idpf.org/vocab/rendition/#");
+            
             this->RemoveProperty("orientation", "rendition");
 
             PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();

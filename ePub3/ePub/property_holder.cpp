@@ -296,7 +296,11 @@ PropertyPtr PropertyHolder::PropertyMatching(const string& reference, const stri
 
 void PropertyHolder::RegisterPrefixIRIStem(const string &prefix, const string &iriStem)
 {
-    _vocabularyLookup[prefix] = iriStem;
+    auto found = _vocabularyLookup.find(prefix);
+    if ( found == _vocabularyLookup.end() )
+    {
+        _vocabularyLookup[prefix] = iriStem;
+    }
 }
 IRI PropertyHolder::MakePropertyIRI(const string &reference, const string& prefix) const
 {
