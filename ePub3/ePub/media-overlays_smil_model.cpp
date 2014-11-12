@@ -410,8 +410,7 @@ public:
 
                 //unique_ptr<ArchiveXmlReader> xmlReader = package->XmlReaderForRelativePath(item->Href());
                 shared_ptr<xml::Document> doc = item->ReferencedDocument();
-
-                if (doc == nullptr)
+                if (!bool(doc))
                 {
                     HandleError(EPUBError::MediaOverlayCannotParseSMILXML, _Str("Cannot parse XML: ", item->Href().c_str()));
                 }

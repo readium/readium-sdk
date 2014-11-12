@@ -37,7 +37,34 @@ InputBuffer::~InputBuffer()
 int InputBuffer::read_cb(void *context, char *buffer, int len)
 {
     InputBuffer * p = reinterpret_cast<InputBuffer*>(context);
-    return static_cast<int>(p->read(reinterpret_cast<uint8_t*>(buffer), static_cast<size_t>(len)));
+
+    size_t toRead = static_cast<size_t>(len);
+    uint8_t* buf = reinterpret_cast<uint8_t*>(buffer);
+
+    size_t res = 0;
+    if (p->_encodingCheck == "utf-8" && len >= 3)
+    {
+        res = p->read(buf, 3);
+
+        // BOM check (0xEF,0xBB,0xBF)
+        if (res == 3 && buf[0] == 0xEF && buf[1] == 0xBB && buf[2] == 0xBF)
+        {
+            // Skip BOM bytes
+            res = p->read(buf, toRead - 3);
+        }
+        else if (res > 0)
+        {
+            // no BOM, read more bytes
+            res += p->read(buf + res, toRead - res);
+        }
+    }
+    else
+    {
+        res = p->read(buf, toRead);
+    }
+    p->_encodingCheck = NULL;
+
+    return static_cast<int>(res);
 }
 int InputBuffer::close_cb(void *context)
 {
@@ -46,11 +73,13 @@ int InputBuffer::close_cb(void *context)
 }
 std::shared_ptr<Document> InputBuffer::xmlReadDocument(const char * url, const char * encoding, int options)
 {
+    _encodingCheck = encoding;
     xmlDocPtr raw = xmlReadIO(_buf->readcallback, _buf->closecallback, _buf->context, url, encoding, options);
     return Wrapped<Document>(raw);
 }
 std::shared_ptr<Document> InputBuffer::htmlReadDocument(const char *url, const char *encoding, int options)
 {
+    _encodingCheck = encoding;
     return Wrapped<Document>(htmlReadIO(_buf->readcallback, _buf->closecallback, _buf->context, url, encoding, options));
 }
 

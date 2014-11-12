@@ -235,14 +235,21 @@ shared_ptr<xml::Document> ManifestItem::ReferencedDocument() const
     unique_ptr<ArchiveXmlReader> reader = package->XmlReaderForRelativePath(path);
     if ( !reader )
         return nullptr;
-    
+
+    // In some EPUBs, UTF-8 XML/HTML files have a superfluous (erroneous?) BOM, so we either:
+    // pass "utf-8" and expect InputBuffer::read_cb (in io.cpp) to skip the 3 erroneous bytes
+    // (otherwise the XML parser fails),
+    // or we pass NULL (in which case the parser auto-detects encoding)
+    const char * encoding = nullptr;
+    //const char * encoding = "utf-8";
+
     shared_ptr<xml::Document> result(nullptr);
 #if EPUB_USE(LIBXML2)
     int flags = XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR;
     if ( _mediaType == "text/html" )
-        result = reader->htmlReadDocument(path.c_str(), "utf-8", flags);
+        result = reader->htmlReadDocument(path.c_str(), encoding, flags);
     else
-        result = reader->xmlReadDocument(path.c_str(), "utf-8", flags);
+        result = reader->xmlReadDocument(path.c_str(), encoding, flags);
 #elif EPUB_USE(WIN_XML)
 	result = reader->ReadDocument(path.c_str(), "utf-8", 0);
 #endif
