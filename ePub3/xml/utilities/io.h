@@ -74,6 +74,8 @@ public:
         {}
 
 protected:
+            const char * _encodingCheck;
+
 #if EPUB_USE(LIBXML2)
     xmlParserInputBufferPtr _buf;
 #elif EPUB_USE(WIN_XML)
