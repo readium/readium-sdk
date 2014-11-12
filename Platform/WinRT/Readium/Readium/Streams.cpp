@@ -52,7 +52,7 @@ IAsyncOperationWithProgress<IBuffer^, unsigned int>^ Stream::ReadAsync(IBuffer^ 
 		byte* bytes = nullptr;
 		byteBuffer->Buffer(&bytes);
 
-		unsigned int toRead = ((options == InputStreamOptions::ReadAhead) ? std::max(count, buffer->Capacity) : std::min(count, buffer->Capacity));
+		size_t toRead = ((options == InputStreamOptions::ReadAhead) ? std::max(count, buffer->Capacity) : std::min(count, buffer->Capacity));
 		toRead = std::min(toRead, _native->BytesAvailable());
 		ssize_t numRead = 0;
 		int total = 0;
