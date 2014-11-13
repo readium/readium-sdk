@@ -7,12 +7,15 @@ import java.io.IOException;
 
 public final class contentFilterChainEncode
 {
-	public static void main(String[] args) throws Exception
+    public static int BUFFER_SIZE = 1024 * 5; // kilo bytes
+    public static int PADDING_BYTES = 3;
+        
+    public static void main(String[] args) throws Exception
     {
-		System.out.print('\n');
-		System.out.print("FILE PATH TO ENCODE:\n");
-		System.out.print(args[0]);
-		System.out.print('\n');
+        System.out.print('\n');
+        System.out.print("FILE PATH TO ENCODE:\n");
+        System.out.print(args[0]);
+        System.out.print('\n');
         
         String ORIGINAL = "_ORIGINAL";
         String backupFilePath = args[0] + ORIGINAL;
@@ -25,8 +28,8 @@ public final class contentFilterChainEncode
         }
         
         System.out.print('\n');
-		System.out.print("BACKUP FILE PATH:\n");
-		System.out.print(backupFilePath);
+        System.out.print("BACKUP FILE PATH:\n");
+        System.out.print(backupFilePath);
         System.out.print('\n');
         
         File backupFile = new File(backupFilePath);
@@ -36,17 +39,14 @@ public final class contentFilterChainEncode
         newFile.renameTo(backupFile);
         newFile = new File(args[0]);
         
-        int BUFFER_SIZE = 1024 * 5; // kilo bytes
         byte[] byteBuffer = new byte[BUFFER_SIZE];
-        
-        int PADDING_BYTES = 3;
         
         int totalBytesRead = 0;
         int totalBytesWrite = 0;
         
         int nPads = 0;
 
-		System.out.print("====== 1) ENCODING...\n");
+        System.out.print("====== 1) ENCODING...\n");
         
         InputStream in = null;
         OutputStream out = null;
@@ -84,13 +84,13 @@ public final class contentFilterChainEncode
             if (out != null) out.close();
         }
         
-		System.out.print('\n');
+        System.out.print('\n');
         System.out.print("INPUT FILE SIZE: " + backupFile.length() + '\n');
         System.out.print("INPUT TOTAL BYTES: " + totalBytesRead + '\n');
-		System.out.print('\n');
+        System.out.print('\n');
         System.out.print("OUTPUT FILE SIZE: " + newFile.length() + '\n');
         System.out.print("OUTPUT TOTAL BYTES: " + totalBytesWrite + '\n');
-		System.out.print('\n');
+        System.out.print('\n');
         System.out.print("TOTAL NUMBER OF BYTE PADDING ITERATIONS: " + nPads + '\n');
         System.out.print("INDIVIDUAL BYTE PADDING SIZE: " + PADDING_BYTES + '\n');
         System.out.print("ADDED PADDING (BYTES): " + (nPads * PADDING_BYTES) + '\n');
@@ -113,8 +113,8 @@ public final class contentFilterChainEncode
         }
         
         System.out.print('\n');
-		System.out.print("DECODED FILE PATH:\n");
-		System.out.print(decodedFilePath);
+        System.out.print("DECODED FILE PATH:\n");
+        System.out.print(decodedFilePath);
         System.out.print('\n');
         
         File decodedFile = new File(decodedFilePath);
@@ -124,7 +124,7 @@ public final class contentFilterChainEncode
         totalBytesWrite = 0;
         nPads = 0;
 
-		System.out.print("====== 2) DECODING...\n");
+        System.out.print("====== 2) DECODING...\n");
         
         in = null;
         out = null;
@@ -173,13 +173,13 @@ public final class contentFilterChainEncode
             if (out != null) out.close();
         }
         
-		System.out.print('\n');
+        System.out.print('\n');
         System.out.print("INPUT FILE SIZE: " + newFile.length() + '\n');
         System.out.print("INPUT TOTAL BYTES: " + totalBytesRead + '\n');
-		System.out.print('\n');
+        System.out.print('\n');
         System.out.print("OUTPUT FILE SIZE: " + decodedFile.length() + '\n');
         System.out.print("OUTPUT TOTAL BYTES: " + totalBytesWrite + '\n');
-		System.out.print('\n');
+        System.out.print('\n');
         System.out.print("TOTAL NUMBER OF BYTE PADDING ITERATIONS: " + nPads + '\n');
         System.out.print("INDIVIDUAL BYTE PADDING SIZE: " + PADDING_BYTES + '\n');
         System.out.print("REMOVED PADDING (BYTES): " + (nPads * PADDING_BYTES) + '\n');
@@ -187,7 +187,7 @@ public final class contentFilterChainEncode
         
 
         System.out.print('\n');
-		System.out.print("====== 3) COMPARING IDENTICAL...");
+        System.out.print("====== 3) COMPARING IDENTICAL...");
 
         byte[] byteBuffer2 = new byte[BUFFER_SIZE];
                 
@@ -220,7 +220,7 @@ public final class contentFilterChainEncode
                     }
                 }
 
-        		System.out.print('.');
+                System.out.print('.');
             }
             
             if (bytesRead > 0)
@@ -239,7 +239,7 @@ public final class contentFilterChainEncode
                 }
             }
 
-    		System.out.print("OKAY.\n");
+            System.out.print("OKAY.\n");
         }
         catch (Exception ex)
         {
@@ -252,6 +252,6 @@ public final class contentFilterChainEncode
         }
 
         System.out.print('\n');
-		System.out.print("EXIT.\n");
+        System.out.print("EXIT.\n");
     }
 }
