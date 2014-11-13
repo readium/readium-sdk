@@ -239,7 +239,7 @@ public final class contentFilterChainEncode
                 }
             }
 
-    		System.out.print('OKAY.\n');
+    		System.out.print("OKAY.\n");
         }
         catch (Exception ex)
         {
