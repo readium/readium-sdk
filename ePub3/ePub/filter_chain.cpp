@@ -104,16 +104,24 @@ std::shared_ptr<ByteStream> FilterChain::GetFilterChainByteStream(ConstManifestI
 {
 	std::unique_ptr<ByteStream> rawInput = item->Reader();
 	if (rawInput->IsOpen() == false)
+    {
 		return nullptr;
+    }
+    
+    return shared_ptr<ByteStream>(GetFilterChainByteStream(item, rawInput.release()).release());
+}
 
-	std::vector<ContentFilterPtr> thisChain;
-	for (ContentFilterPtr filter : _filters)
-	{
-		if (filter->TypeSniffer()(item))
-			thisChain.push_back(filter);
-	}
-
-	return std::make_shared<FilterChainByteStream>(std::move(rawInput), thisChain, item);
+std::unique_ptr<ByteStream> FilterChain::GetFilterChainByteStream(ConstManifestItemPtr item, ByteStream *rawInput) const
+{
+    std::vector<ContentFilterPtr> thisChain;
+    for (ContentFilterPtr filter : _filters)
+    {
+        if (filter->TypeSniffer()(item))
+            thisChain.push_back(filter);
+    }
+    
+    unique_ptr<ByteStream> rawInputPtr(rawInput);
+    return unique_ptr<FilterChainByteStream>(new FilterChainByteStream(std::move(rawInputPtr), thisChain, item));
 }
 
 std::shared_ptr<ByteStream> FilterChain::GetFilterChainByteStreamRange(ConstManifestItemPtr item) const
@@ -124,7 +132,12 @@ std::shared_ptr<ByteStream> FilterChain::GetFilterChainByteStreamRange(ConstMani
         return nullptr;
     }
     
-    shared_ptr<FilterChainByteStreamRange> resultStream;
+    return shared_ptr<ByteStream>(GetFilterChainByteStreamRange(item, byteStream.release()).release());
+}
+
+std::unique_ptr<ByteStream> FilterChain::GetFilterChainByteStreamRange(ConstManifestItemPtr item, SeekableByteStream *rawInput) const
+{
+    unique_ptr<ByteStream> resultStream;
     uint nFilters = 0;
     for (ContentFilterPtr filter : _filters)
     {
@@ -135,36 +148,46 @@ std::shared_ptr<ByteStream> FilterChain::GetFilterChainByteStreamRange(ConstMani
             {
                 continue;
             }
-
+            
             if (filter->GetOperatingMode() == ContentFilter::OperatingMode::SupportsByteRanges)
             {
-                resultStream.reset(new FilterChainByteStreamRange(std::move(byteStream), filter, item));
-            }
-            else
-            {
-                return GetFilterChainByteStream(item);
+                unique_ptr<SeekableByteStream> rawInputPtr(rawInput);
+                resultStream.reset(new FilterChainByteStreamRange(std::move(rawInputPtr), filter, item));
             }
         }
     }
-
+    
     if (nFilters > 1)
     {
         // more than one filter...abort!
         return nullptr;
     }
-
+    
     // There are no ContentFilter classes that curretly apply.
     // In this case, return an empty FilterChainByteStreamRange, that will simply put out raw bytes.
     if (!resultStream)
     {
-        resultStream.reset(new FilterChainByteStreamRange(std::move(byteStream)));
+        unique_ptr<SeekableByteStream> rawInputPtr(rawInput);
+        resultStream.reset(new FilterChainByteStreamRange(std::move(rawInputPtr)));
     }
     
     return resultStream;
 }
 
-// -------------------------------------------------------------------------------------------
+size_t FilterChain::GetFilterChainSize(ConstManifestItemPtr item) const
+{
+    size_t numFilters = 0;
+    
+    for (ContentFilterPtr filter : _filters)
+    {
+        if (filter->TypeSniffer()(item))
+        {
+            numFilters++;
+        }
+    }
 
+    return numFilters;
+}
 
 #ifdef SUPPORT_ASYNC
 FilterChain::ChainLinkProcessor::ChainLinkProcessor(ContentFilterPtr filter, ChainLink input, ConstManifestItemPtr item)

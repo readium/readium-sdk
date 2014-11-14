@@ -95,7 +95,7 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
     return html;
 }
 
-- (NSObject <HTTPResponse> *)httpResponseForMethod:(NSString *)method URI:(NSString *)path isRangeRequest:(BOOL)isRangeRequest {
+- (NSObject <HTTPResponse> *)httpResponseForMethod:(NSString *)method URI:(NSString *)path {
 	if (m_packageResourceServer == nil ||
 		method == nil ||
 		![method isEqualToString:@"GET"] ||
@@ -171,7 +171,7 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 	// resource byte stream, which may lead to instability.
 
 	@synchronized ([RDPackageResourceServer resourceLock]) {
-        RDPackageResource *resource = [m_packageResourceServer.package resourceAtRelativePath:path isRangeRequest:isRangeRequest];
+        RDPackageResource *resource = [m_packageResourceServer.package resourceAtRelativePath:path];
 
 		if (resource == nil) {
 			NSLog(@"No resource found! (%@)", path);
@@ -252,29 +252,9 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
                     }
                 }
             }
-
-            if (!resource.isByteRangeResource) { 
-                // This resource is not one that can be fetched by byte ranges,
-                // so just put the whole thing in memory.
-
-                NSData *data = resource.data;
-
-                if (data != nil) {
-                    RDPackageResourceDataResponse *dataResponse = [[RDPackageResourceDataResponse alloc]
-                        initWithData:data];
-
-                    if (resource.mimeType) {
-                        dataResponse.contentType = resource.mimeType;
-                    }
-
-                    response = dataResponse;
-                }
-            }
-            else {
-                RDPackageResourceResponse *resourceResponse = [[RDPackageResourceResponse alloc]
-                    initWithResource:resource];
-                response = resourceResponse;
-            }
+            
+            RDPackageResourceResponse *resourceResponse = [[RDPackageResourceResponse alloc] initWithResource:resource];
+            response = resourceResponse;
         }
 	}
 

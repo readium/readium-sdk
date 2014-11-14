@@ -1230,6 +1230,7 @@ shared_ptr<ManifestItem> Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRema
     
     return result;
 }
+
 unique_ptr<ByteStream> Package::ReadStreamForRelativePath(const string &path) const
 {
     return _archive->ByteStreamAtPath(_Str(_pathBase, path.stl_str()));
@@ -1246,10 +1247,27 @@ shared_ptr<ByteStream> Package::GetFilterChainByteStream(ManifestItemPtr manifes
 {
 	return _filterChain->GetFilterChainByteStream(manifestItem);
 }
+
+unique_ptr<ByteStream> Package::GetFilterChainByteStream(ManifestItemPtr manifestItem, ByteStream *rawInput) const
+{
+    return _filterChain->GetFilterChainByteStream(manifestItem, rawInput);
+}
+
 shared_ptr<ByteStream> Package::GetFilterChainByteStreamRange(ManifestItemPtr manifestItem) const
 {
     return _filterChain->GetFilterChainByteStreamRange(manifestItem);
 }
+
+unique_ptr<ByteStream> Package::GetFilterChainByteStreamRange(ManifestItemPtr manifestItem, SeekableByteStream *rawInput) const
+{
+    return _filterChain->GetFilterChainByteStreamRange(manifestItem, rawInput);
+}
+
+size_t Package::GetFilterChainSize(ManifestItemPtr manifestItem) const
+{
+    return _filterChain->GetFilterChainSize(manifestItem);
+}
+
 const string& Package::Title(bool localized) const
 {
     IRI titleTypeIRI(MakePropertyIRI("title-type"));      // http://idpf.org/epub/vocab/package/#title-type

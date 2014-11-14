@@ -989,7 +989,7 @@ static NSMutableArray *recentNonces;
 	// Note: We already checked to ensure the method was supported in onSocket:didReadData:withTag:
 	
 	// Respond properly to HTTP 'GET' and 'HEAD' commands
-	httpResponse = [self httpResponseForMethod:method URI:uri isRangeRequest:NO];
+	httpResponse = [self httpResponseForMethod:method URI:uri];
 	
 	if (httpResponse == nil)
 	{
@@ -1661,7 +1661,7 @@ static NSMutableArray *recentNonces;
  * HTTPFileResponse is a wrapper for an NSFileHandle object, and is the preferred way to send a file response.
  * HTTPDataResponse is a wrapper for an NSData object, and may be used to send a custom response.
 **/
-- (NSObject<HTTPResponse> *)httpResponseForMethod:(NSString *)method URI:(NSString *)path isRangeRequest:(BOOL)isRangeRequest
+- (NSObject<HTTPResponse> *)httpResponseForMethod:(NSString *)method URI:(NSString *)path
 {
 	HTTPLogTrace();
 	

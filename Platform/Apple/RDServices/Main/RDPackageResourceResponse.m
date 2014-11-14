@@ -104,6 +104,7 @@
 
 	@synchronized ([RDPackageResourceServer resourceLock]) {
 		[m_resource setOffset:offset];
+        m_resource.isRangeRequest = YES;
 	}
 }
 

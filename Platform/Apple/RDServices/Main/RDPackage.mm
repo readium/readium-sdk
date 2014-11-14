@@ -39,7 +39,6 @@
 
 
 @interface RDPackage() <RDPackageResourceDelegate> {
-	@private std::vector<std::shared_ptr<ePub3::ByteStream>> m_byteStreamVector;
 	@private RDMediaOverlaysSmilModel *m_mediaOverlaysSmilModel;
 	@private RDNavigationElement *m_navElemListOfFigures;
 	@private RDNavigationElement *m_navElemListOfIllustrations;
@@ -260,18 +259,6 @@
 }
 
 
-- (void)packageResourceWillDeallocate:(RDPackageResource *)packageResource {
-	for (auto i = m_byteStreamVector.begin(); i != m_byteStreamVector.end(); i++) {
-		if (i->get() == packageResource.byteStream) {
-			m_byteStreamVector.erase(i);
-			return;
-		}
-	}
-
-	NSLog(@"The byte stream was not found!");
-}
-
-
 - (RDNavigationElement *)pageList {
 	if (m_navElemPageList == nil) {
 		ePub3::NavigationTable *navTable = m_package->PageList().get();
@@ -318,7 +305,7 @@
 }
 
 
-- (RDPackageResource *)resourceAtRelativePath:(NSString *)relativePath isRangeRequest:(BOOL)isRangeRequest {
+- (RDPackageResource *)resourceAtRelativePath:(NSString *)relativePath {
 	if (relativePath == nil || relativePath.length == 0) {
 		return nil;
 	}
@@ -330,51 +317,26 @@
 	}
 
 	ePub3::string s = ePub3::string(relativePath.UTF8String);
-	ePub3::ConstManifestItemPtr manifestItem = m_package->ManifestItemAtRelativePath(s);
-
-	if (manifestItem == nullptr) {
-		NSLog(@"Relative path '%@' does not have a manifest item!", relativePath);
-		return nil;
-	}
-
-	ePub3::ManifestItemPtr m = std::const_pointer_cast<ePub3::ManifestItem>(manifestItem);
-
-    // TODO: the following part of the code is still WORK IN PROGRESS.
-    //       We are currently in the middle of a refactoring process,
-    //       but we should check in to avoid losing all the other changes
-    //       that we already made. Therefore, this piece of code below should
-    //       change quite a lot in future checkins (or disappear completely).
-    
-    ePub3::ByteStreamPtr byteStream = nullptr;
-    if (isRangeRequest)
-    {
-        byteStream = m_package->GetFilterChainByteStreamRange(m);
-        if (byteStream == nullptr)
-        {
-            byteStream = m_package->GetFilterChainByteStream(m);
-        }
-    }
-    else
-    {
-        byteStream = m_package->GetFilterChainByteStream(m);
-    }
-    
+    std::unique_ptr<ePub3::ByteStream> byteStream = m_package->ReadStreamForRelativePath(s);
     if (byteStream == nullptr)
     {
-        NSLog(@"Relative path '%@' does not have a byte stream!", relativePath);
+        NSLog(@"This resource is not present in the book.");
         return nil;
     }
     
-    // ----- End of Work in Progress code (see previous comment) -----
+    ePub3::ConstManifestItemPtr manifestItem = m_package->ManifestItemAtRelativePath(s);
+    if (manifestItem == nullptr) {
+        NSLog(@"Relative path '%@' does not have a manifest item!", relativePath);
+        return nil;
+    }
     
 	RDPackageResource *resource = [[RDPackageResource alloc]
 		initWithDelegate:self
-		byteStream:byteStream.get()
+		byteStream:byteStream.release()
 		package:self
 		relativePath:relativePath];
 
 	if (resource != nil) {
-		m_byteStreamVector.push_back(std::move(byteStream));
 		const ePub3::ManifestItem::MimeType &mediaType = manifestItem->MediaType();
 		resource.mimeType = [NSString stringWithUTF8String:mediaType.c_str()];
 	}
@@ -422,5 +384,48 @@
 	return [NSString stringWithUTF8String:s.c_str()];
 }
 
+
+- (void *)getProperByteStream:(NSString *)relativePath currentByteStream:(void *)currentByteStream isRangeRequest:(BOOL)isRangeRequest {
+    if (relativePath == nil || relativePath.length == 0) {
+        return nil;
+    }
+    
+    NSRange range = [relativePath rangeOfString:@"#"];
+    
+    if (range.location != NSNotFound) {
+        relativePath = [relativePath substringToIndex:range.location];
+    }
+    ePub3::string s = ePub3::string(relativePath.UTF8String);
+    
+    ePub3::ConstManifestItemPtr manifestItem = m_package->ManifestItemAtRelativePath(s);
+    if (manifestItem == nullptr) {
+        NSLog(@"Relative path '%@' does not have a manifest item!", relativePath);
+        return nil;
+    }
+    ePub3::ManifestItemPtr m = std::const_pointer_cast<ePub3::ManifestItem>(manifestItem);
+    
+    size_t numFilters = m_package->GetFilterChainSize(m);
+    ePub3::ByteStream *byteStream = nullptr;
+    ePub3::SeekableByteStream *rawInput = dynamic_cast<ePub3::SeekableByteStream *>((ePub3::ByteStream *)currentByteStream);
+    
+    if (numFilters <= 0)
+    {
+        byteStream = (ePub3::ByteStream *) currentByteStream;
+    }
+    else if (numFilters == 1 && isRangeRequest)
+    {
+        byteStream = m_package->GetFilterChainByteStreamRange(m, rawInput).release();
+        if (byteStream == nullptr)
+        {
+            byteStream = m_package->GetFilterChainByteStream(m, rawInput).release();
+        }
+    }
+    else
+    {
+        byteStream = m_package->GetFilterChainByteStream(m, rawInput).release();
+    }
+    
+    return byteStream;
+}
 
 @end
