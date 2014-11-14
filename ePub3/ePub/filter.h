@@ -28,6 +28,7 @@
 #include <string>
 #include <functional>
 #include <memory>
+#include <ePub3/utilities/byte_stream.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -276,7 +277,9 @@ public:
     /// Subclasses should override this method if they want to specify different
     /// modes of operation.
     virtual OperatingMode GetOperatingMode() const { return OperatingMode::Standard; }
-    
+
+    virtual ByteStream::size_type BytesAvailable(SeekableByteStream *byteStream) const { return byteStream->BytesAvailable(); };
+
     ///
     /// Obtains the type-sniffer for this filter.
     virtual TypeSnifferFn TypeSniffer() const { return _sniffer; }

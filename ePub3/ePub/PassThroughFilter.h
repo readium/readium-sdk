@@ -26,6 +26,7 @@
 #include <ePub3/encryption.h>
 #include REGEX_INCLUDE
 #include <cstring>
+#import <ePub3/utilities/byte_stream.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -39,6 +40,8 @@ public:
     
     virtual void *FilterData(FilterContext *context, void *data, size_t len, size_t *outputLen) OVERRIDE;
     virtual OperatingMode GetOperatingMode() const OVERRIDE { return OperatingMode::SupportsByteRanges; }
+
+    virtual ByteStream::size_type BytesAvailable(SeekableByteStream *byteStream) const OVERRIDE;
 
     static void Register();
 

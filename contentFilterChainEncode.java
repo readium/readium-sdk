@@ -7,8 +7,8 @@ import java.io.IOException;
 
 public final class contentFilterChainEncode
 {
-    public static int BUFFER_SIZE = 1024 * 5; // kilo bytes
-    public static int PADDING_BYTES = 3;
+    public static int BUFFER_SIZE = 1024 * 11; // kilo bytes
+    public static int PADDING_BYTES = 1024 * 9; // must be less than BUFFER_SIZE
         
     public static void main(String[] args) throws Exception
     {

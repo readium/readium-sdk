@@ -45,6 +45,12 @@ FilterChainByteStreamRange::FilterChainByteStreamRange(std::unique_ptr<SeekableB
 
 ByteStream::size_type FilterChainByteStreamRange::BytesAvailable() const _NOEXCEPT
 {
+    if (m_filterNode)
+    {
+        ByteStream::size_type size = m_filterNode->first->BytesAvailable(m_input.get());
+        return size;
+    }
+
     return m_input->BytesAvailable();
 }
 
@@ -116,7 +122,9 @@ ByteStream::size_type FilterChainByteStreamRange::ReadBytes(void *bytes, size_ty
         {
             delete[] reinterpret_cast<uint8_t*>(filteredData);
         }
-        throw std::logic_error("ContentFilter::FilterData() returned no data!");
+
+        //throw std::logic_error("ContentFilter::FilterData() returned no data!");
+        return 0;
     }
     
     if (filteredData != bytes)
