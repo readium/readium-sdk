@@ -51,7 +51,9 @@ static inline
 static inline
 ::ePub3::string StringToNative(::Platform::String^ str)
 {
-	return ::ePub3::string(str->Data(), str->Length());
+	std::wstring wstr(str->Data());
+	return ::ePub3::string(wstr.c_str());
+	//return ::ePub3::string(str->Data(), str->Length());
 }
 
 static inline ::Windows::Foundation::Uri^ IRIToURI(const ::ePub3::IRI& iri)

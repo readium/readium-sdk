@@ -522,7 +522,7 @@ void __DispatchError(const std::system_error& __err)
 static inline FORCE_INLINE
 void __DispatchError(const epub_spec_error& __err)
 {
-    if ( ErrorHandler()(error_details(__err)) == false )
+     if ( ErrorHandler()(error_details(__err)) == false )
         throw __err;
 }
 
@@ -582,8 +582,8 @@ void HandleError(EPUBError __code, const char* __msg)
 }
 
 #if EPUB_PLATFORM(WIN)
-# define _THROW_WIN_ERROR_(err) HandleError(static_cast<int>(err), std::system_category())
-# define _THROW_LAST_ERROR_() _THROW_WIN_ERROR_(::GetLastError())
+#    define _THROW_WIN_ERROR_(err) HandleError(static_cast<int>(err), std::system_category())
+#    define _THROW_LAST_ERROR_() _THROW_WIN_ERROR_(::GetLastError())
 #endif
 
 EPUB3_END_NAMESPACE

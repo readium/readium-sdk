@@ -47,7 +47,7 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
 @ingroup epub-model
 */
-        class MediaOverlaysSmilModel : public std::enable_shared_from_this<MediaOverlaysSmilModel>, public OwnedBy<Package>
+        EPUB3_EXPORT class MediaOverlaysSmilModel : public std::enable_shared_from_this<MediaOverlaysSmilModel>, public OwnedBy<Package>
 #if EPUB_PLATFORM(WINRT)
 			, public NativeBridge
 #endif
@@ -63,15 +63,18 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             shared_vector<SMILData> _smilDatas;
     
+            // template <class _Function>
+            // inline FORCE_INLINE
+            // _Function ForEachSmilData(_Function __f) const
+            // {
+            //     // the _smilDatas vector iterator does not make a copy of the smart pointer (NO reference count++),
+            //     // the std::shared_ptr<SMILData> object is not passed as value, but as reference &
+            //     return std::for_each(_smilDatas.begin(), _smilDatas.end(), __f);
+            // }
             template <class _Function>
             inline FORCE_INLINE
-            _Function ForEachSmilData(_Function __f) const
-            {
-                // the _smilDatas vector iterator does not make a copy of the smart pointer (NO reference count++),
-                // the std::shared_ptr<SMILData> object is not passed as value, but as reference &
-                return std::for_each(_smilDatas.begin(), _smilDatas.end(), __f);
-            }
-    
+            _Function ForEachSmilData(_Function __f) const;
+                
         public:
             EPUB3_EXPORT
 
@@ -95,88 +98,106 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             const string & PlaybackActiveClass() const;
 
+            // EPUB3_EXPORT
+
+            // uint32_t DurationMilliseconds_Metadata() const
+            // {
+            //     return _totalDuration;
+            // }
+
+            // EPUB3_EXPORT
+
+            // const uint32_t DurationMilliseconds_Calculated() const;
+
+            // EPUB3_EXPORT
+
+            // std::vector<std::shared_ptr<SMILData>>::size_type GetSmilCount() const
+            // {
+            //     return _smilDatas.size();
+            // }
+
+            // EPUB3_EXPORT
+
+            // const std::shared_ptr<SMILData> GetSmil(std::vector<std::shared_ptr<SMILData>>::size_type i) const
+            // {
+            //     if (i >= _smilDatas.size())
+            //     {
+            //         return nullptr;
+            //     }
+
+            //     const std::shared_ptr<SMILData> smilData = _smilDatas.at(i); // does not make a copy of the smart pointer (NO reference count++)
+            //     return smilData;
+            // }
+
             EPUB3_EXPORT
-
-            uint32_t DurationMilliseconds_Metadata() const
-            {
-                return _totalDuration;
-            }
-
+            uint32_t DurationMilliseconds_Metadata() const;
+            
             EPUB3_EXPORT
-
             const uint32_t DurationMilliseconds_Calculated() const;
 
             EPUB3_EXPORT
-
-            std::vector<std::shared_ptr<SMILData>>::size_type GetSmilCount() const
-            {
-                return _smilDatas.size();
-            }
+            std::vector<std::shared_ptr<SMILData>>::size_type GetSmilCount() const;
+            
+            EPUB3_EXPORT
+            const std::shared_ptr<SMILData> GetSmil(std::vector<std::shared_ptr<SMILData>>::size_type i) const;
 
             EPUB3_EXPORT
-
-            const std::shared_ptr<SMILData> GetSmil(std::vector<std::shared_ptr<SMILData>>::size_type i) const
-            {
-                if (i >= _smilDatas.size())
-                {
-                    return nullptr;
-                }
-
-                const std::shared_ptr<SMILData> smilData = _smilDatas.at(i); // does not make a copy of the smart pointer (NO reference count++)
-                return smilData;
-            }
-
-            EPUB3_EXPORT
-
             const double PositionToPercent(std::vector<std::shared_ptr<SMILData>>::size_type  smilIndex, uint32_t parIndex, uint32_t milliseconds) const;
 
             EPUB3_EXPORT
-
             const void PercentToPosition(double percent, SMILDataPtr & smilData, uint32_t & smilIndex, shared_ptr<const SMILData::Parallel>& par, uint32_t & parIndex, uint32_t & milliseconds) const;
 
-            //EPUB3_EXPORT
+            // EPUB3_EXPORT
+            // static std::vector<string>::size_type GetSkippablesCount()
+            // {
+            //     return _Skippables.size();
+            // }
 
-            static std::vector<string>::size_type GetSkippablesCount()
-            {
-                return _Skippables.size();
-            }
+            // EPUB3_EXPORT
+            // static string GetSkippable(std::vector<string>::size_type i)
+            // {
+            //     if (i >= _Skippables.size())
+            //     {
+            //         return "";
+            //     }
 
-            //EPUB3_EXPORT
+            //     string str = _Skippables.at(i);
+            //     return str;
+            // }
 
-            static string GetSkippable(std::vector<string>::size_type i)
-            {
-                if (i >= _Skippables.size())
-                {
-                    return "";
-                }
+            // EPUB3_EXPORT
+            // static std::vector<string>::size_type GetEscapablesCount()
+            // {
+            //     return _Escapables.size();
+            // }
 
-                string str = _Skippables.at(i);
-                return str;
-            }
+            // EPUB3_EXPORT
+            // static string GetEscapable(std::vector<string>::size_type i)
+            // {
+            //     if (i >= _Escapables.size())
+            //     {
+            //         return "";
+            //     }
 
-            //EPUB3_EXPORT
+            //     string str = _Escapables.at(i);
+            //     return str;
+            // }
 
-            static std::vector<string>::size_type GetEscapablesCount()
-            {
-                return _Escapables.size();
-            }
-
-            //EPUB3_EXPORT
-
-            static string GetEscapable(std::vector<string>::size_type i)
-            {
-                if (i >= _Escapables.size())
-                {
-                    return "";
-                }
-
-                string str = _Escapables.at(i);
-                return str;
-            }
-
+            EPUB3_EXPORT
+            static std::vector<string>::size_type GetSkippablesCount();
+            
+            EPUB3_EXPORT
+            static string GetSkippable(std::vector<string>::size_type i);
+            
+            EPUB3_EXPORT
+            static std::vector<string>::size_type GetEscapablesCount();
+            
+            EPUB3_EXPORT
+            static string GetEscapable(std::vector<string>::size_type i);
+            
         private:
-            static const std::vector<string> _Skippables;
-            static const std::vector<string> _Escapables;
+            EPUB3_EXPORT static const std::vector<string> _Skippables;
+            EPUB3_EXPORT static const std::vector<string> _Escapables;
 
             bool _excludeAudioDuration;
 

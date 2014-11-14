@@ -57,7 +57,7 @@ public:
     ///
     /// A value to be returned when a real count is not possible.
     static const size_type          UnknownSize = 0;
-    
+
 public:
                              ByteStream() : _eof(false), _err(0)    {}
     virtual                 ~ByteStream()                           {}
@@ -110,7 +110,7 @@ public:
     ///
     /// Returns any error code reported by the underlying system.
     virtual int             Error()                                 const _NOEXCEPT  { return _err; }
-    
+
 protected:
     bool                    _eof;   ///< Whether the end of a finite-length data stream has been reached.
     int                     _err;   ///< Any system error which has occurred on this stream.

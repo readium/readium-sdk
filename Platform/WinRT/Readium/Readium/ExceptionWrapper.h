@@ -30,7 +30,8 @@ private:
 	typedef std::wstring_convert<std::codecvt_utf8<wchar_t>>	UTF8Converter;
 
 public:
-	__WinRTException(::Platform::Exception^ exc)
+	/*__WinRTException(::Platform::Exception^ exc)*/
+	__WinRTException(Platform::Exception^ exc)
 		: std::exception(UTF8Converter().to_bytes(exc->Message->Data(), exc->Message->Data ()+ exc->Message->Length()).c_str(), exc->HResult)
 	{}
 

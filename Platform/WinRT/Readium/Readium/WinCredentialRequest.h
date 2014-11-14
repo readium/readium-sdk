@@ -63,7 +63,8 @@ public:
 	::Platform::String^ GetItemTitle(size_t idx);
 
 	void SignalCompletion();
-	void SignalException(::Platform::Exception^ except);
+	/// !!! Commented out to pass Windows Store Cert.
+	/*void SignalException(::Platform::Exception^ except);*/
 
 };
 

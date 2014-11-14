@@ -775,10 +775,18 @@ void ZipFileByteStream::Close()
     zip_fclose(_file);
     _file = nullptr;
 }
+using namespace Platform;
 ByteStream::size_type ZipFileByteStream::ReadBytes(void *buf, size_type len)
 {
     if ( _file == nullptr )
         return 0;
+
+	int numToRead = static_cast<int>(len);
+	int bytesLeft = static_cast<int>(_file->bytes_left);
+
+	if (_file->bytes_left <= 0 || len <= 0) {
+		return 0;
+	}
     
     ssize_t numRead = zip_fread(_file, buf, len);
     if ( numRead < 0 )
@@ -788,7 +796,7 @@ ByteStream::size_type ZipFileByteStream::ReadBytes(void *buf, size_type len)
     }
 
 	_eof = (_file->bytes_left == 0);
-    
+
     return numRead;
 }
 ByteStream::size_type ZipFileByteStream::WriteBytes(const void *buf, size_type len)

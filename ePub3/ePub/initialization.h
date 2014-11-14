@@ -25,9 +25,9 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-void InitializeSdk();
+EPUB3_EXPORT void InitializeSdk();
 
-void PopulateFilterManager();
+EPUB3_EXPORT void PopulateFilterManager();
 
 EPUB3_END_NAMESPACE
 

@@ -572,7 +572,7 @@ RunLoop::Timer::Timer(Clock::time_point& fireDate, Clock::duration& interval, Ti
 	}
 
 #else
-    _handle = CreateWaitableTimer(NULL, FALSE);
+    _handle = CreateWaitableTimer(NULL, FALSE, NULL);
     if ( _handle == NULL )
         _THROW_LAST_ERROR();
 
@@ -919,7 +919,9 @@ void RunLoop::InitRunLoopTLSKey() {
 	RunLoopTLSKey = TlsAlloc();
 	if (RunLoopTLSKey == TLS_OUT_OF_INDEXES)
 	{
-		OutputDebugString(L"No TLS Indexes for RunLoop!\n");
+#ifdef _DEBUG 
+			OutputDebugString(L"No TLS Indexes for RunLoop!\n");
+#endif
 		std::terminate();
 	}
 	atexit(RunLoop::KillRunLoopTLSKey);

@@ -52,6 +52,15 @@ Container^ Container::OpenContainer(IStorageFile^ file)
 	auto native = ::ePub3::Container::OpenSynchronouslyForWinRT(StringToNative(file->Path));
 	return Wrapper(native);
 }
+
+Container^ Container::OpenContainer(Platform::String^ path)
+{
+	std::wstring wstr(path->Data());
+	ePub3::string str(wstr.c_str());
+	auto native = ::ePub3::Container::OpenSynchronouslyForWinRT(StringToNative(path));
+	return Wrapper(native);
+}
+
 Container^ Container::OpenContainerForContentModule(IStorageFile^ file)
 {
 	return Wrapper(::ePub3::Container::OpenContainerForContentModule(StringToNative(file->Path)));

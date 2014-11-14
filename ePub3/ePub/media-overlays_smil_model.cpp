@@ -763,7 +763,7 @@ public:
 //                printf("=========== TEXTREF FRAGID: %s\n", textref_fragmentID.c_str());
             }
 
-            string src_ = string(_getProp(element, "src", SMILNamespaceURI));
+			string src_ = string(_getProp(element, "src", SMILNamespaceURI));
             string src_file;
             string src_fragmentID;
             if (!src_.empty())
@@ -1239,6 +1239,71 @@ public:
                 "list-item",
                 "glossary"
         };
+
+        template <class _Function>
+        inline FORCE_INLINE
+        _Function MediaOverlaysSmilModel::ForEachSmilData(_Function __f) const
+        {
+            // the _smilDatas vector iterator does not make a copy of the smart pointer (NO reference count++),
+            // the std::shared_ptr<SMILData> object is not passed as value, but as reference &
+            return std::for_each(_smilDatas.begin(), _smilDatas.end(), __f);
+        }
+
+        uint32_t MediaOverlaysSmilModel::DurationMilliseconds_Metadata() const
+        {
+            return _totalDuration;
+        }
+
+        std::vector<std::shared_ptr<SMILData>>::size_type MediaOverlaysSmilModel::GetSmilCount() const
+        {
+            return _smilDatas.size();
+        }
+
+        const std::shared_ptr<SMILData> MediaOverlaysSmilModel::GetSmil(std::vector<std::shared_ptr<SMILData>>::size_type i) const
+        {
+            if (i >= _smilDatas.size())
+            {
+                return nullptr;
+            }
+
+            const std::shared_ptr<SMILData> smilData = _smilDatas.at(i); // does not make a copy of the smart pointer (NO reference count++)
+            return smilData;
+        }
+
+        std::vector<string>::size_type MediaOverlaysSmilModel::GetSkippablesCount()
+        {
+            return _Skippables.size();
+        }
+
+        
+        string MediaOverlaysSmilModel::GetSkippable(std::vector<string>::size_type i)
+        {
+            if (i >= _Skippables.size())
+            {
+                return "";
+            }
+
+            string str = _Skippables.at(i);
+            return str;
+        }
+
+        std::vector<string>::size_type MediaOverlaysSmilModel::GetEscapablesCount()
+        {
+            return _Escapables.size();
+        }
+
+        string MediaOverlaysSmilModel::GetEscapable(std::vector<string>::size_type i)
+        {
+            if (i >= _Escapables.size())
+            {
+                return "";
+            }
+
+            string str = _Escapables.at(i);
+            return str;
+        }
+
+
 
 
         EPUB3_END_NAMESPACE

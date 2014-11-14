@@ -59,6 +59,7 @@ Container::~Container()
 bool Container::Open(const string& path)
 {
 	_archive = Archive::Open(path.stl_str());
+	//_archive = Archive::Open(path);
 	if (_archive == nullptr)
 		throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
 	_path = path;
@@ -142,10 +143,11 @@ future<ContainerPtr> Container::OpenContainerAsync(const string& path, launch po
     if (result.wait_for(std::chrono::system_clock::duration(0)) == future_status::ready)
     {
 		ContainerPtr container = result.get();
-		if (container)
+		if (container) {
 			result = make_ready_future<ContainerPtr>(std::move(container));
-		else
-            result = async(policy, &Container::OpenContainerForContentModule, path);
+		} else {
+            // result = async(policy, &Container::OpenContainerForContentModule, path);
+        }
     }
     
     return result;
@@ -153,10 +155,12 @@ future<ContainerPtr> Container::OpenContainerAsync(const string& path, launch po
 #if EPUB_PLATFORM(WINRT)
 ContainerPtr Container::OpenSynchronouslyForWinRT(const string& path)
 {
-	auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, std::launch::deferred);
+	/*auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, std::launch::deferred);*/
+	auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, launch::deferred);
 
 	// see if it's complete with a nil value
-	if (future.wait_for(std::chrono::system_clock::duration(0)) == std::future_status::ready)
+	//if (future.wait_for(std::chrono::system_clock::duration(0)) == std::future_status::ready)
+	if (future.wait_for(std::chrono::system_clock::duration(0)) == future_status::ready)
 	{
 		ContainerPtr result = future.get();
 		if (bool(result))

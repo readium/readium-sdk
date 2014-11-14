@@ -53,6 +53,7 @@ public:
 	virtual ~Container() {}
 
 	static Container^ OpenContainer(IStorageFile^ file);
+	static Container^ OpenContainer(Platform::String^ path);
 	static IAsyncOperation<Container^>^ OpenContainerAsync(IStorageFile^ file);
 	static Container^ OpenContainerForContentModule(IStorageFile^ file);
 

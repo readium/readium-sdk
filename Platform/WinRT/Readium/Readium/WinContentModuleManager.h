@@ -25,12 +25,37 @@
 #include "WinCredentialRequest.h"
 #include "WinContainer.h"
 #include "ExceptionWrapper.h"
-#include <ePub3/content_module.h>
+#include <ePub/content_module.h>
 
 BEGIN_READIUM_API
 
 template <typename _Result, typename _NativeResult = _Result>
 static void __process_operation_completion(::Windows::Foundation::IAsyncOperation<_Result>^ operation, ::Windows::Foundation::AsyncStatus status, std::promise<_NativeResult>& promise,
+//static void __process_operation_completion(::Windows::Foundation::IAsyncOperation<_Result>^ operation, ::Windows::Foundation::AsyncStatus status, ePub3::promise<_NativeResult>& promise,
+	std::function<void()> process_result)
+{
+	using namespace ::Windows::Foundation;
+	if (status == AsyncStatus::Completed)
+	{
+		process_result();
+	}
+	else if (status == AsyncStatus::Error || operation->ErrorCode.Value != 0)
+	{
+		auto rt_exc = ref new ::Platform::COMException(operation->ErrorCode.Value);
+		promise.set_exception(std::make_exception_ptr(__WinRTException(rt_exc)));
+	}
+	else if (status == AsyncStatus::Canceled)
+	{
+		promise.set_exception(std::make_exception_ptr(std::system_error(std::make_error_code(std::errc::operation_canceled))));
+	}
+	else
+	{
+		promise.set_exception(std::make_exception_ptr(std::system_error(std::make_error_code(std::errc::state_not_recoverable))));
+	}
+}
+
+template <typename _Result, typename _NativeResult = _Result>
+static void __process_operation_completion(::Windows::Foundation::IAsyncOperation<_Result>^ operation, ::Windows::Foundation::AsyncStatus status, ePub3::promise<_NativeResult>& promise,
 	std::function<void()> process_result)
 {
 	using namespace ::Windows::Foundation;
@@ -73,15 +98,15 @@ public:
 		}
 
 	virtual
-	std::future<ePub3::ContainerPtr>
-	ProcessFile(const ::ePub3::string& path, std::launch policy = std::launch::async)
+	ePub3::future<ePub3::ContainerPtr>
+	ProcessFile(const ::ePub3::string& path, ePub3::launch policy = ePub3::launch::async)
 		{
 			using namespace ::Windows::Foundation;
 
-			if (policy == std::launch::deferred)
+			if (policy == ePub3::launch::deferred)
 			{
 				Container^ container = __winrt_->ProcessFileSync(StringFromNative(path));
-				std::promise<ePub3::ContainerPtr> __p;
+				ePub3::promise<ePub3::ContainerPtr> __p;
 				if (container)
 					__p.set_value(container->NativeObject);
 				else
@@ -107,11 +132,14 @@ public:
 	//////////////////////////////////////////////
 	// User actions
 
+	//std::future<bool>
+	//async_result<bool>
 	virtual
 	std::future<bool>
 	ApproveUserAction(const ::ePub3::UserAction& action)
 		{
 			using namespace ::Windows::Foundation;
+			//std::promise<bool> *promise = new std::promise<bool>();
 			auto promise = new std::promise<bool>();
 			auto op = __winrt_->ApproveUserAction(ref new UserAction(action));
 
@@ -126,11 +154,11 @@ public:
 		}
 
 private:
-	std::future<ePub3::ContainerPtr> ProcessFileAsyncInternal(const ePub3::string& path)
+	ePub3::future<ePub3::ContainerPtr> ProcessFileAsyncInternal(const ePub3::string& path)
 		{
 			using namespace ::Windows::Foundation;
 			auto op = __winrt_->ProcessFile(StringFromNative(path));
-			auto promise = new std::promise<::ePub3::ContainerPtr>();
+			auto promise = new ePub3::promise<::ePub3::ContainerPtr>();
 
 			op->Completed = ref new AsyncOperationCompletedHandler<Container^>([promise](IAsyncOperation<Container^>^ operation, AsyncStatus status) {
 				__process_operation_completion(operation, status, *promise, [operation, promise]() {
@@ -179,8 +207,10 @@ public:
 	{
 		using namespace ::concurrency;
 		auto __fut = _native->ProcessFile(StringToNative(path)).share();
-		return create_async([__fut]() -> Container^ {
-			return Container::Wrapper(__fut.get());
+		auto __nat = __fut.get();
+		return create_async([__fut, __nat]() -> Container^ {
+			/*return Container::Wrapper(__fut.get());*/
+			return Container::Wrapper(__nat);
 		});
 	}
 
@@ -202,8 +232,11 @@ public:
 	{
 		using namespace ::concurrency;
 		auto __fut = _native->ApproveUserAction(action->Native).share();
-		return create_async([__fut]() -> bool {
-			return __fut.get();
+		auto tmp = __fut.get();
+
+		return create_async([__fut, tmp]() -> bool {
+			//return __fut.get();
+			return tmp;
 		});
 	}
 

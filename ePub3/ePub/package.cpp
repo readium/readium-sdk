@@ -441,7 +441,7 @@ bool Package::Unpack()
 		if (version < 3)
 			isEPUB3 = false;
 	}
-
+	
     auto val = _getProp(root, "prefix", ePub3NamespaceURI);
     InstallPrefixesFromAttributeValue(val);
     
@@ -1777,7 +1777,7 @@ void Package::_CompileSpineItemTitlesInternal(const NavigationList& navPoints, s
 			{
 				std::cerr << "Exception: " << cppErr.what() << std::endl;
 				std::cerr.flush();
-#if EPUB_OS(WINDOWS)
+#if EPUB_OS(WINDOWS) && _DEBUG
 				OutputDebugStringA(_Str("Exception: ", cppErr.what()).c_str());
 #endif
 			}

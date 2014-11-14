@@ -169,10 +169,17 @@ string Node::AttributeValue(const string& name, const string& namespaceURI) cons
 	if (element == nullptr)
 		return string();
 
-	if (namespaceURI.empty())
-		return element->GetAttribute(name);
+	Platform::String^ attribute = "";
 
-	return element->GetAttributeNS(namespaceURI, name);
+	if (!namespaceURI.empty()) {
+		attribute = element->GetAttributeNS(namespaceURI, name);
+	}
+
+	if (attribute->IsEmpty()) {
+		attribute = element->GetAttribute(name);
+	}
+
+	return attribute;
 }
 std::shared_ptr<Namespace> Node::Namespace() const
 {

@@ -297,6 +297,54 @@
     <ClInclude Include="..\..\..\..\ePub3\utilities\xml_identifiable.h">
       <Filter>Source Files\utilities</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\error_handler.h">
+      <Filter>Source Files\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\future.h">
+      <Filter>Source Files\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\content_module_manager.h">
+      <Filter>Source Files\ePub\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\filter_manager.h">
+      <Filter>Source Files\ePub\Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\filter_manager_impl.h">
+      <Filter>Source Files\ePub\Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\epub_collection.h">
+      <Filter>Source Files\ePub\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\link.h">
+      <Filter>Source Files\ePub\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\path_help.h">
+      <Filter>Source Files\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\filter_chain.h">
+      <Filter>Source Files\ePub\Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\executor.h">
+      <Filter>Source Files\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\byte_buffer.h">
+      <Filter>Source Files\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\utilities\CPUCacheUtils.h">
+      <Filter>Source Files\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\media-overlays_smil_data.h">
+      <Filter>Source Files\ePub\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\media-overlays_smil_model.h">
+      <Filter>Source Files\ePub\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\media-overlays_smil_utils.h">
+      <Filter>Source Files\ePub\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ePub\initialization.h">
+      <Filter>Source Files\ePub\Library</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -637,6 +685,57 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ePub\property_holder.cpp">
       <Filter>Source Files\ePub\Components\Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\error_handler.cpp">
+      <Filter>Source Files\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fseek.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_ftell.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\future.cpp">
+      <Filter>Source Files\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\content_module_manager.cpp">
+      <Filter>Source Files\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager.cpp">
+      <Filter>Source Files\ePub\Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager_impl.cpp">
+      <Filter>Source Files\ePub\Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\epub_collection.cpp">
+      <Filter>Source Files\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\link.cpp">
+      <Filter>Source Files\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\path_help.cpp">
+      <Filter>Source Files\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_chain.cpp">
+      <Filter>Source Files\ePub\Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\executor.cpp">
+      <Filter>Source Files\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\byte_buffer.cpp">
+      <Filter>Source Files\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\CPUCacheUtils_win.cpp">
+      <Filter>Source Files\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media-overlays_smil_data.cpp">
+      <Filter>Source Files\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media-overlays_smil_model.cpp">
+      <Filter>Source Files\ePub\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\initialization.cpp">
+      <Filter>Source Files\ePub\Library</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -43,11 +43,14 @@ void ContentModuleManager::DisplayMessage(String^ title, String^ message)
 }
 IAsyncOperation<Credentials^>^ ContentModuleManager::RequestCredentialInput(CredentialRequest^ request)
 {
-	std::future<::ePub3::Credentials> future = ::ePub3::ContentModuleManager::Instance()->RequestCredentialInput(request->NativeObject);
+	ePub3::future<::ePub3::Credentials> future = ::ePub3::ContentModuleManager::Instance()->RequestCredentialInput(request->NativeObject);
+	//::ePub3::future<::ePub3::Credentials> future = ::ePub3::ContentModuleManager::Instance()->RequestCredentialInput(request->NativeObject);
 	auto shared = future.share();
+	auto tmp = shared.get();
 
-	return ::concurrency::create_async([shared]() -> Credentials^ {
-		return ref new BridgedStringToStringMapView(shared.get());
+	return ::concurrency::create_async([shared, tmp]() -> Credentials^ {
+		/*return ref new BridgedStringToStringMapView(shared.get());*/
+		return ref new BridgedStringToStringMapView(tmp);
 	});
 }
 
