@@ -159,7 +159,10 @@ ByteStream::size_type FilterChainByteStreamRange::ReadRawBytes(void *bytes, size
     if (bytesToRead == 0) return 0;
 
     size_type readBytes = m_input->ReadBytes(bytes, bytesToRead);
-    m_input->Seek(0, std::ios::seekdir::beg);
+
+    // unnecessary IO (function called many times in a row)
+    //m_input->Seek(0, std::ios::seekdir::beg);
+
     return readBytes;
 }
 

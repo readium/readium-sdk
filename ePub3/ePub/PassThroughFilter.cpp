@@ -40,7 +40,8 @@ bool PassThroughFilter::SniffPassThoughContent(ConstManifestItemPtr item)
     //printf("PASS THROUGH FILTER, MEDIA TYPE CHECK: %s\n", mediaType.c_str());
 
     // This is just for testing, feel free to configure at will.
-    return (mediaType == "audio/mp4" || mediaType == "audio/mpeg" || mediaType == "video/mp4" || mediaType == "video/mpeg");
+    //return (mediaType == "audio/mp4" || mediaType == "audio/mpeg" || mediaType == "video/mp4" || mediaType == "video/mpeg");
+    return false;
 }
 
 ContentFilterPtr PassThroughFilter::PassThroughFactory(ConstPackagePtr package)
