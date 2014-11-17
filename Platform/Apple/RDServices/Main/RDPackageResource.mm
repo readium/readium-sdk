@@ -120,45 +120,76 @@
 	
 	[self ensureProperByteStream];
 	
-	if (!m_isRangeRequest)
+	if (m_isRangeRequest)
 	{
-		NSData *prefetchedData = [self data];
-		NSUInteger prefetchedDataLength = [prefetchedData length];
-		NSUInteger adjustedLength = prefetchedDataLength < length ? prefetchedDataLength : length;
-		NSMutableData *md = [[NSMutableData alloc] initWithCapacity:adjustedLength];
-		[md appendBytes:prefetchedData.bytes length:adjustedLength];
-		return md;
-	}
+		// First, check to see if m_byteStream is a FilterChainByteStreamRange, in which case we can just
+		// use it in order to get the requested bytes from the given byte range.
+		ePub3::FilterChainByteStreamRange *filterStream = dynamic_cast<ePub3::FilterChainByteStreamRange *>(m_byteStream.get());
+		if (filterStream != nullptr)
+		{
+			ePub3::ByteRange range;
+			range.Location(m_offset);
+			NSUInteger totalRead = 0;
 
-	ePub3::FilterChainByteStreamRange *filterStream =
-		dynamic_cast<ePub3::FilterChainByteStreamRange *>(m_byteStream.get());
-
-	if (filterStream == nullptr) {
-		NSLog(@"The byte stream is not a FilterChainSyncStream!");
-	}
-	else {
-		ePub3::ByteRange range;
-		range.Location(m_offset);
-		NSUInteger totalRead = 0;
-
-		while (totalRead < length) {
-			range.Length(MIN(sizeof(m_buffer), length - totalRead));
-			std::size_t count = filterStream->ReadBytes(m_buffer, sizeof(m_buffer), range);
-			[md appendBytes:m_buffer length:count];
-			totalRead += count;
-			m_offset += count;
-			range.Location(range.Location() + count);
-			
-			if (count != range.Length()) {
+			while (totalRead < length)
+			{
+				range.Length(MIN(sizeof(m_buffer), length - totalRead));
+				std::size_t count = filterStream->ReadBytes(m_buffer, sizeof(m_buffer), range);
+				[md appendBytes:m_buffer length:count];
+				totalRead += count;
+				m_offset += count;
+				range.Location(range.Location() + count);
 				
-				//TODO: this seems to happen quite often? Is this expected?
-				NSLog(@"Did not read the expected number of bytes! (%lu %lu)",
-					count, (unsigned long)range.Length());
-				break;
+				if (count != range.Length())
+				{
+					//TODO: this seems to happen quite often? Is this expected?
+					NSLog(@"Did not read the expected number of bytes! (%lu %lu)", count, (unsigned long)range.Length());
+					break;
+				}
 			}
+			
+			return md;
 		}
-	}
+		
+		// Second, if m_byteStream is not a FilterChainByteStreamRange, then check to see if it is at least a
+		// SeekableByteStream. In that case, we can still use the seek methods in order to get the bytes for the
+		// requested byte range.
+		ePub3::SeekableByteStream *seekableByteStream = dynamic_cast<ePub3::SeekableByteStream *>(m_byteStream.get());
+		if (seekableByteStream != nullptr)
+		{
+			seekableByteStream->Seek(m_offset, std::ios::seekdir::beg);
+			NSUInteger totalRead = 0;
 
+			while (totalRead < length)
+			{
+				std::size_t toRead = MIN(sizeof(m_buffer), length - totalRead);
+				std::size_t count = seekableByteStream->ReadBytes(m_buffer, toRead);
+				if (count <= 0)
+				{
+					break;
+				}
+
+				[md appendBytes:m_buffer length:count];
+
+				totalRead += count;
+				m_offset += count;
+			}
+
+			return md;
+		}
+		
+		NSLog(@"There was a byte range request for this resource, but RDPackageResource did not contain a byte stream that allowed to extract byte ranges.");
+		NSLog(@"Returning just a buffer of bytes starting from the beginning instead.");
+	}
+	 
+	// So, either this is not a range request, or, it was a range request but the current m_byteStream
+	// is not a FilterChainByteStreamRange neither a SeekableByteStream (in which case we simply cannot
+	// extract a given byte range from the byte stream). In that case, then just return a buffer that
+	// fits in the length passed as an argument.
+	NSData *prefetchedData = [self data];
+	NSUInteger prefetchedDataLength = [prefetchedData length];
+	NSUInteger adjustedLength = prefetchedDataLength < length ? prefetchedDataLength : length;
+	[md appendBytes:prefetchedData.bytes length:adjustedLength];
 	return md;
 }
 
