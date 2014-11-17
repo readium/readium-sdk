@@ -85,26 +85,26 @@
 
 - (NSData *)readDataOfLength:(NSUInteger)length {
 	NSData *data = nil;
-
+	
 	@synchronized ([RDPackageResourceServer resourceLock]) {
-        [m_resource setOffset:m_offset]; // ensure resource has up-to-date offset before reading
+		[m_resource setOffset:m_offset]; // ensure resource has up-to-date offset before reading
 		data = [m_resource readDataOfLength:length];
 	}
-
+	
 	if (data != nil) {
 		m_offset += data.length;
 	}
-
+	
 	return data;
 }
 
 
 - (void)setOffset:(UInt64)offset {
 	m_offset = offset;
-
+	
 	@synchronized ([RDPackageResourceServer resourceLock]) {
 		[m_resource setOffset:offset];
-        m_resource.isRangeRequest = YES;
+		m_resource.isRangeRequest = YES;
 	}
 }
 

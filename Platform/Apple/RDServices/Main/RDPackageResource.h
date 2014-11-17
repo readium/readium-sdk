@@ -32,12 +32,6 @@
 @class RDPackage;
 @class RDPackageResource;
 
-@protocol RDPackageResourceDelegate <NSObject>
-
-- (void)packageResourceWillDeallocate:(RDPackageResource *)packageResource;
-
-@end
-
 @interface RDPackageResource : NSObject
 
 @property (nonatomic, readonly) void *byteStream;
@@ -45,14 +39,13 @@
 @property (nonatomic, readonly) NSData *data;
 @property (nonatomic, copy) NSString *mimeType;
 @property (nonatomic, readonly) RDPackage *package;
-@property (nonatomic) BOOL isRangeRequest;
+@property (nonatomic, assign) BOOL isRangeRequest;
 
 // The relative path associated with this resource.
 @property (nonatomic, readonly) NSString *relativePath;
 
 - (instancetype)
-	initWithDelegate:(id <RDPackageResourceDelegate>)delegate
-	byteStream:(void *)byteStream
+	initWithByteStream:(void *)byteStream
 	package:(RDPackage *)package
 	relativePath:(NSString *)relativePath;
 
