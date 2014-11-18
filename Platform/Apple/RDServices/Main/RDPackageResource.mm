@@ -204,6 +204,7 @@
 	{
 		ePub3::ByteStream *byteStream = m_byteStream.release();
 		m_byteStream.reset((ePub3::ByteStream *)[m_package getProperByteStream:m_relativePath currentByteStream:byteStream isRangeRequest:m_isRangeRequest]);
+		m_contentLength = m_byteStream->BytesAvailable();
 		m_hasProperStream = YES;
 	}
 }
