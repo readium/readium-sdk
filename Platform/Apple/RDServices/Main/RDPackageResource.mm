@@ -114,82 +114,82 @@
 
 	[self ensureProperByteStream:isRangeRequest];
 
-    ePub3::FilterChainByteStreamRange *filterStream = dynamic_cast<ePub3::FilterChainByteStreamRange *>(m_byteStream.get());
-    if (filterStream != nullptr)
-    {
-        NSMutableData *md = [[NSMutableData alloc] initWithCapacity:length];
+	ePub3::FilterChainByteStreamRange *filterStream = dynamic_cast<ePub3::FilterChainByteStreamRange *>(m_byteStream.get());
+	if (filterStream != nullptr)
+	{
+		NSMutableData *md = [[NSMutableData alloc] initWithCapacity:length];
 
-        ePub3::ByteRange range;
-        range.Location(offset);
-        NSUInteger totalRead = 0;
+		ePub3::ByteRange range;
+		range.Location(offset);
+		NSUInteger totalRead = 0;
 
-        while (totalRead < length)
-        {
-            range.Length(MIN(sizeof(m_buffer), length - totalRead));
-            std::size_t count = filterStream->ReadBytes(m_buffer, sizeof(m_buffer), range);
-            if (count == 0)
-            {
-                break;
-            }
+		while (totalRead < length)
+		{
+			range.Length(MIN(sizeof(m_buffer), length - totalRead));
+			std::size_t count = filterStream->ReadBytes(m_buffer, sizeof(m_buffer), range);
+			if (count == 0)
+			{
+				break;
+			}
 
-            [md appendBytes:m_buffer length:count];
-            totalRead += count;
-            range.Location(range.Location() + count);
+			[md appendBytes:m_buffer length:count];
+			totalRead += count;
+			range.Location(range.Location() + count);
 
-            if (count != range.Length())
-            {
-                // TODO: debug, using printf instead of NSLog because of text output priority / ordering in the console
-                //NSLog(@"READ DIFF: %lu - %lu)", count, (unsigned long)range.Length());
-                //printf("READ DIFF: %d - %d\n", count, (unsigned long)range.Length());
+			if (count != range.Length())
+			{
+				// TODO: debug, using printf instead of NSLog because of text output priority / ordering in the console
+				//NSLog(@"READ DIFF: %lu - %lu)", count, (unsigned long)range.Length());
+				//printf("READ DIFF: %d - %d\n", count, (unsigned long)range.Length());
 
-                // There may be more bytes, let's wait for zero
-                //break;
-            }
-        }
+				// There may be more bytes, let's wait for zero
+				//break;
+			}
+		}
 
-        return md;
-    }
+		return md;
+	}
 
-    // Note about HTTP consecutive chunk requests (NOT byte range, just content chunks) =>
-    // we can track the ByteStream position as it is being sequentially read,
-    // and check that the requested offset (i.e. HTTP buffered progress) is consistent with the ByteStream's internal "cursor".
+	// Note about HTTP consecutive chunk requests (NOT byte range, just content chunks) =>
+	// we can track the ByteStream position as it is being sequentially read,
+	// and check that the requested offset (i.e. HTTP buffered progress) is consistent with the ByteStream's internal "cursor".
 
-    ePub3::SeekableByteStream *seekableByteStream = dynamic_cast<ePub3::SeekableByteStream *>(m_byteStream.get());
-    if (seekableByteStream != nullptr
-        || (m_contentLength - m_byteStream->BytesAvailable()) == offset //not-seek-able-ByteStream does not expose its internal position! m_byteStream->Position()
-    )
-    {
-        NSMutableData *md = [[NSMutableData alloc] initWithCapacity:length];
+	ePub3::SeekableByteStream *seekableByteStream = dynamic_cast<ePub3::SeekableByteStream *>(m_byteStream.get());
+	if (seekableByteStream != nullptr
+		|| (m_contentLength - m_byteStream->BytesAvailable()) == offset //not-seek-able-ByteStream does not expose its internal position! m_byteStream->Position()
+	)
+	{
+		NSMutableData *md = [[NSMutableData alloc] initWithCapacity:length];
 
-        if (seekableByteStream != nullptr)
-        {
-            seekableByteStream->Seek(offset, std::ios::seekdir::beg);
-        }
+		if (seekableByteStream != nullptr)
+		{
+			seekableByteStream->Seek(offset, std::ios::seekdir::beg);
+		}
 
-        NSUInteger totalRead = 0;
+		NSUInteger totalRead = 0;
 
-        while (totalRead < length)
-        {
-            std::size_t toRead = MIN(sizeof(m_buffer), length - totalRead);
-            std::size_t count = m_byteStream->ReadBytes(m_buffer, toRead);
-            if (count == 0)
-            {
-                break;
-            }
+		while (totalRead < length)
+		{
+			std::size_t toRead = MIN(sizeof(m_buffer), length - totalRead);
+			std::size_t count = m_byteStream->ReadBytes(m_buffer, toRead);
+			if (count == 0)
+			{
+				break;
+			}
 
-            [md appendBytes:m_buffer length:count];
+			[md appendBytes:m_buffer length:count];
 
-            totalRead += count;
-        }
+			totalRead += count;
+		}
 
-        return md;
-    }
+		return md;
+	}
 
-    NSLog(@"readDataOfLength prefetchedData should never happen! %@", m_relativePath);
+	NSLog(@"readDataOfLength prefetchedData should never happen! %@", m_relativePath);
 	NSData *prefetchedData = [self readDataFull]; // Note: ensureProperByteStream was already called above.
 	NSUInteger prefetchedDataLength = [prefetchedData length];
 	NSUInteger adjustedLength = prefetchedDataLength < length ? prefetchedDataLength : length;
-    NSMutableData *md = [[NSMutableData alloc] initWithCapacity:adjustedLength];
+	NSMutableData *md = [[NSMutableData alloc] initWithCapacity:adjustedLength];
 	[md appendBytes:prefetchedData.bytes length:adjustedLength];
 	return md;
 }

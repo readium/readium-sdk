@@ -34,7 +34,7 @@
 
 @interface RDPackageResourceResponse () {
 	@private UInt64 m_offset;
-    @private  BOOL m_isRangeRequest;
+	@private  BOOL m_isRangeRequest;
 	@private RDPackageResource *m_resource;
 }
 
@@ -68,7 +68,7 @@
 
 	if (self = [super init]) {
 		m_resource = resource;
-        m_isRangeRequest = NO;
+		m_isRangeRequest = NO;
 	}
 
 	return self;
@@ -102,7 +102,7 @@
 
 - (void)setOffset:(UInt64)offset {
 	m_offset = offset;
-    m_isRangeRequest = YES;
+	m_isRangeRequest = YES;
 }
 
 
