@@ -120,7 +120,10 @@ ByteStream::size_type FilterChainByteStreamRange::ReadBytes(void *bytes, size_ty
     {
         if (filteredData != nullptr && filteredData != bytes)
         {
-            delete[] reinterpret_cast<uint8_t*>(filteredData);
+            if (filterContext != nullptr && reinterpret_cast<uint8_t*>(filteredData) != filterContext->GetCurrentTemporaryByteBuffer())
+            {
+                delete[] reinterpret_cast<uint8_t *>(filteredData);
+            }
         }
 
         //throw std::logic_error("ContentFilter::FilterData() returned no data!");
@@ -130,7 +133,11 @@ ByteStream::size_type FilterChainByteStreamRange::ReadBytes(void *bytes, size_ty
     if (filteredData != bytes)
     {
         ::memcpy_s(bytes, len, filteredData, filteredLen);
-        delete[] reinterpret_cast<uint8_t *>(filteredData);
+
+        if (filterContext != nullptr && reinterpret_cast<uint8_t*>(filteredData) != filterContext->GetCurrentTemporaryByteBuffer())
+        {
+            delete[] reinterpret_cast<uint8_t *>(filteredData);
+        }
     }
 
     return filteredLen;

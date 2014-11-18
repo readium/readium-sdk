@@ -129,8 +129,50 @@ class RangeFilterContext : public FilterContext
 {
 public:
     RangeFilterContext() : FilterContext(), m_byteStream(nullptr) { }
-    virtual ~RangeFilterContext() { }
-    
+
+    virtual ~RangeFilterContext() {
+        if (m_buffer != nullptr)
+        {
+//printf("~~~~~~ BUFFER DESTRUCTOR\n");
+            this->DestroyCurrentTemporaryByteBuffer();
+        }
+    }
+private:
+    uint8_t *m_buffer = nullptr;
+    ByteStream::size_type m_buffer_size = 0;
+
+    uint8_t * DestroyCurrentTemporaryByteBuffer()
+    {
+//printf("++++++++++ BUFFER DESTROY\n");
+        delete[] m_buffer; //reinterpret_cast<uint8_t *>(m_buffer);
+        m_buffer = nullptr;
+        m_buffer_size = 0;
+    }
+
+public:
+    uint8_t * GetCurrentTemporaryByteBuffer()
+    {
+        return m_buffer;
+    }
+
+    uint8_t * GetAllocateTemporaryByteBuffer(ByteStream::size_type bytesToRead)
+    {
+        if (m_buffer == nullptr || m_buffer_size < bytesToRead)
+        {
+            if (m_buffer != nullptr)
+            {
+printf("_____ BUFFER RE-ALLOCATE NEEDS DESTROY: %d -- %d\n", m_buffer != nullptr ? m_buffer_size : 0, bytesToRead);
+                this->DestroyCurrentTemporaryByteBuffer();
+            }
+
+//printf("==== BUFFER CREATE: %d\n", bytesToRead);
+            m_buffer = new uint8_t[bytesToRead];
+            m_buffer_size = bytesToRead;
+        }
+
+        return m_buffer;
+    }
+
     ByteRange &GetByteRange() { return m_byteRange; }
     void SetSeekableByteStream(SeekableByteStream *byteStream) { m_byteStream = byteStream; }
     SeekableByteStream *GetSeekableByteStream() const { return m_byteStream; }

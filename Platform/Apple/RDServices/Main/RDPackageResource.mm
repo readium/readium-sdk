@@ -127,15 +127,23 @@
         {
             range.Length(MIN(sizeof(m_buffer), length - totalRead));
             std::size_t count = filterStream->ReadBytes(m_buffer, sizeof(m_buffer), range);
+            if (count == 0)
+            {
+                break;
+            }
+
             [md appendBytes:m_buffer length:count];
             totalRead += count;
             range.Location(range.Location() + count);
 
             if (count != range.Length())
             {
-                //TODO: this seems to happen quite often? Is this expected?
-                NSLog(@"Did not read the expected number of bytes! (%lu %lu)", count, (unsigned long)range.Length());
-                break;
+                // TODO: debug, using printf instead of NSLog because of text output priority / ordering in the console
+                //NSLog(@"READ DIFF: %lu - %lu)", count, (unsigned long)range.Length());
+                //printf("READ DIFF: %d - %d\n", count, (unsigned long)range.Length());
+
+                // There may be more bytes, let's wait for zero
+                //break;
             }
         }
 
@@ -164,7 +172,7 @@
         {
             std::size_t toRead = MIN(sizeof(m_buffer), length - totalRead);
             std::size_t count = m_byteStream->ReadBytes(m_buffer, toRead);
-            if (count <= 0)
+            if (count == 0)
             {
                 break;
             }

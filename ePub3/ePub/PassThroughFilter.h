@@ -37,7 +37,12 @@ public:
     PassThroughFilter() : ContentFilter(SniffPassThoughContent) { }
     PassThroughFilter(const PassThroughFilter &o) : ContentFilter(o) { }
     PassThroughFilter(PassThroughFilter &&o) : ContentFilter(std::move(o)) { }
-    
+
+#ifdef SKIP_FAKE_DECRYPT_TEST // simulate decryption, see contentFilterChainEncode.java
+        ByteStream::size_type m_totalRawBytesAvailable = 0;
+        ByteStream::size_type m_totalDecryptedBytesAvailable = 0;
+#endif
+
     virtual void *FilterData(FilterContext *context, void *data, size_t len, size_t *outputLen) OVERRIDE;
     virtual OperatingMode GetOperatingMode() const OVERRIDE { return OperatingMode::SupportsByteRanges; }
 
@@ -56,8 +61,7 @@ private:
     {
     public:
         PassThroughContext() : RangeFilterContext() {}
-        virtual ~PassThroughContext() {}
-        
+        virtual ~PassThroughContext() { }
     }; // PassThroughContext class
     
 }; // PassThroughFilter class

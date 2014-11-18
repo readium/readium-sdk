@@ -42,7 +42,7 @@ bool PassThroughFilter::SniffPassThoughContent(ConstManifestItemPtr item)
     // This is just for testing, feel free to configure at will.
     bool match = (mediaType == "audio/mp4" || mediaType == "audio/mpeg" || mediaType == "video/mp4" || mediaType == "video/mpeg");
 
-    match = false;
+    //match = false;
     return match;
 }
 
@@ -59,8 +59,8 @@ ContentFilterPtr PassThroughFilter::PassThroughFactory(ConstPackagePtr package)
     // HOWEVER, a cleaner (more permanent) method is to edit the PopulateFilterManager() function in initialization.cpp,
     // and comment the call to PassThroughFilter::Register()
 
-    //return New();
-    return nullptr;
+    return New();
+    //return nullptr;
 }
 
 FilterContext *PassThroughFilter::InnerMakeFilterContext(ConstManifestItemPtr item) const
@@ -149,13 +149,15 @@ void *PassThroughFilter::FilterData(FilterContext *context, void *data, size_t l
         printf("BYTE STREAM CLOSED 1!\n");
         return nullptr;
     }
-    byteStream->Seek(0, std::ios::seekdir::beg);
-    ByteStream::size_type totalRawBytesAvailable = byteStream->BytesAvailable();
-    ByteStream::size_type totalDecryptedBytesAvailable = this->BytesAvailable(byteStream);
+
+    if (m_totalRawBytesAvailable == 0 || m_totalDecryptedBytesAvailable == 0) byteStream->Seek(0, std::ios::seekdir::beg);
+    if (m_totalRawBytesAvailable == 0) m_totalRawBytesAvailable = byteStream->BytesAvailable();
+    if (m_totalDecryptedBytesAvailable == 0) m_totalDecryptedBytesAvailable = this->BytesAvailable(byteStream);
+
 //printf("===== totalRawBytesAvailable: %d\n", totalRawBytesAvailable);
 //printf("===== totalDecryptedBytesAvailable: %d\n", totalDecryptedBytesAvailable);
 
-    ByteStream::size_type bytesToReadInDecrypted = (ByteStream::size_type)(ptContext->GetByteRange().IsFullRange() ? totalDecryptedBytesAvailable : ptContext->GetByteRange().Length());
+    ByteStream::size_type bytesToReadInDecrypted = (ByteStream::size_type)(ptContext->GetByteRange().IsFullRange() ? m_totalDecryptedBytesAvailable : ptContext->GetByteRange().Length());
     if (bytesToReadInDecrypted == 0)
     {
         return nullptr;
@@ -171,9 +173,9 @@ void *PassThroughFilter::FilterData(FilterContext *context, void *data, size_t l
 
 //printf("--- beginOffsetInRaw: %d\n", beginOffsetInRaw);
 
-    if (beginOffsetInRaw >= totalRawBytesAvailable)
+    if (beginOffsetInRaw > (m_totalRawBytesAvailable-1))
     {
-        printf("--- beginOffsetInRaw overflow!\n");
+//printf("--- beginOffsetInRaw overflow! %d - %d\n", beginOffsetInRaw, m_totalRawBytesAvailable);
         return nullptr;
     }
 
@@ -184,16 +186,16 @@ void *PassThroughFilter::FilterData(FilterContext *context, void *data, size_t l
     ByteStream::size_type accumulatedPadding_end = PADDING_BYTES * nWholeChunks_end;
     ByteStream::size_type endOffsetInRaw = endOffsetInDecrypted + accumulatedPadding_end;
 
-    if (endOffsetInRaw >= totalRawBytesAvailable)
+    if (endOffsetInRaw > (m_totalRawBytesAvailable-1))
     {
-        printf("--- endOffsetInRaw overflow!\n");
-        endOffsetInRaw = totalRawBytesAvailable - 1;
+//printf("--- endOffsetInRaw overflow! %d - %d\n", endOffsetInRaw, m_totalRawBytesAvailable);
+        endOffsetInRaw = m_totalRawBytesAvailable - 1;
     }
 
     ByteStream::size_type bytesToReadInRaw = endOffsetInRaw - beginOffsetInRaw;
 //printf("bytesToReadInRaw: %d\n", bytesToReadInRaw);
 
-    uint8_t *buffer = new uint8_t[bytesToReadInDecrypted];
+    uint8_t * buffer = ptContext->GetAllocateTemporaryByteBuffer(bytesToReadInDecrypted);
 
     ByteStream::size_type totalReadInDecrypted = 0;
     ByteStream::size_type totalReadInRaw = 0;
@@ -286,15 +288,19 @@ void *PassThroughFilter::FilterData(FilterContext *context, void *data, size_t l
     {
         bytesToRead = (ByteStream::size_type)(ptContext->GetByteRange().Length());
 
-        byteStream->Seek(0, std::ios::seekdir::beg);
-//printf("==== READ: %d - %d (%d) / %d\n", ptContext->GetByteRange().Location(), ptContext->GetByteRange().Location() + bytesToRead, bytesToRead, byteStream->BytesAvailable());
+//printf("==== READ PARTIAL: %d\n", bytesToRead);
+
+//byteStream->Seek(0, std::ios::seekdir::beg);
+//printf("==== READ: %d - %d (%d) / %d\n", ptContext->GetByteRange().Location(), ptContext->GetByteRange().Location() + bytesToRead, bytesToRead, this->BytesAvailable(byteStream));
 
         byteStream->Seek(ptContext->GetByteRange().Location(), std::ios::seekdir::beg);
     }
     else // whole file  only
     {
         byteStream->Seek(0, std::ios::seekdir::beg);
+        //bytesToRead = this->BytesAvailable(byteStream);
         bytesToRead = byteStream->BytesAvailable();
+printf("==== READ WHOLE: %d\n", bytesToRead);
     }
     
     if (bytesToRead == 0)
@@ -302,7 +308,8 @@ void *PassThroughFilter::FilterData(FilterContext *context, void *data, size_t l
         return nullptr;
     }
 
-    uint8_t *buffer = new uint8_t[bytesToRead];
+    uint8_t * buffer = ptContext->GetAllocateTemporaryByteBuffer(bytesToRead);
+
     ByteStream::size_type readBytes = byteStream->ReadBytes(buffer, bytesToRead);
 
     //byteStream->Seek(0, std::ios::seekdir::beg);
