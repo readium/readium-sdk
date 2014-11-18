@@ -37,11 +37,13 @@ EPUB3_BEGIN_NAMESPACE
 bool PassThroughFilter::SniffPassThoughContent(ConstManifestItemPtr item)
 {
     auto mediaType = item->MediaType();
-    //printf("PASS THROUGH FILTER, MEDIA TYPE CHECK: %s\n", mediaType.c_str());
+    printf("PASS THROUGH FILTER: %s\n", item->Href().c_str());
 
     // This is just for testing, feel free to configure at will.
-    //return (mediaType == "audio/mp4" || mediaType == "audio/mpeg" || mediaType == "video/mp4" || mediaType == "video/mpeg");
-    return false;
+    bool match = (mediaType == "audio/mp4" || mediaType == "audio/mpeg" || mediaType == "video/mp4" || mediaType == "video/mpeg");
+
+    match = false;
+    return match;
 }
 
 ContentFilterPtr PassThroughFilter::PassThroughFactory(ConstPackagePtr package)
@@ -50,9 +52,15 @@ ContentFilterPtr PassThroughFilter::PassThroughFactory(ConstPackagePtr package)
     // value below to be nullptr. To turn the PassThroughFilter back on, just
     // replace nullptr with New().
 
-    // HOWEVER, a better method is to edit the PopulateFilterManager() function in initialization.cpp,
+    // Alternatively (depending on testing needs), the SniffPassThoughContent() function above
+    // can return false, in which case the PassThroughFilter will be available in the FilterChain
+    // (i.e. will be invoked in the ContentFilter query loop), but will never actually be elected.
+
+    // HOWEVER, a cleaner (more permanent) method is to edit the PopulateFilterManager() function in initialization.cpp,
     // and comment the call to PassThroughFilter::Register()
-    return New();
+
+    //return New();
+    return nullptr;
 }
 
 FilterContext *PassThroughFilter::InnerMakeFilterContext(ConstManifestItemPtr item) const

@@ -409,19 +409,19 @@
 	
 	if (numFilters == 0)
 	{
-		byteStream = (ePub3::ByteStream *) currentByteStream;
+		byteStream = (ePub3::ByteStream *) currentByteStream; // is actually a SeekableByteStream
 	}
 	else if (numFilters == 1 && isRangeRequest)
 	{
-		byteStream = m_package->GetFilterChainByteStreamRange(m, rawInput).release();
+		byteStream = m_package->GetFilterChainByteStreamRange(m, rawInput).release(); // is *not* a SeekableByteStream, but wraps one
 		if (byteStream == nullptr)
 		{
-			byteStream = m_package->GetFilterChainByteStream(m, rawInput).release();
+			byteStream = m_package->GetFilterChainByteStream(m, rawInput).release(); // is *not* a SeekableByteStream, but wraps one
 		}
 	}
 	else
 	{
-		byteStream = m_package->GetFilterChainByteStream(m, rawInput).release();
+		byteStream = m_package->GetFilterChainByteStream(m, rawInput).release(); // is *not* a SeekableByteStream, but wraps one
 	}
 	
 	return byteStream;

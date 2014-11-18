@@ -182,7 +182,7 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 			bool isHTML = [ext isEqualToString:@"xhtml"] || [ext isEqualToString:@"html"] || [resource.mimeType isEqualToString:@"application/xhtml+xml"]; //[path hasSuffix:@".html"] || [path hasSuffix:@".xhtml"]
 			BOOL isXhtmlWellFormed = NO;
 			if (isHTML) {
-				NSData *data = resource.data;
+				NSData *data = [resource readDataFull];
 				if (data != nil) {
 					
 					@try
@@ -197,7 +197,7 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 						NSLog(@"XHTML parse exception: %@", ex);
 						isXhtmlWellFormed = NO;
 					}
-					
+
 					if (isXhtmlWellFormed == NO)
 					{
 						// FORCE HTML WebView parser

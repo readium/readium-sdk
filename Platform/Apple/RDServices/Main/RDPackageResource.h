@@ -36,10 +36,8 @@
 
 @property (nonatomic, readonly) void *byteStream;
 @property (nonatomic, readonly) NSUInteger contentLength;
-@property (nonatomic, readonly) NSData *data;
 @property (nonatomic, copy) NSString *mimeType;
 @property (nonatomic, readonly) RDPackage *package;
-@property (nonatomic, assign) BOOL isRangeRequest;
 
 // The relative path associated with this resource.
 @property (nonatomic, readonly) NSString *relativePath;
@@ -49,7 +47,7 @@
 	package:(RDPackage *)package
 	relativePath:(NSString *)relativePath;
 
-- (NSData *)readDataOfLength:(NSUInteger)length;
-- (void)setOffset:(UInt64)offset;
+- (NSData *)readDataFull;
+- (NSData *)readDataOfLength:(NSUInteger)length offset:(UInt64)offset isRangeRequest:(BOOL)isRangeRequest;
 
 @end
