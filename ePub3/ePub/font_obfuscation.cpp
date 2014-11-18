@@ -41,6 +41,8 @@ using namespace ::Windows::Security::Cryptography::Core;
 #include "package.h"
 #include "filter_manager.h"
 
+#include "error_handler.h"	
+
 EPUB3_BEGIN_NAMESPACE
 
 #if !EPUB_COMPILER_SUPPORTS(CXX_NONSTATIC_MEMBER_INIT) || EPUB_COMPILER(MSVC)

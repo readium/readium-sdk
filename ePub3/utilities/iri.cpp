@@ -44,7 +44,7 @@ void IRI::AddStandardScheme(const string& scheme)
     url_util::AddStandardScheme(scheme.c_str());
 }
 
-IRI::IRI(const string& iriStr) : _urnComponents(), _url(make_unique<GURL>(iriStr.stl_str())), _pureIRI(iriStr)
+IRI::IRI(const string& iriStr) : _urnComponents(), _url(ePub3::make_unique<GURL>(iriStr.stl_str())), _pureIRI(iriStr)
 {
     // is it a URN?
     if ( iriStr.find("urn:", 0, 4) == 0 )
@@ -64,7 +64,7 @@ IRI::IRI(const string& nameID, const string& namespacedString) :
     _urnComponents({gURNScheme, nameID, namespacedString}),
 #endif
     _pureIRI(_Str("urn:", nameID, ":", namespacedString)),
-    _url(make_unique<GURL>(_pureIRI.stl_str()))
+    _url(ePub3::make_unique<GURL>(_pureIRI.stl_str()))
 {
 #if !EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
     _urnComponents.push_back(gURNScheme);
@@ -87,7 +87,7 @@ IRI::IRI(const string& scheme, const string& host, const string& path, const str
     if ( !fragment.empty() )
         _pureIRI += _Str("#", fragment);
     
-    _url = make_unique<GURL>(_pureIRI.stl_str());
+    _url = ePub3::make_unique<GURL>(_pureIRI.stl_str());
 }
 IRI::~IRI()
 {
@@ -127,7 +127,7 @@ IRI& IRI::operator=(const string& str)
         }
     }
     
-    auto newURL = make_unique<GURL>(str.stl_str());
+    auto newURL = ePub3::make_unique<GURL>(str.stl_str());
     if ( !newURL->is_valid() && !isURN )
         throw std::invalid_argument(_Str("IRI: '", str, "' is not a valid URL string."));
     
