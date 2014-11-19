@@ -135,16 +135,6 @@
 			[md appendBytes:m_buffer length:count];
 			totalRead += count;
 			range.Location(range.Location() + count);
-
-			if (count != range.Length())
-			{
-				// TODO: debug, using printf instead of NSLog because of text output priority / ordering in the console
-				//NSLog(@"READ DIFF: %lu - %lu)", count, (unsigned long)range.Length());
-				//printf("READ DIFF: %d - %d\n", count, (unsigned long)range.Length());
-
-				// There may be more bytes, let's wait for zero
-				//break;
-			}
 		}
 
 		return md;
@@ -156,8 +146,7 @@
 
 	ePub3::SeekableByteStream *seekableByteStream = dynamic_cast<ePub3::SeekableByteStream *>(m_byteStream.get());
 	if (seekableByteStream != nullptr
-		|| (m_contentLength - m_byteStream->BytesAvailable()) == offset //not-seek-able-ByteStream does not expose its internal position! m_byteStream->Position()
-	)
+		|| (m_contentLength - m_byteStream->BytesAvailable()) == offset) //not-seek-able-ByteStream does not expose its internal position! m_byteStream->Position()
 	{
 		NSMutableData *md = [[NSMutableData alloc] initWithCapacity:length];
 

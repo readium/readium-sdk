@@ -62,8 +62,6 @@ ByteStream::size_type FilterChainByteStreamRange::WriteBytes(const void *bytes, 
 ByteStream::size_type FilterChainByteStreamRange::ReadBytes(void *bytes, size_type len)
 {
     ByteRange fullByteRange;
-//    fullByteRange.Location(0);
-//    fullByteRange.Length(len);
     return ReadBytes(bytes, len, fullByteRange);
 }
 
@@ -126,7 +124,6 @@ ByteStream::size_type FilterChainByteStreamRange::ReadBytes(void *bytes, size_ty
             }
         }
 
-        //throw std::logic_error("ContentFilter::FilterData() returned no data!");
         return 0;
     }
     
@@ -165,12 +162,7 @@ ByteStream::size_type FilterChainByteStreamRange::ReadRawBytes(void *bytes, size
 
     if (bytesToRead == 0) return 0;
 
-    size_type readBytes = m_input->ReadBytes(bytes, bytesToRead);
-
-    // unnecessary IO (function called many times in a row)
-    //m_input->Seek(0, std::ios::seekdir::beg);
-
-    return readBytes;
+    return m_input->ReadBytes(bytes, bytesToRead);
 }
 
 EPUB3_END_NAMESPACE

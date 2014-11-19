@@ -36,14 +36,14 @@ EPUB3_BEGIN_NAMESPACE
 
 bool PassThroughFilter::SniffPassThoughContent(ConstManifestItemPtr item)
 {
-    auto mediaType = item->MediaType();
-    printf("PASS THROUGH FILTER: %s\n", item->Href().c_str());
+	// This class can be used to test or debug a chain of filters. If you want to do so,
+	// you can use the following commented out code for doing that. The code below will make this filter
+	// apply when a media resource is being read.
+	//
+    // auto mediaType = item->MediaType();
+    // return (mediaType == "audio/mp4" || mediaType == "audio/mpeg" || mediaType == "video/mp4" || mediaType == "video/mpeg");
 
-    // This is just for testing, feel free to configure at will.
-    bool match = (mediaType == "audio/mp4" || mediaType == "audio/mpeg" || mediaType == "video/mp4" || mediaType == "video/mpeg");
-
-    //match = false;
-    return match;
+	return false;
 }
 
 ContentFilterPtr PassThroughFilter::PassThroughFactory(ConstPackagePtr package)
@@ -102,8 +102,11 @@ ByteStream::size_type PassThroughFilter::BytesAvailable(SeekableByteStream *byte
     }
 
     return sizeDecrypted - posDecrypted;
+	
 #else
+	
     return byteStream->BytesAvailable();
+	
 #endif
 }
 
@@ -130,7 +133,6 @@ void *PassThroughFilter::FilterData(FilterContext *context, void *data, size_t l
 
     if (!byteStream->IsOpen())
     {
-        printf("BYTE STREAM CLOSED ??!\n");
         return nullptr;
     }
 
@@ -287,20 +289,12 @@ void *PassThroughFilter::FilterData(FilterContext *context, void *data, size_t l
     if (!ptContext->GetByteRange().IsFullRange()) // range requests only
     {
         bytesToRead = (ByteStream::size_type)(ptContext->GetByteRange().Length());
-
-//printf("==== READ PARTIAL: %d\n", bytesToRead);
-
-//byteStream->Seek(0, std::ios::seekdir::beg);
-//printf("==== READ: %d - %d (%d) / %d\n", ptContext->GetByteRange().Location(), ptContext->GetByteRange().Location() + bytesToRead, bytesToRead, this->BytesAvailable(byteStream));
-
         byteStream->Seek(ptContext->GetByteRange().Location(), std::ios::seekdir::beg);
     }
     else // whole file  only
     {
         byteStream->Seek(0, std::ios::seekdir::beg);
-        //bytesToRead = this->BytesAvailable(byteStream);
         bytesToRead = byteStream->BytesAvailable();
-printf("==== READ WHOLE: %d\n", bytesToRead);
     }
     
     if (bytesToRead == 0)
@@ -308,12 +302,9 @@ printf("==== READ WHOLE: %d\n", bytesToRead);
         return nullptr;
     }
 
-    uint8_t * buffer = ptContext->GetAllocateTemporaryByteBuffer(bytesToRead);
+    uint8_t *buffer = ptContext->GetAllocateTemporaryByteBuffer(bytesToRead);
 
     ByteStream::size_type readBytes = byteStream->ReadBytes(buffer, bytesToRead);
-
-    //byteStream->Seek(0, std::ios::seekdir::beg);
-
     *outputLen = readBytes;
     return buffer;
 

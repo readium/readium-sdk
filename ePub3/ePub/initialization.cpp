@@ -43,7 +43,11 @@ void PopulateFilterManager()
     static std::once_flag __once;
     std::call_once(__once, []{
         FontObfuscator::Register();
-        PassThroughFilter::Register();
+		// If you want to activate the PassThroughFilter (to do testing or debugging),
+		// simply uncomment the line below. Also take a look at the file PassThroughFilter.cpp
+		// to see if the class is enabling itself.
+		//
+        // PassThroughFilter::Register();
         SwitchPreprocessor::Register();
         ObjectPreprocessor::Register();
     });
