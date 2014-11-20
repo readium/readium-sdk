@@ -43,11 +43,6 @@ class ArchiveReader;
 class ArchiveWriter;
 class ByteStream;
 
-#ifdef SUPPORT_ASYNC
-class AsyncByteStream;
-#endif /* SUPPORT_ASYNC */
-
-
 /**
  An abstract class representing a generic archive.
  
@@ -178,16 +173,6 @@ public:
      @result Returns a (managed) pointer to the resulting byte stream, or `nullptr`.
      */
     virtual unique_ptr<ByteStream> ByteStreamAtPath(const string& path) const = 0;
-
-
-#ifdef SUPPORT_ASYNC
-     /**
-     Obtains a stream to asynchronously read or write to a file within the archive.
-     @param path The path of the item to access.
-     @result Returns a (managed) pointer to the resulting byte stream, or `nullptr`.
-     */
-    virtual unique_ptr<AsyncByteStream> AsyncByteStreamAtPath(const string& path) const = 0;
-#endif /* SUPPORT_ASYNC */
 
      /**
      Obtain an object used to read data from a file within the archive.

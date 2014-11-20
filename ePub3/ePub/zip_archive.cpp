@@ -232,13 +232,6 @@ unique_ptr<ByteStream> ZipArchive::ByteStreamAtPath(const string &path) const
     return make_unique<ZipFileByteStream>(_zip, path);
 }
 
-#ifdef SUPPORT_ASYNC
-unique_ptr<AsyncByteStream> ZipArchive::AsyncByteStreamAtPath(const string& path) const
-{
-    return make_unique<AsyncZipFileByteStream>(_zip, path);
-}
-#endif /* SUPPORT_ASYNC */
-
 unique_ptr<ArchiveReader> ZipArchive::ReaderAtPath(const string & path) const
 {
     if (_zip == nullptr)

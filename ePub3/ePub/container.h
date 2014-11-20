@@ -105,13 +105,6 @@ public:
     static ContainerPtr
         OpenContainer(const string& path);
 
-#ifdef SUPPORT_ASYNC
-    ///
-    /// Asynchronously returns a new Container instance.
-    static future<ContainerPtr>
-        OpenContainerAsync(const string& path, launch policy = launch::any);
-#endif /* SUPPORT_ASYNC */
-
 	///
 	/// Synchronously creates a new container. Available for the use of ContentModule implementations only.
 	static ContainerPtr

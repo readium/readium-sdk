@@ -19,34 +19,3 @@ TEST_CASE("opening synchronously", "")
     REQUIRE(bool(container));
 }
 
-#ifdef SUPPORT_ASYNC
-TEST_CASE("opening asynchronously", "")
-{
-    future<ContainerPtr> future = Container::OpenContainerAsync(EPUB_PATH);
-    REQUIRE(future.wait_for(std::chrono::system_clock::duration(0)) != future_status::ready);
-    
-    ContainerPtr container = future.get();
-    REQUIRE(bool(container));
-    
-    container.reset();
-    
-    future = Container::OpenContainerAsync(EPUB_PATH, launch::deferred);
-    REQUIRE(future.wait_for(std::chrono::system_clock::duration(0)) == future_status::deferred);
-    
-    // should only attempt to run when get() is called
-    ::sleep(1);
-    
-    REQUIRE(future.wait_for(std::chrono::system_clock::duration(0)) == future_status::deferred);
-    
-    container = future.get();
-    REQUIRE(bool(container));
-    
-    container.reset();
-    
-    future = Container::OpenContainerAsync("bleh.epub", launch::async);
-    REQUIRE(future.wait_for(std::chrono::system_clock::duration(0)) != future_status::ready);
-    
-    REQUIRE_THROWS_AS(container = future.get(), std::invalid_argument);
-    REQUIRE(!bool(container));
-}
-#endif /* SUPPORT_ASYNC */

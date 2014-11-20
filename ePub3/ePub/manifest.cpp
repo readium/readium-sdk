@@ -273,19 +273,4 @@ unique_ptr<ByteStream> ManifestItem::Reader() const
     return container->GetArchive()->ByteStreamAtPath(AbsolutePath());
 }
 
-#ifdef SUPPORT_ASYNC
-unique_ptr<AsyncByteStream> ManifestItem::AsyncReader() const
-{
-    auto package = GetPackage();
-    if ( !package )
-        return nullptr;
-    
-    auto container = package->GetContainer();
-    if ( !container )
-        return nullptr;
-    
-    return container->GetArchive()->AsyncByteStreamAtPath(AbsolutePath());
-}
-#endif /* SUPPORT_ASYNC */
-
 EPUB3_END_NAMESPACE

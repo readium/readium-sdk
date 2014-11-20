@@ -69,49 +69,13 @@ public:
     
     // obtains a stream which can be used to read filtered bytes from the chain
 
-#ifdef SUPPORT_ASYNC
-    std::shared_ptr<AsyncByteStream> GetFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const;
-#endif /* SUPPORT_ASYNC */
-
 	std::shared_ptr<ByteStream> GetFilterChainByteStream(ConstManifestItemPtr item) const;
     std::unique_ptr<ByteStream> GetFilterChainByteStream(ConstManifestItemPtr item, ByteStream *rawInput) const;
     std::shared_ptr<ByteStream> GetFilterChainByteStreamRange(ConstManifestItemPtr item) const;
     std::unique_ptr<ByteStream> GetFilterChainByteStreamRange(ConstManifestItemPtr item, SeekableByteStream *rawInput) const;
     size_t GetFilterChainSize(ConstManifestItemPtr item) const;
     
-protected:
-
-#ifdef SUPPORT_ASYNC
-    typedef std::shared_ptr<AsyncByteStream>    ChainLink;
-
-    class ChainLinkProcessor : public PointerType<ChainLinkProcessor>
-    {
-    public:
-        ChainLinkProcessor(ContentFilterPtr filter, ChainLink input, ConstManifestItemPtr manifestItem);
-        ChainLinkProcessor(const ChainLinkProcessor& o) : _filter(o._filter), _context(o._context), _input(o._input), _output(o._output), _collectionBuffer(o._collectionBuffer) {}
-        ChainLinkProcessor(ChainLinkProcessor&& o) : _filter(std::move(o._filter)), _context(o._context), _input(std::move(o._input)), _output(std::move(o._output)) {}
-        virtual ~ChainLinkProcessor();
-        
-        virtual void SetOutputLink(ChainLink output) { _output = output; }
-        
-        virtual void ScheduleProcessor(RunLoopPtr runLoop);
-        
-    protected:
-        ContentFilterPtr                _filter;
-        std::shared_ptr<FilterContext>  _context;
-        ChainLink                       _input;
-        ChainLink                       _output;
-        ByteBuffer                      _collectionBuffer;
-        
-        ssize_t FunnelBytes();
-        
-    };
-
-	static
-	std::unique_ptr<thread_pool>		_filterThreadPool;
-#endif /* SUPPORT_ASYNC */
-
-    private:
+private:
     FilterList              _filters;
 
 };

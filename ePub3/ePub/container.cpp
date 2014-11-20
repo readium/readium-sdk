@@ -135,25 +135,6 @@ ContainerPtr Container::OpenContainer(const string &path)
 	return result;
 }
 
-#ifdef SUPPORT_ASYNC
-future<ContainerPtr> Container::OpenContainerAsync(const string& path, launch policy)
-{
-    auto result = ContentModuleManager::Instance()->LoadContentAtPath(path, policy);
-    
-    // see if it's complete with a nil value
-    if (result.wait_for(std::chrono::system_clock::duration(0)) == future_status::ready)
-    {
-		ContainerPtr container = result.get();
-		if (container)
-			result = make_ready_future<ContainerPtr>(std::move(container));
-		else
-            result = async(policy, &Container::OpenContainerForContentModule, path);
-    }
-    
-    return result;
-}
-#endif /* SUPPORT_ASYNC */
-
 #if EPUB_PLATFORM(WINRT)
 ContainerPtr Container::OpenSynchronouslyForWinRT(const string& path)
 {
