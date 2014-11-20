@@ -327,7 +327,6 @@
 	ePub3::ConstManifestItemPtr manifestItem = m_package->ManifestItemAtRelativePath(s);
 	if (manifestItem == nullptr) {
 		NSLog(@"Relative path '%@' does not have a manifest item!", relativePath);
-		return nil;
 	}
 	
 	RDPackageResource *resource = [[RDPackageResource alloc]
@@ -335,7 +334,7 @@
 								   package:self
 								   relativePath:relativePath];
 	
-	if (resource != nil) {
+	if (resource != nil && manifestItem != nullptr) {
 		const ePub3::ManifestItem::MimeType &mediaType = manifestItem->MediaType();
 		resource.mimeType = [NSString stringWithUTF8String:mediaType.c_str()];
 	}
@@ -399,7 +398,7 @@
 	ePub3::ConstManifestItemPtr manifestItem = m_package->ManifestItemAtRelativePath(s);
 	if (manifestItem == nullptr) {
 		NSLog(@"Relative path '%@' does not have a manifest item!", relativePath);
-		return nil;
+		return currentByteStream;
 	}
 	ePub3::ManifestItemPtr m = std::const_pointer_cast<ePub3::ManifestItem>(manifestItem);
 	
