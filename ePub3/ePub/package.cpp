@@ -38,6 +38,10 @@
 #include <ePub3/xml/document.h>
 #include <ePub3/xml/element.h>
 
+//#include "iri.h"
+#include <google-url/url_canon.h>
+#include <google-url/url_util.h>
+
 EPUB3_BEGIN_NAMESPACE
 
 #define _XML_OVERRIDE_SWITCHES (EPUB_USE(LIBXML2) && PROMISCUOUS_LIBXML_OVERRIDES == 0)
@@ -174,6 +178,32 @@ ConstManifestItemPtr PackageBase::ManifestItemAtRelativePath(const string& path)
 		if (item.second->AbsolutePath() == absPath)
 			return item.second;
 	}
+
+    // Edge case...
+    // before giving up, let's check for lower/upper-case percent encoding mismatch (e.g. %2B vs. %2b)
+
+    //if ( path.find("%") != std::string::npos ) SOMETIMES OPF MANIFEST ITEM HREF IS PERCENT-ESCAPED, BUT NOT HTML SRC !!
+
+    url_canon::RawCanonOutputW<256> output;
+    url_util::DecodeURLEscapeSequences(path.c_str(), static_cast<int>(path.size()), &output);
+    string path_(output.data(), output.length());
+
+    string absPath_ = _pathBase + (path_[0] == '/' ? path_.substr(1) : path_);
+    for (auto& item : _manifest)
+    {
+        string absolute = item.second->AbsolutePath();
+
+        url_canon::RawCanonOutputW<256> output_;
+        url_util::DecodeURLEscapeSequences(absolute.c_str(), static_cast<int>(absolute.size()), &output_);
+        string absolute_(output_.data(), output_.length());
+
+        if (absolute_ == absPath_)
+            return item.second;
+    }
+
+    // DEBUG
+    //printf("MISSING ManifestItemAtRelativePath %s (%s)\n", path.c_str(), absPath.c_str());
+
 	return nullptr;
 }
 shared_ptr<NavigationTable> PackageBase::NavigationTable(const string &title) const
@@ -1200,18 +1230,44 @@ shared_ptr<ManifestItem> Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRema
     
     return result;
 }
+
 unique_ptr<ByteStream> Package::ReadStreamForRelativePath(const string &path) const
 {
     return _archive->ByteStreamAtPath(_Str(_pathBase, path.stl_str()));
 }
+
+#ifdef SUPPORT_ASYNC
 shared_ptr<AsyncByteStream> Package::ContentStreamForItem(ManifestItemPtr manifestItem) const
 {
     return _filterChain->GetFilteredOutputStreamForManifestItem(manifestItem);
 }
-shared_ptr<ByteStream> Package::SyncContentStreamForItem(ManifestItemPtr manifestItem) const
+#endif /* SUPPORT_ASYNC */
+
+shared_ptr<ByteStream> Package::GetFilterChainByteStream(ManifestItemPtr manifestItem) const
 {
-	return _filterChain->GetSyncFilteredOutputStreamForManifestItem(manifestItem);
+	return _filterChain->GetFilterChainByteStream(manifestItem);
 }
+
+unique_ptr<ByteStream> Package::GetFilterChainByteStream(ManifestItemPtr manifestItem, ByteStream *rawInput) const
+{
+    return _filterChain->GetFilterChainByteStream(manifestItem, rawInput);
+}
+
+shared_ptr<ByteStream> Package::GetFilterChainByteStreamRange(ManifestItemPtr manifestItem) const
+{
+    return _filterChain->GetFilterChainByteStreamRange(manifestItem);
+}
+
+unique_ptr<ByteStream> Package::GetFilterChainByteStreamRange(ManifestItemPtr manifestItem, SeekableByteStream *rawInput) const
+{
+    return _filterChain->GetFilterChainByteStreamRange(manifestItem, rawInput);
+}
+
+size_t Package::GetFilterChainSize(ManifestItemPtr manifestItem) const
+{
+    return _filterChain->GetFilterChainSize(manifestItem);
+}
+
 const string& Package::Title(bool localized) const
 {
     IRI titleTypeIRI(MakePropertyIRI("title-type"));      // http://idpf.org/epub/vocab/package/#title-type

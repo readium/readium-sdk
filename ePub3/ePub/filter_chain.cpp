@@ -19,6 +19,8 @@
 //  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "filter_chain.h"
+#include "filter_chain_byte_stream.h"
+#include "filter_chain_byte_stream_range.h"
 #include "../ePub/manifest.h"
 #include "filter.h"
 #include "byte_buffer.h"
@@ -33,170 +35,8 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+#ifdef SUPPORT_ASYNC
 std::unique_ptr<thread_pool> FilterChain::_filterThreadPool(nullptr);
-
-class FilterChainSyncStream : public ByteStream
-{
-private:
-	typedef std::pair<ContentFilterPtr, std::unique_ptr<FilterContext>>	_FilterNode;
-
-	std::unique_ptr<ByteStream>		_input;
-	std::vector<_FilterNode>		_filters;
-
-	bool							_needs_cache;
-	ByteBuffer						_cache;
-	ByteBuffer						_read_cache;
-
-public:
-	FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem);
-	virtual ~FilterChainSyncStream() {}
-
-	virtual size_type BytesAvailable() const _NOEXCEPT OVERRIDE
-	{
-		if (_needs_cache && _input->AtEnd()) {
-			return _cache.GetBufferSize();
-		} else {
-			return _input->BytesAvailable();
-		}
-	}
-	virtual size_type SpaceAvailable() const _NOEXCEPT OVERRIDE
-	{
-		return 0;
-	}
-	virtual bool IsOpen() const _NOEXCEPT OVERRIDE
-	{
-		return _input->IsOpen();
-	}
-	virtual void Close() OVERRIDE
-	{
-		_input->Close();
-	}
-	virtual size_type ReadBytes(void* bytes, size_type len) OVERRIDE;
-	virtual size_type WriteBytes(const void* bytes, size_type len) OVERRIDE
-	{
-		throw std::system_error(std::make_error_code(std::errc::operation_not_supported));
-	}
-
-	virtual bool AtEnd() const _NOEXCEPT OVERRIDE
-	{
-		if (_needs_cache && _input->AtEnd()) {
-			return _cache.IsEmpty();
-		} else {
-			return _input->AtEnd();
-		}
-	}
-	virtual int Error() const _NOEXCEPT OVERRIDE
-	{
-		return _input->Error();
-	}
-
-private:
-	size_type ReadBytesFromCache(void* bytes, size_type len);
-	void CacheBytes();
-	size_type FilterBytes(void* bytes, size_type len);
-
-};
-
-FilterChainSyncStream::FilterChainSyncStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem)
-: _input(std::move(input)), _filters(), _needs_cache(false), _cache(), _read_cache()
-{
-	_cache.SetUsesSecureErasure();
-	_read_cache.SetUsesSecureErasure();
-
-	for (auto& filter : filters)
-	{
-		_filters.emplace_back(filter, std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem)));
-		if (filter->RequiresCompleteData() && !_needs_cache)
-			_needs_cache = true;
-	}
-}
-ByteStream::size_type FilterChainSyncStream::ReadBytes(void* bytes, size_type len)
-{
-	if (_needs_cache)
-	{
-		if (_cache.GetBufferSize() == 0 && _input->AtEnd() == false)
-			CacheBytes();
-
-		return ReadBytesFromCache(bytes, len);
-	}
-
-	if (_read_cache.GetBufferSize() > 0)
-	{
-		size_type toMove = std::min(len, _read_cache.GetBufferSize());
-		::memcpy_s(bytes, len, _read_cache.GetBytes(), toMove);
-		_read_cache.RemoveBytes(toMove);
-		return toMove;
-	}
-	else 
-	{
-		size_type result = _input->ReadBytes(bytes, len);
-		result = FilterBytes(bytes, result);
-		size_type toMove = std::min(len, _read_cache.GetBufferSize());
-		::memcpy_s(bytes, len, _read_cache.GetBytes(), toMove);
-		_read_cache.RemoveBytes(toMove);
-		return toMove;
-	}
-}
-ByteStream::size_type FilterChainSyncStream::FilterBytes(void* bytes, size_type len)
-{
-	size_type result = len;
-	ByteBuffer buf(reinterpret_cast<uint8_t*>(bytes), len);
-	buf.SetUsesSecureErasure();
-
-	for (auto& pair : _filters)
-	{
-		size_type filteredLen = 0;
-		void* filteredData = pair.first->FilterData(pair.second.get(), buf.GetBytes(), buf.GetBufferSize(), &filteredLen);
-		if (filteredData == nullptr || filteredLen == 0) {
-			if (filteredData != nullptr && filteredData != bytes)
-				delete[] reinterpret_cast<uint8_t*>(filteredData);
-			throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
-		}
-
-		if (filteredData != bytes)
-		{
-			buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), filteredLen);
-			result = filteredLen;
-			delete[] reinterpret_cast<uint8_t*>(filteredData);
-		}
-	}
-	_read_cache = std::move(buf);
-
-	return result;
-}
-ByteStream::size_type FilterChainSyncStream::ReadBytesFromCache(void* bytes, size_type len)
-{
-	size_type numToRead = std::min(len, size_type(_cache.GetBufferSize()));
-	::memcpy_s(bytes, len, _cache.GetBytes(), numToRead);
-	_cache.RemoveBytes(numToRead);
-	return numToRead;
-}
-void FilterChainSyncStream::CacheBytes()
-{
-	// read everything from the input stream
-#define _TMP_BUF_LEN 16*1024
-	uint8_t buf[_TMP_BUF_LEN] = {};
-	while (_input->AtEnd() == false)
-	{
-		size_type numRead = _input->ReadBytes(buf, _TMP_BUF_LEN);
-		if (numRead == 0)
-			break;
-		if (numRead > 0)
-			_cache.AddBytes(buf, numRead);
-	}
-
-	// filter everything completely
-	size_type filtered = FilterBytes(_cache.GetBytes(), _cache.GetBufferSize());
-
-	if (filtered > 0)
-	{
-		_cache = std::move(_read_cache);
-		_read_cache.RemoveBytes(_read_cache.GetBufferSize());
-	}
-
-	// this potentially contains decrypted data, so use secure erasure
-	_cache.SetUsesSecureErasure();
-}
 
 std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const
 {
@@ -258,22 +98,98 @@ std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifest
     // return the output pipe
     return linkPipe.second;
 }
-std::shared_ptr<ByteStream> FilterChain::GetSyncFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const
+#endif /* SUPPORT_ASYNC */
+
+std::shared_ptr<ByteStream> FilterChain::GetFilterChainByteStream(ConstManifestItemPtr item) const
 {
 	std::unique_ptr<ByteStream> rawInput = item->Reader();
 	if (rawInput->IsOpen() == false)
+    {
 		return nullptr;
-
-	std::vector<ContentFilterPtr> thisChain;
-	for (ContentFilterPtr filter : _filters)
-	{
-		if (filter->TypeSniffer()(item))
-			thisChain.push_back(filter);
-	}
-
-	return std::make_shared<FilterChainSyncStream>(std::move(rawInput), thisChain, item);
+    }
+    
+    return shared_ptr<ByteStream>(GetFilterChainByteStream(item, rawInput.release()).release());
 }
 
+std::unique_ptr<ByteStream> FilterChain::GetFilterChainByteStream(ConstManifestItemPtr item, ByteStream *rawInput) const
+{
+    std::vector<ContentFilterPtr> thisChain;
+    for (ContentFilterPtr filter : _filters)
+    {
+        if (filter->TypeSniffer()(item))
+            thisChain.push_back(filter);
+    }
+    
+    unique_ptr<ByteStream> rawInputPtr(rawInput);
+    return unique_ptr<FilterChainByteStream>(new FilterChainByteStream(std::move(rawInputPtr), thisChain, item));
+}
+
+std::shared_ptr<ByteStream> FilterChain::GetFilterChainByteStreamRange(ConstManifestItemPtr item) const
+{
+    unique_ptr<SeekableByteStream> byteStream(dynamic_cast<SeekableByteStream *>(item->Reader().release()));
+    if (!byteStream)
+    {
+        return nullptr;
+    }
+    
+    return shared_ptr<ByteStream>(GetFilterChainByteStreamRange(item, byteStream.release()).release());
+}
+
+std::unique_ptr<ByteStream> FilterChain::GetFilterChainByteStreamRange(ConstManifestItemPtr item, SeekableByteStream *rawInput) const
+{
+    unique_ptr<ByteStream> resultStream;
+    uint nFilters = 0;
+    for (ContentFilterPtr filter : _filters)
+    {
+        if (filter->TypeSniffer()(item))
+        {
+            nFilters++;
+            if (nFilters > 1)
+            {
+                continue;
+            }
+            
+            if (filter->GetOperatingMode() == ContentFilter::OperatingMode::SupportsByteRanges)
+            {
+                unique_ptr<SeekableByteStream> rawInputPtr(rawInput);
+                resultStream.reset(new FilterChainByteStreamRange(std::move(rawInputPtr), filter, item));
+            }
+        }
+    }
+    
+    if (nFilters > 1)
+    {
+        // more than one filter...abort!
+        return nullptr;
+    }
+    
+    // There are no ContentFilter classes that curretly apply.
+    // In this case, return an empty FilterChainByteStreamRange, that will simply put out raw bytes.
+    if (!resultStream)
+    {
+        unique_ptr<SeekableByteStream> rawInputPtr(rawInput);
+        resultStream.reset(new FilterChainByteStreamRange(std::move(rawInputPtr)));
+    }
+    
+    return resultStream;
+}
+
+size_t FilterChain::GetFilterChainSize(ConstManifestItemPtr item) const
+{
+    size_t numFilters = 0;
+    
+    for (ContentFilterPtr filter : _filters)
+    {
+        if (filter->TypeSniffer()(item))
+        {
+            numFilters++;
+        }
+    }
+
+    return numFilters;
+}
+
+#ifdef SUPPORT_ASYNC
 FilterChain::ChainLinkProcessor::ChainLinkProcessor(ContentFilterPtr filter, ChainLink input, ConstManifestItemPtr item)
   : _filter(filter),
     _context(filter->MakeFilterContext(item)),
@@ -282,6 +198,7 @@ FilterChain::ChainLinkProcessor::ChainLinkProcessor(ContentFilterPtr filter, Cha
     _collectionBuffer()
 {
 }
+
 FilterChain::ChainLinkProcessor::~ChainLinkProcessor()
 {
 }
@@ -325,12 +242,11 @@ void FilterChain::ChainLinkProcessor::ScheduleProcessor(RunLoopPtr runLoop)
                     size_t filteredLen = 0;
                     void* filteredData = _filter->FilterData(_context.get(), _collectionBuffer.GetBytes(), _collectionBuffer.GetBufferSize(), &filteredLen);
                     if ( filteredData == nullptr || filteredLen == 0 ) {
+                        if (filteredData != nullptr && filteredData != _collectionBuffer.GetBytes())
+                            delete[] reinterpret_cast<uint8_t*>(filteredData);
                         throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
                     }
-                    
-                    // (securely) remove all bytes from the buffer
-                    _collectionBuffer.RemoveBytes(_collectionBuffer.GetBufferSize());
-                    
+
                     // forward the data
                     uint8_t *outputData = reinterpret_cast<uint8_t*>(filteredData);
                     size_t offset = 0;
@@ -341,6 +257,12 @@ void FilterChain::ChainLinkProcessor::ScheduleProcessor(RunLoopPtr runLoop)
                         if ( offset < filteredLen )
                             std::this_thread::yield();
                     }
+
+                    if (filteredData != _collectionBuffer.GetBytes())
+                        delete[] reinterpret_cast<uint8_t*>(filteredData);
+
+                    // (securely) remove all bytes from the buffer
+                    _collectionBuffer.RemoveBytes(_collectionBuffer.GetBufferSize());
                 }
                 
                 _output->Close();
@@ -411,14 +333,14 @@ ssize_t FilterChain::ChainLinkProcessor::FunnelBytes()
             void* filteredData = _filter->FilterData(_context.get(), buf, thisChunk, &filteredLen);
             if ( filteredData == nullptr || filteredLen == 0 ) {
 				if (filteredData != nullptr && filteredData != buf)
-					delete[] reinterpret_cast<char*>(filteredData);
+					delete[] reinterpret_cast<uint8_t*>(filteredData);
                 throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
             }
 
             _output->WriteBytes(filteredData, filteredLen);
 
 			if (filteredData != buf)
-				delete[] reinterpret_cast<char*>(filteredData);
+				delete[] reinterpret_cast<uint8_t*>(filteredData);
         }
         
         bytesToMove -= thisChunk;
@@ -426,5 +348,6 @@ ssize_t FilterChain::ChainLinkProcessor::FunnelBytes()
     
     return (ssize_t)bytesToMove;
 }
+#endif /* SUPPORT_ASYNC */
 
 EPUB3_END_NAMESPACE

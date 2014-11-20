@@ -29,6 +29,10 @@
 
 #import "RDPackageResource.h"
 #import <ePub3/archive.h>
+#import <ePub3/filter.h>
+#import <ePub3/filter_chain.h>
+#import <ePub3/filter_chain_byte_stream_range.h>
+#import <ePub3/filter_chain_byte_stream.h>
 #import <ePub3/package.h>
 #import <ePub3/utilities/byte_stream.h>
 #import "RDPackage.h"
@@ -36,12 +40,12 @@
 
 @interface RDPackageResource() {
 	@private UInt8 m_buffer[4096];
-	@private ePub3::ByteStream *m_byteStream;
+	@private std::unique_ptr<ePub3::ByteStream> m_byteStream;
 	@private NSUInteger m_contentLength;
 	@private NSData *m_data;
-	@private __weak id <RDPackageResourceDelegate> m_delegate;
 	@private RDPackage *m_package;
 	@private NSString *m_relativePath;
+	@private BOOL m_hasProperStream;
 }
 
 @end
@@ -50,94 +54,143 @@
 @implementation RDPackageResource
 
 
-@synthesize byteStream = m_byteStream;
 @synthesize contentLength = m_contentLength;
 @synthesize package = m_package;
 @synthesize relativePath = m_relativePath;
 
+- (void *)byteStream {
+	return m_byteStream.get();
+}
 
-- (NSData *)data {
+- (NSData *)readDataFull {
 	if (m_data == nil) {
-		NSMutableData *md = [[NSMutableData alloc] initWithCapacity:
-			m_contentLength == 0 ? 1 : m_contentLength];
-
-		while (YES) {
+		NSMutableData *md = [[NSMutableData alloc] initWithCapacity:m_contentLength == 0 ? 1 : m_contentLength];
+		
+		[self ensureProperByteStream:NO];
+		
+		while (YES)
+		{
 			std::size_t count = m_byteStream->ReadBytes(m_buffer, sizeof(m_buffer));
-
-			if (count == 0) {
+			if (count == 0)
+			{
 				break;
 			}
-
+			
 			[md appendBytes:m_buffer length:count];
 		}
-
+		
 		m_data = md;
 	}
-
+	
 	return m_data;
 }
 
 
-- (void)dealloc {
-	[m_delegate packageResourceWillDeallocate:self];
-}
-
-
-- (instancetype)
-	initWithDelegate:(id <RDPackageResourceDelegate>)delegate
-	byteStream:(void *)byteStream
+- (instancetype)initWithByteStream:(void *)byteStream
 	package:(RDPackage *)package
 	relativePath:(NSString *)relativePath
 {
 	if (byteStream == nil || package == nil || relativePath == nil || relativePath.length == 0) {
 		return nil;
 	}
-
+	
 	if (self = [super init]) {
-		m_byteStream = (ePub3::ByteStream *)byteStream;
+		m_byteStream.reset((ePub3::ByteStream *)byteStream);
 		m_contentLength = m_byteStream->BytesAvailable();
-		m_delegate = delegate;
 		m_package = package;
 		m_relativePath = relativePath;
-
+		m_hasProperStream = NO;
+		
 		if (m_contentLength == 0) {
 			NSLog(@"The resource content length is zero! %@", m_relativePath);
 		}
 	}
-
+	
 	return self;
 }
 
 
-- (NSData *)readDataOfLength:(NSUInteger)length {
-	NSMutableData *md = [[NSMutableData alloc] initWithCapacity:length == 0 ? 1 : length];
-	NSUInteger totalRead = 0;
+- (NSData *)readDataOfLength:(NSUInteger)length offset:(UInt64)offset isRangeRequest:(BOOL)isRangeRequest {
 
-	while (totalRead < length) {
-		NSUInteger thisLength = MIN(sizeof(m_buffer), length - totalRead);
-		std::size_t count = m_byteStream->ReadBytes(m_buffer, thisLength);
-		totalRead += count;
-		[md appendBytes:m_buffer length:count];
+	[self ensureProperByteStream:isRangeRequest];
 
-		if (count != thisLength) {
-			NSLog(@"Did not read the expected number of bytes! (%lu %lu)",
-				count, (unsigned long)thisLength);
-			break;
+	ePub3::FilterChainByteStreamRange *filterStream = dynamic_cast<ePub3::FilterChainByteStreamRange *>(m_byteStream.get());
+	if (filterStream != nullptr)
+	{
+		NSMutableData *md = [[NSMutableData alloc] initWithCapacity:length];
+
+		ePub3::ByteRange range;
+		range.Location(offset);
+		NSUInteger totalRead = 0;
+
+		while (totalRead < length)
+		{
+			range.Length(MIN(sizeof(m_buffer), length - totalRead));
+			std::size_t count = filterStream->ReadBytes(m_buffer, sizeof(m_buffer), range);
+			if (count == 0)
+			{
+				break;
+			}
+
+			[md appendBytes:m_buffer length:count];
+			totalRead += count;
+			range.Location(range.Location() + count);
 		}
+
+		return md;
 	}
 
+	// Note about HTTP consecutive chunk requests (NOT byte range, just content chunks) =>
+	// we can track the ByteStream position as it is being sequentially read,
+	// and check that the requested offset (i.e. HTTP buffered progress) is consistent with the ByteStream's internal "cursor".
+
+	ePub3::SeekableByteStream *seekableByteStream = dynamic_cast<ePub3::SeekableByteStream *>(m_byteStream.get());
+	if (seekableByteStream != nullptr
+		|| (m_contentLength - m_byteStream->BytesAvailable()) == offset) //not-seek-able-ByteStream does not expose its internal position! m_byteStream->Position()
+	{
+		NSMutableData *md = [[NSMutableData alloc] initWithCapacity:length];
+
+		if (seekableByteStream != nullptr)
+		{
+			seekableByteStream->Seek(offset, std::ios::seekdir::beg);
+		}
+
+		NSUInteger totalRead = 0;
+
+		while (totalRead < length)
+		{
+			std::size_t toRead = MIN(sizeof(m_buffer), length - totalRead);
+			std::size_t count = m_byteStream->ReadBytes(m_buffer, toRead);
+			if (count == 0)
+			{
+				break;
+			}
+
+			[md appendBytes:m_buffer length:count];
+
+			totalRead += count;
+		}
+
+		return md;
+	}
+
+	NSLog(@"readDataOfLength prefetchedData should never happen! %@", m_relativePath);
+	NSData *prefetchedData = [self readDataFull]; // Note: ensureProperByteStream was already called above.
+	NSUInteger prefetchedDataLength = [prefetchedData length];
+	NSUInteger adjustedLength = prefetchedDataLength < length ? prefetchedDataLength : length;
+	NSMutableData *md = [[NSMutableData alloc] initWithCapacity:adjustedLength];
+	[md appendBytes:prefetchedData.bytes length:adjustedLength];
 	return md;
 }
 
-
-- (void)setOffset:(UInt64)offset {
-	ePub3::SeekableByteStream* seekStream = dynamic_cast<ePub3::SeekableByteStream*>(m_byteStream);
-	ePub3::ByteStream::size_type pos = seekStream->Seek(offset, std::ios::beg);
-
-	if (pos != offset) {
-		NSLog(@"Setting the byte stream offset failed! pos = %lu, offset = %llu", pos, offset);
+- (void)ensureProperByteStream:(BOOL)isRangeRequest {
+	if (!m_hasProperStream)
+	{
+		ePub3::ByteStream *byteStream = m_byteStream.release();
+		m_byteStream.reset((ePub3::ByteStream *)[m_package getProperByteStream:m_relativePath currentByteStream:byteStream isRangeRequest:isRangeRequest]);
+		m_contentLength = m_byteStream->BytesAvailable();
+		m_hasProperStream = YES;
 	}
 }
-
 
 @end

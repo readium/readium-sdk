@@ -36,6 +36,7 @@
 
 #include <ePub3/utilities/make_unique.h>
 
+#ifdef SUPPORT_ASYNC
 // I'm putting this here because it's the AsyncFileByteStream class that needs it
 #if defined(_LIBCPP_VERSION) && _LIBCPP_VERSION <= 1101
 ////////////////////////////////////////////////////////////////////////////////////
@@ -49,9 +50,11 @@ extern "C" _LIBCPP_NORETURN void __cxa_deleted_virtual()
     abort();
 }
 #endif
+#endif /* SUPPORT_ASYNC */
 
 EPUB3_BEGIN_NAMESPACE
 
+#ifdef SUPPORT_ASYNC
 std::thread         AsyncByteStream::_asyncIOThread;
 RunLoopPtr          AsyncByteStream::_asyncRunLoop(nullptr);
 std::atomic_flag    AsyncByteStream::_asyncInited;
@@ -147,6 +150,8 @@ void AsyncByteStream::Open(std::ios::openmode mode)
 }
 ByteStream::size_type AsyncByteStream::ReadBytes(void *buf, size_type len)
 {
+    if (len == 0) return 0;
+
     if ( !bool(_readbuf) )
         throw InvalidDuplexStreamOperationError("Stream not opened for reading");
     
@@ -415,6 +420,8 @@ void AsyncPipe::CounterpartClosed()
 }
 AsyncPipe::size_type AsyncPipe::ReadBytes(void *buf, size_type len)
 {
+    if (len == 0) return 0;
+
     size_type result = AsyncByteStream::ReadBytes(buf, len);
     if ( _readbuf->BytesAvailable() == 0 && _pair_closed )
     {
@@ -508,6 +515,7 @@ RunLoop::EventSourcePtr AsyncPipe::AsyncEventSource()
         }
     });
 }
+#endif /* SUPPORT_ASYNC */
 
 #if 0
 #pragma mark -
@@ -645,6 +653,8 @@ void FileByteStream::Close()
 }
 ByteStream::size_type FileByteStream::ReadBytes(void *buf, size_type len)
 {
+    if (len == 0) return 0;
+
     if ( _file == nullptr )
         return 0;
     return ::fread(buf, 1, len, _file);
@@ -753,12 +763,7 @@ bool ZipFileByteStream::IsOpen() const _NOEXCEPT
 {
     return _file != nullptr;
 }
-string ZipFileByteStream::Sanitized(const string& path) const
-{
-    if ( path.find('/') == 0 )
-        return path.substr(1);
-    return path;
-}
+
 bool ZipFileByteStream::Open(struct zip *archive, const string &path, int flags)
 {
     if ( _file != nullptr )
@@ -777,6 +782,8 @@ void ZipFileByteStream::Close()
 }
 ByteStream::size_type ZipFileByteStream::ReadBytes(void *buf, size_type len)
 {
+    if (len == 0) return 0;
+
     if ( _file == nullptr )
         return 0;
     
@@ -842,6 +849,7 @@ std::shared_ptr<SeekableByteStream> ZipFileByteStream::Clone() const
 	return result;
 }
 
+#ifdef SUPPORT_ASYNC
 #if 0
 #pragma mark -
 #endif
@@ -947,5 +955,6 @@ std::shared_ptr<SeekableByteStream> AsyncZipFileByteStream::Clone() const
 
 	return result;
 }
+#endif /* SUPPORT_ASYNC */
 
 EPUB3_END_NAMESPACE

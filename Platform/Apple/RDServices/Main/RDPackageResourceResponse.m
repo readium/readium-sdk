@@ -34,6 +34,7 @@
 
 @interface RDPackageResourceResponse () {
 	@private UInt64 m_offset;
+	@private  BOOL m_isRangeRequest;
 	@private RDPackageResource *m_resource;
 }
 
@@ -67,6 +68,7 @@
 
 	if (self = [super init]) {
 		m_resource = resource;
+		m_isRangeRequest = NO;
 	}
 
 	return self;
@@ -85,25 +87,22 @@
 
 - (NSData *)readDataOfLength:(NSUInteger)length {
 	NSData *data = nil;
-
+	
 	@synchronized ([RDPackageResourceServer resourceLock]) {
-		data = [m_resource readDataOfLength:length];
+		data = [m_resource readDataOfLength:length offset:m_offset isRangeRequest:m_isRangeRequest];
 	}
-
+	
 	if (data != nil) {
 		m_offset += data.length;
 	}
-
+	
 	return data;
 }
 
 
 - (void)setOffset:(UInt64)offset {
 	m_offset = offset;
-
-	@synchronized ([RDPackageResourceServer resourceLock]) {
-		[m_resource setOffset:offset];
-	}
+	m_isRangeRequest = YES;
 }
 
 

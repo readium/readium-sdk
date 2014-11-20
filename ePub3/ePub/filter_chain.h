@@ -32,9 +32,15 @@
 #include <algorithm>
 #include <utility>
 
+#include <ePub3/filter.h>
+//#include <ePub3/filter_chain_byte_stream.h>
+//#include <ePub3/filter_chain_byte_stream_range.h>
+
 EPUB3_BEGIN_NAMESPACE
 
 class FilterContext;
+struct ByteRange;
+
 
 class FilterChain : public PointerType<FilterChain>
 #if EPUB_PLATFORM(WINRT)
@@ -62,12 +68,22 @@ public:
     void swap(FilterChain&& __o) { _filters.swap(__o._filters); }
     
     // obtains a stream which can be used to read filtered bytes from the chain
+
+#ifdef SUPPORT_ASYNC
     std::shared_ptr<AsyncByteStream> GetFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const;
-	std::shared_ptr<ByteStream> GetSyncFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const;
+#endif /* SUPPORT_ASYNC */
+
+	std::shared_ptr<ByteStream> GetFilterChainByteStream(ConstManifestItemPtr item) const;
+    std::unique_ptr<ByteStream> GetFilterChainByteStream(ConstManifestItemPtr item, ByteStream *rawInput) const;
+    std::shared_ptr<ByteStream> GetFilterChainByteStreamRange(ConstManifestItemPtr item) const;
+    std::unique_ptr<ByteStream> GetFilterChainByteStreamRange(ConstManifestItemPtr item, SeekableByteStream *rawInput) const;
+    size_t GetFilterChainSize(ConstManifestItemPtr item) const;
     
 protected:
+
+#ifdef SUPPORT_ASYNC
     typedef std::shared_ptr<AsyncByteStream>    ChainLink;
-    
+
     class ChainLinkProcessor : public PointerType<ChainLinkProcessor>
     {
     public:
@@ -93,8 +109,9 @@ protected:
 
 	static
 	std::unique_ptr<thread_pool>		_filterThreadPool;
-    
-private:
+#endif /* SUPPORT_ASYNC */
+
+    private:
     FilterList              _filters;
 
 };

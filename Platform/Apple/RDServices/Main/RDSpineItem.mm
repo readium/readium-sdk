@@ -36,16 +36,16 @@
 	@private NSString *m_baseHref;
 	@private NSDictionary *m_dict;
 	@private NSString *m_idref;
-    @private NSString *m_linear;
+	@private NSString *m_linear;
 	@private NSString *m_mediaOverlayId;
 	@private NSString *m_mediaType;
 	@private NSString *m_pageSpread;
 	
-    @private NSString *m_renditionFlow;
-    @private NSString *m_renditionOrientation;
+	@private NSString *m_renditionFlow;
+	@private NSString *m_renditionOrientation;
 	@private NSString *m_renditionLayout;
 	@private NSString *m_renditionSpread;
-    
+
 	@private ePub3::SpineItem *m_spineItem;
 }
 
@@ -78,13 +78,13 @@
 			[dict setObject:self.baseHref forKey:@"href"];
 		}
 
-        if (self.idref != nil) {
-            [dict setObject:self.idref forKey:@"idref"];
-        }
+		if (self.idref != nil) {
+			[dict setObject:self.idref forKey:@"idref"];
+		}
 
-        if (self.linear!= nil) {
-            [dict setObject:self.linear forKey:@"linear"];
-        }
+		if (self.linear!= nil) {
+			[dict setObject:self.linear forKey:@"linear"];
+		}
 
 		if (self.mediaOverlayId != nil) {
 			[dict setObject:self.mediaOverlayId forKey:@"media_overlay_id"];
@@ -156,15 +156,15 @@
 			return nil;
 		}
 
-        bool l = m_spineItem->Linear();
-        m_linear = l ? @"yes" : @"no";
+		bool l = m_spineItem->Linear();
+		m_linear = l ? @"yes" : @"no";
 
 		m_baseHref = [[NSString alloc] initWithUTF8String:manifestItem->BaseHref().c_str()];
 		m_idref = [[NSString alloc] initWithUTF8String:m_spineItem->Idref().c_str()];
 		m_mediaOverlayId = [[NSString alloc] initWithUTF8String:manifestItem->MediaOverlayID().c_str()];
 		m_mediaType = [[NSString alloc] initWithUTF8String:manifestItem->MediaType().c_str()];
 		m_pageSpread = [self findProperty:@"page-spread" withOptionalPrefix:@"rendition"];
-        
+
 		m_renditionFlow = [self findProperty:@"flow" withPrefix:@"rendition"];
 		m_renditionOrientation = [self findProperty:@"orientation" withPrefix:@"rendition"];
 		m_renditionLayout = [self findProperty:@"layout" withPrefix:@"rendition"];

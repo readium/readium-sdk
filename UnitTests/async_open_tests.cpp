@@ -19,6 +19,7 @@ TEST_CASE("opening synchronously", "")
     REQUIRE(bool(container));
 }
 
+#ifdef SUPPORT_ASYNC
 TEST_CASE("opening asynchronously", "")
 {
     future<ContainerPtr> future = Container::OpenContainerAsync(EPUB_PATH);
@@ -48,3 +49,4 @@ TEST_CASE("opening asynchronously", "")
     REQUIRE_THROWS_AS(container = future.get(), std::invalid_argument);
     REQUIRE(!bool(container));
 }
+#endif /* SUPPORT_ASYNC */

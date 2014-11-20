@@ -32,12 +32,12 @@
 @implementation RDPackageResourceDataResponse
 
 - (NSDictionary *)httpHeaders {
-    if (self.contentType) {
-        return @{@"Content-Type": self.contentType};
-    }
-    else {
-        return @{};
-    }
+	if (self.contentType) {
+		return @{@"Content-Type": self.contentType};
+	}
+	else {
+		return @{};
+	}
 }
 
 @end

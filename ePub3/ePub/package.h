@@ -50,6 +50,7 @@ class Archive;
 class Metadata;
 class NavigationTable;
 class ByteStream;
+class SeekableByteStream;
 class Container;
 class PackageBase;
 class Package;
@@ -499,21 +500,41 @@ public:
 
     EPUB3_EXPORT
     unique_ptr<ByteStream>        ReadStreamForRelativePath(const string& path)   const;
-    
+
+#ifdef SUPPORT_ASYNC
     EPUB3_EXPORT
     shared_ptr<AsyncByteStream>     ContentStreamForItem(SpineItemPtr spineItem)    const {
         return ContentStreamForItem(spineItem->ManifestItem());
     }
     EPUB3_EXPORT
     shared_ptr<AsyncByteStream>     ContentStreamForItem(ManifestItemPtr manifestItem)  const;
+#endif /* SUPPORT_ASYNC */
 
 	EPUB3_EXPORT
-	shared_ptr<ByteStream>			SyncContentStreamForItem(SpineItemPtr spineItem)    const {
-		return SyncContentStreamForItem(spineItem->ManifestItem());
+	shared_ptr<ByteStream>			GetFilterChainByteStream(SpineItemPtr spineItem)    const {
+		return GetFilterChainByteStream(spineItem->ManifestItem());
 	}
-	EPUB3_EXPORT
-	shared_ptr<ByteStream>			SyncContentStreamForItem(ManifestItemPtr manifestItem)  const;
     
+	EPUB3_EXPORT
+	shared_ptr<ByteStream>		    GetFilterChainByteStream(ManifestItemPtr manifestItem)  const;
+    
+    EPUB3_EXPORT
+    unique_ptr<ByteStream>          GetFilterChainByteStream(ManifestItemPtr manifestItem, ByteStream *rawInput) const;
+
+	EPUB3_EXPORT
+	shared_ptr<ByteStream>			GetFilterChainByteStreamRange(SpineItemPtr spineItem)    const {
+		return GetFilterChainByteStreamRange(spineItem->ManifestItem());
+	}
+    
+	EPUB3_EXPORT
+	shared_ptr<ByteStream>			GetFilterChainByteStreamRange(ManifestItemPtr manifestItem)  const;
+    
+    EPUB3_EXPORT
+    unique_ptr<ByteStream>          GetFilterChainByteStreamRange(ManifestItemPtr manifestItem, SeekableByteStream *rawInput) const;
+    
+    EPUB3_EXPORT
+    size_t GetFilterChainSize(ManifestItemPtr manifestItem) const;
+
     /// @}
     
     /// @{

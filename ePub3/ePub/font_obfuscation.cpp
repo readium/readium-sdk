@@ -49,7 +49,7 @@ const char * const FontObfuscator::FontObfuscationAlgorithmID = "http://www.idpf
 
 const char * const kBytesFiltered = "FontObfuscator::bytesFiltered";
 
-const REGEX_NS::regex FontObfuscator::TypeCheck("(?:font/.*|application/(?:x-font-.*|vnd.ms-(?:opentype|fontobject)))");
+const REGEX_NS::regex FontObfuscator::TypeCheck("(?:font/.*|application/(?:x-font-.*|font-.*|vnd.ms-(?:opentype|fontobject)))");
 
 void * FontObfuscator::FilterData(FilterContext* context, void *data, size_t len, size_t *outputLen)
 {

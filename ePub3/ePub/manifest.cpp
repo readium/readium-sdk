@@ -217,7 +217,12 @@ bool ManifestItem::HasProperty(const std::vector<IRI>& properties) const
 EncryptionInfoPtr ManifestItem::GetEncryptionInfo() const
 {
     ContainerPtr container = GetPackage()->GetContainer();
-    return container->EncryptionInfoForPath(AbsolutePath());
+    string abs = AbsolutePath();
+    if (abs.at(0) == '/')
+    {
+        abs = abs.substr(1, abs.length()-1);
+    }
+    return container->EncryptionInfoForPath(abs);
 }
 bool ManifestItem::CanLoadDocument() const
 {
@@ -267,6 +272,8 @@ unique_ptr<ByteStream> ManifestItem::Reader() const
     
     return container->GetArchive()->ByteStreamAtPath(AbsolutePath());
 }
+
+#ifdef SUPPORT_ASYNC
 unique_ptr<AsyncByteStream> ManifestItem::AsyncReader() const
 {
     auto package = GetPackage();
@@ -279,5 +286,6 @@ unique_ptr<AsyncByteStream> ManifestItem::AsyncReader() const
     
     return container->GetArchive()->AsyncByteStreamAtPath(AbsolutePath());
 }
+#endif /* SUPPORT_ASYNC */
 
 EPUB3_END_NAMESPACE

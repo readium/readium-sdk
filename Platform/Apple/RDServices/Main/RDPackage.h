@@ -69,4 +69,11 @@
 // Returns the resource at the given relative path or nil if it doesn't exist.
 - (RDPackageResource *)resourceAtRelativePath:(NSString *)relativePath;
 
+// Gets the current Byte Stream and returns the proper Byte Stream for the case.
+// There can be three possible byte streams:
+// - A simple ZipFileByteStream when no ContentFilter objects apply for this resource.
+// - A FilterChainByteStreamRange when a Byte Range request has been made, and only one ContentFilter object applies.
+// - A FilterChainByteStream when it is not a Byte Range request or more than one ContentFilter applies.
+- (void *)getProperByteStream:(NSString *)relativePath currentByteStream:(void *)currentByteStream isRangeRequest:(BOOL)isRangeRequest;
+
 @end

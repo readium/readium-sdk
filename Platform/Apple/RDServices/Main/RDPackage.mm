@@ -38,8 +38,7 @@
 #import "RDSpineItem.h"
 
 
-@interface RDPackage() <RDPackageResourceDelegate> {
-	@private std::vector<std::unique_ptr<ePub3::ByteStream>> m_byteStreamVector;
+@interface RDPackage() {
 	@private RDMediaOverlaysSmilModel *m_mediaOverlaysSmilModel;
 	@private RDNavigationElement *m_navElemListOfFigures;
 	@private RDNavigationElement *m_navElemListOfIllustrations;
@@ -109,7 +108,7 @@
 	if (sss != nil) {
 		[dictRoot setObject:sss forKey:@"rendition_spread"];
 	}
-    
+
 	NSString *ssss = self.renditionOrientation;
 	if (ssss != nil) {
 		[dictRoot setObject:ssss forKey:@"rendition_orientation"];
@@ -260,18 +259,6 @@
 }
 
 
-- (void)packageResourceWillDeallocate:(RDPackageResource *)packageResource {
-	for (auto i = m_byteStreamVector.begin(); i != m_byteStreamVector.end(); i++) {
-		if (i->get() == packageResource.byteStream) {
-			m_byteStreamVector.erase(i);
-			return;
-		}
-	}
-
-	NSLog(@"The byte stream was not found!");
-}
-
-
 - (RDNavigationElement *)pageList {
 	if (m_navElemPageList == nil) {
 		ePub3::NavigationTable *navTable = m_package->PageList().get();
@@ -284,37 +271,37 @@
 }
 
 - (NSString *)findProperty:(NSString *)propName withOptionalPrefix:(NSString *)prefix {
-    NSString *value = [self findProperty:propName withPrefix:prefix];
-
-    if (value.length == 0) {
-        value = [self findProperty:propName withPrefix:@""];
-    }
-
-    return value;
+	NSString *value = [self findProperty:propName withPrefix:prefix];
+	
+	if (value.length == 0) {
+		value = [self findProperty:propName withPrefix:@""];
+	}
+	
+	return value;
 }
 
 
 - (NSString *)findProperty:(NSString *)propName withPrefix:(NSString *)prefix {
-    auto prop = m_package->PropertyMatching([propName UTF8String], [prefix UTF8String]);
-
-    if (prop != nullptr) {
-        return [NSString stringWithUTF8String:prop->Value().c_str()];
-    }
-
-    return @"";
+	auto prop = m_package->PropertyMatching([propName UTF8String], [prefix UTF8String]);
+	
+	if (prop != nullptr) {
+		return [NSString stringWithUTF8String:prop->Value().c_str()];
+	}
+	
+	return @"";
 }
 
 - (NSString *)renditionLayout {
-    return [self findProperty:@"layout" withPrefix:@"rendition"];
+	return [self findProperty:@"layout" withPrefix:@"rendition"];
 }
 - (NSString *)renditionFlow {
-    return [self findProperty:@"flow" withPrefix:@"rendition"];
+	return [self findProperty:@"flow" withPrefix:@"rendition"];
 }
 - (NSString *)renditionSpread {
-    return [self findProperty:@"spread" withPrefix:@"rendition"];
+	return [self findProperty:@"spread" withPrefix:@"rendition"];
 }
 - (NSString *)renditionOrientation {
-    return [self findProperty:@"orientation" withPrefix:@"rendition"];
+	return [self findProperty:@"orientation" withPrefix:@"rendition"];
 }
 
 
@@ -322,37 +309,37 @@
 	if (relativePath == nil || relativePath.length == 0) {
 		return nil;
 	}
-
+	
 	NSRange range = [relativePath rangeOfString:@"#"];
-
+	
 	if (range.location != NSNotFound) {
 		relativePath = [relativePath substringToIndex:range.location];
 	}
-
+	
 	ePub3::string s = ePub3::string(relativePath.UTF8String);
 	std::unique_ptr<ePub3::ByteStream> byteStream = m_package->ReadStreamForRelativePath(s);
-
-	if (byteStream == nullptr) {
-		NSLog(@"Relative path '%@' does not have a byte stream!", relativePath);
+	if (byteStream == nullptr)
+	{
+		NSLog(@"Relative path '%@' is not present in the book.", relativePath);
 		return nil;
 	}
-
-	RDPackageResource *resource = [[RDPackageResource alloc]
-		initWithDelegate:self
-		byteStream:byteStream.get()
-		package:self
-		relativePath:relativePath];
-
-	if (resource != nil) {
-		m_byteStreamVector.push_back(std::move(byteStream));
-		ePub3::ConstManifestItemPtr item = m_package->ManifestItemAtRelativePath(s);
-
-		if (item) {
-			const ePub3::ManifestItem::MimeType &mediaType = item->MediaType();
-			resource.mimeType = [NSString stringWithUTF8String:mediaType.c_str()];
-		}
+	
+	ePub3::ConstManifestItemPtr manifestItem = m_package->ManifestItemAtRelativePath(s);
+	if (manifestItem == nullptr) {
+		NSLog(@"Relative path '%@' does not have a manifest item!", relativePath);
+		return nil;
 	}
-
+	
+	RDPackageResource *resource = [[RDPackageResource alloc]
+								   initWithByteStream:byteStream.release()
+								   package:self
+								   relativePath:relativePath];
+	
+	if (resource != nil) {
+		const ePub3::ManifestItem::MimeType &mediaType = manifestItem->MediaType();
+		resource.mimeType = [NSString stringWithUTF8String:mediaType.c_str()];
+	}
+	
 	return resource;
 }
 
@@ -396,5 +383,48 @@
 	return [NSString stringWithUTF8String:s.c_str()];
 }
 
+
+- (void *)getProperByteStream:(NSString *)relativePath currentByteStream:(void *)currentByteStream isRangeRequest:(BOOL)isRangeRequest {
+	if (relativePath == nil || relativePath.length == 0) {
+		return nil;
+	}
+	
+	NSRange range = [relativePath rangeOfString:@"#"];
+	
+	if (range.location != NSNotFound) {
+		relativePath = [relativePath substringToIndex:range.location];
+	}
+	ePub3::string s = ePub3::string(relativePath.UTF8String);
+	
+	ePub3::ConstManifestItemPtr manifestItem = m_package->ManifestItemAtRelativePath(s);
+	if (manifestItem == nullptr) {
+		NSLog(@"Relative path '%@' does not have a manifest item!", relativePath);
+		return nil;
+	}
+	ePub3::ManifestItemPtr m = std::const_pointer_cast<ePub3::ManifestItem>(manifestItem);
+	
+	size_t numFilters = m_package->GetFilterChainSize(m);
+	ePub3::ByteStream *byteStream = nullptr;
+	ePub3::SeekableByteStream *rawInput = dynamic_cast<ePub3::SeekableByteStream *>((ePub3::ByteStream *)currentByteStream);
+	
+	if (numFilters == 0)
+	{
+		byteStream = (ePub3::ByteStream *) currentByteStream; // is actually a SeekableByteStream
+	}
+	else if (numFilters == 1 && isRangeRequest)
+	{
+		byteStream = m_package->GetFilterChainByteStreamRange(m, rawInput).release(); // is *not* a SeekableByteStream, but wraps one
+		if (byteStream == nullptr)
+		{
+			byteStream = m_package->GetFilterChainByteStream(m, rawInput).release(); // is *not* a SeekableByteStream, but wraps one
+		}
+	}
+	else
+	{
+		byteStream = m_package->GetFilterChainByteStream(m, rawInput).release(); // is *not* a SeekableByteStream, but wraps one
+	}
+	
+	return byteStream;
+}
 
 @end

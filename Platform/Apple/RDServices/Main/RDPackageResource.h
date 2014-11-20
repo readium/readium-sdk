@@ -32,17 +32,10 @@
 @class RDPackage;
 @class RDPackageResource;
 
-@protocol RDPackageResourceDelegate <NSObject>
-
-- (void)packageResourceWillDeallocate:(RDPackageResource *)packageResource;
-
-@end
-
 @interface RDPackageResource : NSObject
 
 @property (nonatomic, readonly) void *byteStream;
 @property (nonatomic, readonly) NSUInteger contentLength;
-@property (nonatomic, readonly) NSData *data;
 @property (nonatomic, copy) NSString *mimeType;
 @property (nonatomic, readonly) RDPackage *package;
 
@@ -50,12 +43,11 @@
 @property (nonatomic, readonly) NSString *relativePath;
 
 - (instancetype)
-	initWithDelegate:(id <RDPackageResourceDelegate>)delegate
-	byteStream:(void *)byteStream
+	initWithByteStream:(void *)byteStream
 	package:(RDPackage *)package
 	relativePath:(NSString *)relativePath;
 
-- (NSData *)readDataOfLength:(NSUInteger)length;
-- (void)setOffset:(UInt64)offset;
+- (NSData *)readDataFull;
+- (NSData *)readDataOfLength:(NSUInteger)length offset:(UInt64)offset isRangeRequest:(BOOL)isRangeRequest;
 
 @end

@@ -134,6 +134,8 @@ ContainerPtr Container::OpenContainer(const string &path)
 
 	return result;
 }
+
+#ifdef SUPPORT_ASYNC
 future<ContainerPtr> Container::OpenContainerAsync(const string& path, launch policy)
 {
     auto result = ContentModuleManager::Instance()->LoadContentAtPath(path, policy);
@@ -150,6 +152,8 @@ future<ContainerPtr> Container::OpenContainerAsync(const string& path, launch po
     
     return result;
 }
+#endif /* SUPPORT_ASYNC */
+
 #if EPUB_PLATFORM(WINRT)
 ContainerPtr Container::OpenSynchronouslyForWinRT(const string& path)
 {

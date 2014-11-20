@@ -25,6 +25,7 @@
 #include <ePub3/font_obfuscation.h>
 #include <ePub3/switch_preprocessor.h>
 #include <ePub3/object_preprocessor.h>
+#include <ePub3/PassThroughFilter.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -42,6 +43,11 @@ void PopulateFilterManager()
     static std::once_flag __once;
     std::call_once(__once, []{
         FontObfuscator::Register();
+		// If you want to activate the PassThroughFilter (to do testing or debugging),
+		// simply uncomment the line below. Also take a look at the file PassThroughFilter.cpp
+		// to see if the class is enabling itself.
+		//
+        // PassThroughFilter::Register();
         SwitchPreprocessor::Register();
         ObjectPreprocessor::Register();
     });
