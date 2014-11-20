@@ -133,7 +133,6 @@ public:
     virtual ~RangeFilterContext() {
         if (m_buffer != nullptr)
         {
-//printf("~~~~~~ BUFFER DESTRUCTOR\n");
             this->DestroyCurrentTemporaryByteBuffer();
         }
     }
@@ -143,7 +142,6 @@ private:
 
     uint8_t * DestroyCurrentTemporaryByteBuffer()
     {
-//printf("++++++++++ BUFFER DESTROY\n");
         delete[] m_buffer; //reinterpret_cast<uint8_t *>(m_buffer);
         m_buffer = nullptr;
         m_buffer_size = 0;
@@ -161,11 +159,9 @@ public:
         {
             if (m_buffer != nullptr)
             {
-printf("_____ BUFFER RE-ALLOCATE NEEDS DESTROY: %d -- %d\n", m_buffer != nullptr ? m_buffer_size : 0, bytesToRead);
                 this->DestroyCurrentTemporaryByteBuffer();
             }
 
-//printf("==== BUFFER CREATE: %d\n", bytesToRead);
             m_buffer = new uint8_t[bytesToRead];
             m_buffer_size = bytesToRead;
         }

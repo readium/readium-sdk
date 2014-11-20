@@ -34,14 +34,9 @@ EPUB3_BEGIN_NAMESPACE
 class PassThroughFilter : public ContentFilter, public PointerType<PassThroughFilter>
 {
 public:
-    PassThroughFilter() : ContentFilter(SniffPassThoughContent) { }
+    PassThroughFilter() : ContentFilter(SniffPassThroughContent) { }
     PassThroughFilter(const PassThroughFilter &o) : ContentFilter(o) { }
     PassThroughFilter(PassThroughFilter &&o) : ContentFilter(std::move(o)) { }
-
-#ifdef SKIP_FAKE_DECRYPT_TEST // simulate decryption, see contentFilterChainEncode.java
-        ByteStream::size_type m_totalRawBytesAvailable = 0;
-        ByteStream::size_type m_totalDecryptedBytesAvailable = 0;
-#endif
 
     virtual void *FilterData(FilterContext *context, void *data, size_t len, size_t *outputLen) OVERRIDE;
     virtual OperatingMode GetOperatingMode() const OVERRIDE { return OperatingMode::SupportsByteRanges; }
@@ -54,7 +49,7 @@ protected:
     virtual FilterContext *InnerMakeFilterContext(ConstManifestItemPtr item) const OVERRIDE;
 
 private:
-    static bool SniffPassThoughContent(ConstManifestItemPtr item);
+    static bool SniffPassThroughContent(ConstManifestItemPtr item);
     static ContentFilterPtr PassThroughFactory(ConstPackagePtr package);
     
     class PassThroughContext : public RangeFilterContext
