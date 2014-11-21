@@ -257,6 +257,8 @@ LOCAL_SRC_FILES := \
 		ePub3/ePub/encryption.cpp \
 		ePub3/ePub/epub_collection.cpp \
 		ePub3/ePub/filter_chain.cpp \
+		ePub3/ePub/filter_chain_byte_stream.cpp \
+		ePub3/ePub/filter_chain_byte_stream_range.cpp \
 		ePub3/ePub/filter_manager_impl.cpp \
 		ePub3/ePub/filter_manager.cpp \
 		ePub3/ePub/font_obfuscation.cpp \
