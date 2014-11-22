@@ -108,11 +108,23 @@ void *PassThroughFilter::FilterData(FilterContext *context, void *data, size_t l
     if (!ptContext->GetByteRange().IsFullRange()) // range requests only
     {
         bytesToRead = (ByteStream::size_type)(ptContext->GetByteRange().Length());
-        byteStream->Seek(ptContext->GetByteRange().Location(), std::ios::seekdir::beg);
+        byteStream->Seek(ptContext->GetByteRange().Location(),
+#if EPUB_OS(ANDROID)
+std::ios::beg
+#else
+std::ios::seekdir::beg
+#endif
+        );
     }
     else // whole file  only
     {
-        byteStream->Seek(0, std::ios::seekdir::beg);
+        byteStream->Seek(0,
+#if EPUB_OS(ANDROID)
+std::ios::beg
+#else
+std::ios::seekdir::beg
+#endif
+        );
         bytesToRead = byteStream->BytesAvailable();
     }
     

@@ -147,12 +147,24 @@ ByteStream::size_type FilterChainByteStreamRange::ReadRawBytes(void *bytes, size
     size_type bytesToRead = 0;
     if (!byteRange.IsFullRange())
     {
-        m_input->Seek(byteRange.Location(), std::ios::seekdir::beg);
+        m_input->Seek(byteRange.Location(),
+#if EPUB_OS(ANDROID)
+std::ios::beg
+#else
+std::ios::seekdir::beg
+#endif
+            );
         bytesToRead = std::min(len, (size_type)byteRange.Length());
     }
     else
     {
-        m_input->Seek(0, std::ios::seekdir::beg);
+        m_input->Seek(0,
+#if EPUB_OS(ANDROID)
+std::ios::beg
+#else
+std::ios::seekdir::beg
+#endif
+        );
         if (m_input->BytesAvailable() > len)
         {
             return 0; // Buffer is not big enough to take the entire file.
