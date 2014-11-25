@@ -622,12 +622,13 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetSpineIte
     	jstring pageSpread = toJstring(env, _page_spread);
     	ePub3::string _renditionLayout = getProperty((&*PCKG(pckgPtr)), (char *) "layout", (char *) "rendition", (&*spine));
     	jstring renditionLayout = env->NewStringUTF(_renditionLayout.c_str());
-
+        bool lnr = spine->Linear();
+        jboolean linear = (jboolean) lnr;
     	ePub3::string _media_overlay_id = manifestItem->MediaOverlayID();
     	jstring media_overlay_id = env->NewStringUTF(_media_overlay_id.c_str());
 
     	jobject spineItem = env->CallStaticObjectMethod(javaJavaObjectsFactoryClass, createSpineItem_ID,
-    			idRef, title, href, mediaType, pageSpread, renditionLayout, media_overlay_id);
+    			idRef, title, href, mediaType, pageSpread, renditionLayout, linear, media_overlay_id);
 
 		env->CallStaticVoidMethod(javaJavaObjectsFactoryClass, addSpineItemToList_ID,
 				spineItemList, spineItem);

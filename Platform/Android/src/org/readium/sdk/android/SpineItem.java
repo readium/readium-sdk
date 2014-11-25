@@ -26,10 +26,11 @@ public class SpineItem {
 	private String mediaType;
 	private String pageSpread;
 	private String renditionLayout;
+    private boolean linear;
 	private String media_overlay_id;
 	
 	public SpineItem(String idRef, String title, String href, String mediaType, 
-			String pageSpread, String renditionLayout, String media_overlay_id) {
+			String pageSpread, String renditionLayout, boolean linear, String media_overlay_id) {
 		
 		this.idRef = idRef;
 		this.title = title;
@@ -37,6 +38,7 @@ public class SpineItem {
 		this.mediaType = mediaType;
 		this.pageSpread = pageSpread;
 		this.renditionLayout = renditionLayout;
+        this.linear = linear;
 		this.media_overlay_id = media_overlay_id;
 	}
 	
@@ -63,14 +65,18 @@ public class SpineItem {
 	public String getRenditionLayout() {
 		return renditionLayout;
 	}
-	
-	public boolean isFixedLayout() {
+
+    public boolean isLinear() {
+        return linear;
+    }
+
+    public boolean isFixedLayout() {
 		return "pre-paginated".equals(renditionLayout);
 	}
 
 	public JSONObject toJSON() throws JSONException {
 		return new JSONObject().put("href", href).put("media_type", mediaType).put("page_spread", pageSpread).
-				put("idref", idRef).put("rendition_layout", renditionLayout).put("media_overlay_id", media_overlay_id);
+				put("idref", idRef).put("rendition_layout", renditionLayout).put("linear", linear ? "yes": "no").put("media_overlay_id", media_overlay_id);
 	}
 
 }
