@@ -2,12 +2,12 @@
 <launchConfiguration type="org.eclipse.ui.externaltools.ProgramBuilderLaunchConfigurationType">
 <stringAttribute key="org.eclipse.debug.core.ATTR_REFRESH_SCOPE" value="${working_set:&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;resources&gt;&#10;&lt;item path=&quot;/ePub3-Library/jni&quot; type=&quot;2&quot;/&gt;&#10;&lt;item path=&quot;/ePub3-Library/src&quot; type=&quot;2&quot;/&gt;&#10;&lt;/resources&gt;}"/>
 <mapAttribute key="org.eclipse.debug.core.environmentVariables">
-<mapEntry key="ANDROID_NDK" value="/Library/Developer/android-ndk-r9d"/>
+<mapEntry key="ANDROID_NDK" value="/Applications/android-ndk-r10c"/>
 </mapAttribute>
 <booleanAttribute key="org.eclipse.debug.ui.ATTR_LAUNCH_IN_BACKGROUND" value="false"/>
 <booleanAttribute key="org.eclipse.ui.externaltools.ATTR_BUILDER_ENABLED" value="false"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${workspace_loc:/ePub3-Library/ndk-compile.sh}"/>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_RUN_BUILD_KINDS" value="incremental,auto,"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_RUN_BUILD_KINDS" value="incremental,"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="build-debug"/>
 <booleanAttribute key="org.eclipse.ui.externaltools.ATTR_TRIGGERS_CONFIGURED" value="true"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${workspace_loc:/ePub3-Library}"/>
