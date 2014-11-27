@@ -58,8 +58,8 @@ public abstract class JavaObjectsFactory {
 	 */
 	@SuppressWarnings("unused")
 	private static SpineItem createSpineItem(String idRef, String title, String href, String mediaType,
-			String pageSpread, String renditionLayout, boolean linear, String media_overlay_id) {
-		return new SpineItem(idRef, title, href, mediaType, pageSpread, renditionLayout, linear, media_overlay_id);
+			String pageSpread, String renditionLayout, String renditionFlow, String renditionOrientation, String renditionSpread, boolean linear, String media_overlay_id) {
+		return new SpineItem(idRef, title, href, mediaType, pageSpread, renditionLayout, renditionFlow, renditionOrientation, renditionSpread, linear, media_overlay_id);
 	}
 
 	/**
