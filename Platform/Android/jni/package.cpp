@@ -721,7 +721,8 @@ JNIEXPORT jint JNICALL Java_org_readium_sdk_android_Package_nativeGetArchiveInfo
     return (jint) archiveInfo.UncompressedSize();
 }
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeInputStreamForRelativePath
-		(JNIEnv* env, jobject thiz, jlong pckgPtr, jlong contnrPtr, jstring jrelativePath) {
+		(JNIEnv* env, jobject thiz, jlong pckgPtr, jlong contnrPtr, jstring jrelativePath, jboolean jIsRangeRequest)
+{
 	char *relativePath = (char *) env->GetStringUTFChars(jrelativePath, NULL);
 	LOGI("Package.nativeInputStreamForRelativePath(): received relative path '%s'", relativePath);
 	auto basePath = ePub3::string(PCKG(pckgPtr)->BasePath());
@@ -735,8 +736,32 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeInputStream
         LOGE("Package.nativeInputStreamForRelativePath(): no archive found for path '%s'", path.c_str());
         return NULL;
     }
+
+    unique_ptr<ePub3::ByteStream> byteStream;
     auto archiveInfo = archive->InfoAtPath(path);
-    auto byteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
+    if (jIsRangeRequest == JNI_TRUE)
+    {
+    	// TODO: For the time being, return a ZipFileByteStream.
+    	// The reason for that is that the current code in EpubServer tries to answer
+    	// a range request by doing a SeekableByteStream::Seek() from the beginning of
+    	// the file, and it is as far as it goes in terms of fulfilling a range request.
+    	// In a later change, we should modify EpubServer to actually use byte ranges,
+    	// and then this part of the code should switch to return a FilterChainByteStreamRange object.
+    	byteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
+    }
+    else
+    {
+    	// TODO: We can reduce all this code here if we modify ResourceStream to
+    	// store the reference to the ByteStream as a shared_ptr, not as an unique_ptr.
+    	// Package::GetFilterChainByteStream(ManifestItemPtr) returns a shared_ptr,
+    	// but ResourceStream expects an unique_ptr. I have not changed ResourceStream
+    	// because I'm running against time and I'm trying to minimize the code churn
+    	// at this point.
+		auto rawInputbyteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
+		ePub3::ConstManifestItemPtr manifestItem = PCKG(pckgPtr)->ManifestItemAtRelativePath(path);
+		ePub3::ManifestItemPtr m = std::const_pointer_cast<ePub3::ManifestItem>(manifestItem);
+		byteStream = PCKG(pckgPtr)->GetFilterChainByteStream(m, rawInputbyteStream);
+    }
     ResourceStream *stream = new ResourceStream(byteStream);
 
     jobject inputStream = javaResourceInputStream_createResourceInputStream(env, stream, (int) archiveInfo.UncompressedSize());

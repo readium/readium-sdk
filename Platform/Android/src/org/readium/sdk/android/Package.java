@@ -392,10 +392,11 @@ public class Package {
 	/**
 	 * Create an InputStream that .
 	 * @param relativePath the location of the resource to load
+	 * @param isRangeRequest if this is a range request or not
 	 * @return the InputStream. If no data is retrieved, the InputStream is null.
 	 */
-	public InputStream getInputStream(String relativePath) {
-		return nativeInputStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath);
+	public InputStream getInputStream(String relativePath, boolean isRangeRequest) {
+		return nativeInputStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath, isRangeRequest);
 	}
 
 	/**
@@ -482,7 +483,7 @@ public class Package {
 	 * Content 
 	 */
 	private native InputStream nativeInputStreamForRelativePath(long nativePtr, 
-			long containerPtr, String relativePath);
+			long containerPtr, String relativePath, boolean isRangeRequest);
 	
 	private native int nativeGetArchiveInfoSize(long nativePtr, 
 			long containerPtr, String relativePath);
