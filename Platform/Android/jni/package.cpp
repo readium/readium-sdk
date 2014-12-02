@@ -760,11 +760,11 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeInputStream
 		auto rawInputbyteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
 		ePub3::ConstManifestItemPtr manifestItem = PCKG(pckgPtr)->ManifestItemAtRelativePath(path);
 		ePub3::ManifestItemPtr m = std::const_pointer_cast<ePub3::ManifestItem>(manifestItem);
-		byteStream = PCKG(pckgPtr)->GetFilterChainByteStream(m, rawInputbyteStream);
+		byteStream = PCKG(pckgPtr)->GetFilterChainByteStream(m, rawInputbyteStream.release());
     }
     ResourceStream *stream = new ResourceStream(byteStream);
 
-    jobject inputStream = javaResourceInputStream_createResourceInputStream(env, stream, (int) archiveInfo.UncompressedSize());
+    jobject inputStream = javaResourceInputStream_createResourceInputStream(env, (long) stream, (int) archiveInfo.UncompressedSize());
 
 	return inputStream;
 }
