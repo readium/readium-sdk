@@ -68,11 +68,17 @@
 		ePub3::ErrorHandlerFn sdkErrorHandler = ^(const ePub3::error_details& err) {
 
 			const char * msg = err.message();
-			[m_delegate container:self handleSdkError:[NSString stringWithUTF8String:msg]];
 
-			//TODO? pass to delegate more information from ePub3::error_details (see error_handler.h)
+			BOOL isSevereEpubError = NO;
+			if (err.is_spec_error()
+					&& (err.severity() == ePub3::ViolationSeverity::Critical
+					|| err.severity() == ePub3::ViolationSeverity::Major))
+				isSevereEpubError = YES;
 
-			return ePub3::DefaultErrorHandler(err);
+			BOOL res = [m_delegate container:self handleSdkError:[NSString stringWithUTF8String:msg] isSevereEpubError:isSevereEpubError];
+
+			return (res == YES ? true : false);
+			//return ePub3::DefaultErrorHandler(err);
 		};
 		ePub3::SetErrorHandler(sdkErrorHandler);
 
