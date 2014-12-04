@@ -72,7 +72,7 @@ public class SpineItem {
 
 	public String getRenditionLayout(Package pack) {
         String layout = renditionLayout;
-    	if (layout == null || layout.length() == 0) {
+    	if (pack != null && (layout == null || layout.length() == 0)) {
     		layout = pack.getRenditionLayout();
     	}
         return layout;
@@ -80,7 +80,7 @@ public class SpineItem {
 
     public String getRenditionFlow(Package pack) {
         String flow = renditionFlow;
-    	if (flow == null || flow.length() == 0) {
+    	if (pack != null && (flow == null || flow.length() == 0)) {
     		flow = pack.getRenditionFlow();
     	}
         return flow;
@@ -88,7 +88,7 @@ public class SpineItem {
 
     public String getRenditionOrientation(Package pack) {
         String orientation = renditionOrientation;
-    	if (orientation == null || orientation.length() == 0) {
+    	if (pack != null && (orientation == null || orientation.length() == 0)) {
     		orientation = pack.getRenditionOrientation();
     	}
         return orientation;
@@ -96,7 +96,7 @@ public class SpineItem {
 
     public String getRenditionSpread(Package pack) {
     	String spread = renditionSpread;
-    	if (spread == null || spread.length() == 0) {
+    	if (pack != null && (spread == null || spread.length() == 0)) {
     		spread = pack.getRenditionSpread();
     	}
         return spread;
