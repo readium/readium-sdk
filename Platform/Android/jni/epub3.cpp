@@ -231,6 +231,7 @@ static bool LauncherErrorHandler(const ePub3::error_details& err)
 
     jstring jmessage = m_env->NewStringUTF(msg);
     jboolean b = javaEPub3_handleSdkError(m_env, jmessage, (jboolean)isSevereEpubError);
+    m_env->DeleteLocalRef(jmessage);
     return (bool)b;
     
     // never throws an exception
