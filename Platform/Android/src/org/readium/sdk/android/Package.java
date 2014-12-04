@@ -73,6 +73,10 @@ public class Package {
 	private String authors;
 	private String modificationDate;
 	private String pageProgressionDirection;
+	private String rendition_layout;
+	private String rendition_flow;
+	private String rendition_orientation;
+	private String rendition_spread;
 	private String smilDataJson;
 	private List<String> authorList;
 	private List<String> subjects;
@@ -161,6 +165,10 @@ public class Package {
 		spineItems = nativeGetSpineItems(__nativePtr);
 		manifestTable = nativeGetManifestTable(__nativePtr);
 		smilDataJson = nativeGetSmilDataAsJson(__nativePtr);
+		rendition_layout = nativeGetProperty(__nativePtr, "layout", "rendition");
+		rendition_flow = nativeGetProperty(__nativePtr, "flow", "rendition");
+		rendition_orientation = nativeGetProperty(__nativePtr, "orientation", "rendition");
+		rendition_spread = nativeGetProperty(__nativePtr, "spread", "rendition");
 		Log.i(TAG, "package nativePtr: " + __nativePtr);
 		Log.i(TAG, "title: "+title);
 		Log.i(TAG, "subtitle: "+subtitle);
@@ -186,6 +194,10 @@ public class Package {
 		Log.i(TAG, "subjects: "+subjects);
 		Log.i(TAG, "spineItems: "+spineItems.size());
 		Log.i(TAG, "manifestTable: "+manifestTable.size());
+		Log.i(TAG, "rendition_layout: "+rendition_layout);
+		Log.i(TAG, "rendition_flow: "+rendition_flow);
+		Log.i(TAG, "rendition_orientation: "+rendition_orientation);
+		Log.i(TAG, "rendition_spread: "+rendition_spread);
 		//Log.i(TAG, "smilDataJson: "+ smilDataJson);
 	}
 
@@ -275,6 +287,22 @@ public class Package {
 
 	public String getPageProgressionDirection() {
 		return pageProgressionDirection;
+	}
+
+	public String getRenditionLayout() {
+		return rendition_layout;
+	}
+	
+	public String getRenditionFlow() {
+		return rendition_flow;
+	}
+	
+	public String getRenditionOrientation() {
+		return rendition_orientation;
+	}
+	
+	public String getRenditionSpread() {
+		return rendition_spread;
 	}
 
 	public List<String> getSubjects() {
@@ -419,8 +447,11 @@ public class Package {
 			
 			//EpubServer.HTTP_HOST /// EpubServer.HTTP_PORT
 			o.put("rootUrlMO", "http://localhost:8080/");
-			
-			o.put("rendition_layout", nativeGetProperty(__nativePtr, "layout", "rendition"));
+
+			o.put("rendition_layout", rendition_layout);
+			o.put("rendition_flow", rendition_flow);
+			o.put("rendition_orientation", rendition_orientation);
+			o.put("rendition_spread", rendition_spread);
 			JSONArray spineArray = new JSONArray();
 			for (SpineItem item : spineItems) {
 				spineArray.put(item.toJSON());

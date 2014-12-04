@@ -70,28 +70,45 @@ public class SpineItem {
 		return pageSpread;
 	}
 
-	public String getRenditionLayout() {
-		return renditionLayout;
+	public String getRenditionLayout(Package pack) {
+        String layout = renditionLayout;
+    	if (layout == null || layout.length() == 0) {
+    		layout = pack.getRenditionLayout();
+    	}
+        return layout;
 	}
 
-    public String getRenditionFlow() {
-        return renditionFlow;
+    public String getRenditionFlow(Package pack) {
+        String flow = renditionFlow;
+    	if (flow == null || flow.length() == 0) {
+    		flow = pack.getRenditionFlow();
+    	}
+        return flow;
     }
 
-    public String getRenditionOrientation() {
-        return renditionOrientation;
+    public String getRenditionOrientation(Package pack) {
+        String orientation = renditionOrientation;
+    	if (orientation == null || orientation.length() == 0) {
+    		orientation = pack.getRenditionOrientation();
+    	}
+        return orientation;
     }
 
-    public String getRenditionSpread() {
-        return renditionSpread;
+    public String getRenditionSpread(Package pack) {
+    	String spread = renditionSpread;
+    	if (spread == null || spread.length() == 0) {
+    		spread = pack.getRenditionSpread();
+    	}
+        return spread;
     }
 
     public boolean isLinear() {
         return linear;
     }
 
-    public boolean isFixedLayout() {
-		return "pre-paginated".equals(renditionLayout);
+    public boolean isFixedLayout(Package pack) {
+    	String layout = getRenditionLayout(pack);
+		return "pre-paginated".equals(layout);
 	}
 
 	public JSONObject toJSON() throws JSONException {
