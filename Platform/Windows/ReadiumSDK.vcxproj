@@ -76,12 +76,20 @@ cscript MakeHeaders.js</Command>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;BUILDING_EPUB3;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\include;$(MSBuildProjectDirectory)\..\..\ePub3;$(MSBuildProjectDirectory)\..\..\ePub3\utilities;$(MSBuildProjectDirectory)\..\..\ePub3\ePub;$(MSBuildProjectDirectory)\..\..\ePub3\xml;$(MSBuildProjectDirectory)\Prebuilt\Include;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\google-url\src;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\utf8-cpp\include;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\icu4c\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <PreBuildEvent>
+      <Command>cd $(MSBuildProjectDirectory)
+cscript MakeHeaders.js</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Build canonical headers</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\ePub3\ePub\archive.cpp" />
