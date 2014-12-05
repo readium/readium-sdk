@@ -242,7 +242,13 @@ void ByteBuffer::EnsureCapacity(size_t desired)
 void ByteBuffer::Clean(unsigned char *ptr, size_t len)
 {
     ::bzero(ptr, len);
+    #if !EPUB_OS(ANDROID)
+    //This call invokes ASM code to clear the CPU cache, and causes a SIGILL crash on Android devices.
+    //Take a look at 'utilities/CPUCacheUtils_arm.S' and its siblings for more info
+    //TODO: Find out if this is the same case on actual iOS devices, not on the simulator
+
     epub_sys_cache_flush(ptr, len);
+    #endif
 }
 
 EPUB3_END_NAMESPACE
