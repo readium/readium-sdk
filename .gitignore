@@ -133,3 +133,14 @@ Platform/Android/local.properties
 # Windows files that should never be committed
 ####
 *.obj
+*.dll
+*.pdb
+*.exe
+*.idb
+*.sdf
+*.tlog
+*.log
+*.user
+*.filters
+*.opensdf
+
