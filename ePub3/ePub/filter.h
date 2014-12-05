@@ -140,7 +140,7 @@ private:
     uint8_t *m_buffer = nullptr;
     ByteStream::size_type m_buffer_size = 0;
 
-    uint8_t * DestroyCurrentTemporaryByteBuffer()
+    void DestroyCurrentTemporaryByteBuffer()
     {
         delete[] m_buffer; //reinterpret_cast<uint8_t *>(m_buffer);
         m_buffer = nullptr;

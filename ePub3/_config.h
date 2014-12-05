@@ -93,6 +93,8 @@
 #if EPUB_OS(WINDOWS)
 // Windows doesn't define ssize_t it seems
 typedef signed long ssize_t;
+// nor uint
+typedef unsigned int uint;
 #endif
 
 #if EPUB_PLATFORM(WIN)

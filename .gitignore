@@ -128,3 +128,8 @@ UserInterfaceState.xcuserstate
 
 Platform/Android/.settings/org.eclipse.cdt.core.prefs
 Platform/Android/local.properties
+
+####
+# Windows files that should never be committed
+####
+*.obj
