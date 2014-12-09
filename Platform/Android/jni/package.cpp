@@ -766,10 +766,14 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeInputStream
     	// but ResourceStream expects an unique_ptr. I have not changed ResourceStream
     	// because I'm running against time and I'm trying to minimize the code churn
     	// at this point.
-		auto rawInputbyteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
 		ePub3::ConstManifestItemPtr manifestItem = PCKG(pckgPtr)->ManifestItemAtRelativePath(path);
-		ePub3::ManifestItemPtr m = std::const_pointer_cast<ePub3::ManifestItem>(manifestItem);
-		byteStream = PCKG(pckgPtr)->GetFilterChainByteStream(m, rawInputbyteStream.release());
+		if (manifestItem == nullptr) {
+			byteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
+		} else {
+			auto rawInputbyteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
+			ePub3::ManifestItemPtr m = std::const_pointer_cast<ePub3::ManifestItem>(manifestItem);
+			byteStream = PCKG(pckgPtr)->GetFilterChainByteStream(m, rawInputbyteStream.release());
+		}
     }
     ResourceStream *stream = new ResourceStream(byteStream);
 
