@@ -153,5 +153,20 @@ public class EPub3 {
 	public static void closeBook(final Container container) {
 		container.close();
 	}
-	
+
+    public static SdkErrorHandler m_SdkErrorHandler = null;
+    public static void setSdkErrorHandler(SdkErrorHandler sdkErrorHandler) {
+        m_SdkErrorHandler = sdkErrorHandler;
+    }
+
+	private static boolean handleSdkError(String message, boolean isSevereEpubError) {
+        if (m_SdkErrorHandler != null) {
+            return m_SdkErrorHandler.handleSdkError(message, isSevereEpubError);
+        }
+            
+        System.out.println("!SdkErrorHandler: " + message + " (" + (isSevereEpubError ? "warning" : "info") + ")");
+
+    	// never throws an exception
+    	return true;
+	}
 }

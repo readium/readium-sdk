@@ -33,7 +33,7 @@
 
 @protocol RDContainerDelegate <NSObject>
 
-- (void)container:(RDContainer *)container handleSdkError:(NSString *)message;
+- (BOOL)container:(RDContainer *)container handleSdkError:(NSString *)message isSevereEpubError:(BOOL)isSevereEpubError;
 
 @end
 
