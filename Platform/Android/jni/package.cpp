@@ -737,7 +737,6 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeInputStream
 	auto basePath = ePub3::string(PCKG(pckgPtr)->BasePath());
 	LOGI("Package.nativeInputStreamForRelativePath(): package base path '%s'", basePath.c_str());
     auto path = basePath.append(relativePath);
-	env->ReleaseStringUTFChars(jrelativePath, relativePath);
 	LOGI("Package.nativeInputStreamForRelativePath(): final path '%s'", path.c_str());
     auto archive = contnr->GetArchive();
     bool containsPath = archive->ContainsItem(path);
@@ -766,17 +765,22 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeInputStream
     	// but ResourceStream expects an unique_ptr. I have not changed ResourceStream
     	// because I'm running against time and I'm trying to minimize the code churn
     	// at this point.
-		ePub3::ConstManifestItemPtr manifestItem = PCKG(pckgPtr)->ManifestItemAtRelativePath(path);
-		if (manifestItem == nullptr) {
-			byteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
-		} else {
+		ePub3::ConstManifestItemPtr manifestItem = PCKG(pckgPtr)->ManifestItemAtRelativePath(ePub3::string(relativePath));
+		if (manifestItem != nullptr) {
 			auto rawInputbyteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
 			ePub3::ManifestItemPtr m = std::const_pointer_cast<ePub3::ManifestItem>(manifestItem);
 			byteStream = PCKG(pckgPtr)->GetFilterChainByteStream(m, rawInputbyteStream.release());
+		} else {
+			// In the rare case that the manifest item could not be resolved from the path,
+			// fallback to a non-filtered byte stream read.
+			byteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
+			LOGI("Package.nativeInputStreamForRelativePath(): manifest item not found for relative path '%s'", relativePath);
 		}
     }
-    ResourceStream *stream = new ResourceStream(byteStream);
 
+	env->ReleaseStringUTFChars(jrelativePath, relativePath);
+
+    ResourceStream *stream = new ResourceStream(byteStream);
     jobject inputStream = javaResourceInputStream_createResourceInputStream(env, (long) stream, (int) archiveInfo.UncompressedSize());
 
 	return inputStream;
