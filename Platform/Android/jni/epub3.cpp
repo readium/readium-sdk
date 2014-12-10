@@ -33,7 +33,7 @@
 #include "epub3.h"
 #include "helpers.h"
 #include "container.h"
-#include "package.h"
+#include "packagejni.h"
 #include "iri.h"
 #include "resource_stream.h"
 
