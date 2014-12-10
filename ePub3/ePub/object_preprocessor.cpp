@@ -158,7 +158,9 @@ void* ObjectPreprocessor::FilterData(FilterContext* context, void *data, size_t 
         
         // now construct the `iframe` tag
         std::string url = target.URIString().stl_str();
-        output += "<iframe src=\"" + url + "\" srcdoc=\"" + url + "\"";
+        //std::string url = target.Path(true).stl_str();
+        output += "<iframe src=\"" + url + "\"";
+        //output += " srcdoc=\"" + url + "\"";
         
         // replicate any id attribute from the `object` tag
         if ( !objectID.empty() )
