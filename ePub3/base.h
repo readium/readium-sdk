@@ -30,6 +30,10 @@
 
 #include <stdlib.h>
 
+#if EPUB_OS(WINDOWS)
+#include "vld.h"
+#endif
+
 #ifdef __cplusplus
 #define EPUB3_NAMESPACE ePub3
 #define EPUB3_BEGIN_NAMESPACE namespace EPUB3_NAMESPACE {
