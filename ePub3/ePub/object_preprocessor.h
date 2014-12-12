@@ -139,6 +139,29 @@ protected:
     ///
     /// The object keeps its own list of handlers, used to create target URIs.
     std::map<string, MediaHandler>          _handlers;
+
+protected:
+    virtual FilterContext *InnerMakeFilterContext(ConstManifestItemPtr item) const OVERRIDE;
+
+private:
+    class ObjectPreprocessorContext : public FilterContext
+    {
+    private:
+        ConstManifestItemPtr m_manifestItem;
+    public:
+        ConstManifestItemPtr ManifestItem()
+        {
+            return m_manifestItem;
+        }
+        ObjectPreprocessorContext(ConstManifestItemPtr item) : FilterContext()
+        {
+            m_manifestItem = item;
+        }
+        virtual ~ObjectPreprocessorContext()
+        {
+            m_manifestItem = nullptr;
+        }
+    };
     
 };
 

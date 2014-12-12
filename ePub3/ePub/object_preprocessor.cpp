@@ -21,6 +21,8 @@
 #include "object_preprocessor.h"
 #include "package.h"
 #include "filter_manager.h"
+#include "iri.h"
+#include <google-url/gurl.h>
 
 static const REGEX_NS::regex::flag_type regexFlags(REGEX_NS::regex::ECMAScript|REGEX_NS::regex::optimize);
 static const REGEX_NS::regex reEscaper("\\\\\\.\\(\\)\\[\\]\\$\\^\\*\\+\\?\\:\\=\\|", regexFlags);
@@ -31,6 +33,10 @@ static REGEX_NS::regex ParamMatcher("<param[^>]+(name|value)=\"([^\"]*)\"[^>]*?(
 static REGEX_NS::regex SourceFinder("data=\\\"([^\\\"]*)\\\"", regexFlags);
 static REGEX_NS::regex IDFinder("id=\\\"([^\\\"]*)\\\"", regexFlags);
 
+FilterContext *ObjectPreprocessor::InnerMakeFilterContext(ConstManifestItemPtr item) const
+{
+    return new ObjectPreprocessorContext(item);
+}
 bool ObjectPreprocessor::ShouldApply(ConstManifestItemPtr item)
 {
     return (item->MediaType() == "application/xhtml+xml" || item->MediaType() == "text/html");
@@ -87,6 +93,12 @@ ObjectPreprocessor::ObjectPreprocessor(ConstPackagePtr pkg, const string& button
 }
 void* ObjectPreprocessor::FilterData(FilterContext* context, void *data, size_t len, size_t *outputLen)
 {
+    ObjectPreprocessorContext *ptContext = dynamic_cast<ObjectPreprocessorContext *>(context);
+    if (ptContext == nullptr)
+    {
+        return nullptr;
+    }
+
     char* input = reinterpret_cast<char*>(data);
     // find each `object` tag
     REGEX_NS::cregex_iterator pos(input, input+len, _objectMatcher);
@@ -120,6 +132,8 @@ void* ObjectPreprocessor::FilterData(FilterContext* context, void *data, size_t 
         REGEX_NS::smatch m;
         std::string attrs(pos->str(1));
         REGEX_NS::regex_search(attrs.cbegin(), attrs.cend(), m, SourceFinder);
+
+        // e.g. data.xml (path relative to the original XHTML spine item, not to the (XHTML) handler!)
         string src(m[1].str());
         
         // find any parameters to the object tag
@@ -147,10 +161,128 @@ void* ObjectPreprocessor::FilterData(FilterContext* context, void *data, size_t 
             
             ++cpos;
         }
-        
+
+        ConstManifestItemPtr manifestItem = ptContext->ManifestItem();
+        string manifestItemAbsolutePath = manifestItem->AbsolutePath();
+        if (manifestItemAbsolutePath.at(0) == '/')
+        {
+            manifestItemAbsolutePath = manifestItemAbsolutePath.substr(1, manifestItemAbsolutePath.length()-1);
+        }
+        string::size_type i = manifestItemAbsolutePath.find_last_of('/');
+        string parentFolderPath = "/";
+        if (i != string::npos && i > 0)
+        {
+            parentFolderPath = _Str(manifestItemAbsolutePath.substr(0, i), '/');
+        }
+        if (parentFolderPath.at(0) != '/')
+        {
+            parentFolderPath.insert(0, "/");
+        }
+        string srcAbsolutePath = _Str(parentFolderPath, src);
+
+        std::string::size_type j = 0;
+        while ((j = srcAbsolutePath.find("/./")) != string::npos)
+        {
+            //srcAbsolutePath.replace(j+1, 2, "");
+            srcAbsolutePath.erase(j+1, 2);
+        }
+        if (srcAbsolutePath.find("./") == 0)
+        {
+            srcAbsolutePath = srcAbsolutePath.length() > 2 ? srcAbsolutePath.substr(2) : "";
+        }
+
+        j = 0;
+        while ((j = srcAbsolutePath.find("../")) != string::npos)
+        {
+            std::string::size_type k = j < 2 ? 0 : srcAbsolutePath.rfind('/', j - 2);
+            //std::string::size_type k = srcAbsolutePath.find_first_of('/', j);
+            if (k == string::npos || k == 0)
+            {
+                //srcAbsolutePath.replace(0, (j + 2) + 1, "");
+                srcAbsolutePath.erase(0, (j + 2) + 1);
+            }
+            else
+            {
+                //srcAbsolutePath.replace(k + 1, (j + 2) - k, "");
+                srcAbsolutePath.erase(k + 1, (j + 2) - k);
+            }
+        }
+
+        if (srcAbsolutePath.at(0) != '/')
+        {
+            srcAbsolutePath.insert(0, "/");
+        }
+
+        IRI handlerIRI = handler.HandlerIRI();
+        string handlerAbsolutePath = handlerIRI.Path(true);
+        //IRI handlerIRI(handlerIRI_.Scheme(), handlerIRI_.Host(), handlerAbsolutePath);
+        //string check = handlerIRI.URIString().stl_str();
+
+//        GURL* gurl = handlerIRI.UnderlyingURL();
+//        GURL resolved = gurl->Resolve(srcAbsolutePath);
+//        string relativePath = resolved.path(); // already percent-escaped (IRI::URLEncodeComponent())
+
+
+        static REGEX_NS::regex _PathSplitter("/");
+        std::vector<string> handlerAbsolutePath_chunks = handlerAbsolutePath.split(_PathSplitter);
+        std::vector<string> srcAbsolutePath_chunks = srcAbsolutePath.split(_PathSplitter);
+
+        auto handlerAbsolutePath_begin = handlerAbsolutePath_chunks.begin();
+        auto srcAbsolutePath_begin = srcAbsolutePath_chunks.begin();
+
+        auto handlerAbsolutePath_end = handlerAbsolutePath_chunks.end();
+        auto srcAbsolutePath_end = srcAbsolutePath_chunks.end();
+
+        auto handlerAbsolutePath_iterator = handlerAbsolutePath_begin;
+        auto srcAbsolutePath_iterator = srcAbsolutePath_begin;
+
+        while ( handlerAbsolutePath_iterator != handlerAbsolutePath_end
+                && srcAbsolutePath_iterator != srcAbsolutePath_end )
+        {
+            if (*handlerAbsolutePath_iterator != *srcAbsolutePath_iterator)
+            {
+                break;
+            }
+
+            ++handlerAbsolutePath_iterator;
+            ++srcAbsolutePath_iterator;
+        }
+
+        handlerAbsolutePath_end--;
+
+        string relativePath;
+
+        for (; handlerAbsolutePath_iterator != handlerAbsolutePath_end; ++handlerAbsolutePath_iterator) {
+            relativePath += "/";
+            relativePath += "..";
+        }
+        for (; srcAbsolutePath_iterator != srcAbsolutePath_end; ++srcAbsolutePath_iterator)
+        {
+            relativePath += "/";
+            relativePath += *srcAbsolutePath_iterator;
+        }
+
+        if (relativePath.at(0) == '/')
+        {
+            relativePath.erase(0, 1);
+        }
+
+//        string packageBasePath = manifestItem->Owner()->BasePath();
+//        if (packageBasePath.at(0) != '/')
+//        {
+//            packageBasePath.insert(0, "/");
+//        }
+//
+//        std::string::size_type k = relativePath.find(packageBasePath.stl_str());
+//        if (k == 0)
+//        {
+//            relativePath = relativePath.substr(packageBasePath.length());
+//        }
+
+
         // now determine the target-- this is an absolute URL
-        IRI target = handler.Target(src, params);
-        
+        IRI target = handler.Target(relativePath, params);
+
         // find out if the object tag had an id attribute
         std::string objectID;
         if ( REGEX_NS::regex_search(attrs.cbegin(), attrs.cend(), m, IDFinder) )
@@ -158,7 +290,32 @@ void* ObjectPreprocessor::FilterData(FilterContext* context, void *data, size_t 
         
         // now construct the `iframe` tag
         std::string url = target.URIString().stl_str();
-        //std::string url = target.Path(true).stl_str();
+
+//        std::string url = target.Path(true).stl_str();
+//        if (url.at(0) == '/')
+//        {
+//            url.erase(0, 1);
+//        }
+
+        //printf("BINDING IFRAME URL:\n%s\n", url.c_str());
+
+        // #include <algorithm>
+        //std::replace(url.begin(), url.end(), "&", "&amp;");
+
+        std::string buffer;
+        buffer.reserve(url.size());
+        for(size_t pos = 0; pos != url.size(); ++pos) {
+            switch(url[pos]) {
+                case '&':  buffer.append("&amp;");       break;
+                case '\"': buffer.append("&quot;");      break;
+                case '\'': buffer.append("&apos;");      break;
+                case '<':  buffer.append("&lt;");        break;
+                case '>':  buffer.append("&gt;");        break;
+                default:   buffer.append(&url[pos], 1); break;
+            }
+        }
+        url.swap(buffer);
+
         output += "<iframe src=\"" + url + "\"";
         //output += " srcdoc=\"" + url + "\"";
         
@@ -168,15 +325,15 @@ void* ObjectPreprocessor::FilterData(FilterContext* context, void *data, size_t 
         
         // enable sandbox and allow some stuff, and use seamless presentation
         output += " sandbox=\"allow-forms allow-scripts allow-same-origin\" seamless=\"seamless\"></iframe>";
-        
-        // now add the form & button
-        output += "<form action=\"" + url + "\" method=\"get\"";
-        if ( !objectID.empty() )
-            output += " id=\"" + objectID + "-form\"";
-        output += "><button type=\"submit\"";
-        if ( !objectID.empty() )
-            output += " id=\"" + objectID + "-button\"";
-        output += ">" + _button.stl_str() + "</button></form>";
+
+//        // now add the form & button
+//        output += "<form action=\"" + url + "\" method=\"get\"";
+//        if ( !objectID.empty() )
+//            output += " id=\"" + objectID + "-form\"";
+//        output += "><button type=\"submit\"";
+//        if ( !objectID.empty() )
+//            output += " id=\"" + objectID + "-button\"";
+//        output += ">" + _button.stl_str() + "</button></form>";
         
         // that's it-- we've replaced the whole lot!
         

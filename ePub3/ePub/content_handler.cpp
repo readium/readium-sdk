@@ -8,7 +8,7 @@
 //  This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 //  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 //  
-//  Licensed under Gnu Affero General Public License Version 3 (provided, notwithstanding this notice, 
+//  Licensed under Gnu Affero General Public License Version 3 (provided, notwithstanding this notice,
 //  Readium Foundation reserves the right to license this material under a different separate license, 
 //  and if you have done so, the terms of that separate license control and the following references 
 //  to GPL do not apply).
@@ -37,15 +37,15 @@ void MediaHandler::operator()(const string& src, const ParameterList& parameters
 IRI MediaHandler::Target(const string& src, const ParameterList& parameters) const
 {
     IRI result(_handlerIRI);       // this will already include any fragment, we just have to add the query
-    
+
     std::stringstream ss;
-    ss << "src=" << src;
+    ss << "src=" << IRI::URLEncodeComponent(src);
     for ( auto& pair : parameters )
     {
         string str = _Str('&', IRI::URLEncodeComponent(pair.first), '=', IRI::URLEncodeComponent(pair.second));
         ss << str;
     }
-    
+
     result.SetQuery(ss.str());
     return result;
 }

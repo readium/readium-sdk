@@ -160,6 +160,8 @@ public:
      @param parameters URL query parameters to the DHTML media handler.
      */
     virtual IRI         Target(const string& src, const ParameterList& parameters)                          const;
+
+    IRI HandlerIRI() const { return _handlerIRI; }
     
 protected:
     const IRI           _handlerIRI;        ///< The URL of a DHTML media handler.

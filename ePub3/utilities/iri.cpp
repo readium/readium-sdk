@@ -179,7 +179,14 @@ const string IRI::Path(bool urlEncoded) const
         return encodedPath;
     
     url_canon::RawCanonOutputW<256> output;
-    url_util::DecodeURLEscapeSequences(encodedPath.c_str(), static_cast<int>(encodedPath.size()), &output);
+
+    // note that .size() is on std::string here (equivalent to strlen(str.c_str()) ),
+    // which is in fact the same as ePub3:string .utf8_size() defined in utfstring.h,
+    // but not the same as ePub3:string .size() !!
+    // WATCH OUT!
+    int length = static_cast<int>(encodedPath.size());
+
+    url_util::DecodeURLEscapeSequences(encodedPath.c_str(), length, &output);
     return string(output.data(), output.length());
 }
 const CFI IRI::ContentFragmentIdentifier() const

@@ -351,7 +351,9 @@ protected:
     ComponentList           _urnComponents;     ///< The components of a URN.
     std::unique_ptr<GURL>   _url;               ///< The underlying URL object.
     string                  _pureIRI;           ///< A cache of the Unicode IRI string. May be empty.
-    
+public:
+    //std::unique_ptr<GURL> UnderlyingURL() { return std::move(_url); }
+    GURL* UnderlyingURL() { return _url.get(); }
 };
 
 template <class _CharT, class _Traits>
