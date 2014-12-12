@@ -23,6 +23,7 @@ package org.readium.sdk.android;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -395,8 +396,12 @@ public class Package {
 	 * @param isRangeRequest if this is a range request or not
 	 * @return the InputStream. If no data is retrieved, the InputStream is null.
 	 */
-	public InputStream getInputStream(String relativePath, boolean isRangeRequest) {
-		return nativeInputStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath, isRangeRequest);
+	public InputStream getInputStream(String relativePath) {
+		return nativeInputStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath);
+	}
+	
+	public ByteBuffer getByteRangeStream(String relativePath, long offset, long length) {
+		return nativeByteRangeStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath, offset, length);
 	}
 
 	/**
@@ -483,7 +488,10 @@ public class Package {
 	 * Content 
 	 */
 	private native InputStream nativeInputStreamForRelativePath(long nativePtr, 
-			long containerPtr, String relativePath, boolean isRangeRequest);
+			long containerPtr, String relativePath);
+	
+	private native ByteBuffer nativeByteRangeStreamForRelativePath(
+			long nativePtr, long containerPtr, String relativePath, long offset, long length);
 	
 	private native int nativeGetArchiveInfoSize(long nativePtr, 
 			long containerPtr, String relativePath);

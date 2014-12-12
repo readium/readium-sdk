@@ -729,8 +729,9 @@ JNIEXPORT jint JNICALL Java_org_readium_sdk_android_Package_nativeGetArchiveInfo
 
     return (jint) archiveInfo.UncompressedSize();
 }
+
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeInputStreamForRelativePath
-		(JNIEnv* env, jobject thiz, jlong pckgPtr, jlong contnrPtr, jstring jrelativePath, jboolean jIsRangeRequest)
+		(JNIEnv* env, jobject thiz, jlong pckgPtr, jlong contnrPtr, jstring jrelativePath)
 {
 	char *relativePath = (char *) env->GetStringUTFChars(jrelativePath, NULL);
 	LOGI("Package.nativeInputStreamForRelativePath(): received relative path '%s'", relativePath);
@@ -747,36 +748,18 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeInputStream
 
     unique_ptr<ePub3::ByteStream> byteStream;
     auto archiveInfo = archive->InfoAtPath(path);
-    if (jIsRangeRequest == JNI_TRUE)
-    {
-    	// TODO: For the time being, return a ZipFileByteStream.
-    	// The reason for that is that the current code in EpubServer tries to answer
-    	// a range request by doing a SeekableByteStream::Seek() from the beginning of
-    	// the file, and it is as far as it goes in terms of fulfilling a range request.
-    	// In a later change, we should modify EpubServer to actually use byte ranges,
-    	// and then this part of the code should switch to return a FilterChainByteStreamRange object.
-    	byteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
-    }
-    else
-    {
-    	// TODO: We can reduce all this code here if we modify ResourceStream to
-    	// store the reference to the ByteStream as a shared_ptr, not as an unique_ptr.
-    	// Package::GetFilterChainByteStream(ManifestItemPtr) returns a shared_ptr,
-    	// but ResourceStream expects an unique_ptr. I have not changed ResourceStream
-    	// because I'm running against time and I'm trying to minimize the code churn
-    	// at this point.
-		ePub3::ConstManifestItemPtr manifestItem = PCKG(pckgPtr)->ManifestItemAtRelativePath(ePub3::string(relativePath));
-		if (manifestItem != nullptr) {
-			auto rawInputbyteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
-			ePub3::ManifestItemPtr m = std::const_pointer_cast<ePub3::ManifestItem>(manifestItem);
-			byteStream = PCKG(pckgPtr)->GetFilterChainByteStream(m, rawInputbyteStream.release());
-		} else {
-			// In the rare case that the manifest item could not be resolved from the path,
-			// fallback to a non-filtered byte stream read.
-			byteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
-			LOGI("Package.nativeInputStreamForRelativePath(): manifest item not found for relative path '%s'", relativePath);
-		}
-    }
+
+	ePub3::ConstManifestItemPtr manifestItem = PCKG(pckgPtr)->ManifestItemAtRelativePath(ePub3::string(relativePath));
+	if (manifestItem != nullptr) {
+		auto rawInputbyteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
+		ePub3::ManifestItemPtr m = std::const_pointer_cast<ePub3::ManifestItem>(manifestItem);
+		byteStream = PCKG(pckgPtr)->GetFilterChainByteStream(m, rawInputbyteStream.release());
+	} else {
+		// In the rare case that the manifest item could not be resolved from the path,
+		// fallback to a non-filtered byte stream read.
+		byteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
+		LOGI("Package.nativeInputStreamForRelativePath(): manifest item not found for relative path '%s'", relativePath);
+	}
 
 	env->ReleaseStringUTFChars(jrelativePath, relativePath);
 
@@ -784,6 +767,70 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeInputStream
     jobject inputStream = javaResourceInputStream_createResourceInputStream(env, (long) stream, (int) archiveInfo.UncompressedSize());
 
 	return inputStream;
+}
+
+JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeByteRangeStreamForRelativePath
+        (JNIEnv *env, jobject thiz, jlong pckgPtr, jlong contnrPtr, jstring relativePath, jlong offset, jlong length)
+{
+	char *relativePath = (char *) env->GetStringUTFChars(jrelativePath, NULL);
+	LOGI("Package.nativeInputStreamForRelativePath(): received relative path '%s'", relativePath);
+	auto basePath = ePub3::string(PCKG(pckgPtr)->BasePath());
+	LOGI("Package.nativeInputStreamForRelativePath(): package base path '%s'", basePath.c_str());
+	auto path = basePath.append(relativePath);
+	LOGI("Package.nativeInputStreamForRelativePath(): final path '%s'", path.c_str());
+	auto archive = contnr->GetArchive();
+	bool containsPath = archive->ContainsItem(path);
+	if (!containsPath)
+	{
+		LOGE("Package.nativeInputStreamForRelativePath(): no archive found for path '%s'", path.c_str());
+		return NULL;
+	}
+
+	auto archiveInfo = archive->InfoAtPath(path);
+
+	ePub3::ConstManifestItemPtr manifestItem = PCKG(pckgPtr)->ManifestItemAtRelativePath(ePub3::string(relativePath));
+	if (manifestItem == nullptr)
+	{
+		// In the rare case that the manifest item could not be resolved from the path,
+		// fallback to a non-filtered byte stream read.
+		LOGI("Package.nativeInputStreamForRelativePath(): manifest item not found for relative path '%s'", relativePath);
+		auto rawByteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
+		env->ReleaseStringUTFChars(jrelativePath, relativePath);
+		ResourceStream *stream = new ResourceStream(rawByteStream);
+		return javaResourceInputStream_createResourceInputStream(env, (long) stream, (int) archiveInfo.UncompressedSize());
+	}
+
+	auto rawInputbyteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
+	ePub3::ManifestItemPtr m = std::const_pointer_cast<ePub3::ManifestItem>(manifestItem);
+	unique_ptr<ePub3::ByteStream> byteStream = PCKG(pckgPtr)->GetFilterChainByteStreamRange(m, rawInputbyteStream.release());
+	unique_ptr<ePub3::FilterChainByteStreamRange> rangeByteStream = dynamic_cast<FilterChainByteStreamRange *>(byteStream.release());
+	if (rangeByteStream == null)
+	{
+		LOGE("Somehow Package::GetFilterChainByteStreamRane() did not return a FilterChainByteStreamRange object for path '%s'", relativePath);
+		return NULL;
+	}
+
+	env->ReleaseStringUTFChars(jrelativePath, relativePath);
+
+	char tmpBuffer[length];
+	jobject jbuffer = javaEPub3_createBuffer(env, length);
+	ePub3::ByteRange range;
+	range.Location(offset);
+	range.Length(length);
+
+	std::size_t readBytes = byteStream->ReadBytes(&tmpBuffer, sizeof(tmpBuffer), range);
+	if (readBytes > 0)
+	{
+		jsize length = (jsize) readBytes;
+		jbyteArray jtmpBuffer = env->NewByteArray(readBytes);
+
+		env->SetByteArrayRegion(jtmpBuffer, 0, length, tmpBuffer);
+		javaEPub3_appendBytesToBuffer(env, jbuffer, jtmpBuffer);
+
+		env->DeleteLocalRef(jtmpBuffer);
+	}
+
+	return jbuffer;
 }
 
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetProperty

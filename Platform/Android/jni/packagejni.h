@@ -186,10 +186,17 @@ JNIEXPORT jint JNICALL Java_org_readium_sdk_android_Package_nativeGetArchiveInfo
 /*
  * Class:     org_readium_sdk_android_Package
  * Method:    nativeInputStreamForRelativePath
- * Signature: (JJLjava/lang/String;Z)Ljava/io/InputStream;
+ * Signature: (JJLjava/lang/String;)Ljava/io/InputStream;
  */
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeInputStreamForRelativePath
-		(JNIEnv* env, jobject thiz, jlong pckgPtr, jlong contnrPtr, jstring jrelativePath, jboolean isRangeRequest);
+		(JNIEnv* env, jobject thiz, jlong pckgPtr, jlong contnrPtr, jstring jrelativePath);
+/*
+ * Class:     org_readium_sdk_android_Package
+ * Method:    nativeByteRangeStreamForRelativePath
+ * Signature: (JJLjava/lang/String;JJ)Ljava.nio.ByteBuffer;
+ */
+JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeByteRangeStreamForRelativePath
+        (JNIEnv *env, jobject thiz, jlong pckgPtr, jlong contnrPtr, jstring relativePath, jlong offset, jlong length);
 /*
  * Class:     org_readium_sdk_android_Package
  * Method:    nativeGetSmilDataAsJson
