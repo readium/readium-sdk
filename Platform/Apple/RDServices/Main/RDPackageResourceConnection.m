@@ -109,11 +109,15 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 		if ([path hasPrefix:@"/"]) {
 			path = [path substringFromIndex:1];
 		}
-		
-		// See:
-		// ConstManifestItemPtr PackageBase::ManifestItemAtRelativePath(const string& path) const
-		// which compares with non-escaped source (OPF original manifest>item@src attribute value)
-		//path = [path stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
+		NSRange rangeQ = [path rangeOfString:@"?"];
+		if (rangeQ.location != NSNotFound) {
+			path = [path substringToIndex:rangeQ.location];
+		}
+		NSRange rangeH = [path rangeOfString:@"#"];
+		if (rangeH.location != NSNotFound) {
+			path = [path substringToIndex:rangeH.location];
+		}
 	}
 	
 	NSObject <HTTPResponse> *response = nil;

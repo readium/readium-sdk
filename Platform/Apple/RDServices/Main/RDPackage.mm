@@ -310,23 +310,18 @@
 		return nil;
 	}
 	
-	NSRange range = [relativePath rangeOfString:@"#"];
-	
-	if (range.location != NSNotFound) {
-		relativePath = [relativePath substringToIndex:range.location];
+	ePub3::string s = ePub3::string(relativePath.UTF8String);
+
+	ePub3::ConstManifestItemPtr manifestItem = m_package->ManifestItemAtRelativePath(s);
+	if (manifestItem == nullptr) {
+		NSLog(@"Relative path '%@' does not have a manifest item!", relativePath);
 	}
 	
-	ePub3::string s = ePub3::string(relativePath.UTF8String);
 	std::unique_ptr<ePub3::ByteStream> byteStream = m_package->ReadStreamForRelativePath(s);
 	if (byteStream == nullptr)
 	{
 		NSLog(@"Relative path '%@' is not present in the book.", relativePath);
 		return nil;
-	}
-	
-	ePub3::ConstManifestItemPtr manifestItem = m_package->ManifestItemAtRelativePath(s);
-	if (manifestItem == nullptr) {
-		NSLog(@"Relative path '%@' does not have a manifest item!", relativePath);
 	}
 	
 	RDPackageResource *resource = [[RDPackageResource alloc]
