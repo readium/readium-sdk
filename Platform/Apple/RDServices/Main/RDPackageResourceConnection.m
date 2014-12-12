@@ -180,7 +180,7 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 		{
 			NSString* ext = [[path pathExtension] lowercaseString];
 			bool isHTML = [ext isEqualToString:@"xhtml"] || [ext isEqualToString:@"html"] || [resource.mimeType isEqualToString:@"application/xhtml+xml"]; //[path hasSuffix:@".html"] || [path hasSuffix:@".xhtml"]
-			BOOL isXhtmlWellFormed = NO;
+			BOOL isXhtmlWellFormed = YES;
 			if (isHTML) {
 				NSData *data = [resource readDataFull];
 				if (data != nil) {
