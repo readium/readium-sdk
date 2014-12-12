@@ -107,7 +107,7 @@ ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type 
 	for (auto& pair : _filters)
 	{
 		size_type filteredLen = 0;
-		void* filteredData = pair.first->FilterData(pair.second.get(), buf.GetBytes(), result, &filteredLen);
+		void* filteredData = pair.first->FilterData(pair.second.get(), buf.GetBytes(), buf.GetBufferSize(), &filteredLen);
 		if (filteredData == nullptr || filteredLen == 0) {
 			if (filteredData != nullptr && filteredData != buf.GetBytes())
 				delete[] reinterpret_cast<uint8_t*>(filteredData);
