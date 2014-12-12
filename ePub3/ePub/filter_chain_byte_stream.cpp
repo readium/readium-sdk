@@ -114,19 +114,19 @@ ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type 
 			throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
 		}
 
-        result = filteredLen;
+		result = filteredLen;
 
 		if (filteredData != buf.GetBytes())
 		{
 			buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), result);
 			delete[] reinterpret_cast<uint8_t*>(filteredData);
 		}
-        else if (result != buf.GetBufferSize())
-        {
-            buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), result);
-        }
+		else if (result != buf.GetBufferSize())
+		{
+			buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), result);
+		}
 	}
-
+	
 	_read_cache = std::move(buf);
 
 	return result;

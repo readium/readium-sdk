@@ -166,7 +166,7 @@ bool ManifestItem::ParseXML(shared_ptr<xml::Node> node)
         return false;
     
     _mediaType = _getProp(node, "media-type");
-    if ( _href.empty() )
+    if ( _mediaType.empty() )
         return false;
     
     _mediaOverlayID = _getProp(node, "media-overlay");

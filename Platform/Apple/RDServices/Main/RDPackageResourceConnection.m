@@ -180,17 +180,27 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 		{
 			NSString* ext = [[path pathExtension] lowercaseString];
 			bool isHTML = [ext isEqualToString:@"xhtml"] || [ext isEqualToString:@"html"] || [resource.mimeType isEqualToString:@"application/xhtml+xml"]; //[path hasSuffix:@".html"] || [path hasSuffix:@".xhtml"]
-			BOOL isXhtmlWellFormed = NO;
+			BOOL isXhtmlWellFormed = YES;
 			if (isHTML) {
 				NSData *data = [resource readDataFull];
 				if (data != nil) {
-					
+					// Can be used to check / debug encoding issues
+					// NSString * dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+					// NSLog(@"XHTML SOURCE: %@", dataStr);
+					// data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+
 					@try
 					{
 						NSXMLParser *xmlparser = [[NSXMLParser alloc] initWithData:data];
 						//[xmlparser setDelegate:self];
 						[xmlparser setShouldResolveExternalEntities:NO];
 						isXhtmlWellFormed = [xmlparser parse];
+									
+						if (isXhtmlWellFormed == NO)
+						{
+							NSError * error = [xmlparser parserError];
+							NSLog(@"XHTML PARSE ERROR: %@", error);
+						}
 					}
 					@catch (NSException *ex)
 					{
