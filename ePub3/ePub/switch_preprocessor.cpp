@@ -34,10 +34,10 @@ REGEX_NS::regex SwitchPreprocessor::CaseContentExtractor("<(?:epub:)?case\\s+req
 REGEX_NS::regex SwitchPreprocessor::DefaultContentExtractor("<(?:epub:)?default(?:.|\\n|\\r)*?>((?:.|\\n|\\r)*?)</(?:epub:)?default(?:.|\\n|\\r)*?>", SwitchRegexFlags);
 
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-SwitchPreprocessor::NamespaceList SwitchPreprocessor::_supportedNamespaces{};
+SwitchPreprocessor::NamespaceList SwitchPreprocessor::_supportedNamespaces{ ePub3NamespaceURI, MathMLNamespaceURI, PLSNamespaceURI, SSMLNamespaceURI, SVGNamespaceURI, XHTMLNamespaceURI };
 #else
-static const string __default_namespaces[1] = {MathMLNamespaceURI};
-SwitchPreprocessor::NamespaceList SwitchPreprocessor::_supportedNamespaces(&__default_namespaces[0], &__default_namespaces[1]);
+static const string __default_namespaces[6] = { ePub3NamespaceURI, MathMLNamespaceURI, PLSNamespaceURI, SSMLNamespaceURI, SVGNamespaceURI, XHTMLNamespaceURI };
+SwitchPreprocessor::NamespaceList SwitchPreprocessor::_supportedNamespaces(&__default_namespaces[0], &__default_namespaces[5]);
 #endif
 
 bool SwitchPreprocessor::SniffSwitchableContent(ConstManifestItemPtr item)

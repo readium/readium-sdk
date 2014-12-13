@@ -168,7 +168,7 @@ std::unique_ptr<ByteStream> FilterChain::GetFilterChainByteStreamRange(ConstMani
     if (!resultStream)
     {
         unique_ptr<SeekableByteStream> rawInputPtr(rawInput);
-        resultStream.reset(new FilterChainByteStreamRange(std::move(rawInputPtr)));
+        resultStream.reset(new FilterChainByteStreamRange(std::move(rawInputPtr), nullptr, nullptr));
     }
     
     return resultStream;

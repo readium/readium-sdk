@@ -35,30 +35,34 @@ FilterChainByteStream::~FilterChainByteStream()
 {
 }
 
-FilterChainByteStream::FilterChainByteStream(std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr &manifestItem)
-: _filters(), _needs_cache(false), _cache(), _read_cache()
-{
-    _input = NULL;
-	_cache.SetUsesSecureErasure();
-	_read_cache.SetUsesSecureErasure();
-    
-	for (auto& filter : filters)
-	{
-		_filters.emplace_back(filter, std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem)));
-        if (filter->GetOperatingMode() == ContentFilter::OperatingMode::RequiresCompleteData && !_needs_cache)
-			_needs_cache = true;
-	}
-}
+//FilterChainByteStream::FilterChainByteStream(std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr &manifestItem)
+//: m_filters(), m_filterContexts(), _needs_cache(false), _cache(), _read_cache()
+//{
+//    _input = NULL;
+//	_cache.SetUsesSecureErasure();
+//	_read_cache.SetUsesSecureErasure();
+//
+//	for (ContentFilterPtr filter : filters)
+//	{
+//		m_filters.push_back(filter);
+//        m_filterContexts.push_back(std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem)));
+//
+//        if (filter->GetOperatingMode() == ContentFilter::OperatingMode::RequiresCompleteData && !_needs_cache)
+//			_needs_cache = true;
+//	}
+//}
 
 FilterChainByteStream::FilterChainByteStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem)
-: _input(std::move(input)), _filters(), _needs_cache(false), _cache(), _read_cache()
+: _input(std::move(input)), m_filters(), m_filterContexts(), _needs_cache(false), _cache(), _read_cache()
 {
 	_cache.SetUsesSecureErasure();
 	_read_cache.SetUsesSecureErasure();
 
-	for (auto& filter : filters)
+	for (ContentFilterPtr filter : filters)
 	{
-		_filters.emplace_back(filter, std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem)));
+        m_filters.push_back(filter);
+        m_filterContexts.push_back(std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem)));
+
 		if (filter->GetOperatingMode() == ContentFilter::OperatingMode::RequiresCompleteData && !_needs_cache)
 			_needs_cache = true;
 	}
@@ -104,10 +108,12 @@ ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type 
 	ByteBuffer buf(reinterpret_cast<uint8_t*>(bytes), len);
 	buf.SetUsesSecureErasure();
 
-	for (auto& pair : _filters)
+	for (int i = 0; i < m_filters.size(); i++)
 	{
+        ContentFilterPtr filter = m_filters.at(i);
+
 		size_type filteredLen = 0;
-		void* filteredData = pair.first->FilterData(pair.second.get(), buf.GetBytes(), buf.GetBufferSize(), &filteredLen);
+		void* filteredData = filter->FilterData(m_filterContexts.at(i).get(), buf.GetBytes(), buf.GetBufferSize(), &filteredLen);
 		if (filteredData == nullptr || filteredLen == 0) {
 			if (filteredData != nullptr && filteredData != buf.GetBytes())
 				delete[] reinterpret_cast<uint8_t*>(filteredData);

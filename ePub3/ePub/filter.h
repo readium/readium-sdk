@@ -40,9 +40,6 @@ typedef std::shared_ptr<Package>    PackagePtr;
 class ContentFilter;
 typedef std::shared_ptr<ContentFilter>  ContentFilterPtr;
 
-class FilterContext;
-typedef std::pair<ContentFilterPtr, std::unique_ptr<FilterContext>>	FilterNode;
-
 // -------------------------------------------------------------------------------------------
 
 class ByteRange

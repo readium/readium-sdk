@@ -43,7 +43,9 @@ class FilterChainByteStream : public ByteStream
 {
 private:
 	std::unique_ptr<ByteStream>		_input;
-	std::vector<FilterNode>		_filters;
+
+    std::vector<ContentFilterPtr> m_filters;
+    std::vector<std::unique_ptr<FilterContext>> m_filterContexts;
     
 	bool							_needs_cache;
 	ByteBuffer						_cache;
@@ -57,7 +59,7 @@ private:
 
 public:
     FilterChainByteStream() : ByteStream() {}
-    EPUB3_EXPORT FilterChainByteStream(std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr &manifestItem);
+    //EPUB3_EXPORT FilterChainByteStream(std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr &manifestItem);
     EPUB3_EXPORT FilterChainByteStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem);
 	virtual ~FilterChainByteStream();
     
