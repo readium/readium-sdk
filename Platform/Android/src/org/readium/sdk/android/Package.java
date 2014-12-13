@@ -370,7 +370,7 @@ public class Package {
 	 * @return the resource as a byte array. If no data is retrieved, the byte array length is 0.
 	 */
 	public byte[] getContent(String relativePath) {
-		InputStream in = getInputStream(relativePath, false);
+		InputStream in = getInputStream(relativePath);
 		if (in == null) {
 			return null;
 		}

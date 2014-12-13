@@ -42,6 +42,7 @@
 #include "helpers.h"
 #include "package.h"
 #include "resource_stream.h"
+#include "ePub3/filter_chain_byte_stream_range.h"
 
 
 using namespace std;
@@ -770,7 +771,7 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeInputStream
 }
 
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeByteRangeStreamForRelativePath
-        (JNIEnv *env, jobject thiz, jlong pckgPtr, jlong contnrPtr, jstring relativePath, jlong offset, jlong length)
+        (JNIEnv *env, jobject thiz, jlong pckgPtr, jlong contnrPtr, jstring jrelativePath, jlong offset, jlong length)
 {
 	char *relativePath = (char *) env->GetStringUTFChars(jrelativePath, NULL);
 	LOGI("Package.nativeInputStreamForRelativePath(): received relative path '%s'", relativePath);
@@ -802,9 +803,10 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeByteRangeSt
 
 	auto rawInputbyteStream = PCKG(pckgPtr)->ReadStreamForItemAtPath(path);
 	ePub3::ManifestItemPtr m = std::const_pointer_cast<ePub3::ManifestItem>(manifestItem);
-	unique_ptr<ePub3::ByteStream> byteStream = PCKG(pckgPtr)->GetFilterChainByteStreamRange(m, rawInputbyteStream.release());
-	unique_ptr<ePub3::FilterChainByteStreamRange> rangeByteStream = dynamic_cast<FilterChainByteStreamRange *>(byteStream.release());
-	if (rangeByteStream == null)
+	ePub3::SeekableByteStream *rawInput = dynamic_cast<ePub3::SeekableByteStream *>((ePub3::ByteStream *)rawInputbyteStream.release());
+	unique_ptr<ePub3::ByteStream> byteStream = PCKG(pckgPtr)->GetFilterChainByteStreamRange(m, rawInput);
+	ePub3::FilterChainByteStreamRange *rangeByteStream = dynamic_cast<ePub3::FilterChainByteStreamRange *>(byteStream.release());
+	if (rangeByteStream == nullptr)
 	{
 		LOGE("Somehow Package::GetFilterChainByteStreamRane() did not return a FilterChainByteStreamRange object for path '%s'", relativePath);
 		return NULL;
@@ -818,7 +820,7 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeByteRangeSt
 	range.Location(offset);
 	range.Length(length);
 
-	std::size_t readBytes = byteStream->ReadBytes(&tmpBuffer, sizeof(tmpBuffer), range);
+	std::size_t readBytes = rangeByteStream->ReadBytes(&tmpBuffer, sizeof(tmpBuffer), range);
 	if (readBytes > 0)
 	{
 		jsize length = (jsize) readBytes;
