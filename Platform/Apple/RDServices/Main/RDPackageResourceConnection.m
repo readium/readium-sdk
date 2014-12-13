@@ -154,15 +154,10 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 	// => push the global window.navigator.epubReadingSystem into the iframe(s)
 	NSString * eprs = @"readium_epubReadingSystem_inject.js";
 	if ([path hasSuffix:eprs]) {
-		
+
+		NSString* cmd = @"var epubRSInject = function(win) { if (win.frames) { for (var i = 0; i < win.frames.length; i++) { var iframe = win.frames[i]; if (iframe.readium_set_epubReadingSystem) { iframe.readium_set_epubReadingSystem(window.navigator.epubReadingSystem); } epubRSInject(iframe); } } }; epubRSInject(window);";
 		// Iterate top-level iframes, inject global window.navigator.epubReadingSystem if the expected hook function exists ( readium_set_epubReadingSystem() ).
-		[m_packageResourceServer executeJavaScript:
-			@"for (var i = 0; i < window.frames.length; i++) { "
-		 @"var iframe = window.frames[i]; "
-		 @"if (iframe.readium_set_epubReadingSystem) { "
-		 @"iframe.readium_set_epubReadingSystem(window.navigator.epubReadingSystem); "
-		 @"}"
-			@"}"];
+		[m_packageResourceServer executeJavaScript:cmd];
 		
 		NSString* noop = @"var noop = true;"; // prevents 404 (WebConsole message)
 		NSData *data = [noop dataUsingEncoding:NSUTF8StringEncoding];
