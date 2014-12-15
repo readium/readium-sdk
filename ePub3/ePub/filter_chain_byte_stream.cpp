@@ -180,10 +180,9 @@ ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type 
                 {
                     delete[] reinterpret_cast<uint8_t*>(filteredData);
                 }
-
             }
 
-            throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
+            return 0;
         }
 
         result = filteredLen;
@@ -200,10 +199,10 @@ ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type 
         }
         else if (result < buf.GetBufferSize())
         {
-            //buf.RemoveBytes(buf.GetBufferSize() - result, result);
+            buf.RemoveBytes(buf.GetBufferSize() - result, result);
 
             // NOTE: destroys previous buffer, allocates new memory block! (memcpy)
-            buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), result);
+            //buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), result);
         }
         else if (result > buf.GetBufferSize())
         {
