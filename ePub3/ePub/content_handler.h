@@ -57,7 +57,7 @@ class Package;
  */
 class ContentHandler : public PointerType<ContentHandler>, public OwnedBy<Package>
 #if EPUB_PLATFORM(WINRT)
-	, public NativeBridge
+    , public NativeBridge
 #endif
 {
 public:
@@ -87,12 +87,12 @@ public:
     
     virtual ContentHandler& operator=(const ContentHandler& o) {
         _mediaType = o._mediaType;
-		OwnedBy::operator=(o);
+        OwnedBy::operator=(o);
         return *this;
     }
     virtual ContentHandler& operator=(ContentHandler&& o) {
         _mediaType = std::move(o._mediaType);
-		OwnedBy::operator=(std::move(o));
+        OwnedBy::operator=(std::move(o));
         return *this;
     }
     

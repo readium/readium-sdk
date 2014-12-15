@@ -44,7 +44,7 @@ struct ByteRange;
 
 class FilterChain : public PointerType<FilterChain>
 #if EPUB_PLATFORM(WINRT)
-	, public NativeBridge
+    , public NativeBridge
 #endif
 {
 public:
@@ -53,12 +53,12 @@ public:
 public:
     FilterChain(FilterList filters) : _filters(filters) {}
 #if EPUB_COMPILER_SUPPORTS(CXX_DEFAULTED_FUNCTIONS)
-	FilterChain(FilterChain&& o) : _filters(std::move(o._filters)) {}
+    FilterChain(FilterChain&& o) : _filters(std::move(o._filters)) {}
     virtual ~FilterChain()                  = default;
-	FilterChain& operator=(FilterChain&& o) {
-		_filters = std::move(o._filters);
-		return *this;
-	}
+    FilterChain& operator=(FilterChain&& o) {
+        _filters = std::move(o._filters);
+        return *this;
+    }
 #else
     FilterChain(FilterChain&& o) : _filters(std::move(o._filters)) {}
     virtual ~FilterChain() {}
@@ -73,7 +73,7 @@ public:
     std::shared_ptr<AsyncByteStream> GetFilteredOutputStreamForManifestItem(ConstManifestItemPtr item) const;
 #endif /* SUPPORT_ASYNC */
 
-	std::shared_ptr<ByteStream> GetFilterChainByteStream(ConstManifestItemPtr item) const;
+    std::shared_ptr<ByteStream> GetFilterChainByteStream(ConstManifestItemPtr item) const;
     std::unique_ptr<ByteStream> GetFilterChainByteStream(ConstManifestItemPtr item, SeekableByteStream *rawInput) const;
     std::shared_ptr<ByteStream> GetFilterChainByteStreamRange(ConstManifestItemPtr item) const;
     std::unique_ptr<ByteStream> GetFilterChainByteStreamRange(ConstManifestItemPtr item, SeekableByteStream *rawInput) const;
@@ -107,8 +107,8 @@ protected:
         
     };
 
-	static
-	std::unique_ptr<thread_pool>		_filterThreadPool;
+    static
+    std::unique_ptr<thread_pool>        _filterThreadPool;
 #endif /* SUPPORT_ASYNC */
 
     private:

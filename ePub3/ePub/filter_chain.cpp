@@ -68,10 +68,10 @@ std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifest
     // otherwise, attach the output pipe
     thisChain.back()->SetOutputLink(linkPipe.first);
 
-	static std::once_flag __once;
-	std::call_once(__once, [](){
-		_filterThreadPool.reset(new thread_pool(thread_pool::Automatic));
-	});
+    static std::once_flag __once;
+    std::call_once(__once, [](){
+        _filterThreadPool.reset(new thread_pool(thread_pool::Automatic));
+    });
     
     // set it to run on a runloop somewhere...
     _filterThreadPool->add([thisChain]() mutable {
@@ -295,13 +295,13 @@ void FilterChain::ChainLinkProcessor::ScheduleProcessor(RunLoopPtr runLoop)
             case AsyncEvent::ErrorOccurred:
                 std::cerr << "ChainLinkProcessor input stream error: " << stream->Error() << std::endl;
                 stream->Close();
-				if (bool(_input))
-					_input->Close();
+                if (bool(_input))
+                    _input->Close();
                 break;
                 
             case AsyncEvent::EndEncountered:
-				if (bool(_input))
-					_input->Close();
+                if (bool(_input))
+                    _input->Close();
                 break;
                 
             default:
@@ -332,15 +332,15 @@ ssize_t FilterChain::ChainLinkProcessor::FunnelBytes()
             size_t filteredLen = 0;
             void* filteredData = _filter->FilterData(_context.get(), buf, thisChunk, &filteredLen);
             if ( filteredData == nullptr || filteredLen == 0 ) {
-				if (filteredData != nullptr && filteredData != buf)
-					delete[] reinterpret_cast<uint8_t*>(filteredData);
+                if (filteredData != nullptr && filteredData != buf)
+                    delete[] reinterpret_cast<uint8_t*>(filteredData);
                 throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
             }
 
             _output->WriteBytes(filteredData, filteredLen);
 
-			if (filteredData != buf)
-				delete[] reinterpret_cast<uint8_t*>(filteredData);
+            if (filteredData != buf)
+                delete[] reinterpret_cast<uint8_t*>(filteredData);
         }
         
         bytesToMove -= thisChunk;

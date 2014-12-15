@@ -208,7 +208,7 @@ private:
  */
 class ContentFilter
 #if EPUB_PLATFORM(WINRT)
-	: public NativeBridge
+    : public NativeBridge
 #endif
 {
 public:
@@ -276,7 +276,7 @@ public:
     ContentFilter(ContentFilter&& o) : _sniffer(std::move(o._sniffer)) {}
     
     /**
-	 Allocate and return a new FilterContext subclass. The default returns `nullptr`.
+     Allocate and return a new FilterContext subclass. The default returns `nullptr`.
      
      This method actually calls InnerMakeFilterContext(), in order to allow the subclasses
      of ContentFilter to return their own subclasses of FilterContext. Notice, though,
@@ -286,8 +286,8 @@ public:
      will result in an exception being thrown.
 
      @param item The Manifest Item being processed, and for which the context is created.
-	 @result An object containing per-item data, or nullptr.
-	 */
+     @result An object containing per-item data, or nullptr.
+     */
     FilterContext *MakeFilterContext(ConstManifestItemPtr item) const
     {
         FilterContext *filterContext = InnerMakeFilterContext(item);

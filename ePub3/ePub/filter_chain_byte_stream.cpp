@@ -39,83 +39,83 @@ FilterChainByteStream::~FilterChainByteStream()
 //: m_filters(), m_filterContexts(), _needs_cache(false), _cache(), _read_cache()
 //{
 //    _input = NULL;
-//	_cache.SetUsesSecureErasure();
-//	_read_cache.SetUsesSecureErasure();
+//    _cache.SetUsesSecureErasure();
+//    _read_cache.SetUsesSecureErasure();
 //
-//	for (ContentFilterPtr filter : filters)
-//	{
-//		m_filters.push_back(filter);
+//    for (ContentFilterPtr filter : filters)
+//    {
+//        m_filters.push_back(filter);
 //        m_filterContexts.push_back(std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem)));
 //
 //        if (filter->GetOperatingMode() == ContentFilter::OperatingMode::RequiresCompleteData && !_needs_cache)
-//			_needs_cache = true;
-//	}
+//            _needs_cache = true;
+//    }
 //}
 
 FilterChainByteStream::FilterChainByteStream(std::unique_ptr<SeekableByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem)
 : _input(std::move(input)), m_filters(), m_filterContexts(), _needs_cache(false), _cache(), _read_cache()
 {
-	_cache.SetUsesSecureErasure();
-	_read_cache.SetUsesSecureErasure();
+    _cache.SetUsesSecureErasure();
+    _read_cache.SetUsesSecureErasure();
 
-	for (ContentFilterPtr filter : filters)
-	{
+    for (ContentFilterPtr filter : filters)
+    {
         m_filters.push_back(filter);
         m_filterContexts.push_back(std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem)));
 
-		if (filter->GetOperatingMode() == ContentFilter::OperatingMode::RequiresCompleteData && !_needs_cache)
-			_needs_cache = true;
-	}
+        if (filter->GetOperatingMode() == ContentFilter::OperatingMode::RequiresCompleteData && !_needs_cache)
+            _needs_cache = true;
+    }
 }
 
 ByteStream::size_type FilterChainByteStream::ReadBytes(void* bytes, size_type len)
 {
     if (len == 0) return 0;
 
-	if (_needs_cache)
-	{
-		if (_cache.GetBufferSize() == 0 && _input->AtEnd() == false)
-			CacheBytes();
+    if (_needs_cache)
+    {
+        if (_cache.GetBufferSize() == 0 && _input->AtEnd() == false)
+            CacheBytes();
 
-		return ReadBytesFromCache(bytes, len);
-	}
+        return ReadBytesFromCache(bytes, len);
+    }
 
-	if (_read_cache.GetBufferSize() > 0)
-	{
-		size_type toMove = std::min(len, _read_cache.GetBufferSize());
-		::memcpy_s(bytes, len, _read_cache.GetBytes(), toMove);
-		_read_cache.RemoveBytes(toMove);
-		return toMove;
-	}
-	else 
-	{
+    if (_read_cache.GetBufferSize() > 0)
+    {
+        size_type toMove = std::min(len, _read_cache.GetBufferSize());
+        ::memcpy_s(bytes, len, _read_cache.GetBytes(), toMove);
+        _read_cache.RemoveBytes(toMove);
+        return toMove;
+    }
+    else 
+    {
         if (!_input->IsOpen())
         {
             return 0;
         }
 
-		size_type result = _input->ReadBytes(bytes, len);
+        size_type result = _input->ReadBytes(bytes, len);
         if (result == 0) return 0;
 
-		result = FilterBytes(bytes, result);
+        result = FilterBytes(bytes, result);
 
-		size_type toMove = std::min(len, _read_cache.GetBufferSize());
-		::memcpy_s(bytes, len, _read_cache.GetBytes(), toMove);
-		_read_cache.RemoveBytes(toMove);
-		return toMove;
-	}
+        size_type toMove = std::min(len, _read_cache.GetBufferSize());
+        ::memcpy_s(bytes, len, _read_cache.GetBytes(), toMove);
+        _read_cache.RemoveBytes(toMove);
+        return toMove;
+    }
 }
 
 ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type len)
 {
     if (len == 0) return 0;
 
-	size_type result = len;
-	ByteBuffer buf(reinterpret_cast<uint8_t*>(bytes), len);
-	buf.SetUsesSecureErasure();
+    size_type result = len;
+    ByteBuffer buf(reinterpret_cast<uint8_t*>(bytes), len);
+    buf.SetUsesSecureErasure();
 
-	for (int i = 0; i < m_filters.size(); i++)
-	{
+    for (int i = 0; i < m_filters.size(); i++)
+    {
         ContentFilterPtr filter = m_filters.at(i);
         FilterContext * filterContext = m_filterContexts.at(i).get();
 
@@ -146,7 +146,7 @@ ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type 
             filterContextRange->SetSeekableByteStream(_input.get());
         }
 
-		size_type filteredLen = 0;
+        size_type filteredLen = 0;
         void *filteredData = nullptr;
 
         if (filterContextRange != nullptr)
@@ -172,9 +172,9 @@ ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type 
             }
         }
 
-		if (filteredData == nullptr || filteredLen == 0)
+        if (filteredData == nullptr || filteredLen == 0)
         {
-			if (filteredData != nullptr && filteredData != buf.GetBytes())
+            if (filteredData != nullptr && filteredData != buf.GetBytes())
             {
                 if (filterContextRange == nullptr || reinterpret_cast<uint8_t*>(filteredData) != filterContextRange->GetCurrentTemporaryByteBuffer())
                 {
@@ -183,71 +183,79 @@ ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type 
 
             }
 
-			throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
-		}
+            throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
+        }
 
-		result = filteredLen;
+        result = filteredLen;
 
-		if (filteredData != buf.GetBytes())
-		{
+        if (filteredData != buf.GetBytes())
+        {
             // NOTE: destroys previous buffer, allocates new memory block! (memcpy)
-			buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), result);
+            buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), result);
 
             if (filterContextRange == nullptr || reinterpret_cast<uint8_t*>(filteredData) != filterContextRange->GetCurrentTemporaryByteBuffer())
             {
                 delete[] reinterpret_cast<uint8_t*>(filteredData);
             }
-		}
-		else if (result != buf.GetBufferSize())
-		{
+        }
+        else if (result < buf.GetBufferSize())
+        {
+            buf.RemoveBytes(buf.GetBufferSize() - result, result);
+        }
+        else if (result > buf.GetBufferSize())
+        {
+            // This should never happen! (returned more bytes than requested)
+
             // NOTE: destroys previous buffer, allocates new memory block! (memcpy)
-			buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), result);
-		}
-	}
-	
-	_read_cache = std::move(buf);
+            buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), result);
+        }
+    }
+    
+    _read_cache = std::move(buf);
 
     // ASSERT result == _read_cache.GetBufferSize()
-	return result;
+    return result;
 }
 
 ByteStream::size_type FilterChainByteStream::ReadBytesFromCache(void* bytes, size_type len)
 {
     if (len == 0) return 0;
 
-	size_type numToRead = std::min(len, size_type(_cache.GetBufferSize()));
-	::memcpy_s(bytes, len, _cache.GetBytes(), numToRead);
-	_cache.RemoveBytes(numToRead);
-	return numToRead;
+    size_type numToRead = std::min(len, size_type(_cache.GetBufferSize()));
+    ::memcpy_s(bytes, len, _cache.GetBytes(), numToRead);
+    _cache.RemoveBytes(numToRead);
+    return numToRead;
 }
 
 void FilterChainByteStream::CacheBytes()
 {
-	// read everything from the input stream
+    // read everything from the input stream
 #define _TMP_BUF_LEN 16*1024
-	uint8_t buf[_TMP_BUF_LEN] = {};
-	while (_input->AtEnd() == false)
-	{
-		size_type numRead = _input->ReadBytes(buf, _TMP_BUF_LEN);
-		if (numRead == 0)
-			break;
-		if (numRead > 0)
-			_cache.AddBytes(buf, numRead);
-	}
+    uint8_t buf[_TMP_BUF_LEN] = {};
+    while (_input->AtEnd() == false)
+    {
+        size_type numRead = _input->ReadBytes(buf, _TMP_BUF_LEN);
+        if (numRead == 0)
+            break;
+        if (numRead > 0)
+            _cache.AddBytes(buf, numRead);
+    }
 
     if (_cache.GetBufferSize() == 0) return;
 
-	// filter everything completely
-	size_type filtered = FilterBytes(_cache.GetBytes(), _cache.GetBufferSize());
+    // filter everything completely
+    size_type filtered = FilterBytes(_cache.GetBytes(), _cache.GetBufferSize());
 
-	if (filtered > 0)
-	{
-		_cache = std::move(_read_cache);
-		_read_cache.RemoveBytes(_read_cache.GetBufferSize());
-	}
+    if (filtered > 0)
+    {
+        // ASSERT filtered == _read_cache.GetBufferSize()
 
-	// this potentially contains decrypted data, so use secure erasure
-	_cache.SetUsesSecureErasure();
+        _cache = std::move(_read_cache);
+        _read_cache.RemoveBytes(_read_cache.GetBufferSize());
+    }
+
+    // this potentially contains decrypted data, so use secure erasure
+    _cache.SetUsesSecureErasure();
 }
 
 EPUB3_END_NAMESPACE
