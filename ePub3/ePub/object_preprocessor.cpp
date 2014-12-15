@@ -39,7 +39,20 @@ FilterContext *ObjectPreprocessor::InnerMakeFilterContext(ConstManifestItemPtr i
 }
 bool ObjectPreprocessor::ShouldApply(ConstManifestItemPtr item)
 {
-    return (item->MediaType() == "application/xhtml+xml" || item->MediaType() == "text/html");
+    if (item->MediaType() == "application/xhtml+xml" || item->MediaType() == "text/html")
+    {
+        // DEBUG!!
+        if (item->HasProperty("http://github.com/danielweck#no-bindings"))
+        {
+            string href = item->Href();
+            printf("SKIP BINDINGS: %s\n", href.c_str());
+            return false;
+        }
+
+        return true;
+    }
+
+    return false;
 }
 ContentFilterPtr ObjectPreprocessor::ObjectFilterFactory(ConstPackagePtr package)
 {
@@ -100,6 +113,8 @@ void* ObjectPreprocessor::FilterData(FilterContext* context, void *data, size_t 
     }
 
     char* input = reinterpret_cast<char*>(data);
+    //printf("\n\n%s\n\n", input);
+
     // find each `object` tag
     REGEX_NS::cregex_iterator pos(input, input+len, _objectMatcher);
     REGEX_NS::cregex_iterator end;
@@ -345,16 +360,21 @@ void* ObjectPreprocessor::FilterData(FilterContext* context, void *data, size_t 
     }
     
     *outputLen = output.size();
-    if ( output.size() < len )
+
+    if (*outputLen == 0)
     {
-        // use the incoming buffer directly
-        output.copy(input, output.size());
+        *outputLen = len;
         return input;
     }
-    
-    // allocate an output buffer
-    char* result = new char[output.size()];
-    output.copy(result, output.size());
+
+    if (*outputLen < len)
+    {
+        output.copy(input, *outputLen);
+        return input;
+    }
+
+    char* result = new char[*outputLen];
+    output.copy(result, *outputLen);
     return result;
 }
 

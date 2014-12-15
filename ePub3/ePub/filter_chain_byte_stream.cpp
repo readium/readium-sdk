@@ -52,7 +52,7 @@ FilterChainByteStream::~FilterChainByteStream()
 //	}
 //}
 
-FilterChainByteStream::FilterChainByteStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem)
+FilterChainByteStream::FilterChainByteStream(std::unique_ptr<SeekableByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem)
 : _input(std::move(input)), m_filters(), m_filterContexts(), _needs_cache(false), _cache(), _read_cache()
 {
 	_cache.SetUsesSecureErasure();
@@ -89,10 +89,16 @@ ByteStream::size_type FilterChainByteStream::ReadBytes(void* bytes, size_type le
 	}
 	else 
 	{
+        if (!_input->IsOpen())
+        {
+            return 0;
+        }
+
 		size_type result = _input->ReadBytes(bytes, len);
         if (result == 0) return 0;
 
 		result = FilterBytes(bytes, result);
+
 		size_type toMove = std::min(len, _read_cache.GetBufferSize());
 		::memcpy_s(bytes, len, _read_cache.GetBytes(), toMove);
 		_read_cache.RemoveBytes(toMove);
@@ -111,12 +117,72 @@ ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type 
 	for (int i = 0; i < m_filters.size(); i++)
 	{
         ContentFilterPtr filter = m_filters.at(i);
+        FilterContext * filterContext = m_filterContexts.at(i).get();
+
+        size_type streamPos = 0;
+
+        // A filter may support ranges, but may be invoked in a non-HTTP-byte-range scenario
+        RangeFilterContext *filterContextRange = dynamic_cast<RangeFilterContext *>(filterContext);
+        if (filterContextRange != nullptr)
+        {
+            // ASSERT i == 0 ? (decryption filter always first, can access raw byte stream directly)
+
+            ByteRange byteRange;
+            if (!_needs_cache)
+            {
+                // ASSERT m_filters.size() == 1 ? (decryption filter on its own might be subject to sequential consecutive byte chunks)
+
+                if (!_input->IsOpen())
+                {
+                    throw std::logic_error("ChainLinkProcessor: Byte stream not open?!");
+                }
+
+                streamPos = _input->Position();
+
+                byteRange.Location(streamPos - result);
+                byteRange.Length(result);
+            }
+            filterContextRange->GetByteRange() = byteRange;
+            filterContextRange->SetSeekableByteStream(_input.get());
+        }
 
 		size_type filteredLen = 0;
-		void* filteredData = filter->FilterData(m_filterContexts.at(i).get(), buf.GetBytes(), buf.GetBufferSize(), &filteredLen);
-		if (filteredData == nullptr || filteredLen == 0) {
+        void *filteredData = nullptr;
+
+        if (filterContextRange != nullptr)
+        {
+            filteredData = filter->FilterData(filterContext, nullptr, 0, &filteredLen);
+        }
+        else
+        {
+            filteredData = filter->FilterData(filterContext, buf.GetBytes(), buf.GetBufferSize(), &filteredLen);
+        }
+
+        if (filterContextRange != nullptr)
+        {
+            filterContextRange->GetByteRange().Reset();
+            filterContextRange->ResetSeekableByteStream();
+
+            if (!_needs_cache)
+            {
+                if (_input->IsOpen())
+                {
+                    _input->Seek(streamPos, std::ios::seekdir::beg);
+                }
+            }
+        }
+
+		if (filteredData == nullptr || filteredLen == 0)
+        {
 			if (filteredData != nullptr && filteredData != buf.GetBytes())
-				delete[] reinterpret_cast<uint8_t*>(filteredData);
+            {
+                if (filterContextRange == nullptr || reinterpret_cast<uint8_t*>(filteredData) != filterContextRange->GetCurrentTemporaryByteBuffer())
+                {
+                    delete[] reinterpret_cast<uint8_t*>(filteredData);
+                }
+
+            }
+
 			throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
 		}
 
@@ -124,17 +190,24 @@ ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type 
 
 		if (filteredData != buf.GetBytes())
 		{
+            // NOTE: destroys previous buffer, allocates new memory block! (memcpy)
 			buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), result);
-			delete[] reinterpret_cast<uint8_t*>(filteredData);
+
+            if (filterContextRange == nullptr || reinterpret_cast<uint8_t*>(filteredData) != filterContextRange->GetCurrentTemporaryByteBuffer())
+            {
+                delete[] reinterpret_cast<uint8_t*>(filteredData);
+            }
 		}
 		else if (result != buf.GetBufferSize())
 		{
+            // NOTE: destroys previous buffer, allocates new memory block! (memcpy)
 			buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), result);
 		}
 	}
 	
 	_read_cache = std::move(buf);
 
+    // ASSERT result == _read_cache.GetBufferSize()
 	return result;
 }
 

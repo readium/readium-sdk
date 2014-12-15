@@ -119,7 +119,7 @@ ByteStream::size_type FilterChainByteStreamRange::ReadBytes(void *bytes, size_ty
     {
         if (filteredData != nullptr && filteredData != bytes)
         {
-            if (filterContext != nullptr && reinterpret_cast<uint8_t*>(filteredData) != filterContext->GetCurrentTemporaryByteBuffer())
+            if (filterContext == nullptr || reinterpret_cast<uint8_t*>(filteredData) != filterContext->GetCurrentTemporaryByteBuffer())
             {
                 delete[] reinterpret_cast<uint8_t *>(filteredData);
             }
@@ -132,7 +132,7 @@ ByteStream::size_type FilterChainByteStreamRange::ReadBytes(void *bytes, size_ty
     {
         ::memcpy_s(bytes, len, filteredData, filteredLen);
 
-        if (filterContext != nullptr && reinterpret_cast<uint8_t*>(filteredData) != filterContext->GetCurrentTemporaryByteBuffer())
+        if (filterContext == nullptr || reinterpret_cast<uint8_t*>(filteredData) != filterContext->GetCurrentTemporaryByteBuffer())
         {
             delete[] reinterpret_cast<uint8_t *>(filteredData);
         }

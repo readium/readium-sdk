@@ -102,16 +102,16 @@ std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifest
 
 std::shared_ptr<ByteStream> FilterChain::GetFilterChainByteStream(ConstManifestItemPtr item) const
 {
-	std::unique_ptr<ByteStream> rawInput = item->Reader();
-	if (rawInput->IsOpen() == false)
+    unique_ptr<SeekableByteStream> byteStream(dynamic_cast<SeekableByteStream *>(item->Reader().release()));
+    if (!byteStream || !byteStream->IsOpen())
     {
-		return nullptr;
+        return nullptr;
     }
-    
-    return shared_ptr<ByteStream>(GetFilterChainByteStream(item, rawInput.release()).release());
+
+    return shared_ptr<ByteStream>(GetFilterChainByteStream(item, byteStream.release()).release());
 }
 
-std::unique_ptr<ByteStream> FilterChain::GetFilterChainByteStream(ConstManifestItemPtr item, ByteStream *rawInput) const
+std::unique_ptr<ByteStream> FilterChain::GetFilterChainByteStream(ConstManifestItemPtr item, SeekableByteStream *rawInput) const
 {
     std::vector<ContentFilterPtr> thisChain;
     for (ContentFilterPtr filter : _filters)
@@ -120,14 +120,14 @@ std::unique_ptr<ByteStream> FilterChain::GetFilterChainByteStream(ConstManifestI
             thisChain.push_back(filter);
     }
     
-    unique_ptr<ByteStream> rawInputPtr(rawInput);
+    unique_ptr<SeekableByteStream> rawInputPtr(rawInput);
     return unique_ptr<FilterChainByteStream>(new FilterChainByteStream(std::move(rawInputPtr), thisChain, item));
 }
 
 std::shared_ptr<ByteStream> FilterChain::GetFilterChainByteStreamRange(ConstManifestItemPtr item) const
 {
     unique_ptr<SeekableByteStream> byteStream(dynamic_cast<SeekableByteStream *>(item->Reader().release()));
-    if (!byteStream)
+    if (!byteStream || !byteStream->IsOpen())
     {
         return nullptr;
     }

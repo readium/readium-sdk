@@ -47,7 +47,7 @@ void PopulateFilterManager()
 		// simply uncomment the line below. Also take a look at the file PassThroughFilter.cpp
 		// to see if the class is enabling itself.
 		//
-        // PassThroughFilter::Register();
+PassThroughFilter::Register();
         SwitchPreprocessor::Register();
         ObjectPreprocessor::Register();
     });

@@ -24,7 +24,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-MediaHandler::MediaHandler(shared_ptr<Package>& owner, const string& mediaType, const string& handlerPath) : ContentHandler(owner, mediaType), _handlerIRI(IRI::gEPUBScheme, owner->PackageID(), handlerPath)
+MediaHandler::MediaHandler(shared_ptr<Package>& owner, const string& mediaType, const string& handlerPath) : ContentHandler(owner, mediaType), _handlerIRI(IRI::gEPUBScheme, ((owner->PackageID().length() > 0) ? owner->PackageID() : "PACK_ID"), handlerPath)
 {
 }
 void MediaHandler::operator()(const string& src, const ParameterList& parameters) const

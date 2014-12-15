@@ -74,7 +74,7 @@ public:
 #endif /* SUPPORT_ASYNC */
 
 	std::shared_ptr<ByteStream> GetFilterChainByteStream(ConstManifestItemPtr item) const;
-    std::unique_ptr<ByteStream> GetFilterChainByteStream(ConstManifestItemPtr item, ByteStream *rawInput) const;
+    std::unique_ptr<ByteStream> GetFilterChainByteStream(ConstManifestItemPtr item, SeekableByteStream *rawInput) const;
     std::shared_ptr<ByteStream> GetFilterChainByteStreamRange(ConstManifestItemPtr item) const;
     std::unique_ptr<ByteStream> GetFilterChainByteStreamRange(ConstManifestItemPtr item, SeekableByteStream *rawInput) const;
     size_t GetFilterChainSize(ConstManifestItemPtr item) const;

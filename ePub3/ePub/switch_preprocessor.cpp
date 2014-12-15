@@ -60,7 +60,8 @@ void SwitchPreprocessor::Register()
 void * SwitchPreprocessor::FilterData(FilterContext* context, void *data, size_t len, size_t *outputLen)
 {
     char* input = reinterpret_cast<char*>(data);
-    
+    //printf("\n\n%s\n\n", input);
+
     // handle partially-commented switch statements
     std::string inputStr(reinterpret_cast<const char*>(data));
     std::string replacement("$1$2$3");
@@ -123,14 +124,21 @@ void * SwitchPreprocessor::FilterData(FilterContext* context, void *data, size_t
     }
     
     *outputLen = output.size();
+
+    if (*outputLen == 0)
+    {
+        *outputLen = len;
+        return input;
+    }
+
     if ( output.size() < len )
     {
-        output.copy(input, output.size());
+        output.copy(input, *outputLen);
         return input;
     }
     
-    char* result = new char[output.size()];
-    output.copy(result, output.size());
+    char* result = new char[*outputLen];
+    output.copy(result, *outputLen);
     return result;
 }
 

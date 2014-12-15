@@ -42,7 +42,7 @@ struct ByteRange;
 class FilterChainByteStream : public ByteStream
 {
 private:
-	std::unique_ptr<ByteStream>		_input;
+	std::unique_ptr<SeekableByteStream>		_input;
 
     std::vector<ContentFilterPtr> m_filters;
     std::vector<std::unique_ptr<FilterContext>> m_filterContexts;
@@ -60,7 +60,7 @@ private:
 public:
     FilterChainByteStream() : ByteStream() {}
     //EPUB3_EXPORT FilterChainByteStream(std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr &manifestItem);
-    EPUB3_EXPORT FilterChainByteStream(std::unique_ptr<ByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem);
+    EPUB3_EXPORT FilterChainByteStream(std::unique_ptr<SeekableByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem);
 	virtual ~FilterChainByteStream();
     
 	virtual size_type BytesAvailable() const _NOEXCEPT OVERRIDE
