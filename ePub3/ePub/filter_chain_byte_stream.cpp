@@ -200,7 +200,10 @@ ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type 
         }
         else if (result < buf.GetBufferSize())
         {
-            buf.RemoveBytes(buf.GetBufferSize() - result, result);
+            //buf.RemoveBytes(buf.GetBufferSize() - result, result);
+
+            // NOTE: destroys previous buffer, allocates new memory block! (memcpy)
+            buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), result);
         }
         else if (result > buf.GetBufferSize())
         {

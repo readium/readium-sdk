@@ -42,11 +42,16 @@ bool ObjectPreprocessor::ShouldApply(ConstManifestItemPtr item)
     if (item->MediaType() == "application/xhtml+xml" || item->MediaType() == "text/html")
     {
         // DEBUG!!
-        if (item->HasProperty("http://github.com/danielweck#no-bindings"))
+        IRI iri1 = IRI("http://github.com/danielweck#NO-BINDINGS");
+        if (item->ContainsProperty(iri1, false))
         {
-            string href = item->Href();
-            printf("SKIP BINDINGS: %s\n", href.c_str());
-            return false;
+            PropertyPtr prop1 = item->PropertyMatching(iri1, false);
+            if (prop1->Value() == "TRUE")
+            {
+                string href = item->Href();
+                printf("SKIP BINDINGS: %s\n", href.c_str());
+                return false;
+            }
         }
 
         return true;

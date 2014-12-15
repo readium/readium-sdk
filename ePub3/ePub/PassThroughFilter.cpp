@@ -62,10 +62,11 @@ auto mediaType = item->MediaType();
                 isCrypt = true;
         }
 
-        if (item->HasProperty("http://github.com/danielweck#encrypted"))
-        {
-            isCrypt = true;
-        }
+// Custom properties values are not allowed.
+//        if (item->HasProperty("http://github.com/danielweck#encrypted"))
+//        {
+//            isCrypt = true;
+//        }
 
         if (isCrypt)
         {
