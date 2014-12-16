@@ -46,7 +46,7 @@ bool PassThroughFilter::SniffPassThroughContent(ConstManifestItemPtr item)
 	//
 auto mediaType = item->MediaType();
     // return (mediaType == "audio/mp4" || mediaType == "audio/mpeg" || mediaType == "video/mp4" || mediaType == "video/mpeg");
-    if (mediaType == "application/xhtml+xml" || mediaType == "text/html")
+    if (mediaType == "application/xhtml+xml" || mediaType == "text/html" || mediaType == "image/jpeg")
     {
         bool isCrypt = false;
 
