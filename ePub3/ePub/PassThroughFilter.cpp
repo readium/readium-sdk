@@ -31,6 +31,10 @@
 
 #include <cmath>
 
+#define MINIZ_NO_ZLIB_COMPATIBLE_NAMES
+#include "miniz.c"
+//extern int mz_uncompress(unsigned char *pDest, unsigned long *pDest_len, const unsigned char *pSource, unsigned long source_len);
+
 EPUB3_BEGIN_NAMESPACE
 
 
@@ -98,42 +102,50 @@ FilterContext *PassThroughFilter::InnerMakeFilterContext(ConstManifestItemPtr it
 {
     return new PassThroughContext;
 }
-    ByteStream::size_type m_totalRawBytesAvailable = 0;
-    ByteStream::size_type m_totalDecryptedBytesAvailable = 0;
-
-    ByteStream::size_type BUFFER_SIZE = 1024 * 1; // kilo bytes
-    ByteStream::size_type PADDING_BYTES = (ByteStream::size_type)(1024 * 0.5f); // must be less than BUFFER_SIZE
+//    ByteStream::size_type m_totalRawBytesAvailable = 0;
+//    ByteStream::size_type m_totalDecryptedBytesAvailable = 0;
+//
+//    ByteStream::size_type BUFFER_SIZE = 1024 * 1; // kilo bytes
+//    ByteStream::size_type PADDING_BYTES = (ByteStream::size_type)(1024 * 0.5f); // must be less than BUFFER_SIZE
 
 
     ByteStream::size_type PassThroughFilter::BytesAvailable(SeekableByteStream *byteStream) const
     {
-        ByteStream::size_type posRaw = byteStream->Position();
-        ByteStream::size_type remainderRaw = byteStream->BytesAvailable();
-        ByteStream::size_type sizeRaw = posRaw + remainderRaw;
+        ByteStream::size_type bytesAvailable = byteStream->BytesAvailable();
 
-        double nChunksPos = posRaw / (BUFFER_SIZE + PADDING_BYTES);
-        ByteStream::size_type nWholeChunksPos = (ByteStream::size_type)floor(nChunksPos);
-        ByteStream::size_type accumulatedPaddingPos = PADDING_BYTES * nWholeChunksPos;
-        ByteStream::size_type posDecrypted = posRaw - accumulatedPaddingPos;
-        double nChunksPos2 = posDecrypted / BUFFER_SIZE;
-        ByteStream::size_type nWholeChunksPos2 = (ByteStream::size_type)floor(nChunksPos2);
-        if (nWholeChunksPos2 > nWholeChunksPos)
-        {
-            posDecrypted = nWholeChunksPos2 * BUFFER_SIZE;
-        }
+//        // upper bound estimate of deflate/compress data
+//        mz_ulong compressedSize = deflateBound(NULL, (mz_ulong)bytesAvailable);
+//        mz_ulong compressedSize_ = compressBound((mz_ulong)bytesAvailable);
 
-        double nChunksEnd = sizeRaw / (BUFFER_SIZE + PADDING_BYTES);
-        ByteStream::size_type nWholeChunksEnd = (ByteStream::size_type)floor(nChunksEnd);
-        ByteStream::size_type accumulatedPaddingEnd = PADDING_BYTES * nWholeChunksEnd;
-        ByteStream::size_type sizeDecrypted = sizeRaw - accumulatedPaddingEnd;
-        double nChunksEnd2 = sizeDecrypted / BUFFER_SIZE;
-        ByteStream::size_type nWholeChunksEnd2 = (ByteStream::size_type)floor(nChunksEnd2);
-        if (nWholeChunksEnd2 > nWholeChunksEnd)
-        {
-            sizeDecrypted = nWholeChunksEnd2 * BUFFER_SIZE;
-        }
+        return bytesAvailable * 1032; // upper bound estimate of inflate/decompress data
 
-        return sizeDecrypted - posDecrypted;
+//        ByteStream::size_type posRaw = byteStream->Position();
+//        ByteStream::size_type remainderRaw = byteStream->BytesAvailable();
+//        ByteStream::size_type sizeRaw = posRaw + remainderRaw;
+//
+//        double nChunksPos = posRaw / (BUFFER_SIZE + PADDING_BYTES);
+//        ByteStream::size_type nWholeChunksPos = (ByteStream::size_type)floor(nChunksPos);
+//        ByteStream::size_type accumulatedPaddingPos = PADDING_BYTES * nWholeChunksPos;
+//        ByteStream::size_type posDecrypted = posRaw - accumulatedPaddingPos;
+//        double nChunksPos2 = posDecrypted / BUFFER_SIZE;
+//        ByteStream::size_type nWholeChunksPos2 = (ByteStream::size_type)floor(nChunksPos2);
+//        if (nWholeChunksPos2 > nWholeChunksPos)
+//        {
+//            posDecrypted = nWholeChunksPos2 * BUFFER_SIZE;
+//        }
+//
+//        double nChunksEnd = sizeRaw / (BUFFER_SIZE + PADDING_BYTES);
+//        ByteStream::size_type nWholeChunksEnd = (ByteStream::size_type)floor(nChunksEnd);
+//        ByteStream::size_type accumulatedPaddingEnd = PADDING_BYTES * nWholeChunksEnd;
+//        ByteStream::size_type sizeDecrypted = sizeRaw - accumulatedPaddingEnd;
+//        double nChunksEnd2 = sizeDecrypted / BUFFER_SIZE;
+//        ByteStream::size_type nWholeChunksEnd2 = (ByteStream::size_type)floor(nChunksEnd2);
+//        if (nWholeChunksEnd2 > nWholeChunksEnd)
+//        {
+//            sizeDecrypted = nWholeChunksEnd2 * BUFFER_SIZE;
+//        }
+//
+//        return sizeDecrypted - posDecrypted;
     }
 
 
@@ -156,146 +168,193 @@ FilterContext *PassThroughFilter::InnerMakeFilterContext(ConstManifestItemPtr it
 
         if (!byteStream->IsOpen())
         {
-            return nullptr;
-        }
-
-        if (!byteStream->IsOpen())
-        {
             printf("BYTE STREAM CLOSED 1!\n");
             return nullptr;
         }
 
-        if (m_totalRawBytesAvailable == 0 || m_totalDecryptedBytesAvailable == 0) byteStream->Seek(0, std::ios::seekdir::beg);
-        if (m_totalRawBytesAvailable == 0) m_totalRawBytesAvailable = byteStream->BytesAvailable();
-        if (m_totalDecryptedBytesAvailable == 0) m_totalDecryptedBytesAvailable = this->BytesAvailable(byteStream);
+        byteStream->Seek(0, std::ios::seekdir::beg);
+        ByteStream::size_type bytesAvailable = byteStream->BytesAvailable();
 
-//printf("===== totalRawBytesAvailable: %d\n", totalRawBytesAvailable);
-//printf("===== totalDecryptedBytesAvailable: %d\n", totalDecryptedBytesAvailable);
+//        // upper bound estimate of deflate/compress data
+//        mz_ulong compressedSize = deflateBound(NULL, (mz_ulong)bytesAvailable);
+//        mz_ulong compressedSize_ = compressBound((mz_ulong)bytesAvailable);
 
-        ByteStream::size_type bytesToReadInDecrypted = (ByteStream::size_type)(ptContext->GetByteRange().IsFullRange() ? m_totalDecryptedBytesAvailable : ptContext->GetByteRange().Length());
-        if (bytesToReadInDecrypted == 0)
+        unsigned long uncompressedSize = bytesAvailable * 1032; // upper bound estimate of inflate/decompress data
+
+        //unsigned char
+        uint8_t * buffer = ptContext->GetAllocateTemporaryByteBuffer(uncompressedSize);
+
+        unsigned long readSize = bytesAvailable;
+        if (!ptContext->GetByteRange().IsFullRange())
+        {
+            ByteStream::size_type pos = ptContext->GetByteRange().Location();
+            pos = std::min(pos, byteStream->Position() + byteStream->BytesAvailable());
+            byteStream->Seek(pos, std::ios::seekdir::beg);
+
+            if (byteStream->AtEnd())
+            {
+                readSize = 0;
+            }
+            else
+            {
+                readSize = std::min((ByteStream::size_type)ptContext->GetByteRange().Length(), byteStream->BytesAvailable());
+            }
+        }
+
+        if (readSize <= 0)
         {
             return nullptr;
         }
 
-//printf("bytesToReadInDecrypted: %d\n", bytesToReadInDecrypted);
+        uint8_t * readBuffer = new uint8_t[readSize];
+        ByteStream::size_type actuallyRead = byteStream->ReadBytes(readBuffer, readSize);
+        //ASSERT actuallyRead == readSize
 
-        ByteStream::size_type beginOffsetInDecrypted = (ByteStream::size_type)(ptContext->GetByteRange().IsFullRange() ? 0 : ptContext->GetByteRange().Location());
-        double nChunks_begin = beginOffsetInDecrypted / BUFFER_SIZE;
-        ByteStream::size_type nWholeChunks_begin = (ByteStream::size_type)floor(nChunks_begin);
-        ByteStream::size_type accumulatedPadding_begin = PADDING_BYTES * nWholeChunks_begin;
-        ByteStream::size_type beginOffsetInRaw = beginOffsetInDecrypted + accumulatedPadding_begin;
+        //int mz_uncompress(unsigned char *pDest, mz_ulong *pDest_len, const unsigned char *pSource, mz_ulong source_len)
+        int res = mz_uncompress(buffer, &uncompressedSize, readBuffer, actuallyRead);
 
-//printf("--- beginOffsetInRaw: %d\n", beginOffsetInRaw);
+        delete [] readBuffer;
 
-        if (beginOffsetInRaw > (m_totalRawBytesAvailable-1))
+        if (res != Z_OK)
         {
-//printf("--- beginOffsetInRaw overflow! %d - %d\n", beginOffsetInRaw, m_totalRawBytesAvailable);
             return nullptr;
         }
 
-
-        ByteStream::size_type endOffsetInDecrypted = beginOffsetInDecrypted + bytesToReadInDecrypted;
-        double nChunks_end = endOffsetInDecrypted / BUFFER_SIZE;
-        ByteStream::size_type nWholeChunks_end = (ByteStream::size_type)floor(nChunks_end);
-        ByteStream::size_type accumulatedPadding_end = PADDING_BYTES * nWholeChunks_end;
-        ByteStream::size_type endOffsetInRaw = endOffsetInDecrypted + accumulatedPadding_end;
-
-        if (endOffsetInRaw > (m_totalRawBytesAvailable-1))
-        {
-//printf("--- endOffsetInRaw overflow! %d - %d\n", endOffsetInRaw, m_totalRawBytesAvailable);
-            endOffsetInRaw = m_totalRawBytesAvailable - 1;
-        }
-
-        ByteStream::size_type bytesToReadInRaw = endOffsetInRaw - beginOffsetInRaw;
-//printf("bytesToReadInRaw: %d\n", bytesToReadInRaw);
-
-        uint8_t * buffer = ptContext->GetAllocateTemporaryByteBuffer(bytesToReadInDecrypted);
-
-        ByteStream::size_type totalReadInDecrypted = 0;
-        ByteStream::size_type totalReadInRaw = 0;
-
-        ByteStream::size_type currentBeginRaw = beginOffsetInRaw;
-        ByteStream::size_type currentBeginWholeChunks = nWholeChunks_begin;
-
-
-        if (!byteStream->IsOpen())
-        {
-            printf("BYTE STREAM CLOSED 2!\n");
-            return nullptr;
-        }
-        byteStream->Seek(currentBeginRaw, std::ios::seekdir::beg);
-
-        while (totalReadInDecrypted < bytesToReadInDecrypted)
-        {
-            bool toSkip = false;
-            int distanceToNext = ((currentBeginWholeChunks + 1) * (BUFFER_SIZE + PADDING_BYTES)) - currentBeginRaw - PADDING_BYTES;
-            ByteStream::size_type bytesToProcess = 0;
-            if (distanceToNext <= 0) {
-                toSkip = true;
-                bytesToProcess = (ByteStream::size_type)(PADDING_BYTES + distanceToNext);
-
-//printf("bytesToProcess (SKIP): %d\n", bytesToProcess);
-            }
-            else {
-                toSkip = false;
-                bytesToProcess = (ByteStream::size_type)distanceToNext;
-
-//printf("bytesToProcess (READ): %d\n", bytesToProcess);
-            }
-
-            if (!byteStream->IsOpen())
-            {
-                printf("BYTE STREAM CLOSED 3!\n");
-                break;
-            }
-
-            ByteStream::size_type currentRawBytesAvailable = byteStream->BytesAvailable();
-//printf("currentRawBytesAvailable: %d\n", currentRawBytesAvailable);
-
-            ByteStream::size_type currentDecryptedBytesAvailable = this->BytesAvailable(byteStream);
-//printf("currentDecryptedBytesAvailable: %d\n", currentDecryptedBytesAvailable);
-
-            ByteStream::size_type remainderToRead = bytesToReadInDecrypted - totalReadInDecrypted;
-//printf("remainderToRead: %d\n", remainderToRead);
-
-            ByteStream::size_type chunkToRead = std::min(bytesToProcess, remainderToRead);
-            chunkToRead = std::min(chunkToRead, currentRawBytesAvailable);
-
-//printf("chunkToRead (adjusted): %d\n", chunkToRead);
-
-            if (chunkToRead <= 0)
-            {
-                break;
-            }
-
-            ByteStream::size_type readBytes = byteStream->ReadBytes(buffer + totalReadInDecrypted, chunkToRead);
-
-//printf("readBytes: %d\n", readBytes);
-
-            if (readBytes <= 0)
-            {
-                break;
-            }
-
-            totalReadInRaw += readBytes;
-            if (!toSkip)
-            {
-                totalReadInDecrypted += readBytes;
-            }
-
-            currentBeginRaw += readBytes;
-            double nChunks = currentBeginRaw / (BUFFER_SIZE + PADDING_BYTES);
-            currentBeginWholeChunks = (ByteStream::size_type)floor(nChunks);
-
-        }
-
-//printf("~~~~~~~~~~~~~~~~~~~ totalReadInDecrypted: %d\n", totalReadInDecrypted);
-//printf("~~~~~~~~~~~~~~~~~~~ totalReadInRaw: %d\n", totalReadInRaw);
-
-        *outputLen = totalReadInDecrypted;
-
+        *outputLen = uncompressedSize;
         return buffer;
+
+//
+//        if (m_totalRawBytesAvailable == 0 || m_totalDecryptedBytesAvailable == 0) byteStream->Seek(0, std::ios::seekdir::beg);
+//        if (m_totalRawBytesAvailable == 0) m_totalRawBytesAvailable = byteStream->BytesAvailable();
+//        if (m_totalDecryptedBytesAvailable == 0) m_totalDecryptedBytesAvailable = this->BytesAvailable(byteStream);
+//
+////printf("===== totalRawBytesAvailable: %d\n", totalRawBytesAvailable);
+////printf("===== totalDecryptedBytesAvailable: %d\n", totalDecryptedBytesAvailable);
+//
+//        ByteStream::size_type bytesToReadInDecrypted = (ByteStream::size_type)(ptContext->GetByteRange().IsFullRange() ? m_totalDecryptedBytesAvailable : ptContext->GetByteRange().Length());
+//        if (bytesToReadInDecrypted == 0)
+//        {
+//            return nullptr;
+//        }
+//
+////printf("bytesToReadInDecrypted: %d\n", bytesToReadInDecrypted);
+//
+//        ByteStream::size_type beginOffsetInDecrypted = (ByteStream::size_type)(ptContext->GetByteRange().IsFullRange() ? 0 : ptContext->GetByteRange().Location());
+//        double nChunks_begin = beginOffsetInDecrypted / BUFFER_SIZE;
+//        ByteStream::size_type nWholeChunks_begin = (ByteStream::size_type)floor(nChunks_begin);
+//        ByteStream::size_type accumulatedPadding_begin = PADDING_BYTES * nWholeChunks_begin;
+//        ByteStream::size_type beginOffsetInRaw = beginOffsetInDecrypted + accumulatedPadding_begin;
+//
+////printf("--- beginOffsetInRaw: %d\n", beginOffsetInRaw);
+//
+//        if (beginOffsetInRaw > (m_totalRawBytesAvailable-1))
+//        {
+////printf("--- beginOffsetInRaw overflow! %d - %d\n", beginOffsetInRaw, m_totalRawBytesAvailable);
+//            return nullptr;
+//        }
+//
+//
+//        ByteStream::size_type endOffsetInDecrypted = beginOffsetInDecrypted + bytesToReadInDecrypted;
+//        double nChunks_end = endOffsetInDecrypted / BUFFER_SIZE;
+//        ByteStream::size_type nWholeChunks_end = (ByteStream::size_type)floor(nChunks_end);
+//        ByteStream::size_type accumulatedPadding_end = PADDING_BYTES * nWholeChunks_end;
+//        ByteStream::size_type endOffsetInRaw = endOffsetInDecrypted + accumulatedPadding_end;
+//
+//        if (endOffsetInRaw > (m_totalRawBytesAvailable-1))
+//        {
+////printf("--- endOffsetInRaw overflow! %d - %d\n", endOffsetInRaw, m_totalRawBytesAvailable);
+//            endOffsetInRaw = m_totalRawBytesAvailable - 1;
+//        }
+//
+//        ByteStream::size_type bytesToReadInRaw = endOffsetInRaw - beginOffsetInRaw;
+////printf("bytesToReadInRaw: %d\n", bytesToReadInRaw);
+//
+//        uint8_t * buffer = ptContext->GetAllocateTemporaryByteBuffer(bytesToReadInDecrypted);
+//
+//        ByteStream::size_type totalReadInDecrypted = 0;
+//        ByteStream::size_type totalReadInRaw = 0;
+//
+//        ByteStream::size_type currentBeginRaw = beginOffsetInRaw;
+//        ByteStream::size_type currentBeginWholeChunks = nWholeChunks_begin;
+//
+//
+//        if (!byteStream->IsOpen())
+//        {
+//            printf("BYTE STREAM CLOSED 2!\n");
+//            return nullptr;
+//        }
+//        byteStream->Seek(currentBeginRaw, std::ios::seekdir::beg);
+//
+//        while (totalReadInDecrypted < bytesToReadInDecrypted)
+//        {
+//            bool toSkip = false;
+//            int distanceToNext = ((currentBeginWholeChunks + 1) * (BUFFER_SIZE + PADDING_BYTES)) - currentBeginRaw - PADDING_BYTES;
+//            ByteStream::size_type bytesToProcess = 0;
+//            if (distanceToNext <= 0) {
+//                toSkip = true;
+//                bytesToProcess = (ByteStream::size_type)(PADDING_BYTES + distanceToNext);
+//
+////printf("bytesToProcess (SKIP): %d\n", bytesToProcess);
+//            }
+//            else {
+//                toSkip = false;
+//                bytesToProcess = (ByteStream::size_type)distanceToNext;
+//
+////printf("bytesToProcess (READ): %d\n", bytesToProcess);
+//            }
+//
+//            if (!byteStream->IsOpen())
+//            {
+//                printf("BYTE STREAM CLOSED 3!\n");
+//                break;
+//            }
+//
+//            ByteStream::size_type currentRawBytesAvailable = byteStream->BytesAvailable();
+////printf("currentRawBytesAvailable: %d\n", currentRawBytesAvailable);
+//
+//            ByteStream::size_type currentDecryptedBytesAvailable = this->BytesAvailable(byteStream);
+////printf("currentDecryptedBytesAvailable: %d\n", currentDecryptedBytesAvailable);
+//
+//            ByteStream::size_type remainderToRead = bytesToReadInDecrypted - totalReadInDecrypted;
+////printf("remainderToRead: %d\n", remainderToRead);
+//
+//            ByteStream::size_type chunkToRead = std::min(bytesToProcess, remainderToRead);
+//            chunkToRead = std::min(chunkToRead, currentRawBytesAvailable);
+//
+////printf("chunkToRead (adjusted): %d\n", chunkToRead);
+//
+//            if (chunkToRead <= 0)
+//            {
+//                break;
+//            }
+//
+//            ByteStream::size_type readBytes = byteStream->ReadBytes(buffer + totalReadInDecrypted, chunkToRead);
+//
+////printf("readBytes: %d\n", readBytes);
+//
+//            if (readBytes <= 0)
+//            {
+//                break;
+//            }
+//
+//            totalReadInRaw += readBytes;
+//            if (!toSkip)
+//            {
+//                totalReadInDecrypted += readBytes;
+//            }
+//
+//            currentBeginRaw += readBytes;
+//            double nChunks = currentBeginRaw / (BUFFER_SIZE + PADDING_BYTES);
+//            currentBeginWholeChunks = (ByteStream::size_type)floor(nChunks);
+//
+//        }
+//
+////printf("~~~~~~~~~~~~~~~~~~~ totalReadInDecrypted: %d\n", totalReadInDecrypted);
+////printf("~~~~~~~~~~~~~~~~~~~ totalReadInRaw: %d\n", totalReadInRaw);
+//
+//        *outputLen = totalReadInDecrypted;
+//
+//        return buffer;
     }
 
 void PassThroughFilter::Register()

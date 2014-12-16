@@ -136,12 +136,14 @@ public:
 private:
     uint8_t *m_buffer = nullptr;
     ByteStream::size_type m_buffer_size = 0;
+    ByteStream::size_type m_allocated_buffer_size = 0;
 
     uint8_t * DestroyCurrentTemporaryByteBuffer()
     {
         delete[] m_buffer; //reinterpret_cast<uint8_t *>(m_buffer);
         m_buffer = nullptr;
         m_buffer_size = 0;
+        m_allocated_buffer_size = 0;
     }
 
 public:
@@ -155,6 +157,12 @@ public:
         return m_buffer_size;
     }
 
+
+    ByteStream::size_type GetCurrentTemporaryByteBufferAllocatedSize()
+    {
+        return m_allocated_buffer_size;
+    }
+
     uint8_t * GetAllocateTemporaryByteBuffer(ByteStream::size_type bytesToRead)
     {
         if (m_buffer == nullptr || m_buffer_size < bytesToRead)
@@ -165,8 +173,15 @@ public:
             }
 
             m_buffer = new uint8_t[bytesToRead];
-            m_buffer_size = bytesToRead;
+            m_allocated_buffer_size = bytesToRead;
         }
+
+        for (int i = 0; i < m_allocated_buffer_size; i++)
+        {
+            m_buffer[i] = 0;
+        }
+
+        m_buffer_size = bytesToRead;
 
         return m_buffer;
     }
