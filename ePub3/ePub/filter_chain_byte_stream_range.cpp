@@ -130,7 +130,16 @@ ByteStream::size_type FilterChainByteStreamRange::ReadBytes(void *bytes, size_ty
     
     if (filteredData != bytes)
     {
-        ::memcpy_s(bytes, len, filteredData, filteredLen);
+        ByteStream::size_type toCopy = std::min(len, filteredLen);
+        ::memcpy_s(bytes, len, filteredData, toCopy);
+
+        if (filteredLen > len)
+        {
+            ByteStream::size_type toCache = filteredLen - len;
+
+            //TODO cache remainder bytes for use next time round...
+            // (e.g. when decrypted bytes are greater than original request?)
+        }
 
         if (filterContext == nullptr || reinterpret_cast<uint8_t*>(filteredData) != filterContext->GetCurrentTemporaryByteBuffer())
         {

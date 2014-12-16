@@ -46,7 +46,7 @@ bool PassThroughFilter::SniffPassThroughContent(ConstManifestItemPtr item)
 	//
 auto mediaType = item->MediaType();
     // return (mediaType == "audio/mp4" || mediaType == "audio/mpeg" || mediaType == "video/mp4" || mediaType == "video/mpeg");
-    if (mediaType == "application/xhtml+xml" || mediaType == "text/html" || mediaType == "image/jpeg")
+    if (mediaType == "application/xhtml+xml" || mediaType == "text/html" || mediaType == "image/jpeg" || mediaType == "audio/mpeg")
     {
         bool isCrypt = false;
 
@@ -117,7 +117,7 @@ FilterContext *PassThroughFilter::InnerMakeFilterContext(ConstManifestItemPtr it
 //        mz_ulong compressedSize = deflateBound(NULL, (mz_ulong)bytesAvailable);
 //        mz_ulong compressedSize_ = compressBound((mz_ulong)bytesAvailable);
 
-        return bytesAvailable * 1032; // upper bound estimate of inflate/decompress data
+        return bytesAvailable; // * 1032; // upper bound estimate of inflate/decompress data
 
 //        ByteStream::size_type posRaw = byteStream->Position();
 //        ByteStream::size_type remainderRaw = byteStream->BytesAvailable();

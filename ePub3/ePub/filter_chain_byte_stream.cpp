@@ -101,6 +101,10 @@ ByteStream::size_type FilterChainByteStream::ReadBytes(void* bytes, size_type le
         }
 
         result = FilterBytes(bytes, result);
+        if (result == 0)
+        {
+            return 0;
+        }
 
         size_type toMove = std::min(len, _read_cache.GetBufferSize());
         if (toMove > 0)
