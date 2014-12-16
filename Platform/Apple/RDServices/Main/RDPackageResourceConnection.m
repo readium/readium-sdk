@@ -216,7 +216,7 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 					
 					NSString* source = [self htmlFromData:data];
 					if (source != nil) {
-						NSString *pattern = @"(<head.*>)";
+						NSString *pattern = @"(<head[^>]*>)";
 						NSError *error = nil;
 						NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:&error];
 						if(error != nil) {
