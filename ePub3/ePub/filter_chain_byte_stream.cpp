@@ -95,13 +95,19 @@ ByteStream::size_type FilterChainByteStream::ReadBytes(void* bytes, size_type le
         }
 
         size_type result = _input->ReadBytes(bytes, len);
-        if (result == 0) return 0;
+        if (result == 0)
+        {
+            return 0;
+        }
 
         result = FilterBytes(bytes, result);
 
         size_type toMove = std::min(len, _read_cache.GetBufferSize());
-        ::memcpy_s(bytes, len, _read_cache.GetBytes(), toMove);
-        _read_cache.RemoveBytes(toMove);
+        if (toMove > 0)
+        {
+            ::memcpy_s(bytes, len, _read_cache.GetBytes(), toMove);
+            _read_cache.RemoveBytes(toMove);
+        }
         return toMove;
     }
 }
@@ -206,7 +212,7 @@ ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type 
         }
         else if (result > buf.GetBufferSize())
         {
-            // This should never happen! (returned more bytes than requested)
+            // This should never happen! (returned more bytes than could fit!)
 
             // NOTE: destroys previous buffer, allocates new memory block! (memcpy)
             buf = ByteBuffer(reinterpret_cast<uint8_t*>(filteredData), result);

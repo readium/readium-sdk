@@ -131,7 +131,16 @@ void * SwitchPreprocessor::FilterData(FilterContext* context, void *data, size_t
         return input;
     }
 
-    if ( output.size() < len )
+// DEBUG: to test large buffer addition to original resource size
+//    output += "\n<!--\n";
+//    for (int i = 0; i < 500; i++)
+//    {
+//        output += "abcdefghijklmnopqrstuvwxyz-0123456789_";
+//    }
+//    output += "\n-->\n";
+//    *outputLen = output.size();
+
+    if (*outputLen < len)
     {
         output.copy(input, *outputLen);
         return input;

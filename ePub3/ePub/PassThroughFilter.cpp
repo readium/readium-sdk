@@ -137,8 +137,6 @@ FilterContext *PassThroughFilter::InnerMakeFilterContext(ConstManifestItemPtr it
     }
 
 
-
-
     void *PassThroughFilter::FilterData(FilterContext *context, void *data, size_t len, size_t *outputLen)
     {
         *outputLen = 0;
@@ -296,6 +294,7 @@ FilterContext *PassThroughFilter::InnerMakeFilterContext(ConstManifestItemPtr it
 //printf("~~~~~~~~~~~~~~~~~~~ totalReadInRaw: %d\n", totalReadInRaw);
 
         *outputLen = totalReadInDecrypted;
+
         return buffer;
     }
 

@@ -102,8 +102,8 @@ ByteStream::size_type FilterChainByteStreamRange::ReadBytes(void *bytes, size_ty
     } else {
         size_type result = m_input->ReadBytes(bytes, len);
         if (result == 0) return 0;
-        len = result;
-        ByteBuffer buf(reinterpret_cast<uint8_t*>(bytes), len);
+
+        ByteBuffer buf(reinterpret_cast<uint8_t*>(bytes), result);
         buf.SetUsesSecureErasure();
 
         filteredData = m_filter->FilterData(m_filterContext.get(), buf.GetBytes(), buf.GetBufferSize(), &filteredLen);

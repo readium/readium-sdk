@@ -150,6 +150,11 @@ public:
         return m_buffer;
     }
 
+    ByteStream::size_type GetCurrentTemporaryByteBufferSize()
+    {
+        return m_buffer_size;
+    }
+
     uint8_t * GetAllocateTemporaryByteBuffer(ByteStream::size_type bytesToRead)
     {
         if (m_buffer == nullptr || m_buffer_size < bytesToRead)
