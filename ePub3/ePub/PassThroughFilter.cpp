@@ -148,26 +148,23 @@ FilterContext *PassThroughFilter::InnerMakeFilterContext(ConstManifestItemPtr it
 //        return sizeDecrypted - posDecrypted;
     }
 
+    mz_stream stream;
 
-    void *PassThroughFilter::FilterData(FilterContext *context, void *data, size_t len, size_t *outputLen)
-    {
+    void *PassThroughFilter::FilterData(FilterContext *context, void *data, size_t len, size_t *outputLen) {
         *outputLen = 0;
 
         PassThroughContext *ptContext = dynamic_cast<PassThroughContext *>(context);
-        if (ptContext == nullptr)
-        {
+        if (ptContext == nullptr) {
             return nullptr;
         }
 
         SeekableByteStream *byteStream = ptContext->GetSeekableByteStream();
-        if (byteStream == nullptr)
-        {
+        if (byteStream == nullptr) {
             *outputLen = len;
             return data;
         }
 
-        if (!byteStream->IsOpen())
-        {
+        if (!byteStream->IsOpen()) {
             printf("BYTE STREAM CLOSED 1!\n");
             return nullptr;
         }
@@ -175,50 +172,102 @@ FilterContext *PassThroughFilter::InnerMakeFilterContext(ConstManifestItemPtr it
         byteStream->Seek(0, std::ios::seekdir::beg);
         ByteStream::size_type bytesAvailable = byteStream->BytesAvailable();
 
-//        // upper bound estimate of deflate/compress data
-//        mz_ulong compressedSize = deflateBound(NULL, (mz_ulong)bytesAvailable);
-//        mz_ulong compressedSize_ = compressBound((mz_ulong)bytesAvailable);
-
-        unsigned long uncompressedSize = bytesAvailable * 1032; // upper bound estimate of inflate/decompress data
-
-        //unsigned char
-        uint8_t * buffer = ptContext->GetAllocateTemporaryByteBuffer(uncompressedSize);
-
         unsigned long readSize = bytesAvailable;
-        if (!ptContext->GetByteRange().IsFullRange())
-        {
+        if (!ptContext->GetByteRange().IsFullRange()) {
             ByteStream::size_type pos = ptContext->GetByteRange().Location();
             pos = std::min(pos, byteStream->Position() + byteStream->BytesAvailable());
             byteStream->Seek(pos, std::ios::seekdir::beg);
 
-            if (byteStream->AtEnd())
-            {
+            if (byteStream->AtEnd()) {
                 readSize = 0;
             }
-            else
-            {
-                readSize = std::min((ByteStream::size_type)ptContext->GetByteRange().Length(), byteStream->BytesAvailable());
+            else {
+                readSize = std::min((ByteStream::size_type) ptContext->GetByteRange().Length(), byteStream->BytesAvailable());
             }
         }
 
-        if (readSize <= 0)
-        {
+        if (readSize <= 0) {
             return nullptr;
         }
 
-        uint8_t * readBuffer = new uint8_t[readSize];
+        uint8_t *readBuffer = new uint8_t[readSize];
         ByteStream::size_type actuallyRead = byteStream->ReadBytes(readBuffer, readSize);
         //ASSERT actuallyRead == readSize
 
+        if (actuallyRead <= 0) {
+            return nullptr;
+        }
+
+
+//        // upper bound estimate of deflate/compress data
+//        mz_ulong compressedSize = deflateBound(NULL, (mz_ulong)bytesAvailable);
+//        mz_ulong compressedSize_ = compressBound((mz_ulong)bytesAvailable);
+
+        unsigned long uncompressedSize = actuallyRead * 1032; // upper bound estimate of inflate/decompress data
+
+
+        bool m_streamFirst = ptContext->GetCurrentTemporaryByteBuffer() == nullptr;
+
+        //unsigned char
+        uint8_t *buffer = ptContext->GetAllocateTemporaryByteBuffer(uncompressedSize);
+
         //int mz_uncompress(unsigned char *pDest, mz_ulong *pDest_len, const unsigned char *pSource, mz_ulong source_len)
-        int res = mz_uncompress(buffer, &uncompressedSize, readBuffer, actuallyRead);
+        //int res = mz_uncompress(buffer, &uncompressedSize, readBuffer, actuallyRead);
+
+        // In case mz_ulong is 64-bits (argh I hate longs).
+        if ((actuallyRead | uncompressedSize) > 0xFFFFFFFFU) {
+            return nullptr;
+        }
+
+        if (m_streamFirst) {
+            memset(&stream, 0, sizeof(stream));
+        }
+
+        stream.next_in = readBuffer;
+        stream.avail_in = (mz_uint32) actuallyRead;
+        stream.next_out = buffer;
+        stream.avail_out = (mz_uint32) uncompressedSize;
+
+        int res = MZ_OK;
+
+        int status = MZ_OK;
+        if (m_streamFirst) {
+            status = mz_inflateInit2(&stream, -MZ_DEFAULT_WINDOW_BITS);
+        }
+        if (status != MZ_OK) {
+            res = MZ_PARAM_ERROR;
+        }
+
+        status = mz_inflate(&stream, MZ_SYNC_FLUSH); //MZ_FULL_FLUSH //MZ_NO_FLUSH); //MZ_FINISH);
+
+        uncompressedSize = uncompressedSize - stream.avail_out;
+
+        if (status == MZ_OK)
+        {
+
+        }
+        else if ((status == Z_STREAM_END) || (!stream.avail_out))
+        {
+            res = mz_inflateEnd(&stream);
+        }
+        else
+        {
+            res = mz_inflateEnd(&stream);
+            res = ((status == MZ_BUF_ERROR) && (!stream.avail_in)) ? MZ_DATA_ERROR : status;
+        }
 
         delete [] readBuffer;
 
-        if (res != Z_OK)
+        if (res != MZ_OK && res != MZ_STREAM_END)
         {
             return nullptr;
         }
+
+//        for (int i = 0; i < uncompressedSize; i++)
+//        {
+//            printf("%c", buffer[i] == ' ' ? '_' : (buffer[i] == '\0' ? '@' : buffer[i]));
+//        }
+//        printf("\n<<-- %d -->>\n", uncompressedSize);
 
         *outputLen = uncompressedSize;
         return buffer;
