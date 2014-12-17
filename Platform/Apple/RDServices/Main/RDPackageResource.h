@@ -36,6 +36,7 @@
 
 @property (nonatomic, readonly) void *byteStream;
 @property (nonatomic, readonly) NSUInteger contentLength;
+@property (nonatomic, readonly) NSUInteger contentLengthCheck;
 @property (nonatomic, copy) NSString *mimeType;
 @property (nonatomic, readonly) RDPackage *package;
 
