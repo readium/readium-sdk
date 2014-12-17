@@ -85,7 +85,13 @@ ItemProperties& ItemProperties::operator=(const string& attrStr)
         // using the entire matched range
         auto found = PropertyLookupTable.find(pos->str());
         if ( found != PropertyLookupTable.end() )
+        {
             _p |= found->second;
+        }
+        else
+        {
+            printf("Property not found: %s (from %s)\n", pos->str().c_str(), attrStr.c_str());
+        }
     }
     
     return *this;

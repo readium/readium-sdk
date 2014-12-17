@@ -218,8 +218,6 @@ bool Property::ParseMetaElement(shared_ptr<xml::Node> node)
             return false;
         
         _type = found->second;
-        
-        // special property IRI, not actually in the spec, but useful for comparisons and printouts
         _identifier = IRI(string(DCMES_uri) + node->Name());
         _value = node->Content();
         _language = node->Language();
@@ -229,15 +227,26 @@ bool Property::ParseMetaElement(shared_ptr<xml::Node> node)
     }
     else if ( node->Name() == MetaTagName )
     {
-        _type = DCType::Custom;
         string property = _getProp(node, "property");
         if ( property.empty() )
             return false;
-        
+
+        _type = DCType::Custom;
 		_identifier = OwnedBy::Owner()->PropertyIRIFromString(property);
 		_value = node->Content();
 		_language = node->Language();
         SetXMLIdentifier(_getProp(node, "id"));
+
+        return true;
+    }
+    else if ( ns != nullptr )
+    {
+        _type = DCType::Custom;
+        _identifier = IRI(string(ns->URI()) + node->Name());
+        _value = node->Content();
+        _language = node->Language();
+        SetXMLIdentifier(_getProp(node, "id"));
+
         return true;
     }
     

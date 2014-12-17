@@ -40,9 +40,6 @@ typedef std::shared_ptr<Package>    PackagePtr;
 class ContentFilter;
 typedef std::shared_ptr<ContentFilter>  ContentFilterPtr;
 
-class FilterContext;
-typedef std::pair<ContentFilterPtr, std::unique_ptr<FilterContext>>	FilterNode;
-
 // -------------------------------------------------------------------------------------------
 
 class ByteRange
@@ -139,18 +136,31 @@ public:
 private:
     uint8_t *m_buffer = nullptr;
     ByteStream::size_type m_buffer_size = 0;
+    ByteStream::size_type m_allocated_buffer_size = 0;
 
-    uint8_t * DestroyCurrentTemporaryByteBuffer()
+    void DestroyCurrentTemporaryByteBuffer()
     {
         delete[] m_buffer; //reinterpret_cast<uint8_t *>(m_buffer);
         m_buffer = nullptr;
         m_buffer_size = 0;
+        m_allocated_buffer_size = 0;
     }
 
 public:
     uint8_t * GetCurrentTemporaryByteBuffer()
     {
         return m_buffer;
+    }
+
+    ByteStream::size_type GetCurrentTemporaryByteBufferSize()
+    {
+        return m_buffer_size;
+    }
+
+
+    ByteStream::size_type GetCurrentTemporaryByteBufferAllocatedSize()
+    {
+        return m_allocated_buffer_size;
     }
 
     uint8_t * GetAllocateTemporaryByteBuffer(ByteStream::size_type bytesToRead)
@@ -163,8 +173,15 @@ public:
             }
 
             m_buffer = new uint8_t[bytesToRead];
-            m_buffer_size = bytesToRead;
+            m_allocated_buffer_size = bytesToRead;
         }
+
+        for (int i = 0; i < m_allocated_buffer_size; i++)
+        {
+            m_buffer[i] = 0;
+        }
+
+        m_buffer_size = bytesToRead;
 
         return m_buffer;
     }
@@ -211,7 +228,7 @@ private:
  */
 class ContentFilter
 #if EPUB_PLATFORM(WINRT)
-	: public NativeBridge
+    : public NativeBridge
 #endif
 {
 public:
@@ -279,7 +296,7 @@ public:
     ContentFilter(ContentFilter&& o) : _sniffer(std::move(o._sniffer)) {}
     
     /**
-	 Allocate and return a new FilterContext subclass. The default returns `nullptr`.
+     Allocate and return a new FilterContext subclass. The default returns `nullptr`.
      
      This method actually calls InnerMakeFilterContext(), in order to allow the subclasses
      of ContentFilter to return their own subclasses of FilterContext. Notice, though,
@@ -289,8 +306,8 @@ public:
      will result in an exception being thrown.
 
      @param item The Manifest Item being processed, and for which the context is created.
-	 @result An object containing per-item data, or nullptr.
-	 */
+     @result An object containing per-item data, or nullptr.
+     */
     FilterContext *MakeFilterContext(ConstManifestItemPtr item) const
     {
         FilterContext *filterContext = InnerMakeFilterContext(item);

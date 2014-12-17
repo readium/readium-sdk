@@ -35,19 +35,20 @@ FilterChainByteStreamRange::~FilterChainByteStreamRange()
 {
 }
 
-FilterChainByteStreamRange::FilterChainByteStreamRange(std::unique_ptr<SeekableByteStream> &&input, ContentFilterPtr &filter, ConstManifestItemPtr manifestItem) : m_input(std::move(input)), m_filterNode(new FilterNode(filter, std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem))))
+FilterChainByteStreamRange::FilterChainByteStreamRange(std::unique_ptr<SeekableByteStream> &&input, ContentFilterPtr filter, ConstManifestItemPtr manifestItem)
+: m_input(std::move(input)), m_filter(filter), m_filterContext(filter != nullptr ? std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem)) : nullptr)
 {
 }
 
-FilterChainByteStreamRange::FilterChainByteStreamRange(std::unique_ptr<SeekableByteStream> &&input) : m_input(std::move(input))
-{
-}
+//FilterChainByteStreamRange::FilterChainByteStreamRange(std::unique_ptr<SeekableByteStream> &&input) : m_input(std::move(input))
+//{
+//}
 
 ByteStream::size_type FilterChainByteStreamRange::BytesAvailable() const _NOEXCEPT
 {
-    if (m_filterNode)
+    if (m_filter)
     {
-        ByteStream::size_type size = m_filterNode->first->BytesAvailable(m_input.get());
+        ByteStream::size_type size = m_filter->BytesAvailable(m_input.get());
         return size;
     }
 
@@ -79,14 +80,14 @@ ByteStream::size_type FilterChainByteStreamRange::ReadBytes(void *bytes, size_ty
         return 0;
     }
     
-    if (!m_filterNode)
+    if (!m_filter)
     {
         // There are no ContentFilters that applied. In this case, the caller is just interested
         // in getting the raw bytes out of the ZIP file. So, then, just read the raw bytes.
         return ReadRawBytes(bytes, len, byteRange);
     }
 
-    RangeFilterContext *filterContext = dynamic_cast<RangeFilterContext *>(m_filterNode->second.get());
+    RangeFilterContext *filterContext = dynamic_cast<RangeFilterContext *>(m_filterContext.get());
     if (filterContext != nullptr)
     {
         filterContext->GetByteRange() = byteRange;
@@ -97,15 +98,15 @@ ByteStream::size_type FilterChainByteStreamRange::ReadBytes(void *bytes, size_ty
     void *filteredData = nullptr;
 
     if (filterContext != nullptr) {
-        filteredData = m_filterNode->first->FilterData(m_filterNode->second.get(), nullptr, 0, &filteredLen);
+        filteredData = m_filter->FilterData(m_filterContext.get(), nullptr, 0, &filteredLen);
     } else {
         size_type result = m_input->ReadBytes(bytes, len);
         if (result == 0) return 0;
-        len = result;
-        ByteBuffer buf(reinterpret_cast<uint8_t*>(bytes), len);
+
+        ByteBuffer buf(reinterpret_cast<uint8_t*>(bytes), result);
         buf.SetUsesSecureErasure();
 
-        filteredData = m_filterNode->first->FilterData(m_filterNode->second.get(), buf.GetBytes(), buf.GetBufferSize(), &filteredLen);
+        filteredData = m_filter->FilterData(m_filterContext.get(), buf.GetBytes(), buf.GetBufferSize(), &filteredLen);
     }
 
     if (filterContext != nullptr)
@@ -118,7 +119,7 @@ ByteStream::size_type FilterChainByteStreamRange::ReadBytes(void *bytes, size_ty
     {
         if (filteredData != nullptr && filteredData != bytes)
         {
-            if (filterContext != nullptr && reinterpret_cast<uint8_t*>(filteredData) != filterContext->GetCurrentTemporaryByteBuffer())
+            if (filterContext == nullptr || reinterpret_cast<uint8_t*>(filteredData) != filterContext->GetCurrentTemporaryByteBuffer())
             {
                 delete[] reinterpret_cast<uint8_t *>(filteredData);
             }
@@ -129,9 +130,18 @@ ByteStream::size_type FilterChainByteStreamRange::ReadBytes(void *bytes, size_ty
     
     if (filteredData != bytes)
     {
-        ::memcpy_s(bytes, len, filteredData, filteredLen);
+        ByteStream::size_type toCopy = std::min(len, filteredLen);
+        ::memcpy_s(bytes, len, filteredData, toCopy);
 
-        if (filterContext != nullptr && reinterpret_cast<uint8_t*>(filteredData) != filterContext->GetCurrentTemporaryByteBuffer())
+        if (filteredLen > len)
+        {
+            ByteStream::size_type toCache = filteredLen - len;
+
+            //TODO cache remainder bytes for use next time round...
+            // (e.g. when decrypted bytes are greater than original request?)
+        }
+
+        if (filterContext == nullptr || reinterpret_cast<uint8_t*>(filteredData) != filterContext->GetCurrentTemporaryByteBuffer())
         {
             delete[] reinterpret_cast<uint8_t *>(filteredData);
         }

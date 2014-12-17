@@ -1275,7 +1275,7 @@ shared_ptr<ByteStream> Package::GetFilterChainByteStream(ManifestItemPtr manifes
 	return _filterChain->GetFilterChainByteStream(manifestItem);
 }
 
-unique_ptr<ByteStream> Package::GetFilterChainByteStream(ManifestItemPtr manifestItem, ByteStream *rawInput) const
+unique_ptr<ByteStream> Package::GetFilterChainByteStream(ManifestItemPtr manifestItem, SeekableByteStream *rawInput) const
 {
     return _filterChain->GetFilterChainByteStream(manifestItem, rawInput);
 }
