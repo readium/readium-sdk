@@ -22,36 +22,33 @@ import java.nio.ByteBuffer;
 public class ResourceInputStream extends InputStream {
 	
     private static final String TAG = "ResourceInputStream";
-	/**
+    /**
      * Native Package Pointer.
      * DO NOT USE FROM JAVA SIDE!
      */
-	private final long __nativePtr;
-	private final int mLength;
-	private int mPos;
+    private final long __nativePtr;
 	private boolean mClosed = false;
-	
-	private ResourceInputStream(long nativePtr, int length) {
-		__nativePtr = nativePtr;
-		mLength = length;
-	}
-	
-	private static ResourceInputStream createResourceInputStream(long nativePtr, long length) {
-		return new ResourceInputStream(nativePtr, (int) length);
-	}
+
+
+    private ResourceInputStream(long nativePtr) {
+        __nativePtr = nativePtr;
+    }
+
+    private static ResourceInputStream createResourceInputStream(long nativePtr) {
+        return new ResourceInputStream(nativePtr);
+    }
 	
 	@Override
 	public void close() throws IOException {
 		if (!mClosed) {
-			super.close();
-			nativeReleasePtr(__nativePtr);
+			nativeClose(__nativePtr);
 			mClosed = true;
 		}
 	}
 
 	@Override
 	public int available() throws IOException {
-        return mLength - mPos;
+        return (int) nativeAvailable(__nativePtr);
 	}
 
 	@Override
@@ -60,38 +57,81 @@ public class ResourceInputStream extends InputStream {
 		if (read(buffer) == 1) {
 			return buffer[0];
 		}
-		// End of file
+		// End of stream
 		return -1;
 	}
-	
-	@Override
-	public synchronized long skip(long byteCount) throws IOException {
-		nativeSkip(__nativePtr, (int) byteCount);
-		return byteCount;
-	}
 
-	@Override
-	public synchronized int read(byte[] buffer, int offset, int length) {
-		ByteBuffer buf = nativeGetBytes(__nativePtr, length);
-//        Arrays.checkOffsetAndCount(buffer.length, offset, length);
+    @Override
+    public synchronized int read(byte[] buffer, int offset, int length) {
 
-        // Are there any bytes available?
-        if (mPos >= mLength) {
+        byte[] buf = nativeGetBytes(__nativePtr, length);
+
+        if (buf.length > 0) {
+            System.arraycopy(buf, 0, buffer, offset, buf.length);
+        } else {
+            // End of stream
             return -1;
         }
-        if (length == 0) {
-            return 0;
-        }
+        return buf.length;
+    }
 
-        int copylen = mLength - mPos < length ? mLength - mPos : length;
-        System.arraycopy(buf.array(), 0, buffer, offset, copylen);
-        mPos += copylen;
-        return copylen;
-	}
+    @Override
+    public synchronized void reset() throws IOException {
+        nativeReset(__nativePtr, false);
+    }
+
+    @Override
+    public void mark(int readLimit) {
+        // readLimit ignored
+        nativeMark(__nativePtr);
+    }
+
+    @Override
+    public boolean markSupported() {
+        return true;
+    }
+
+    @Override
+    public synchronized long skip(long byteCount) throws IOException {
+        nativeSkip(__nativePtr, (int) byteCount);
+        return byteCount;
+    }
+
+    public synchronized long seek(int position) throws IOException {
+        nativeReset(__nativePtr, true);
+        return this.skip(position);
+    }
+
+    /**
+     * Reads all data from the stream
+     * @return all the bytes available from the stream
+     */
+    public synchronized byte[] getAllBytes() {
+        return nativeGetAllBytes(__nativePtr);
+    }
+
+    /**
+     * Reads a range of bytes from the stream
+     * @return bytes from the stream range
+     */
+    public synchronized byte[] getRangeBytes(long offset, long length) {
+        return nativeGetRangeBytes(__nativePtr, offset, length);
+    }
+
+	private native byte[] nativeGetBytes(long nativePtr, long readLength);
+
+    private native byte[] nativeGetAllBytes(long nativePtr);
+
+    private native byte[] nativeGetRangeBytes(long nativePtr, long offset, long length);
+
+	private native void nativeSkip(long nativePtr, long byteCount);
+
+    private native void nativeReset(long nativePtr, boolean ignoreMark);
+
+    private native void nativeMark(long nativePtr);
 	
-	private native ByteBuffer nativeGetBytes(long nativePtr, int length);
-	
-	private native void nativeSkip(long nativePtr, int byteCount);
-	
-	private native void nativeReleasePtr(long nativePtr);
+	private native void nativeClose(long nativePtr);
+
+    private native long nativeAvailable(long nativePtr);
+
 }
