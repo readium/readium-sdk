@@ -23,7 +23,10 @@
 #include "byte_buffer.h"
 #include <stdexcept>
 #include <system_error>
+
+#ifdef ENABLE_SYS_CACHE_FLUSH
 #include "CPUCacheUtils.h"
+#endif //ENABLE_SYS_CACHE_FLUSH
 
 #if EPUB_OS(BSD)
 # include <malloc/malloc.h>
@@ -242,7 +245,10 @@ void ByteBuffer::EnsureCapacity(size_t desired)
 void ByteBuffer::Clean(unsigned char *ptr, size_t len)
 {
     ::bzero(ptr, len);
+
+#ifdef ENABLE_SYS_CACHE_FLUSH
     epub_sys_cache_flush(ptr, len);
+#endif //ENABLE_SYS_CACHE_FLUSH
 }
 
 EPUB3_END_NAMESPACE
