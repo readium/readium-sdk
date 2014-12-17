@@ -64,9 +64,10 @@
 
 - (NSData *)readDataFull {
 	if (m_data == nil) {
-		NSMutableData *md = [[NSMutableData alloc] initWithCapacity:m_contentLength == 0 ? 1 : m_contentLength];
 		
 		[self ensureProperByteStream:NO];
+		
+		NSMutableData *md = [[NSMutableData alloc] initWithCapacity:m_contentLength == 0 ? 1 : m_contentLength];
 		
 		while (YES)
 		{

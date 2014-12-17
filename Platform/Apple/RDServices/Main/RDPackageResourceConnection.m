@@ -109,11 +109,15 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 		if ([path hasPrefix:@"/"]) {
 			path = [path substringFromIndex:1];
 		}
-		
-		// See:
-		// ConstManifestItemPtr PackageBase::ManifestItemAtRelativePath(const string& path) const
-		// which compares with non-escaped source (OPF original manifest>item@src attribute value)
-		//path = [path stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
+		NSRange rangeQ = [path rangeOfString:@"?"];
+		if (rangeQ.location != NSNotFound) {
+			path = [path substringToIndex:rangeQ.location];
+		}
+		NSRange rangeH = [path rangeOfString:@"#"];
+		if (rangeH.location != NSNotFound) {
+			path = [path substringToIndex:rangeH.location];
+		}
 	}
 	
 	NSObject <HTTPResponse> *response = nil;
@@ -150,15 +154,10 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 	// => push the global window.navigator.epubReadingSystem into the iframe(s)
 	NSString * eprs = @"readium_epubReadingSystem_inject.js";
 	if ([path hasSuffix:eprs]) {
-		
+
+		NSString* cmd = @"var epubRSInject = function(win) { if (win.frames) { for (var i = 0; i < win.frames.length; i++) { var iframe = win.frames[i]; if (iframe.readium_set_epubReadingSystem) { iframe.readium_set_epubReadingSystem(window.navigator.epubReadingSystem); } epubRSInject(iframe); } } }; epubRSInject(window);";
 		// Iterate top-level iframes, inject global window.navigator.epubReadingSystem if the expected hook function exists ( readium_set_epubReadingSystem() ).
-		[m_packageResourceServer executeJavaScript:
-			@"for (var i = 0; i < window.frames.length; i++) { "
-		 @"var iframe = window.frames[i]; "
-		 @"if (iframe.readium_set_epubReadingSystem) { "
-		 @"iframe.readium_set_epubReadingSystem(window.navigator.epubReadingSystem); "
-		 @"}"
-			@"}"];
+		[m_packageResourceServer executeJavaScript:cmd];
 		
 		NSString* noop = @"var noop = true;"; // prevents 404 (WebConsole message)
 		NSData *data = [noop dataUsingEncoding:NSUTF8StringEncoding];
@@ -180,17 +179,27 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 		{
 			NSString* ext = [[path pathExtension] lowercaseString];
 			bool isHTML = [ext isEqualToString:@"xhtml"] || [ext isEqualToString:@"html"] || [resource.mimeType isEqualToString:@"application/xhtml+xml"]; //[path hasSuffix:@".html"] || [path hasSuffix:@".xhtml"]
-			BOOL isXhtmlWellFormed = NO;
+			BOOL isXhtmlWellFormed = YES;
 			if (isHTML) {
 				NSData *data = [resource readDataFull];
 				if (data != nil) {
-					
+					// Can be used to check / debug encoding issues
+					// NSString * dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+					// NSLog(@"XHTML SOURCE: %@", dataStr);
+					// data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+
 					@try
 					{
 						NSXMLParser *xmlparser = [[NSXMLParser alloc] initWithData:data];
 						//[xmlparser setDelegate:self];
 						[xmlparser setShouldResolveExternalEntities:NO];
 						isXhtmlWellFormed = [xmlparser parse];
+									
+						if (isXhtmlWellFormed == NO)
+						{
+							NSError * error = [xmlparser parserError];
+							NSLog(@"XHTML PARSE ERROR: %@", error);
+						}
 					}
 					@catch (NSException *ex)
 					{
@@ -207,7 +216,7 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 					
 					NSString* source = [self htmlFromData:data];
 					if (source != nil) {
-						NSString *pattern = @"(<head.*>)";
+						NSString *pattern = @"(<head[^>]*>)";
 						NSError *error = nil;
 						NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:&error];
 						if(error != nil) {
