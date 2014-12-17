@@ -364,45 +364,47 @@ public class Package {
 		return null;
 	}
 
-	/**
-	 * Fetch the whole file into a byte array.
-	 * @param relativePath the location of the resource to load
-	 * @return the resource as a byte array. If no data is retrieved, the byte array length is 0.
-	 */
-	public byte[] getContent(String relativePath) {
-		InputStream in = getInputStream(relativePath);
-		if (in == null) {
-			return null;
-		}
-		try {
-			byte[] content = new byte[in.available()];
-			in.read(content);
-			return content;
-		} catch (IOException ex) {
-			Log.e(TAG, ""+ex.getMessage(), ex);
-		} finally {
-			try {
-				in.close();
-			} catch (IOException ex) {
-				Log.e(TAG, ""+ex.getMessage(), ex);
-			}
-		}
-		return null;
-	}
+    public PackageResource getResourceAtRelativePath(String relativePath) {
+        return new PackageResource(this, relativePath);
+    }
 
-	/**
-	 * Create an InputStream that .
+    /**
+     * Create an InputStream that can be used to fetch content.
+     * @param relativePath the location of the resource to load
+     * @param isRangeRequest if this is a range request or not
+     * @return the InputStream. If no data is retrieved, the InputStream is null.
+     */
+    public InputStream getInputStream(String relativePath, boolean isRangeRequest) {
+        return getInputStream(relativePath, 0, isRangeRequest);
+    }
+
+    /**
+     * Create a raw InputStream that can be used to fetch content without using content filters.
+     * @param relativePath the location of the resource to load
+     * @return the InputStream. If no data is retrieved, the InputStream is null.
+     */
+    public InputStream getRawInputStream(String relativePath) {
+        return getRawInputStream(relativePath, 0);
+    }
+
+    /**
+     * Create an InputStream that can be used to fetch content.
 	 * @param relativePath the location of the resource to load
 	 * @param isRangeRequest if this is a range request or not
 	 * @return the InputStream. If no data is retrieved, the InputStream is null.
 	 */
-	public InputStream getInputStream(String relativePath) {
-		return nativeInputStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath);
+	public InputStream getInputStream(String relativePath, int bufferSize, boolean isRangeRequest) {
+		return nativeInputStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath, bufferSize, isRangeRequest);
 	}
-	
-	public ByteBuffer getByteRangeStream(String relativePath, long offset, long length) {
-		return nativeByteRangeStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath, offset, length);
-	}
+
+    /**
+     * Create a raw InputStream that can be used to fetch content without using content filters.
+     * @param relativePath the location of the resource to load
+     * @return the InputStream. If no data is retrieved, the InputStream is null.
+     */
+    public InputStream getRawInputStream(String relativePath, int bufferSize) {
+        return nativeRawInputStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath, bufferSize);
+    }
 
 	/**
 	 * This method is useful to know the size of a specific resource 
@@ -488,12 +490,12 @@ public class Package {
 	 * Content 
 	 */
 	private native InputStream nativeInputStreamForRelativePath(long nativePtr, 
-			long containerPtr, String relativePath);
-	
-	private native ByteBuffer nativeByteRangeStreamForRelativePath(
-			long nativePtr, long containerPtr, String relativePath, long offset, long length);
-	
-	private native int nativeGetArchiveInfoSize(long nativePtr, 
+			long containerPtr, String relativePath, int bufferSize, boolean isRange);
+
+    private native InputStream nativeRawInputStreamForRelativePath(long nativePtr,
+            long containerPtr, String relativePath, int bufferSize);
+
+    private native int nativeGetArchiveInfoSize(long nativePtr,
 			long containerPtr, String relativePath);
 
 	/*
