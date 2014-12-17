@@ -177,7 +177,7 @@ ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type 
             {
                 if (_input->IsOpen())
                 {
-                    _input->Seek(streamPos, std::ios::seekdir::beg);
+                    _input->Seek(streamPos, std::ios::beg);
                 }
             }
         }
