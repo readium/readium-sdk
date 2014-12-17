@@ -36,24 +36,30 @@ public class PackageResource {
         this.mRelativePath = mRelativePath;
     }
 
+    /**
+     * Reads all data of this resource.
+     * @return byte array with the full data
+     */
     public synchronized byte[] readDataFull() {
         if (!ensureProperByteStream(false)) {
             return null;
         }
         byte[] result = mResourceInputStream.getAllBytes();
-        try {
-            mResourceInputStream.close();
-            mHasProperStream = false;
-        } catch (IOException ignored) {
-        }
+        closeByteStream();
         return result;
     }
 
+    /**
+     * Reads a range of bytes of this resource.
+     * @return byte array with the range data
+     */
     public synchronized byte[] readDataOfLength(int length, int offset) {
         if (!ensureProperByteStream(true)) {
             return null;
         }
-        return mResourceInputStream.getRangeBytes(offset, length);
+        byte[] result = mResourceInputStream.getRangeBytes(offset, length);
+        closeByteStream();
+        return result;
     }
 
     public boolean hasProperStream() {
@@ -88,5 +94,13 @@ public class PackageResource {
             }
         }
         return mHasProperStream;
+    }
+
+    private void closeByteStream() {
+        try {
+            mResourceInputStream.close();
+            mHasProperStream = false;
+        } catch (IOException ignored) {
+        }
     }
 }
