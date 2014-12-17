@@ -70,12 +70,12 @@ public:
         
     };
 
-	struct PriorityOrderHighToLow : public std::binary_function<Record, Record, bool>
-	{
-		bool operator()(const Record& __a, const Record& __b) {
-			return __b < __a;
-		}
-	};
+    struct PriorityOrderHighToLow : public std::binary_function<Record, Record, bool>
+    {
+        bool operator()(const Record& __a, const Record& __b) {
+            return __b < __a;
+        }
+    };
     
     virtual ~FilterManager() {}
     

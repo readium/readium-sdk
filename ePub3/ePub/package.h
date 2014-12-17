@@ -519,7 +519,7 @@ public:
 	shared_ptr<ByteStream>		    GetFilterChainByteStream(ManifestItemPtr manifestItem)  const;
     
     EPUB3_EXPORT
-    unique_ptr<ByteStream>          GetFilterChainByteStream(ManifestItemPtr manifestItem, ByteStream *rawInput) const;
+    unique_ptr<ByteStream>          GetFilterChainByteStream(ManifestItemPtr manifestItem, SeekableByteStream *rawInput) const;
 
 	EPUB3_EXPORT
 	shared_ptr<ByteStream>			GetFilterChainByteStreamRange(SpineItemPtr spineItem)    const {
