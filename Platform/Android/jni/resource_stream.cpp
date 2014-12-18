@@ -151,19 +151,19 @@ static jbyteArray GetBytesRange(JNIEnv* env, jobject thiz, jlong nativePtr, jlon
 	auto byteStream = stream->getPtr();
 	ePub3::FilterChainByteStreamRange *rangeByteStream = dynamic_cast<ePub3::FilterChainByteStreamRange *>(byteStream);
 
-	char tmpBuffer[length];
+	char * tmpBuffer = new char[length];
 	std::size_t readBytes;
 
 	if (rangeByteStream != nullptr) {
 		ePub3::ByteRange range;
 		range.Location(offset);
 		range.Length(length);
-		readBytes = rangeByteStream->ReadBytes(&tmpBuffer, sizeof(tmpBuffer), range);
+		readBytes = rangeByteStream->ReadBytes(tmpBuffer, length, range);
 	} else {
 		ePub3::SeekableByteStream *seekableStream = dynamic_cast<ePub3::SeekableByteStream *>(byteStream);
 		if (seekableStream != nullptr) {
 			seekableStream->Seek(offset, std::ios::beg);
-			readBytes = seekableStream->ReadBytes(&tmpBuffer, sizeof(tmpBuffer));
+			readBytes = seekableStream->ReadBytes(tmpBuffer, length);
 		} else {
 			env->ThrowNew(java_class_IOException, "Seek operation not supported for this byte stream.");
 			return NULL;
@@ -172,6 +172,7 @@ static jbyteArray GetBytesRange(JNIEnv* env, jobject thiz, jlong nativePtr, jlon
 
 	jbyteArray jtmpBuffer = env->NewByteArray(readBytes);
 	env->SetByteArrayRegion(jtmpBuffer, 0, readBytes, tmpBuffer);
+    // delete [] tmpBuffer; 
 	return jtmpBuffer;
 }
 
