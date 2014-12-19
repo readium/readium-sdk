@@ -159,7 +159,7 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 		// Iterate top-level iframes, inject global window.navigator.epubReadingSystem if the expected hook function exists ( readium_set_epubReadingSystem() ).
 		[m_packageResourceServer executeJavaScript:cmd];
 		
-		NSString* noop = @"var noop = true;"; // prevents 404 (WebConsole message)
+		NSString* noop = @"(function(){})()"; // prevents 404 (WebConsole message)
 		NSData *data = [noop dataUsingEncoding:NSUTF8StringEncoding];
 		RDPackageResourceDataResponse *dataResponse = [[RDPackageResourceDataResponse alloc] initWithData:data];
 		dataResponse.contentType = @"text/javascript";
