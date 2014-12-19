@@ -436,6 +436,15 @@ public class Package {
 		return nativeGetArchiveInfoSize(__nativePtr, container.getNativePtr(), relativePath);
 	}
 
+	// sensible legacy defaults
+	private String _rootUrl = "/";
+	private String _rootUrlMO = "http://127.0.0.1:8080/";
+
+	public void setRootUrls(String rootUrl, String rootUrlMO) {
+		_rootUrl = rootUrl;
+		_rootUrlMO = rootUrlMO;
+	}
+
 	/**
 	 * Convert the package to JSON object.
 	 * @return representation of the package to be consumed by the Readium JS library.
