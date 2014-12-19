@@ -94,7 +94,6 @@ public class Package {
 	private Package(long nativePtr) {
     	// Log creation
         Log.i(TAG, "Creating package [ptr:" + String.format("%X", nativePtr) + "]");
-    	
 		__nativePtr = nativePtr;
 //        Log.i(TAG, "package nativePtr: "+nativePtr);
         loadData();
@@ -444,6 +443,14 @@ public class Package {
 		return nativeGetArchiveInfoSize(__nativePtr, container.getNativePtr(), relativePath);
 	}
 
+	private String _rootUrl = "/";
+	private String _rootUrlMO = null;
+
+	public void setRootUrls(String rootUrl, String rootUrlMO) {
+		_rootUrl = rootUrl;
+		_rootUrlMO = rootUrlMO;
+	}
+	
 	/**
 	 * Convert the package to JSON object.
 	 * @return representation of the package to be consumed by the Readium JS library.
@@ -451,10 +458,10 @@ public class Package {
 	public JSONObject toJSON() {
 		JSONObject o = new JSONObject();
 		try {
-			o.put("rootUrl", basePath);
-			
-			//EpubServer.HTTP_HOST /// EpubServer.HTTP_PORT
-			o.put("rootUrlMO", "http://localhost:8080/");
+			o.put("rootUrl", _rootUrl);
+			if (_rootUrlMO != null) {
+				o.put("rootUrlMO", _rootUrlMO);
+			}
 
 			o.put("rendition_layout", rendition_layout);
 			o.put("rendition_flow", rendition_flow);
