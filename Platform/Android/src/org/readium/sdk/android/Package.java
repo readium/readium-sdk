@@ -443,8 +443,9 @@ public class Package {
 		return nativeGetArchiveInfoSize(__nativePtr, container.getNativePtr(), relativePath);
 	}
 
+	// sensible legacy defaults
 	private String _rootUrl = "/";
-	private String _rootUrlMO = null;
+	private String _rootUrlMO = "http://127.0.0.1:8080/";
 
 	public void setRootUrls(String rootUrl, String rootUrlMO) {
 		_rootUrl = rootUrl;
