@@ -178,7 +178,7 @@ jobject javaEPub3_createBuffer(JNIEnv *env, jint bufferSize) {
 }
 
 /**
- * Calls the java createBuffer method of EPub3 class
+ * Calls the java appendBytesToBuffer method of EPub3 class
  */
 void javaEPub3_appendBytesToBuffer(JNIEnv *env, jobject buffer, jbyteArray data) {
 	env->CallStaticVoidMethod(javaEPub3Class,
