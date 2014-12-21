@@ -38,7 +38,7 @@
 		 * Constructor capture the unique_ptr.
 		 */
 		ResourceStream(std::unique_ptr<ePub3::ByteStream> &ptr, size_t bufferSize) : _ptr(std::move(ptr)), _bufferSize(bufferSize) {
-			if (bufferSize == NULL) {
+			if (bufferSize == 0) {
 				_bufferSize = DEFAULT_BUFFER_SIZE;
 			}
 		}
