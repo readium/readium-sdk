@@ -782,7 +782,7 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeInputStream
 		if (isRange == JNI_TRUE) {
 			byteStream = PCKG(pckgPtr)->GetFilterChainByteStreamRange(m, dynamic_cast<ePub3::SeekableByteStream *>(rawInputbyteStream.release()));
 		} else {
-			byteStream = PCKG(pckgPtr)->GetFilterChainByteStream(m, rawInputbyteStream.release());
+			byteStream = PCKG(pckgPtr)->GetFilterChainByteStream(m, dynamic_cast<ePub3::SeekableByteStream *>(rawInputbyteStream.release()));
 		}
 	} else {
 		// In the rare case that the manifest item could not be resolved from the path,
