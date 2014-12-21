@@ -53,6 +53,9 @@ public class ResourceInputStream extends InputStream {
 
 	@Override
 	public synchronized int read() throws IOException {
+
+    	System.err.println("!!! ResourceInputStream int read() ");
+        
 		byte[] buffer = new byte[1];
 		if (read(buffer) == 1) {
 			return buffer[0];
@@ -60,11 +63,20 @@ public class ResourceInputStream extends InputStream {
 		// End of stream
 		return -1;
 	}
+	
+	public synchronized byte[] read(int length) {
 
+    	System.err.println("!!! ResourceInputStream int read(int length) ");
+        
+        return nativeGetBytes(__nativePtr, length);
+	}
+	
     @Override
     public synchronized int read(byte[] buffer, int offset, int length) {
 
-        byte[] buf = nativeGetBytes(__nativePtr, length);
+    	System.err.println("!!! ResourceInputStream int read(byte[] buffer, int offset, int length) ");
+        
+    	byte[] buf = nativeGetBytes(__nativePtr, length);
 
         if (buf.length > 0) {
             System.arraycopy(buf, 0, buffer, offset, buf.length);
@@ -77,11 +89,17 @@ public class ResourceInputStream extends InputStream {
 
     @Override
     public synchronized void reset() throws IOException {
+    	
+    	System.err.println("!!! ResourceInputStream void reset() ");
+    	
         nativeReset(__nativePtr, false);
     }
 
     @Override
     public void mark(int readLimit) {
+
+    	System.err.println("!!! ResourceInputStream void mark(int readLimit) ");
+        
         // readLimit ignored
         nativeMark(__nativePtr);
     }
@@ -93,11 +111,17 @@ public class ResourceInputStream extends InputStream {
 
     @Override
     public synchronized long skip(long byteCount) throws IOException {
+
+    	System.err.println("!!! ResourceInputStream long skip(long byteCount) ");
+        
         nativeSkip(__nativePtr, (int) byteCount);
         return byteCount;
     }
 
     public synchronized long seek(int position) throws IOException {
+
+    	System.err.println("!!! ResourceInputStream long seek(int position) ");
+    	
         nativeReset(__nativePtr, true);
         return this.skip(position);
     }
