@@ -52,7 +52,7 @@ public class ResourceInputStream extends InputStream {
 	}
 
 	@Override
-	public synchronized int read() throws IOException {
+	public int read() throws IOException {
 
     	System.err.println("!!! ResourceInputStream int read() ");
         
@@ -63,16 +63,23 @@ public class ResourceInputStream extends InputStream {
 		// End of stream
 		return -1;
 	}
-	
-	public synchronized byte[] read(int length) {
+
+	public byte[] read(int length) {
 
     	System.err.println("!!! ResourceInputStream int read(int length) ");
         
         return nativeGetBytes(__nativePtr, length);
 	}
 	
+	public long readX(long readLength, byte[] barray) {
+
+    	System.err.println("!!! ResourceInputStream int read(int length, byte[] barray) ");
+        
+        return nativeGetBytesX(__nativePtr, readLength, barray);
+	}
+	
     @Override
-    public synchronized int read(byte[] buffer, int offset, int length) {
+    public int read(byte[] buffer, int offset, int length) {
 
     	System.err.println("!!! ResourceInputStream int read(byte[] buffer, int offset, int length) ");
         
@@ -88,7 +95,7 @@ public class ResourceInputStream extends InputStream {
     }
 
     @Override
-    public synchronized void reset() throws IOException {
+    public void reset() throws IOException {
     	
     	System.err.println("!!! ResourceInputStream void reset() ");
     	
@@ -110,7 +117,7 @@ public class ResourceInputStream extends InputStream {
     }
 
     @Override
-    public synchronized long skip(long byteCount) throws IOException {
+    public long skip(long byteCount) throws IOException {
 
     	System.err.println("!!! ResourceInputStream long skip(long byteCount) ");
         
@@ -118,7 +125,7 @@ public class ResourceInputStream extends InputStream {
         return byteCount;
     }
 
-    public synchronized long seek(int position) throws IOException {
+    public long seek(int position) throws IOException {
 
     	System.err.println("!!! ResourceInputStream long seek(int position) ");
     	
@@ -130,7 +137,7 @@ public class ResourceInputStream extends InputStream {
      * Reads all data from the stream
      * @return all the bytes available from the stream
      */
-    public synchronized byte[] getAllBytes() {
+    public byte[] getAllBytes() {
         return nativeGetAllBytes(__nativePtr);
     }
 
@@ -138,15 +145,23 @@ public class ResourceInputStream extends InputStream {
      * Reads a range of bytes from the stream
      * @return bytes from the stream range
      */
-    public synchronized byte[] getRangeBytes(long offset, long length) {
+    public byte[] getRangeBytes(long offset, long length) {
         return nativeGetRangeBytes(__nativePtr, offset, length);
+    }
+    
+    public long getRangeBytesX(long offset, long length, byte[] barray) {
+        return nativeGetRangeBytesX(__nativePtr, offset, length, barray);
     }
 
 	private native byte[] nativeGetBytes(long nativePtr, long readLength);
 
+	private native long nativeGetBytesX(long nativePtr, long readLength, byte[] barray);
+
     private native byte[] nativeGetAllBytes(long nativePtr);
 
     private native byte[] nativeGetRangeBytes(long nativePtr, long offset, long length);
+
+	private native long nativeGetRangeBytesX(long nativePtr, long offset, long length, byte[] barray);
 
 	private native void nativeSkip(long nativePtr, long byteCount);
 

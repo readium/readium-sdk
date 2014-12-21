@@ -97,11 +97,17 @@ JNIEXPORT jlong JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_na
 JNIEXPORT jbyteArray JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeGetBytes
 		(JNIEnv* env, jobject thiz, jlong nativePtr, jlong dataLength);
 
+JNIEXPORT jlong JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeGetBytesX
+		(JNIEnv* env, jobject thiz, jlong nativePtr, jlong dataLength, jbyteArray jbarray);
+
 JNIEXPORT jbyteArray JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeGetAllBytes
 		(JNIEnv* env, jobject thiz, jlong nativePtr);
 
 JNIEXPORT jbyteArray JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeGetRangeBytes
 		(JNIEnv* env, jobject thiz, jlong nativePtr, jlong offset, jlong length);
+
+JNIEXPORT jlong JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeGetRangeBytesX
+		(JNIEnv* env, jobject thiz, jlong nativePtr, jlong offset, jlong length, jbyteArray jbarray);
 
 JNIEXPORT void JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeClose
 		(JNIEnv* env, jobject thiz, jlong nativePtr);

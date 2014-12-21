@@ -146,12 +146,39 @@ static jbyteArray GetAllBytes(JNIEnv* env, jobject thiz, jlong nativePtr) {
 	jbyteArray jfullBuffer = env->NewByteArray((jsize)totalRead);
 	env->SetByteArrayRegion(jfullBuffer, 0, (jsize)totalRead, fullBuffer);
 
-	 //(*env)->GetArrayLength(jtmpBuffer)
 	//env->DeleteLocalRef(jtmpBuffer); nope, JVM / Dalvik garbage collector
 
     delete [] fullBuffer;
 
 	return jfullBuffer;
+}
+
+static jlong GetBytesX(JNIEnv* env, jobject thiz, jlong nativePtr, jlong jlen, jbyteArray jbarray) {
+
+    jbyte* tmpBuffer = env->GetByteArrayElements(jbarray, NULL);
+    jsize  dataLength = env->GetArrayLength(jbarray);
+
+	LOGD("JNI --- GetBytes_ 1: %d - %ld\n", (std::size_t)dataLength, (long)jlen);
+
+    if ((jsize)jlen < dataLength) {
+    	dataLength = (jsize)jlen;
+    }
+
+	ResourceStream* stream = (ResourceStream*) nativePtr;
+
+	ePub3::ByteStream* byteStream = stream->getPtr();
+	std::size_t bytesRead = byteStream->ReadBytes(reinterpret_cast<uint8_t*>(tmpBuffer), (std::size_t)dataLength);
+
+	LOGD("JNI --- GetBytes_ 2: %d\n", bytesRead);
+
+	std::size_t diff = (std::size_t)dataLength - bytesRead;
+	if (diff > 0) {
+		LOGD("JNI --- GetBytes_ 3: %d\n", diff);
+	}
+
+    env->ReleaseByteArrayElements(jbarray, tmpBuffer, 0);
+
+    return (jlong)bytesRead;
 }
 
 static jbyteArray GetBytes(JNIEnv* env, jobject thiz, jlong nativePtr, jlong dataLength) {
@@ -173,6 +200,53 @@ static jbyteArray GetBytes(JNIEnv* env, jobject thiz, jlong nativePtr, jlong dat
     delete [] tmpBuffer;
 
 	return jtmpBuffer;
+}
+
+static jlong GetBytesRangeX(JNIEnv* env, jobject thiz, jlong nativePtr, jlong offset, jlong jlen, jbyteArray jbarray) {
+
+    jbyte* tmpBuffer = env->GetByteArrayElements(jbarray, NULL);
+    jsize  dataLength = env->GetArrayLength(jbarray);
+
+	LOGD("JNI --- GetBytesRange_ 1: %d - %ld\n", (std::size_t)dataLength, (long)jlen);
+
+    if ((jsize)jlen < dataLength) {
+    	dataLength = (jsize)jlen;
+    }
+
+	ResourceStream* stream = (ResourceStream*) nativePtr;
+	ePub3::ByteStream* byteStream = stream->getPtr();
+	ePub3::FilterChainByteStreamRange *rangeByteStream = dynamic_cast<ePub3::FilterChainByteStreamRange *>(byteStream);
+
+	std::size_t readBytes;
+
+	if (rangeByteStream != nullptr) {
+		LOGD("JNI --- GetBytesRange_ FilterChainByteStreamRange\n");
+		ePub3::ByteRange range;
+		range.Location((std::size_t)offset);
+		range.Length((std::size_t)dataLength);
+		readBytes = rangeByteStream->ReadBytes(reinterpret_cast<uint8_t*>(tmpBuffer), (std::size_t)dataLength, range);
+	} else {
+		ePub3::SeekableByteStream *seekableStream = dynamic_cast<ePub3::SeekableByteStream *>(byteStream);
+		if (seekableStream != nullptr) {
+			LOGD("JNI --- GetBytesRange_ SeekableByteStream\n");
+			seekableStream->Seek((std::size_t)offset, std::ios::beg);
+			readBytes = seekableStream->ReadBytes(reinterpret_cast<uint8_t*>(tmpBuffer), (std::size_t)dataLength);
+		} else {
+			env->ThrowNew(java_class_IOException, "Seek operation not supported for this byte stream.");
+			return 0;
+		}
+	}
+
+	LOGD("JNI --- GetBytesRange_ 2: %d\n", readBytes);
+
+	std::size_t diff = (std::size_t)dataLength - readBytes;
+	if (diff > 0) {
+		LOGD("JNI --- GetBytesRange_ 3: %d\n", diff);
+	}
+
+    env->ReleaseByteArrayElements(jbarray, tmpBuffer, 0);
+
+    return (jlong)readBytes;
 }
 
 static jbyteArray GetBytesRange(JNIEnv* env, jobject thiz, jlong nativePtr, jlong offset, jlong length) {
@@ -295,6 +369,12 @@ JNIEXPORT jbyteArray JNICALL Java_org_readium_sdk_android_util_ResourceInputStre
 	return GetBytes(env, thiz, nativePtr, dataLength);
 }
 
+JNIEXPORT jlong JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeGetBytesX
+		(JNIEnv* env, jobject thiz, jlong nativePtr, jlong jlen, jbyteArray jbarray) {
+
+	return GetBytesX(env, thiz, nativePtr, jlen, jbarray);
+}
+
 JNIEXPORT jbyteArray JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeGetAllBytes
 		(JNIEnv* env, jobject thiz, jlong nativePtr) {
 
@@ -305,6 +385,12 @@ JNIEXPORT jbyteArray JNICALL Java_org_readium_sdk_android_util_ResourceInputStre
 		(JNIEnv* env, jobject thiz, jlong nativePtr, jlong offset, jlong length) {
 
 	return GetBytesRange(env, thiz, nativePtr, offset, length);
+}
+
+JNIEXPORT jlong JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeGetRangeBytesX
+		(JNIEnv* env, jobject thiz, jlong nativePtr, jlong offset, jlong length, jbyteArray jbarray) {
+
+	return GetBytesRangeX(env, thiz, nativePtr, offset, length, jbarray);
 }
 
 JNIEXPORT void JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeClose

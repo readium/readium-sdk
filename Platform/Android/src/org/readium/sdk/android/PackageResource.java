@@ -24,7 +24,7 @@ public class PackageResource {
 
     private static final String TAG = "PackageResource";
 
-    private static final int BUFFER_SIZE = 4096;
+    private static final int BUFFER_SIZE = 128 * 1024;
     private ResourceInputStream mResourceInputStream;
     private int mContentLength;
     private Package mPackage;
@@ -40,7 +40,7 @@ public class PackageResource {
      * Reads all data of this resource.
      * @return byte array with the full data
      */
-    public synchronized byte[] readDataFull() {
+    public byte[] readDataFull() {
         if (!ensureProperByteStream(false)) {
             return null;
         }
@@ -53,7 +53,7 @@ public class PackageResource {
      * Reads a range of bytes of this resource.
      * @return byte array with the range data
      */
-    public synchronized byte[] readDataOfLength(int length, int offset) {
+	public byte[] readDataOfLength(int length, int offset) {
         if (!ensureProperByteStream(true)) {
             return null;
         }
