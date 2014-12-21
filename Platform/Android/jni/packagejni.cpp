@@ -140,7 +140,7 @@ static ePub3::string getPropertyWithOptionalPrefix(ePub3::Package *package, char
     auto value = getProperty(package, name, pref, forObject, lookupParents);
 
     if (value.length() == 0) {
-        LOGD("getPropertyWithOptionalPrefix(): did not find with prefix, attempting with no prefix", name, pref);
+        LOGD("getPropertyWithOptionalPrefix(): did not find with prefix, attempting with no prefix (name='%s' pref='%s')", name, pref);
         return getProperty(package, name, (char *) "", forObject, lookupParents);
     }
 
