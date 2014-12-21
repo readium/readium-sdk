@@ -116,17 +116,17 @@ static jbyteArray GetAllBytes(JNIEnv* env, jobject thiz, jlong nativePtr) {
 
 	ResourceStream* stream = (ResourceStream*) nativePtr;
 
-	auto bufferSize = stream->getBufferSize();
-	jbyte tmpBuffer[bufferSize]; // stack
+	std::size_t tmpBufferSize = stream->getBufferSize();
+	uint8_t tmpBuffer[tmpBufferSize]; // stack
 
 	std::size_t MAX = 1 * 1024 * 1024; // MB
 	jbyte * fullBuffer = new jbyte[MAX]; // heap
 
-	auto byteStream = stream->getPtr();
+	ePub3::ByteStream* byteStream = stream->getPtr();
 
 	std::size_t totalRead = 0;
 	while (totalRead < MAX) {
-		std::size_t bytesRead = byteStream->ReadBytes(&tmpBuffer, (std::size_t)bufferSize);
+		std::size_t bytesRead = byteStream->ReadBytes(&tmpBuffer, tmpBufferSize);
 
 		if (bytesRead == 0) {
 			break;
@@ -136,7 +136,7 @@ static jbyteArray GetAllBytes(JNIEnv* env, jobject thiz, jlong nativePtr) {
 			bytesRead = MAX - totalRead;
 		}
 
-		::memcpy(fullBuffer + totalRead, &tmpBuffer, bytesRead);
+		::memcpy(reinterpret_cast<uint8_t*>(fullBuffer) + totalRead, &tmpBuffer, bytesRead);
 
 		totalRead += bytesRead;
 	}
@@ -160,15 +160,15 @@ static jbyteArray GetBytes(JNIEnv* env, jobject thiz, jlong nativePtr, jlong dat
 
 	ResourceStream* stream = (ResourceStream*) nativePtr;
 
-	jbyte * tmpBuffer = new jbyte[dataLength]; // heap
+	jbyte * tmpBuffer = new jbyte[(std::size_t)dataLength]; // heap
 
-	auto byteStream = stream->getPtr();
-	std::size_t bytesRead = byteStream->ReadBytes(tmpBuffer, dataLength);
+	ePub3::ByteStream* byteStream = stream->getPtr();
+	std::size_t bytesRead = byteStream->ReadBytes(reinterpret_cast<uint8_t*>(tmpBuffer), (std::size_t)dataLength);
 
 	LOGD("JNI --- GetBytes 2: %d\n", bytesRead);
 
 	jbyteArray jtmpBuffer = env->NewByteArray((jsize)bytesRead);
-	env->SetByteArrayRegion(jtmpBuffer, 0, (jsize)bytesRead, (jbyte *)tmpBuffer);
+	env->SetByteArrayRegion(jtmpBuffer, 0, (jsize)bytesRead, tmpBuffer);
 
     delete [] tmpBuffer;
 
@@ -180,25 +180,25 @@ static jbyteArray GetBytesRange(JNIEnv* env, jobject thiz, jlong nativePtr, jlon
 	LOGD("JNI --- GetBytesRange 1: %ld\n", (long)length);
 
 	ResourceStream* stream = (ResourceStream*) nativePtr;
-	auto byteStream = stream->getPtr();
+	ePub3::ByteStream* byteStream = stream->getPtr();
 	ePub3::FilterChainByteStreamRange *rangeByteStream = dynamic_cast<ePub3::FilterChainByteStreamRange *>(byteStream);
 
-	jbyte * tmpBuffer = new jbyte[length];
+	jbyte * tmpBuffer = new jbyte[(std::size_t)length];
 
 	std::size_t readBytes;
 
 	if (rangeByteStream != nullptr) {
 		LOGD("JNI --- GetBytesRange FilterChainByteStreamRange\n");
 		ePub3::ByteRange range;
-		range.Location(offset);
-		range.Length(length);
-		readBytes = rangeByteStream->ReadBytes(tmpBuffer, length, range);
+		range.Location((std::size_t)offset);
+		range.Length((std::size_t)length);
+		readBytes = rangeByteStream->ReadBytes(reinterpret_cast<uint8_t*>(tmpBuffer), (std::size_t)length, range);
 	} else {
 		ePub3::SeekableByteStream *seekableStream = dynamic_cast<ePub3::SeekableByteStream *>(byteStream);
 		if (seekableStream != nullptr) {
 			LOGD("JNI --- GetBytesRange SeekableByteStream\n");
-			seekableStream->Seek(offset, std::ios::beg);
-			readBytes = seekableStream->ReadBytes(tmpBuffer, length);
+			seekableStream->Seek((std::size_t)offset, std::ios::beg);
+			readBytes = seekableStream->ReadBytes(reinterpret_cast<uint8_t*>(tmpBuffer), (std::size_t)length);
 		} else {
 			env->ThrowNew(java_class_IOException, "Seek operation not supported for this byte stream.");
 			return NULL;
@@ -207,8 +207,8 @@ static jbyteArray GetBytesRange(JNIEnv* env, jobject thiz, jlong nativePtr, jlon
 
 	LOGD("JNI --- GetBytesRange 2: %d\n", readBytes);
 
-	jbyteArray jtmpBuffer = env->NewByteArray(readBytes);
-	env->SetByteArrayRegion(jtmpBuffer, 0, readBytes, tmpBuffer);
+	jbyteArray jtmpBuffer = env->NewByteArray((jsize)readBytes);
+	env->SetByteArrayRegion(jtmpBuffer, 0, (jsize)readBytes, tmpBuffer);
 
     delete [] tmpBuffer;
 
