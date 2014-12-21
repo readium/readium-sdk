@@ -110,51 +110,85 @@ jobject javaResourceInputStream_createResourceInputStream(JNIEnv *env, long stre
 	return java_method_ResourceInputStream_createResourceInputStream(env, (jlong) streamPtr);
 }
 
-static jbyteArray GetBytes(JNIEnv* env, jobject thiz, jlong nativePtr, jboolean limitRead, jlong dataLength) {
+static jbyteArray GetAllBytes(JNIEnv* env, jobject thiz, jlong nativePtr) {
+
+	LOGD("JNI --- GetAllBytes ...\n");
+
 	ResourceStream* stream = (ResourceStream*) nativePtr;
+
 	auto bufferSize = stream->getBufferSize();
+	jbyte tmpBuffer[bufferSize]; // stack
 
-	std::size_t readLength = bufferSize;
+	std::size_t MAX = 1 * 1024 * 1024; // MB
+	jbyte * fullBuffer = new jbyte[MAX]; // heap
 
-	if (limitRead == JNI_TRUE) {
-		readLength = std::min((std::size_t) dataLength, bufferSize);
-	} else {
-		dataLength = readLength;
-	}
-
-	char tmpBuffer[bufferSize];
 	auto byteStream = stream->getPtr();
 
-	std::vector<char> byteBuff;
-	byteBuff.reserve(dataLength);
+	std::size_t totalRead = 0;
+	while (totalRead < MAX) {
+		std::size_t bytesRead = byteStream->ReadBytes(&tmpBuffer, (std::size_t)bufferSize);
 
-	std::size_t totalRead = 0; // not used if reading everything
-	while (true) {
-		std::size_t bytesRead = byteStream->ReadBytes(&tmpBuffer, readLength);
-		if (limitRead == JNI_TRUE) {
-			totalRead += bytesRead;
-		}
-		if (bytesRead == 0 || totalRead > dataLength) {
+		if (bytesRead == 0) {
 			break;
 		}
-		for (unsigned int i = 0; i < bytesRead; ++i) {
-			byteBuff.push_back(tmpBuffer[i]);
+
+		if ((totalRead + bytesRead) > MAX) {
+			bytesRead = MAX - totalRead;
 		}
+
+		::memcpy(fullBuffer + totalRead, &tmpBuffer, bytesRead);
+
+		totalRead += bytesRead;
 	}
-	jbyteArray jtmpBuffer = env->NewByteArray((jsize)byteBuff.size());
-	env->SetByteArrayRegion(jtmpBuffer, 0, (jsize)byteBuff.size(), byteBuff.data());
+
+	LOGD("JNI --- GetAllBytes: %d\n", totalRead);
+
+	jbyteArray jfullBuffer = env->NewByteArray((jsize)totalRead);
+	env->SetByteArrayRegion(jfullBuffer, 0, (jsize)totalRead, fullBuffer);
+
+	 //(*env)->GetArrayLength(jtmpBuffer)
+	//env->DeleteLocalRef(jtmpBuffer); nope, JVM / Dalvik garbage collector
+
+    delete [] fullBuffer;
+
+	return jfullBuffer;
+}
+
+static jbyteArray GetBytes(JNIEnv* env, jobject thiz, jlong nativePtr, jlong dataLength) {
+
+	LOGD("JNI --- GetBytes 1: %ld\n", (long)dataLength);
+
+	ResourceStream* stream = (ResourceStream*) nativePtr;
+
+	jbyte * tmpBuffer = new jbyte[dataLength]; // heap
+
+	auto byteStream = stream->getPtr();
+	std::size_t bytesRead = byteStream->ReadBytes(tmpBuffer, dataLength);
+
+	LOGD("JNI --- GetBytes 2: %d\n", bytesRead);
+
+	jbyteArray jtmpBuffer = env->NewByteArray((jsize)bytesRead);
+	env->SetByteArrayRegion(jtmpBuffer, 0, (jsize)bytesRead, (jbyte *)tmpBuffer);
+
+    delete [] tmpBuffer;
+
 	return jtmpBuffer;
 }
 
 static jbyteArray GetBytesRange(JNIEnv* env, jobject thiz, jlong nativePtr, jlong offset, jlong length) {
+
+	LOGD("JNI --- GetBytesRange 1: %ld\n", (long)length);
+
 	ResourceStream* stream = (ResourceStream*) nativePtr;
 	auto byteStream = stream->getPtr();
 	ePub3::FilterChainByteStreamRange *rangeByteStream = dynamic_cast<ePub3::FilterChainByteStreamRange *>(byteStream);
 
-	char * tmpBuffer = new char[length];
+	jbyte * tmpBuffer = new jbyte[length];
+
 	std::size_t readBytes;
 
 	if (rangeByteStream != nullptr) {
+		LOGD("JNI --- GetBytesRange FilterChainByteStreamRange\n");
 		ePub3::ByteRange range;
 		range.Location(offset);
 		range.Length(length);
@@ -162,6 +196,7 @@ static jbyteArray GetBytesRange(JNIEnv* env, jobject thiz, jlong nativePtr, jlon
 	} else {
 		ePub3::SeekableByteStream *seekableStream = dynamic_cast<ePub3::SeekableByteStream *>(byteStream);
 		if (seekableStream != nullptr) {
+			LOGD("JNI --- GetBytesRange SeekableByteStream\n");
 			seekableStream->Seek(offset, std::ios::beg);
 			readBytes = seekableStream->ReadBytes(tmpBuffer, length);
 		} else {
@@ -170,9 +205,13 @@ static jbyteArray GetBytesRange(JNIEnv* env, jobject thiz, jlong nativePtr, jlon
 		}
 	}
 
+	LOGD("JNI --- GetBytesRange 2: %d\n", readBytes);
+
 	jbyteArray jtmpBuffer = env->NewByteArray(readBytes);
 	env->SetByteArrayRegion(jtmpBuffer, 0, readBytes, tmpBuffer);
-    // delete [] tmpBuffer; 
+
+    delete [] tmpBuffer;
+
 	return jtmpBuffer;
 }
 
@@ -253,13 +292,13 @@ JNIEXPORT jlong JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_na
 JNIEXPORT jbyteArray JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeGetBytes
 		(JNIEnv* env, jobject thiz, jlong nativePtr, jlong dataLength) {
 
-	return GetBytes(env, thiz, nativePtr, JNI_TRUE, dataLength);
+	return GetBytes(env, thiz, nativePtr, dataLength);
 }
 
 JNIEXPORT jbyteArray JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeGetAllBytes
 		(JNIEnv* env, jobject thiz, jlong nativePtr) {
 
-	return GetBytes(env, thiz, nativePtr, JNI_FALSE, NULL);
+	return GetAllBytes(env, thiz, nativePtr);
 }
 
 JNIEXPORT jbyteArray JNICALL Java_org_readium_sdk_android_util_ResourceInputStream_nativeGetRangeBytes
