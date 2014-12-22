@@ -27,6 +27,7 @@
 #include <ePub3/utilities/byte_stream.h>
 #include <ePub3/filter.h>
 #include <ePub3/filter_chain_byte_stream_range.h>
+#include <ePub3/filter_chain_byte_stream.h>
 
 #include "jni/jni.h"
 
@@ -167,6 +168,27 @@ static jlong GetBytesX(JNIEnv* env, jobject thiz, jlong nativePtr, jlong jlen, j
 	ResourceStream* stream = (ResourceStream*) nativePtr;
 
 	ePub3::ByteStream* byteStream = stream->getPtr();
+
+
+
+	ePub3::FilterChainByteStreamRange *rangeByteStream = dynamic_cast<ePub3::FilterChainByteStreamRange *>(byteStream);
+	if (rangeByteStream != nullptr) {
+		LOGD("JNI --- GetBytes_ FilterChainByteStreamRange\n");
+	} else {
+		ePub3::FilterChainByteStream *nonRangeByteStream = dynamic_cast<ePub3::FilterChainByteStream*>(byteStream);
+		if (nonRangeByteStream != nullptr) {
+			LOGD("JNI --- GetBytes_ FilterChainByteStream\n");
+		}
+		else {
+			ePub3::SeekableByteStream *seekableStream = dynamic_cast<ePub3::SeekableByteStream *>(byteStream);
+			if (rangeByteStream != nullptr) {
+				LOGD("JNI --- GetBytes_ SeekableByteStream\n");
+			} else {
+				LOGD("JNI --- GetBytes_ ByteStream\n");
+			}
+		}
+	}
+
 	std::size_t bytesRead = byteStream->ReadBytes(reinterpret_cast<uint8_t*>(tmpBuffer), (std::size_t)dataLength);
 
 	LOGD("JNI --- GetBytes_ 2: %d\n", bytesRead);
