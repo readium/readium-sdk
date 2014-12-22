@@ -258,10 +258,10 @@ LOCAL_SRC_FILES := \
 		ePub3/ePub/encryption.cpp \
 		ePub3/ePub/epub_collection.cpp \
 		ePub3/ePub/filter_chain.cpp \
+		ePub3/ePub/filter_chain_byte_stream.cpp \
+		ePub3/ePub/filter_chain_byte_stream_range.cpp \
 		ePub3/ePub/filter_manager_impl.cpp \
 		ePub3/ePub/filter_manager.cpp \
-		ePub3/ePub/filter_chain_byte_stream_range.cpp \
-		ePub3/ePub/filter_chain_byte_stream.cpp \
 		ePub3/ePub/PassThroughFilter.cpp \
 		ePub3/ePub/font_obfuscation.cpp \
 		ePub3/ePub/glossary.cpp \
@@ -306,7 +306,7 @@ LOCAL_SRC_FILES := \
 		Platform/Android/jni/jni/jni_ptr.cpp \
 		Platform/Android/jni/epub3.cpp \
 		Platform/Android/jni/container.cpp \
-		Platform/Android/jni/package.cpp \
+		Platform/Android/jni/packagejni.cpp \
 		Platform/Android/jni/iri.cpp \
 		Platform/Android/jni/resource_stream.cpp
 
