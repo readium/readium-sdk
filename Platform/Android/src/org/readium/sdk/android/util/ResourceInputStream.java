@@ -73,7 +73,7 @@ public class ResourceInputStream extends InputStream {
 	
 	public long readX(long readLength, byte[] barray) {
 
-    	System.err.println("!!! ResourceInputStream int read(int length, byte[] barray) ");
+    	System.err.println("!!! ResourceInputStream int readX(int length, byte[] barray) ");
         
         return nativeGetBytesX(__nativePtr, readLength, barray);
 	}

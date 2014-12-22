@@ -119,7 +119,7 @@ static jbyteArray GetAllBytes(JNIEnv* env, jobject thiz, jlong nativePtr) {
 	std::size_t tmpBufferSize = stream->getBufferSize();
 	uint8_t tmpBuffer[tmpBufferSize]; // stack
 
-	std::size_t MAX = 1 * 1024 * 1024; // MB
+	std::size_t MAX = 10 * 1024 * 1024; // MB
 	jbyte * fullBuffer = new jbyte[MAX]; // heap
 
 	ePub3::ByteStream* byteStream = stream->getPtr();
