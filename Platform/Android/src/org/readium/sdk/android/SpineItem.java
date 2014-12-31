@@ -19,39 +19,49 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class SpineItem {
-	
+
 	private String idRef;
 	private String title;
 	private String href;
 	private String mediaType;
 	private String pageSpread;
 	private String renditionLayout;
-	private String media_overlay_id;
-	
-	public SpineItem(String idRef, String title, String href, String mediaType, 
-			String pageSpread, String renditionLayout, String media_overlay_id) {
-		
+	private String renditionFlow;
+	private String renditionOrientation;
+	private String renditionSpread;
+    private boolean linear;
+	private String mediaOverlayId;
+
+    public SpineItem(String idRef, String title, String href, String mediaType,
+			String pageSpread, String renditionLayout, String renditionFlow,
+            String renditionOrientation, String renditionSpread, boolean linear,
+            String mediaOverlayId) {
+
 		this.idRef = idRef;
 		this.title = title;
 		this.href = href;
 		this.mediaType = mediaType;
 		this.pageSpread = pageSpread;
 		this.renditionLayout = renditionLayout;
-		this.media_overlay_id = media_overlay_id;
+		this.renditionFlow = renditionFlow;
+		this.renditionOrientation = renditionOrientation;
+		this.renditionSpread = renditionSpread;
+        this.linear = linear;
+		this.mediaOverlayId = mediaOverlayId;
 	}
-	
+
 	public String getIdRef() {
 		return idRef;
 	}
-	
+
 	public String getTitle() {
 		return title;
 	}
-	
+
 	public String getHref() {
 		return href;
 	}
-	
+
 	public String getMediaType() {
 		return mediaType;
 	}
@@ -59,18 +69,60 @@ public class SpineItem {
 	public String getPageSpread() {
 		return pageSpread;
 	}
-	
-	public String getRenditionLayout() {
-		return renditionLayout;
+
+	public String getRenditionLayout(Package pack) {
+        String layout = renditionLayout;
+    	if (pack != null && (layout == null || layout.length() == 0)) {
+    		layout = pack.getRenditionLayout();
+    	}
+        return layout;
 	}
-	
-	public boolean isFixedLayout() {
-		return "pre-paginated".equals(renditionLayout);
+
+    public String getRenditionFlow(Package pack) {
+        String flow = renditionFlow;
+    	if (pack != null && (flow == null || flow.length() == 0)) {
+    		flow = pack.getRenditionFlow();
+    	}
+        return flow;
+    }
+
+    public String getRenditionOrientation(Package pack) {
+        String orientation = renditionOrientation;
+    	if (pack != null && (orientation == null || orientation.length() == 0)) {
+    		orientation = pack.getRenditionOrientation();
+    	}
+        return orientation;
+    }
+
+    public String getRenditionSpread(Package pack) {
+    	String spread = renditionSpread;
+    	if (pack != null && (spread == null || spread.length() == 0)) {
+    		spread = pack.getRenditionSpread();
+    	}
+        return spread;
+    }
+
+    public boolean isLinear() {
+        return linear;
+    }
+
+    public boolean isFixedLayout(Package pack) {
+    	String layout = getRenditionLayout(pack);
+		return "pre-paginated".equals(layout);
 	}
 
 	public JSONObject toJSON() throws JSONException {
-		return new JSONObject().put("href", href).put("media_type", mediaType).put("page_spread", pageSpread).
-				put("idref", idRef).put("rendition_layout", renditionLayout).put("media_overlay_id", media_overlay_id);
+		return new JSONObject()
+                .put("href", href)
+                .put("media_type", mediaType)
+                .put("page_spread", pageSpread)
+                .put("idref", idRef)
+                .put("rendition_layout", renditionLayout)
+                .put("rendition_flow", renditionFlow)
+                .put("rendition_orientation", renditionOrientation)
+                .put("rendition_spread", renditionSpread)
+                .put("linear", linear ? "yes": "no")
+                .put("media_overlay_id", mediaOverlayId);
 	}
 
 }

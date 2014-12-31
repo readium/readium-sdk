@@ -16,15 +16,24 @@
 		1EFA3ACB17AB0BEF003A4BC2 /* filter_manager_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EFA3ACA17AB0BEF003A4BC2 /* filter_manager_impl.cpp */; };
 		1EFA3ACC17AB0C7A003A4BC2 /* filter_manager_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EFA3ACA17AB0BEF003A4BC2 /* filter_manager_impl.cpp */; };
 		3418BA7D16C4151E009AA7EF /* ring_buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA88FD116C2B4ED00F2014B /* ring_buffer.cpp */; };
+		588D24201A02EF8F006A92BB /* PassThroughFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 588D241E1A02EF8F006A92BB /* PassThroughFilter.cpp */; };
+		588D24211A02EF8F006A92BB /* PassThroughFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 588D241E1A02EF8F006A92BB /* PassThroughFilter.cpp */; };
+		588D24221A02EF8F006A92BB /* PassThroughFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 588D241F1A02EF8F006A92BB /* PassThroughFilter.h */; };
+		834B09011A0BD015006AEB12 /* filter_chain_byte_stream_range.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250D33BAFB8E8EAEF5FE5B5 /* filter_chain_byte_stream_range.cpp */; };
+		834B09021A0BD018006AEB12 /* filter_chain_byte_stream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250DFDBD90C7E9C632B1E00 /* filter_chain_byte_stream.cpp */; };
 		850B1AE916A75AC600619C3C /* TestData in CopyFiles */ = {isa = PBXBuildFile; fileRef = 850B1AE816A75AB000619C3C /* TestData */; };
 		A250D0731D530005B0FFF5D5 /* media-overlays_smil_model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250D119DCB804938466E3D6 /* media-overlays_smil_model.cpp */; };
+		A250D23C6ABB9CD007A1D55C /* filter_chain_byte_stream.h in Headers */ = {isa = PBXBuildFile; fileRef = A250D26DB00356B591AEFC29 /* filter_chain_byte_stream.h */; };
 		A250D39BB83E81FFA5B07633 /* xml_bridge_dtrace_probes.d in Sources */ = {isa = PBXBuildFile; fileRef = AB718C03184CEEA900F86C6B /* xml_bridge_dtrace_probes.d */; };
 		A250D3F4AFBE13B7B241F654 /* media-overlays_smil_data.h in Headers */ = {isa = PBXBuildFile; fileRef = A250D0D74FF2AD1AB643D2FA /* media-overlays_smil_data.h */; };
 		A250D56B70FC821E8B7B827C /* media-overlays_smil_model.h in Headers */ = {isa = PBXBuildFile; fileRef = A250D7FA4B5BDD384A4C802F /* media-overlays_smil_model.h */; };
 		A250D59027FBAC9390F2D39C /* media-overlays_smil_data.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250D2968F9E967CFEA89703 /* media-overlays_smil_data.cpp */; };
 		A250D734238DE7D230862196 /* media-overlays_smil_model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250D119DCB804938466E3D6 /* media-overlays_smil_model.cpp */; };
+		A250D7BA140B24A6ECC960D8 /* filter_chain_byte_stream_range.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250D33BAFB8E8EAEF5FE5B5 /* filter_chain_byte_stream_range.cpp */; };
+		A250D88B759805B9F12BB47A /* filter_chain_byte_stream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250DFDBD90C7E9C632B1E00 /* filter_chain_byte_stream.cpp */; };
 		A250DCD0523C05493141CE3B /* media-overlays_smil_data.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250D2968F9E967CFEA89703 /* media-overlays_smil_data.cpp */; };
 		A250DE10D82D8E57AF08A3B7 /* media-overlays_smil_utils.h in Headers */ = {isa = PBXBuildFile; fileRef = A250DAE420004486FD140F14 /* media-overlays_smil_utils.h */; };
+		A250DE25482354E16C06D932 /* filter_chain_byte_stream_range.h in Headers */ = {isa = PBXBuildFile; fileRef = A250D24D05706C9BB1AA54ED /* filter_chain_byte_stream_range.h */; };
 		AB0EDE7A17DE23D00007ED42 /* filter_chain_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB0EDE7917DE23D00007ED42 /* filter_chain_tests.cpp */; };
 		AB17B29B170C872E00FD5917 /* font_obfuscation_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB17B29A170C872E00FD5917 /* font_obfuscation_tests.cpp */; };
 		AB17B29E171301C800FD5917 /* run_loop_cf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB17B29C171301C700FD5917 /* run_loop_cf.cpp */; };
@@ -262,8 +271,6 @@
 		ABA4BB5916ADF64400161B77 /* schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB19037165A7E1000CFC651 /* schema.cpp */; };
 		ABA4BB5A16ADF64400161B77 /* ns.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB19047165ADD6900CFC651 /* ns.cpp */; };
 		ABA4BB5B16ADF64400161B77 /* c14n.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB9B5B2F165D816400F11069 /* c14n.cpp */; };
-		ABA4BB5D16ADF66700161B77 /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = ABB190241656DB2200CFC651 /* libxml2.dylib */; };
-		ABA4BB5E16ADF66700161B77 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = ABB1901F1656868100CFC651 /* libz.dylib */; };
 		ABA4BB6016B1942100161B77 /* metadata_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA4BB5F16B1942100161B77 /* metadata_tests.cpp */; };
 		ABA88FBE16C062BF00F2014B /* media_support_info.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA88FBC16C062BF00F2014B /* media_support_info.cpp */; };
 		ABA88FBF16C062BF00F2014B /* media_support_info.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA88FBC16C062BF00F2014B /* media_support_info.cpp */; };
@@ -438,12 +445,18 @@
 		1ED0084717A9DC6F00819EBD /* initialization.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = initialization.cpp; sourceTree = "<group>"; };
 		1EFA3AC917AB0BC0003A4BC2 /* filter_manager_impl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = filter_manager_impl.h; sourceTree = "<group>"; };
 		1EFA3ACA17AB0BEF003A4BC2 /* filter_manager_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filter_manager_impl.cpp; sourceTree = "<group>"; };
+		588D241E1A02EF8F006A92BB /* PassThroughFilter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PassThroughFilter.cpp; sourceTree = "<group>"; };
+		588D241F1A02EF8F006A92BB /* PassThroughFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PassThroughFilter.h; sourceTree = "<group>"; };
 		850B1AE816A75AB000619C3C /* TestData */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TestData; path = ../../TestData; sourceTree = "<group>"; };
 		A250D0D74FF2AD1AB643D2FA /* media-overlays_smil_data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "media-overlays_smil_data.h"; sourceTree = "<group>"; };
 		A250D119DCB804938466E3D6 /* media-overlays_smil_model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "media-overlays_smil_model.cpp"; sourceTree = "<group>"; };
+		A250D24D05706C9BB1AA54ED /* filter_chain_byte_stream_range.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = filter_chain_byte_stream_range.h; sourceTree = "<group>"; };
+		A250D26DB00356B591AEFC29 /* filter_chain_byte_stream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = filter_chain_byte_stream.h; sourceTree = "<group>"; };
 		A250D2968F9E967CFEA89703 /* media-overlays_smil_data.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "media-overlays_smil_data.cpp"; sourceTree = "<group>"; };
+		A250D33BAFB8E8EAEF5FE5B5 /* filter_chain_byte_stream_range.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filter_chain_byte_stream_range.cpp; sourceTree = "<group>"; };
 		A250D7FA4B5BDD384A4C802F /* media-overlays_smil_model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "media-overlays_smil_model.h"; sourceTree = "<group>"; };
 		A250DAE420004486FD140F14 /* media-overlays_smil_utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "media-overlays_smil_utils.h"; sourceTree = "<group>"; };
+		A250DFDBD90C7E9C632B1E00 /* filter_chain_byte_stream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filter_chain_byte_stream.cpp; sourceTree = "<group>"; };
 		AB0EDE7917DE23D00007ED42 /* filter_chain_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filter_chain_tests.cpp; sourceTree = "<group>"; };
 		AB17B29A170C872E00FD5917 /* font_obfuscation_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = font_obfuscation_tests.cpp; sourceTree = "<group>"; };
 		AB17B29C171301C700FD5917 /* run_loop_cf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = run_loop_cf.cpp; sourceTree = "<group>"; };
@@ -915,8 +928,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AB17B2AA17145BF000FD5917 /* CoreFoundation.framework in Frameworks */,
-				ABA4BB5D16ADF66700161B77 /* libxml2.dylib in Frameworks */,
-				ABA4BB5E16ADF66700161B77 /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -935,6 +946,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		588D241D1A02EF70006A92BB /* SampleFilters */ = {
+			isa = PBXGroup;
+			children = (
+				588D241E1A02EF8F006A92BB /* PassThroughFilter.cpp */,
+				588D241F1A02EF8F006A92BB /* PassThroughFilter.h */,
+			);
+			name = SampleFilters;
+			sourceTree = "<group>";
+		};
 		A250DE47346B36E8BC291F6D /* MediaOverlays */ = {
 			isa = PBXGroup;
 			children = (
@@ -1064,6 +1084,7 @@
 		AB6AC71D1684B691000DE924 /* Filters */ = {
 			isa = PBXGroup;
 			children = (
+				588D241D1A02EF70006A92BB /* SampleFilters */,
 				AB95448016BAD2D200EFD2FD /* Content Preprocessing */,
 				AB6AC71E1684B698000DE924 /* Encryption */,
 				AB6AC7201684B6AD000DE924 /* filter.h */,
@@ -1073,6 +1094,10 @@
 				1EFA3ACA17AB0BEF003A4BC2 /* filter_manager_impl.cpp */,
 				AB5284D917CCDF8E003D7BBF /* filter_chain.cpp */,
 				AB5284DA17CCDF8E003D7BBF /* filter_chain.h */,
+				A250D33BAFB8E8EAEF5FE5B5 /* filter_chain_byte_stream_range.cpp */,
+				A250D24D05706C9BB1AA54ED /* filter_chain_byte_stream_range.h */,
+				A250DFDBD90C7E9C632B1E00 /* filter_chain_byte_stream.cpp */,
+				A250D26DB00356B591AEFC29 /* filter_chain_byte_stream.h */,
 			);
 			name = Filters;
 			sourceTree = "<group>";
@@ -1841,6 +1866,7 @@
 				AB5D104717209D38001D3C95 /* utf8.h in Headers */,
 				AB976C4C173443DD00AC26CF /* property.h in Headers */,
 				AB976C51173803F800AC26CF /* property_extension.h in Headers */,
+				588D24221A02EF8F006A92BB /* PassThroughFilter.h in Headers */,
 				AB976C551738045A00AC26CF /* owned_by.h in Headers */,
 				AB976C5A1738057900AC26CF /* property_holder.h in Headers */,
 				AB976C6017393AD600AC26CF /* epub_locale.h in Headers */,
@@ -1849,6 +1875,8 @@
 				A250DE10D82D8E57AF08A3B7 /* media-overlays_smil_utils.h in Headers */,
 				A250D56B70FC821E8B7B827C /* media-overlays_smil_model.h in Headers */,
 				A250D3F4AFBE13B7B241F654 /* media-overlays_smil_data.h in Headers */,
+				A250DE25482354E16C06D932 /* filter_chain_byte_stream_range.h in Headers */,
+				A250D23C6ABB9CD007A1D55C /* filter_chain_byte_stream.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1916,7 +1944,7 @@
 		ABA72C1B1655382E003125FF /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0460;
+				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "The Readium Foundation and contributors";
 			};
 			buildConfigurationList = ABA72C1E1655382E003125FF /* Build configuration list for PBXProject "ePub3" */;
@@ -2018,6 +2046,7 @@
 				ABA4BAFE16ADF64400161B77 /* url_canon_query.cc in Sources */,
 				ABA4BAFF16ADF64400161B77 /* url_canon_relative.cc in Sources */,
 				ABA4BB0016ADF64400161B77 /* url_canon_stdurl.cc in Sources */,
+				834B09011A0BD015006AEB12 /* filter_chain_byte_stream_range.cpp in Sources */,
 				ABA4BB0216ADF64400161B77 /* url_parse.cc in Sources */,
 				ABA4BB0316ADF64400161B77 /* url_parse_file.cc in Sources */,
 				ABA4BB0516ADF64400161B77 /* url_util.cc in Sources */,
@@ -2048,6 +2077,7 @@
 				ABA4BB1C16ADF64400161B77 /* zip_fopen.c in Sources */,
 				ABA4BB1D16ADF64400161B77 /* zip_fopen_index.c in Sources */,
 				ABA4BB1E16ADF64400161B77 /* zip_fread.c in Sources */,
+				588D24211A02EF8F006A92BB /* PassThroughFilter.cpp in Sources */,
 				ABA4BB1F16ADF64400161B77 /* zip_free.c in Sources */,
 				ABA4BB2016ADF64400161B77 /* zip_get_archive_comment.c in Sources */,
 				ABA4BB2116ADF64400161B77 /* zip_get_archive_flag.c in Sources */,
@@ -2059,6 +2089,7 @@
 				ABA4BB2716ADF64400161B77 /* zip_new.c in Sources */,
 				ABA4BB2816ADF64400161B77 /* zip_open.c in Sources */,
 				ABB39517183D21AC00F19CA7 /* path_help.cpp in Sources */,
+				834B09021A0BD018006AEB12 /* filter_chain_byte_stream.cpp in Sources */,
 				ABA4BB2916ADF64400161B77 /* zip_rename.c in Sources */,
 				ABA4BB2A16ADF64400161B77 /* zip_replace.c in Sources */,
 				ABA4BB2B16ADF64400161B77 /* zip_set_archive_comment.c in Sources */,
@@ -2179,6 +2210,7 @@
 				ABB190031656863300CFC651 /* zip_get_name.c in Sources */,
 				ABB190041656863300CFC651 /* zip_get_num_files.c in Sources */,
 				ABB190051656863300CFC651 /* zip_memdup.c in Sources */,
+				588D24201A02EF8F006A92BB /* PassThroughFilter.cpp in Sources */,
 				ABB190061656863300CFC651 /* zip_name_locate.c in Sources */,
 				ABB190071656863300CFC651 /* zip_new.c in Sources */,
 				ABB190081656863300CFC651 /* zip_open.c in Sources */,
@@ -2256,6 +2288,8 @@
 				ABA4BAAF16A7518B00161B77 /* url_canon_cpp11.cc in Sources */,
 				AB95447D16B9730B00EFD2FD /* content_handler.cpp in Sources */,
 				AB95448316BAD32000EFD2FD /* switch_preprocessor.cpp in Sources */,
+				A250D88B759805B9F12BB47A /* filter_chain_byte_stream.cpp in Sources */,
+				A250D7BA140B24A6ECC960D8 /* filter_chain_byte_stream_range.cpp in Sources */,
 				AB5284DB17CCDF8E003D7BBF /* filter_chain.cpp in Sources */,
 				AB95448816BAF11000EFD2FD /* object_preprocessor.cpp in Sources */,
 				ABA88FBE16C062BF00F2014B /* media_support_info.cpp in Sources */,
@@ -2313,7 +2347,6 @@
 		ABA4BAEC16ADF5A600161B77 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
 				DSTROOT = /tmp/ePub3_iOS.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "../../ePub3-iOS/ePub3-iOS-Prefix.pch";
@@ -2324,10 +2357,9 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
 					"$(SRCROOT)/include",
-					"$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/lib";
+				LIBRARY_SEARCH_PATHS = "";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -2338,7 +2370,6 @@
 		ABA4BAED16ADF5A600161B77 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
 				DSTROOT = /tmp/ePub3_iOS.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "../../ePub3-iOS/ePub3-iOS-Prefix.pch";
@@ -2349,10 +2380,9 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
 					"$(SRCROOT)/include",
-					"$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/lib";
+				LIBRARY_SEARCH_PATHS = "";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -2365,7 +2395,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -2395,7 +2424,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -2431,10 +2459,9 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
 					"$(SRCROOT)/include",
-					"$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/include",
 				);
 				LD_DYLIB_INSTALL_NAME = "$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)";
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/lib";
+				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -2453,10 +2480,9 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
 					"$(SRCROOT)/include",
-					"$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/include",
 				);
 				LD_DYLIB_INSTALL_NAME = "$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)";
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../ePub3/ThirdParty/openssl/OpenSslLibrary/lib";
+				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

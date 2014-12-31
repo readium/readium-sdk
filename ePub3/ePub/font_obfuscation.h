@@ -61,7 +61,10 @@ protected:
         EncryptionInfoPtr encInfo = item->GetEncryptionInfo();
         if ( encInfo == nullptr || encInfo->Algorithm() != FontObfuscationAlgorithmID )
             return false;
-        return REGEX_NS::regex_match(item->MediaType().stl_str(), TypeCheck);
+
+        auto mediaType = item->MediaType();
+        bool ret = REGEX_NS::regex_match(mediaType.stl_str(), TypeCheck);
+        return ret;
     }
     
     static ContentFilterPtr FontObfuscatorFactory(ConstPackagePtr item);
@@ -109,8 +112,6 @@ public:
         std::memcpy(_key, o._key, KeySize);
     }
     
-    virtual FilterContext* MakeFilterContext(ConstManifestItemPtr) const OVERRIDE { return new FontObfuscationContext; }
-    
     /**
      Applies the font obfuscation algorithm to the resource data.
      @see http://www.idpf.org/epub/30/spec/epub30-ocf.html#font-obfuscation
@@ -135,6 +136,8 @@ protected:
      */
     EPUB3_EXPORT
     bool BuildKey(ConstContainerPtr container);
+    
+    virtual FilterContext *InnerMakeFilterContext(ConstManifestItemPtr) const OVERRIDE { return new FontObfuscationContext; }
 };
 
 EPUB3_END_NAMESPACE

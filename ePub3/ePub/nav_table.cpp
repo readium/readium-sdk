@@ -202,6 +202,16 @@ void NavigationTable::LoadChildElements(shared_ptr<NavigationElement> pElement, 
     xpath.NameDefaultNamespace("html");
 
     xml::NodeSet liNodes = xpath.Nodes("./html:li", olNode);
+    if ( liNodes.empty() )
+    {
+        // test for erroneous EPUB NavDoc (nested ol)
+        xml::NodeSet olNodes = xpath.Nodes("./html:ol", olNode);
+        if ( olNodes.size() > 0 )
+        {
+            olNode = olNodes[0];
+            liNodes = xpath.Nodes("./html:li", olNode);
+        }
+    }
 
     for ( auto liNode : liNodes )
     {

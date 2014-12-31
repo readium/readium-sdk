@@ -23,6 +23,7 @@ package org.readium.sdk.android;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -73,6 +74,10 @@ public class Package {
 	private String authors;
 	private String modificationDate;
 	private String pageProgressionDirection;
+	private String rendition_layout;
+	private String rendition_flow;
+	private String rendition_orientation;
+	private String rendition_spread;
 	private String smilDataJson;
 	private List<String> authorList;
 	private List<String> subjects;
@@ -89,7 +94,6 @@ public class Package {
 	private Package(long nativePtr) {
     	// Log creation
         Log.i(TAG, "Creating package [ptr:" + String.format("%X", nativePtr) + "]");
-    	
 		__nativePtr = nativePtr;
 //        Log.i(TAG, "package nativePtr: "+nativePtr);
         loadData();
@@ -161,6 +165,10 @@ public class Package {
 		spineItems = nativeGetSpineItems(__nativePtr);
 		manifestTable = nativeGetManifestTable(__nativePtr);
 		smilDataJson = nativeGetSmilDataAsJson(__nativePtr);
+		rendition_layout = nativeGetProperty(__nativePtr, "layout", "rendition");
+		rendition_flow = nativeGetProperty(__nativePtr, "flow", "rendition");
+		rendition_orientation = nativeGetProperty(__nativePtr, "orientation", "rendition");
+		rendition_spread = nativeGetProperty(__nativePtr, "spread", "rendition");
 		Log.i(TAG, "package nativePtr: " + __nativePtr);
 		Log.i(TAG, "title: "+title);
 		Log.i(TAG, "subtitle: "+subtitle);
@@ -186,6 +194,10 @@ public class Package {
 		Log.i(TAG, "subjects: "+subjects);
 		Log.i(TAG, "spineItems: "+spineItems.size());
 		Log.i(TAG, "manifestTable: "+manifestTable.size());
+		Log.i(TAG, "rendition_layout: "+rendition_layout);
+		Log.i(TAG, "rendition_flow: "+rendition_flow);
+		Log.i(TAG, "rendition_orientation: "+rendition_orientation);
+		Log.i(TAG, "rendition_spread: "+rendition_spread);
 		//Log.i(TAG, "smilDataJson: "+ smilDataJson);
 	}
 
@@ -277,6 +289,22 @@ public class Package {
 		return pageProgressionDirection;
 	}
 
+	public String getRenditionLayout() {
+		return rendition_layout;
+	}
+	
+	public String getRenditionFlow() {
+		return rendition_flow;
+	}
+	
+	public String getRenditionOrientation() {
+		return rendition_orientation;
+	}
+	
+	public String getRenditionSpread() {
+		return rendition_spread;
+	}
+
 	public List<String> getSubjects() {
 		return subjects;
 	}
@@ -363,40 +391,47 @@ public class Package {
 		return null;
 	}
 
-	/**
-	 * Fetch the whole file into a byte array.
-	 * @param relativePath the location of the resource to load
-	 * @return the resource as a byte array. If no data is retrieved, the byte array length is 0.
-	 */
-	public byte[] getContent(String relativePath) {
-		InputStream in = getInputStream(relativePath);
-		if (in == null) {
-			return null;
-		}
-		try {
-			byte[] content = new byte[in.available()];
-			in.read(content);
-			return content;
-		} catch (IOException ex) {
-			Log.e(TAG, ""+ex.getMessage(), ex);
-		} finally {
-			try {
-				in.close();
-			} catch (IOException ex) {
-				Log.e(TAG, ""+ex.getMessage(), ex);
-			}
-		}
-		return null;
-	}
+    public PackageResource getResourceAtRelativePath(String relativePath) {
+        return new PackageResource(this, relativePath);
+    }
 
-	/**
-	 * Create an InputStream that .
+    /**
+     * Create an InputStream that can be used to fetch content.
+     * @param relativePath the location of the resource to load
+     * @param isRangeRequest if this is a range request or not
+     * @return the InputStream. If no data is retrieved, the InputStream is null.
+     */
+    public InputStream getInputStream(String relativePath, boolean isRangeRequest) {
+        return getInputStream(relativePath, 0, isRangeRequest);
+    }
+
+    /**
+     * Create a raw InputStream that can be used to fetch content without using content filters.
+     * @param relativePath the location of the resource to load
+     * @return the InputStream. If no data is retrieved, the InputStream is null.
+     */
+    public InputStream getRawInputStream(String relativePath) {
+        return getRawInputStream(relativePath, 0);
+    }
+
+    /**
+     * Create an InputStream that can be used to fetch content.
 	 * @param relativePath the location of the resource to load
+	 * @param isRangeRequest if this is a range request or not
 	 * @return the InputStream. If no data is retrieved, the InputStream is null.
 	 */
-	public InputStream getInputStream(String relativePath) {
-		return nativeInputStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath);
+	public InputStream getInputStream(String relativePath, int bufferSize, boolean isRangeRequest) {
+		return nativeInputStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath, bufferSize, isRangeRequest);
 	}
+
+    /**
+     * Create a raw InputStream that can be used to fetch content without using content filters.
+     * @param relativePath the location of the resource to load
+     * @return the InputStream. If no data is retrieved, the InputStream is null.
+     */
+    public InputStream getRawInputStream(String relativePath, int bufferSize) {
+        return nativeRawInputStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath, bufferSize);
+    }
 
 	/**
 	 * This method is useful to know the size of a specific resource 
@@ -408,6 +443,15 @@ public class Package {
 		return nativeGetArchiveInfoSize(__nativePtr, container.getNativePtr(), relativePath);
 	}
 
+	// sensible legacy defaults
+	private String _rootUrl = "/";
+	private String _rootUrlMO = "http://127.0.0.1:8080/";
+
+	public void setRootUrls(String rootUrl, String rootUrlMO) {
+		_rootUrl = rootUrl;
+		_rootUrlMO = rootUrlMO;
+	}
+	
 	/**
 	 * Convert the package to JSON object.
 	 * @return representation of the package to be consumed by the Readium JS library.
@@ -415,12 +459,15 @@ public class Package {
 	public JSONObject toJSON() {
 		JSONObject o = new JSONObject();
 		try {
-			o.put("rootUrl", basePath);
-			
-			//EpubServer.HTTP_HOST /// EpubServer.HTTP_PORT
-			o.put("rootUrlMO", "http://localhost:8080/");
-			
-			o.put("rendition_layout", nativeGetProperty(__nativePtr, "layout", "rendition"));
+			o.put("rootUrl", _rootUrl);
+			if (_rootUrlMO != null) {
+				o.put("rootUrlMO", _rootUrlMO);
+			}
+
+			o.put("rendition_layout", rendition_layout);
+			o.put("rendition_flow", rendition_flow);
+			o.put("rendition_orientation", rendition_orientation);
+			o.put("rendition_spread", rendition_spread);
 			JSONArray spineArray = new JSONArray();
 			for (SpineItem item : spineItems) {
 				spineArray.put(item.toJSON());
@@ -482,9 +529,12 @@ public class Package {
 	 * Content 
 	 */
 	private native InputStream nativeInputStreamForRelativePath(long nativePtr, 
-			long containerPtr, String relativePath);
-	
-	private native int nativeGetArchiveInfoSize(long nativePtr, 
+			long containerPtr, String relativePath, int bufferSize, boolean isRange);
+
+    private native InputStream nativeRawInputStreamForRelativePath(long nativePtr,
+            long containerPtr, String relativePath, int bufferSize);
+
+    private native int nativeGetArchiveInfoSize(long nativePtr,
 			long containerPtr, String relativePath);
 
 	/*

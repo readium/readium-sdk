@@ -29,7 +29,7 @@
 #include "epub3.h"
 #include "helpers.h"
 #include "container.h"
-#include "package.h"
+#include "packagejni.h"
 
 
 using namespace std;

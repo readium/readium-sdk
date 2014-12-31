@@ -28,6 +28,7 @@
 #include <string>
 #include <functional>
 #include <memory>
+#include <ePub3/utilities/byte_stream.h>
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -38,6 +39,50 @@ typedef std::shared_ptr<Package>    PackagePtr;
 
 class ContentFilter;
 typedef std::shared_ptr<ContentFilter>  ContentFilterPtr;
+
+// -------------------------------------------------------------------------------------------
+
+class ByteRange
+{
+public:
+    ByteRange()
+    {
+        Reset();
+    }
+    
+    uint32_t Location() const { return m_location; }
+    void Location(uint32_t location) { m_isFullRange = false; m_location = location; }
+    uint32_t Length() const { return m_length; }
+    void Length(uint32_t length) { m_isFullRange = false; m_length = length; }
+    bool IsFullRange() const { return m_isFullRange; }
+    void Reset() { m_location = 0; m_length = 0; m_isFullRange = true; }
+    
+    ByteRange &operator=(const ByteRange &b)
+    {
+        if (b.m_isFullRange)
+        {
+            Reset();
+        }
+        else
+        {
+            m_location = b.m_location;
+            m_length = b.m_length;
+            m_isFullRange = false;
+        }
+        return (*this);
+    }
+    
+private:
+    ByteRange(const ByteRange &b) _DELETED_; // Delete copy constructor
+    ByteRange(ByteRange &&b) _DELETED_; // Delete move constructor
+    ByteRange &operator=(ByteRange &&b) _DELETED_; // Delete move assignment operator
+    
+    uint32_t m_location;
+    uint32_t m_length;
+    bool m_isFullRange;
+};
+
+// -------------------------------------------------------------------------------------------
 
 /**
  The FilterContext abstract class can be extended by individual filters to hold
@@ -57,9 +102,101 @@ typedef std::shared_ptr<ContentFilter>  ContentFilterPtr;
 class FilterContext
 {
 public:
-    FilterContext() {}
-    virtual ~FilterContext() {}
+    FilterContext() { }
+    virtual ~FilterContext() { }
 };
+
+// -------------------------------------------------------------------------------------------
+
+class SeekableByteStream;
+
+/**
+ The RangeFilterContext abstract class is an extension of the FilterContext class, and it is
+ used to pass data needed for extracting ranges of bytes from a given resource.
+ 
+ As you may imagine, one piece of data that we need to pass is the range of bytes that is being
+ requested. That is passed by the ByteRange object that it is included in this class. In
+ addition to that, the FilterContext object will need direct access to the ZIP file so that it
+ can read only the pieces that it needs (after all, the whole idea was that we didn't want to
+ cram a whole 1 GB video file in memory). That reference is kept the m_byteStream member
+ variable.
+ */
+
+class RangeFilterContext : public FilterContext
+{
+public:
+    RangeFilterContext() : FilterContext(), m_byteStream(nullptr) { }
+
+    virtual ~RangeFilterContext() {
+        if (m_buffer != nullptr)
+        {
+            this->DestroyCurrentTemporaryByteBuffer();
+        }
+    }
+private:
+    uint8_t *m_buffer = nullptr;
+    ByteStream::size_type m_buffer_size = 0;
+    ByteStream::size_type m_allocated_buffer_size = 0;
+
+    void DestroyCurrentTemporaryByteBuffer()
+    {
+        delete[] m_buffer; //reinterpret_cast<uint8_t *>(m_buffer);
+        m_buffer = nullptr;
+        m_buffer_size = 0;
+        m_allocated_buffer_size = 0;
+    }
+
+public:
+    uint8_t * GetCurrentTemporaryByteBuffer()
+    {
+        return m_buffer;
+    }
+
+    ByteStream::size_type GetCurrentTemporaryByteBufferSize()
+    {
+        return m_buffer_size;
+    }
+
+
+    ByteStream::size_type GetCurrentTemporaryByteBufferAllocatedSize()
+    {
+        return m_allocated_buffer_size;
+    }
+
+    uint8_t * GetAllocateTemporaryByteBuffer(ByteStream::size_type bytesToRead)
+    {
+        if (m_buffer == nullptr || m_buffer_size < bytesToRead)
+        {
+            if (m_buffer != nullptr)
+            {
+                this->DestroyCurrentTemporaryByteBuffer();
+            }
+
+            m_buffer = new uint8_t[bytesToRead];
+            m_allocated_buffer_size = bytesToRead;
+        }
+
+        for (int i = 0; i < m_allocated_buffer_size; i++)
+        {
+            m_buffer[i] = 0;
+        }
+
+        m_buffer_size = bytesToRead;
+
+        return m_buffer;
+    }
+
+    ByteRange &GetByteRange() { return m_byteRange; }
+    void SetSeekableByteStream(SeekableByteStream *byteStream) { m_byteStream = byteStream; }
+    SeekableByteStream *GetSeekableByteStream() const { return m_byteStream; }
+    void ResetSeekableByteStream() { m_byteStream = nullptr; }
+    
+private:
+    ByteRange m_byteRange;
+    SeekableByteStream *m_byteStream;
+};
+
+// -------------------------------------------------------------------------------------------
 
 /**
  ContentFilter is an abstract base class from which all content filters must be
@@ -91,7 +228,7 @@ public:
  */
 class ContentFilter
 #if EPUB_PLATFORM(WINRT)
-	: public NativeBridge
+    : public NativeBridge
 #endif
 {
 public:
@@ -132,6 +269,19 @@ public:
     
     typedef std::function<ContentFilterPtr(ConstPackagePtr package)> TypeFactoryFn;
     
+    /**
+     enum class OperatingMode
+     This enum class defines which way a given ContentFilter operates, in regards
+     of how it makes use of the bytes that it is given as input. More details are
+     given on each enum member.
+     */
+    enum class OperatingMode
+    {
+        Standard,              /** < This ContentFilter does not require the full range of bytes, nor it does work on specific byte ranges. */
+        RequiresCompleteData,  /** < This ContentFilter requires the full range of bytes of a given resource to operate. */
+        SupportsByteRanges     /** < This ContentFilter can operate on specific byte ranges. */
+    };
+    
 private:
     ///
     /// No default constructor.
@@ -146,20 +296,30 @@ public:
     ContentFilter(ContentFilter&& o) : _sniffer(std::move(o._sniffer)) {}
     
     /**
-	 Allocate and return a new FilterContext subclass. The default returns `nullptr`.
+     Allocate and return a new FilterContext subclass. The default returns `nullptr`.
+     
+     This method actually calls InnerMakeFilterContext(), in order to allow the subclasses
+     of ContentFilter to return their own subclasses of FilterContext. Notice, though,
+     that subclasses of ContentFilter that support byte ranges must return a FilterContext
+     object that belongs to a subclass of RangeFilterContext, given that the RangeFilterContext
+     subclass contains data that is needed when processing a byte range request. Not doing so
+     will result in an exception being thrown.
 
-	 Each filter is instantiated once per Package. A filter can then be used to process
-	 data from multiple ManifestItems at any one time. Any information specific to a single
-	 ManifestItem can be encapsulated within a FilterContext pointer, which will be passed
-	 into each invocation of the FilterData() method. The prospective ManifestItem is
-	 passed into this function so that it can inform the creation of filter context data.
-
-	 Filter context objects can be anything that inherits from ContextFilter, which itself
-	 asserts no conditions on the structure or implementation of the object.
-	 @param item The Manifest Item being processed, and for which the context is created.
-	 @result An object containing per-item data, or nullptr.
-	 */
-    virtual FilterContext* MakeFilterContext(ConstManifestItemPtr item) const { return nullptr; }
+     @param item The Manifest Item being processed, and for which the context is created.
+     @result An object containing per-item data, or nullptr.
+     */
+    FilterContext *MakeFilterContext(ConstManifestItemPtr item) const
+    {
+        FilterContext *filterContext = InnerMakeFilterContext(item);
+        if (filterContext != nullptr &&
+            GetOperatingMode() == OperatingMode::SupportsByteRanges &&
+            dynamic_cast<RangeFilterContext *>(filterContext) == nullptr)
+        {
+            throw std::logic_error("A ContentFilter object that supports byte ranges should only make RangeFilterContext objects.");
+        }
+        
+        return filterContext;
+    }
     
     /**
      Create a new content filter with a (required) type sniffer.
@@ -168,11 +328,13 @@ public:
      */
     ContentFilter(TypeSnifferFn sniffer) : _sniffer(sniffer) {}
     virtual ~ContentFilter() {}
-    
-    ///
-    /// Subclasses can return `true` if they need all data in one chunk.
-    virtual bool RequiresCompleteData() const { return false; }
-    
+        
+    /// Subclasses should override this method if they want to specify different
+    /// modes of operation.
+    virtual OperatingMode GetOperatingMode() const { return OperatingMode::Standard; }
+
+    virtual ByteStream::size_type BytesAvailable(SeekableByteStream *byteStream) const { return byteStream->BytesAvailable(); };
+
     ///
     /// Obtains the type-sniffer for this filter.
     virtual TypeSnifferFn TypeSniffer() const { return _sniffer; }
@@ -200,10 +362,32 @@ public:
      @see ePub3::SwitchPreprocessor or ePub3::ObjectPreprocessor for full-data
      examples.
      */
-    virtual void * FilterData(FilterContext* context, void *data, size_t len, size_t *outputLen) = 0;
+    virtual void *FilterData(FilterContext* context, void *data, size_t len, size_t *outputLen) = 0;
     
 protected:
     TypeSnifferFn       _sniffer;
+    
+    /**
+     Allocate and return a new FilterContext subclass. The default returns `nullptr`.
+     
+     Each filter is instantiated once per Package. A filter can then be used to process
+     data from multiple ManifestItems at any one time. Any information specific to a single
+     ManifestItem can be encapsulated within a FilterContext pointer, which will be passed
+     into each invocation of the FilterData() method. The prospective ManifestItem is
+     passed into this function so that it can inform the creation of filter context data.
+     
+     Notice that each different ContentFilter subclass can create their own subclass of
+     FilterContext. One important note, though, is that ContentFilter classes that support
+     Byte Ranges should create a FilterContext class for themselves that it is actually a
+     subclass of RangeFilterContext. RangeFilterContext contains information that it is
+     needed when processing byte range requests, hence the imposition. Not doing so will
+     result in an exception being thrown.
+     
+     @param item The Manifest Item being processed, and for which the context is created.
+     @result An object containing per-item data, or nullptr.
+     */
+    virtual FilterContext *InnerMakeFilterContext(ConstManifestItemPtr item) const { return nullptr; }
+
 };
 
 EPUB3_END_NAMESPACE

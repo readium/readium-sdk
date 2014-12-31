@@ -77,6 +77,7 @@ static std::map<string, DCType> NameToIDMap = {
 };
 
 static std::map<DCType, string> IDToNameMap = {
+    // {DCType::Custom, "meta"}, ?
     {DCType::Identifier, "identifier"},
     {DCType::Title, "title"},
     {DCType::Language, "language"},
@@ -104,7 +105,14 @@ static const std::map<string, RenditionPropertyBits> RenditionSplitPropertyLooku
     {"http://www.idpf.org/vocab/rendition/#spread-landscape", {"spread", "landscape"}},
     {"http://www.idpf.org/vocab/rendition/#spread-portrait", {"spread", "portrait"}},
     {"http://www.idpf.org/vocab/rendition/#spread-both", {"spread", "both"}},
-    {"http://www.idpf.org/vocab/rendition/#spread-auto", {"spread", "auto"}}
+    {"http://www.idpf.org/vocab/rendition/#spread-auto", {"spread", "auto"}},
+    {"http://www.idpf.org/vocab/rendition/#flow-auto", {"flow", "auto"}},
+    {"http://www.idpf.org/vocab/rendition/#flow-paginated", {"flow", "paginated"}},
+    {"http://www.idpf.org/vocab/rendition/#flow-scrolled-doc", {"flow", "scrolled-doc"}},
+    {"http://www.idpf.org/vocab/rendition/#flow-scrolled-continuous", {"flow", "scrolled-continuous"}},
+    {"http://idpf.org/epub/vocab/package/#page-spread-left", {"page-spread", "page-spread-left"}},
+    {"http://idpf.org/epub/vocab/package/#page-spread-right", {"page-spread", "page-spread-right"}},
+    {"http://www.idpf.org/vocab/rendition/#page-spread-center", {"page-spread", "page-spread-center"}}
 };
 #else
 typedef std::pair<string, DCType> __to_code_pair;
@@ -129,9 +137,10 @@ static __to_code_pair __to_code_pairs[16] = {
     __to_code_pair("subject", DCType::Subject),
     __to_code_pair("type", DCType::Type)
 };
-static std::map<string, DCType> NameToIDMap(&__to_code_pairs[0], &__to_code_pairs[16]);
+static std::map<string, DCType> NameToIDMap(&__to_code_pairs[0], &__to_code_pairs[15]);
 
-static __to_str_pair __to_str_pairs[16] = {
+static __to_str_pair __to_str_pairs[15] = {
+    //__to_code_pair(DCType::Custom, "meta"), ?
     __to_str_pair(DCType::Identifier, "identifier"),
     __to_str_pair(DCType::Title, "title"),
     __to_str_pair(DCType::Language, "language"),
@@ -148,9 +157,9 @@ static __to_str_pair __to_str_pairs[16] = {
     __to_str_pair(DCType::Subject, "subject"),
     __to_str_pair(DCType::Type, "type")
 };
-static std::map<DCType, string> IDToNameMap(&__to_str_pairs[0], &__to_str_pairs[16]);
+static std::map<DCType, string> IDToNameMap(&__to_str_pairs[0], &__to_str_pairs[14]);
 
-static __to_rendition_pair __to_rendition_pairs[10] = {
+static __to_rendition_pair __to_rendition_pairs[17] = {
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#orientation-landscape", RenditionPropertyBits("orientation", "landscape")),
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#orientation-portrait", RenditionPropertyBits("orientation", "portrait")),
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#orientation-auto", RenditionPropertyBits("orientation", "auto")),
@@ -160,9 +169,17 @@ static __to_rendition_pair __to_rendition_pairs[10] = {
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#spread-landscape", RenditionPropertyBits("spread", "landscape")),
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#spread-portrait", RenditionPropertyBits("spread", "portrait")),
     __to_rendition_pair("http://www.idpf.org/vocab/rendition/#spread-both", RenditionPropertyBits("spread", "both")),
-    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#spread-auto", RenditionPropertyBits("spread", "auto"))
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#spread-auto", RenditionPropertyBits("spread", "auto")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#flow-auto", RenditionPropertyBits("flow", "auto")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#flow-paginated", RenditionPropertyBits("flow", "paginated")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#flow-scrolled-doc", RenditionPropertyBits("flow", "scrolled-doc")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#flow-scrolled-continuous", RenditionPropertyBits("flow", "scrolled-continuous")),
+    __to_rendition_pair("http://idpf.org/epub/vocab/package/#page-spread-left", RenditionPropertyBits("page-spread", "page-spread-left")),
+    __to_rendition_pair("http://idpf.org/epub/vocab/package/#page-spread-right", RenditionPropertyBits("page-spread", "page-spread-right")),
+    __to_rendition_pair("http://www.idpf.org/vocab/rendition/#page-spread-center", RenditionPropertyBits("page-spread", "page-spread-center"))
 };
-static std::map<string, RenditionPropertyBits> RenditionSplitPropertyLookup(&__to_rendition_pairs[0], &__to_rendition_pairs[9]);
+
+static std::map<string, RenditionPropertyBits> RenditionSplitPropertyLookup(&__to_rendition_pairs[0], &__to_rendition_pairs[16]);
 #endif
 
 EPUB3_EXPORT
@@ -201,8 +218,6 @@ bool Property::ParseMetaElement(shared_ptr<xml::Node> node)
             return false;
         
         _type = found->second;
-        
-        // special property IRI, not actually in the spec, but useful for comparisons and printouts
         _identifier = IRI(string(DCMES_uri) + node->Name());
         _value = node->Content();
         _language = node->Language();
@@ -212,15 +227,26 @@ bool Property::ParseMetaElement(shared_ptr<xml::Node> node)
     }
     else if ( node->Name() == MetaTagName )
     {
-        _type = DCType::Custom;
         string property = _getProp(node, "property");
         if ( property.empty() )
             return false;
-        
+
+        _type = DCType::Custom;
 		_identifier = OwnedBy::Owner()->PropertyIRIFromString(property);
 		_value = node->Content();
 		_language = node->Language();
         SetXMLIdentifier(_getProp(node, "id"));
+
+        return true;
+    }
+    else if ( ns != nullptr )
+    {
+        _type = DCType::Custom;
+        _identifier = IRI(string(ns->URI()) + node->Name());
+        _value = node->Content();
+        _language = node->Language();
+        SetXMLIdentifier(_getProp(node, "id"));
+
         return true;
     }
     
@@ -246,8 +272,9 @@ void Property::SetPropertyIdentifier(const IRI& iri)
     // Le sigh...
     _identifier = iri;
     _type = DCTypeFromIRI(iri);
-    
-    auto found = RenditionSplitPropertyLookup.find(iri.URIString());
+
+    auto iriString = iri.URIString();
+    auto found = RenditionSplitPropertyLookup.find(iriString);
     if ( found != RenditionSplitPropertyLookup.end() )
     {
         _identifier.SetFragment(found->second.first);

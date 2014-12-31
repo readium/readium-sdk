@@ -76,7 +76,7 @@ public:
     /**
      This processor won't work on streamed data, it requires the whole thing at once.
      */
-    virtual bool RequiresCompleteData() const { return true; }
+    virtual OperatingMode GetOperatingMode() const OVERRIDE { return OperatingMode::RequiresCompleteData; }
     
     /**
      Filters the input data using regular expressions to identify epub:switch

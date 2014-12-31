@@ -26,6 +26,7 @@ EPUB3_BEGIN_NAMESPACE
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
 const PropertyHolder::PropertyVocabularyMap PropertyHolder::ReservedVocabularies({
     { "", "http://idpf.org/epub/vocab/package/#" },
+    //{ "rendition", "http://www.idpf.org/vocab/rendition/#" }, CANNOT BE INCLUDED, BECAUSE OF OPF package@prefix attribute definition, see Package::InstallPrefixesFromAttributeValue
     { "dcterms", "http://purl.org/dc/terms/" },
     { "marc", "http://id.loc.gov/vocabulary/" },
     { "media", "http://www.idpf.org/epub/vocab/overlays/#" },
@@ -60,6 +61,7 @@ typedef PropertyHolder::PropertyVocabularyMap::value_type __vmap_t;
 typedef std::pair<const string, bool> __mtype_t;
 static const __vmap_t __vmap_values[6] = {
     __vmap_t("", "http://idpf.org/epub/vocab/package/#"),
+    //__vmap_t("rendition", "http://www.idpf.org/vocab/rendition/#"), CANNOT BE INCLUDED, BECAUSE OF OPF package@prefix attribute definition, see Package::InstallPrefixesFromAttributeValue
     __vmap_t("dcterms", "http://purl.org/dc/terms/"),
     __vmap_t("marc", "http://id.loc.gov/vocabulary/"),
     __vmap_t("media", "http://www.idpf.org/epub/vocab/overlays/#"),
@@ -89,8 +91,8 @@ static const __mtype_t __mtype_values[14] = {
     __mtype_t("text/css", true),                             // EPUB Style Sheets
     __mtype_t("text/javascript", true)                       // Scripts
 };
-const PropertyHolder::PropertyVocabularyMap PropertyHolder::ReservedVocabularies(&__vmap_values[0], &__vmap_values[6]);
-const std::map<const string, bool> PropertyHolder::CoreMediaTypes(&__mtype_values[0], &__mtype_values[14]);
+const PropertyHolder::PropertyVocabularyMap PropertyHolder::ReservedVocabularies(&__vmap_values[0], &__vmap_values[5]);
+const std::map<const string, bool> PropertyHolder::CoreMediaTypes(&__mtype_values[0], &__mtype_values[13]);
 #endif
 
 PropertyHolder& PropertyHolder::operator=(const PropertyHolder& o)
@@ -250,6 +252,9 @@ PropertyPtr PropertyHolder::PropertyMatching(DCType type, bool lookupParents) co
 }
 PropertyPtr PropertyHolder::PropertyMatching(const IRI& iri, bool lookupParents) const
 {
+    // DEBUG
+    auto iriString = iri.URIString();
+
     for ( auto &i : _properties )
     {
         if ( i->PropertyIdentifier() == iri )
@@ -291,7 +296,11 @@ PropertyPtr PropertyHolder::PropertyMatching(const string& reference, const stri
 
 void PropertyHolder::RegisterPrefixIRIStem(const string &prefix, const string &iriStem)
 {
-    _vocabularyLookup[prefix] = iriStem;
+    auto found = _vocabularyLookup.find(prefix);
+    if ( found == _vocabularyLookup.end() )
+    {
+        _vocabularyLookup[prefix] = iriStem;
+    }
 }
 IRI PropertyHolder::MakePropertyIRI(const string &reference, const string& prefix) const
 {

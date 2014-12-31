@@ -277,6 +277,11 @@ public:
 
                 if (itemDurationStr.empty())
                 {
+                    allFake = false;
+
+                    const std::shared_ptr<SMILData> smilData = std::make_shared<class SMILData>(sharedMe, item, spineItem, 0);
+                    _smilDatas.push_back(smilData); // creates a *copy* of the shared smart pointer (reference count++)
+
                     HandleError(EPUBError::MediaOverlayMissingDurationMetadata, _Str(item->Href(), " => missing media:duration metadata"));
                 }
                 else
@@ -296,7 +301,9 @@ public:
                     }
                     catch (const std::invalid_argument & exc)
                     {
-                        const std::shared_ptr<SMILData> smilData = std::make_shared<class SMILData>(sharedMe, nullptr, spineItem, 0);
+                        allFake = false;
+
+                        const std::shared_ptr<SMILData> smilData = std::make_shared<class SMILData>(sharedMe, item, spineItem, 0);
                         _smilDatas.push_back(smilData); // creates a *copy* of the shared smart pointer (reference count++)
 
                         HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str(item->Href(), " -- media:duration=", itemDurationStr, " => invalid SMIL Clock Value syntax"));
@@ -403,8 +410,7 @@ public:
 
                 //unique_ptr<ArchiveXmlReader> xmlReader = package->XmlReaderForRelativePath(item->Href());
                 shared_ptr<xml::Document> doc = item->ReferencedDocument();
-
-                if (doc == nullptr)
+                if (!bool(doc))
                 {
                     HandleError(EPUBError::MediaOverlayCannotParseSMILXML, _Str("Cannot parse XML: ", item->Href().c_str()));
                 }
@@ -679,6 +685,20 @@ public:
             }
 
             //printf("=========== refOPFPath AFTER: %s\n", refOPFPath.c_str());
+
+
+            // When content does not have a root folder such as "OEBPS" or "EPUB", manifest absolute paths have a '/' prefix!!
+// //std::shared_ptr<Package> package = Owner(); // internally: std::weak_ptr<Package>.lock()
+//            if (package != nullptr)
+//            {
+//                string basePath = package->BasePath();
+//                printf("=========== basePath: %s\n", basePath.c_str());
+//            }
+            if (smilOPFPath.at(0) == '/' && refOPFPath.at(0) != '/')
+            {
+                //refOPFPath = _Str(smilOPFPath.substr(0, 1), refOPFPath);
+                refOPFPath.insert(0, "/");
+            }
 
             const ManifestTable & manifestTable = package->Manifest();
             for (ManifestTable::const_iterator iter = manifestTable.begin(); iter != manifestTable.end(); iter++)

@@ -126,6 +126,8 @@ string::string(const xmlChar * pos, const xmlChar * end) : _base(reinterpret_cas
 }
 string::size_type string::size() const _NOEXCEPT
 {
+    // note that ePub3::string .utf8_size() actually returns _base.size() (from std::string)
+    // but that ePub3::string .size() does not necessarily return the same as std::string .size() !
     return to_utf32_size(_base.size());
 }
 void string::resize(size_type n, value_type c)

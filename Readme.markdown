@@ -1,10 +1,10 @@
 # Readium SDK
 
-#### Copyright (c) 2012–2013 The Readium Foundation and contributors.
+#### Copyright (c) 2012–2014 The Readium Foundation and contributors.
 
 ### Release Notes
 
-Version 0.4 includes support for building a shared or static library for Android devices
+Version 0.14 includes support for building a shared or static library for Android devices
 using the Android NDK r8e. See the [Platform Support](#platform-support) section for more information.
 
 ## About
@@ -27,14 +27,9 @@ is designed to be extensible in various areas, including in support for pluggabl
 encryption and digital signature modules which might be used to implement a form
 of DRM.
 
-The Readium SDK is at present dual-licensed under both a copyleft license (version
-3 of the *GNU General Public License*) and a commercial-use-enabling *Contributor's
-License*.  All copyright in the official form of the SDK (that found at
-<http://github.com/readium/readium-sdk/>) is assigned to the Readium Foundation. 
-A copy of the GPLv3 can be found in the [LICENSE](LICENSE) file.  A Contributor's License is
-available from the Readium Foundation directly; see the [CONTRIBUTING](CONTRIBUTING) file for
-information on how to apply to become an official contributor or sponsor, and to
-apply for a commercial license.
+### Licensing info
+
+Licensing information can be found in the file license.txt in the root of the repo, as well as in the source code itself.
 
 ### Platform Support<a id="platform-support"></a>
 
@@ -88,3 +83,45 @@ The Readium SDK is designed to potentially work with multiple browser engines bu
 the #1 priority for initial development is WebKit, including platform-bundled
 instantiations (e.g. via UIWebView on iOS). #2 priority browser engine will be
 Trident/IE10 (needed for apps to be able to support screen readers on Windows).
+
+## Build status
+
+### Android
+
+- master - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-Android-Master)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-Android-Master/)
+- develop - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-Android-Develop)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-Android-Develop/)
+
+### iOS
+
+- master - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-iOS-Master)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-iOS-Master/)
+- develop - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-iOS-Develop)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-iOS-Develop/)
+
+### Mac OS X
+
+- master - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-Mac-Master)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-Mac-Master/)
+- develop - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-Mac-Develop)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-Mac-Develop/)
+
+## Windows 32
+
+- master - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-Windows-32-Master)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-Windows-32-Master/)
+- develop - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-Windows-32-Develop)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-Windows-32-Develop/)
+
+## Windows 64
+
+- master - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-Windows-64-Master)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-Windows-64-Master/)
+- develop - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-Windows-64-Develop)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-Windows-64-Develop/)
+
+## WinRT 32
+
+- master - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-WinRT-32-Master)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-WinRT-32-Master/)
+- develop - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-WinRT-32-Develop)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-WinRT-32-Develop/)
+
+## WinRT 64
+
+- master - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-WinRT-64-Master)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-WinRT-64-Master/)
+- develop - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-WinRT-64-Develop)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-WinRT-64-Develop/)
+
+## WinRT ARM
+
+- master - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-WinRT-ARM-Master)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-WinRT-ARM-Master/)
+- develop - [![Build Status](http://jenkinsmaster.datalogics-cloud.com:8080/buildStatus/icon?job=Readium-SDK-WinRT-ARM-Develop)](http://jenkinsmaster.datalogics-cloud.com:8080/job/Readium-SDK-WinRT-ARM-Develop/)

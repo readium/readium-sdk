@@ -38,6 +38,10 @@
 #include <ePub3/xml/document.h>
 #include <ePub3/xml/element.h>
 
+//#include "iri.h"
+#include <google-url/url_canon.h>
+#include <google-url/url_util.h>
+
 EPUB3_BEGIN_NAMESPACE
 
 #define _XML_OVERRIDE_SWITCHES (EPUB_USE(LIBXML2) && PROMISCUOUS_LIBXML_OVERRIDES == 0)
@@ -174,6 +178,57 @@ ConstManifestItemPtr PackageBase::ManifestItemAtRelativePath(const string& path)
 		if (item.second->AbsolutePath() == absPath)
 			return item.second;
 	}
+
+    // Edge case...
+    // before giving up, let's check for lower/upper-case percent encoding mismatch (e.g. %2B vs. %2b)
+    // (well, we're normalising to un-escaped paths)
+
+    //if ( path.find("%") != std::string::npos ) SOMETIMES OPF MANIFEST ITEM HREF IS PERCENT-ESCAPED, BUT NOT HTML SRC !!
+
+    url_canon::RawCanonOutputW<256> output;
+
+    // SEE BELOW FOR A DEBUGGING BREAKPOINT / CHECK
+    // note that std::string .size() is the same as
+    // ePub3:string .utf8_size() defined in utfstring.h (equivalent to strlen(str.c_str()) ),
+    // but not the same as ePub3:string .size() !!
+    // WATCH OUT!
+    url_util::DecodeURLEscapeSequences(path.c_str(), static_cast<int>(path.utf8_size()), &output);
+
+    string path_(output.data(), output.length());
+
+    string absPath_ = _pathBase + (path_[0] == '/' ? path_.substr(1) : path_);
+    for (auto& item : _manifest)
+    {
+        string absolute = item.second->AbsolutePath();
+
+        url_canon::RawCanonOutputW<256> output_;
+
+//        THIS IS FOR DEBUGGING, SEE COMMENT BELOW ...
+        const char * absChars = absolute.c_str();
+        int absLength_STRLEN = strlen(absChars);
+        int absLength_SIZE = static_cast<int>(absolute.size());
+        int absLength_UTF8SIZE = static_cast<int>(absolute.utf8_size());
+        if (absLength_STRLEN != absLength_SIZE || absLength_STRLEN != absLength_UTF8SIZE || absLength_SIZE != absLength_UTF8SIZE)
+        {
+            // Place breakpoint here
+            //printf("String length DIFF absLength_STRLEN:%d - absLength_SIZE:%d - absLength_UTF8SIZE:%d\n", absLength_STRLEN, absLength_SIZE, absLength_UTF8SIZE);
+        }
+
+        // note that std::string .size() is the same as
+        // ePub3:string .utf8_size() defined in utfstring.h (equivalent to strlen(str.c_str()) ),
+        // but not the same as ePub3:string .size() !!
+        // WATCH OUT!
+        url_util::DecodeURLEscapeSequences(absolute.c_str(), static_cast<int>(absolute.utf8_size()), &output_);
+
+        string absolute_(output_.data(), output_.length());
+
+        if (absolute_ == absPath_)
+            return item.second;
+    }
+
+    // DEBUG
+    //printf("MISSING ManifestItemAtRelativePath %s (%s)\n", path.c_str(), absPath.c_str());
+
 	return nullptr;
 }
 shared_ptr<NavigationTable> PackageBase::NavigationTable(const string &title) const
@@ -339,6 +394,49 @@ bool Package::Open(const string& path)
     __setupLibXML();
 #endif
     auto status = PackageBase::Open(path) && Unpack();
+
+    if (status)
+    {
+        ConstContainerPtr container = Owner();
+        //ConstContainerPtr sharedContainer = std::dynamic_pointer_cast<Container>(owner);
+
+        // See ReadiumJS package_document_parser.js updateMetadataWithIBookProperties()
+        // https://github.com/readium/readium-js/blob/develop/epub-modules/epub/src/models/package_document_parser.js#L91
+        // (vendor metadata takes precedence over OPF, to match rendering expectations with some commercial EPUBs that do not necessarily contains correct OPF metadata)
+
+        string fxl = container->GetVendorMetadata_AppleIBooksDisplayOption_FixedLayout();
+        if (fxl == "true")
+        {
+            this->RegisterPrefixIRIStem("rendition", "http://www.idpf.org/vocab/rendition/#");
+
+            this->RemoveProperty("layout", "rendition");
+
+            PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
+            PropertyPtr prop = Property::New(holderPtr);
+            prop->SetPropertyIdentifier(MakePropertyIRI("layout", "rendition"));
+            prop->SetValue("pre-paginated");
+            AddProperty(prop);
+        }
+
+        string orientation = container->GetVendorMetadata_AppleIBooksDisplayOption_Orientation();
+        bool landscape = orientation == "landscape-only";
+        bool portrait = !landscape && orientation == "portrait-only";
+        bool none = !landscape && !portrait && orientation == "none";
+        if (landscape || portrait || none)
+        {
+            this->RegisterPrefixIRIStem("rendition", "http://www.idpf.org/vocab/rendition/#");
+            
+            this->RemoveProperty("orientation", "rendition");
+
+            PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
+            PropertyPtr prop = Property::New(holderPtr);
+            prop->SetPropertyIdentifier(MakePropertyIRI("orientation", "rendition"));
+            string val = landscape?"landscape":(portrait?"portrait":"auto");
+            prop->SetValue(val);
+            AddProperty(prop);
+        }
+    }
+
 #if _XML_OVERRIDE_SWITCHES
     __resetLibXMLOverrides();
 #endif
@@ -493,7 +591,7 @@ bool Package::Unpack()
                 continue;
             
             idents[item->XMLIdentifier()] = true;
-            while ( !item->FallbackID().empty() )
+            while ( item != nullptr && !item->FallbackID().empty() )
             {
                 if ( idents[item->FallbackID()] )
                 {
@@ -1157,18 +1255,46 @@ shared_ptr<ManifestItem> Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRema
     
     return result;
 }
+
 unique_ptr<ByteStream> Package::ReadStreamForRelativePath(const string &path) const
 {
-    return _archive->ByteStreamAtPath(_Str(_pathBase, path.stl_str()));
+    string absPath = _pathBase + (path[0] == '/' ? path.substr(1) : path);
+    //_Str(_pathBase, path.stl_str())
+    return _archive->ByteStreamAtPath(absPath);
 }
+
+#ifdef SUPPORT_ASYNC
 shared_ptr<AsyncByteStream> Package::ContentStreamForItem(ManifestItemPtr manifestItem) const
 {
     return _filterChain->GetFilteredOutputStreamForManifestItem(manifestItem);
 }
-shared_ptr<ByteStream> Package::SyncContentStreamForItem(ManifestItemPtr manifestItem) const
+#endif /* SUPPORT_ASYNC */
+
+shared_ptr<ByteStream> Package::GetFilterChainByteStream(ManifestItemPtr manifestItem) const
 {
-	return _filterChain->GetSyncFilteredOutputStreamForManifestItem(manifestItem);
+	return _filterChain->GetFilterChainByteStream(manifestItem);
 }
+
+unique_ptr<ByteStream> Package::GetFilterChainByteStream(ManifestItemPtr manifestItem, SeekableByteStream *rawInput) const
+{
+    return _filterChain->GetFilterChainByteStream(manifestItem, rawInput);
+}
+
+shared_ptr<ByteStream> Package::GetFilterChainByteStreamRange(ManifestItemPtr manifestItem) const
+{
+    return _filterChain->GetFilterChainByteStreamRange(manifestItem);
+}
+
+unique_ptr<ByteStream> Package::GetFilterChainByteStreamRange(ManifestItemPtr manifestItem, SeekableByteStream *rawInput) const
+{
+    return _filterChain->GetFilterChainByteStreamRange(manifestItem, rawInput);
+}
+
+size_t Package::GetFilterChainSize(ManifestItemPtr manifestItem) const
+{
+    return _filterChain->GetFilterChainSize(manifestItem);
+}
+
 const string& Package::Title(bool localized) const
 {
     IRI titleTypeIRI(MakePropertyIRI("title-type"));      // http://idpf.org/epub/vocab/package/#title-type
