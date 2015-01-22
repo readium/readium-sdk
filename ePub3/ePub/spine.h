@@ -129,6 +129,7 @@ public:
     const string&       Idref()             const       { return _idref; }
     ///
     /// Obtains the manifest item corresponding to this spine item.
+	EPUB3_EXPORT
     shared_ptr<ManifestItem>    ManifestItem()      const;
     ///
     /// Returns `true` if this item is linear, `false` otherwise.

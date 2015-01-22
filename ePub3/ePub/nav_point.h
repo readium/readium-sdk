@@ -60,6 +60,7 @@ public:
 
 	///
 	/// Turns the Content() href into an absolute value, similar to ManifestItem::AbsolutePath().
+	EPUB3_EXPORT
 	string					AbsolutePath(ConstPackagePtr pkg)				const;
     
 protected:

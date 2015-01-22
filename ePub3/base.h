@@ -31,7 +31,10 @@
 #include <stdlib.h>
 
 #if EPUB_OS(WINDOWS)
+#define VISUAL_LEAK_DETECTOR 
+#ifdef VISUAL_LEAK_DETECTOR
 #include "vld.h"
+#endif
 #endif
 
 #ifdef __cplusplus

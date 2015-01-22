@@ -17,7 +17,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -62,6 +62,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(MSBuildProjectDirectory)\Prebuilt\Lib\x86\libxml2_a.lib;$(MSBuildProjectDirectory)\Prebuilt\Lib\x86\zlib.lib;Advapi32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>cd $(MSBuildProjectDirectory)
@@ -228,25 +229,21 @@ cscript MakeHeaders.js</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\ePub3\ePub\cfi.h" />
-    <ClInclude Include="..\..\..\ePub3\ePub\container.h" />
     <ClInclude Include="..\..\..\ePub3\ePub\content_handler.h" />
     <ClInclude Include="..\..\..\ePub3\ePub\encryption.h" />
-    <ClInclude Include="..\..\..\ePub3\ePub\glossary.h" />
-    <ClInclude Include="..\..\..\ePub3\ePub\manifest.h" />
     <ClInclude Include="..\..\..\ePub3\ePub\media_support_info.h" />
     <ClInclude Include="..\..\..\ePub3\ePub\metadata.h" />
     <ClInclude Include="..\..\..\ePub3\ePub\nav_element.h" />
-    <ClInclude Include="..\..\..\ePub3\ePub\nav_point.h" />
     <ClInclude Include="..\..\..\ePub3\ePub\nav_table.h" />
     <ClInclude Include="..\..\..\ePub3\ePub\object_preprocessor.h" />
     <ClInclude Include="..\..\..\ePub3\ePub\package.h" />
     <ClInclude Include="..\..\..\ePub3\ePub\signatures.h" />
-    <ClInclude Include="..\..\..\ePub3\ePub\spine.h" />
     <ClInclude Include="..\..\..\ePub3\ePub\switch_preprocessor.h" />
     <ClInclude Include="..\..\..\ePub3\ePub\xpath_wrangler.h" />
     <ClInclude Include="..\..\ePub3\base.h" />
     <ClInclude Include="..\..\ePub3\ePub\archive.h" />
     <ClInclude Include="..\..\ePub3\ePub\archive_xml.h" />
+    <ClInclude Include="..\..\ePub3\ePub\container.h" />
     <ClInclude Include="..\..\ePub3\ePub\content_module.h" />
     <ClInclude Include="..\..\ePub3\ePub\content_module_manager.h" />
     <ClInclude Include="..\..\ePub3\ePub\credential_request.h" />
@@ -259,16 +256,20 @@ cscript MakeHeaders.js</Command>
     <ClInclude Include="..\..\ePub3\ePub\filter_manager.h" />
     <ClInclude Include="..\..\ePub3\ePub\filter_manager_impl.h" />
     <ClInclude Include="..\..\ePub3\ePub\font_obfuscation.h" />
+    <ClInclude Include="..\..\ePub3\ePub\glossary.h" />
     <ClInclude Include="..\..\ePub3\ePub\initialization.h" />
     <ClInclude Include="..\..\ePub3\ePub\library.h" />
     <ClInclude Include="..\..\ePub3\ePub\link.h" />
+    <ClInclude Include="..\..\ePub3\ePub\manifest.h" />
     <ClInclude Include="..\..\ePub3\ePub\media-overlays_smil_data.h" />
     <ClInclude Include="..\..\ePub3\ePub\media-overlays_smil_model.h" />
     <ClInclude Include="..\..\ePub3\ePub\media-overlays_smil_utils.h" />
+    <ClInclude Include="..\..\ePub3\ePub\nav_point.h" />
     <ClInclude Include="..\..\ePub3\ePub\PassThroughFilter.h" />
     <ClInclude Include="..\..\ePub3\ePub\property.h" />
     <ClInclude Include="..\..\ePub3\ePub\property_extension.h" />
     <ClInclude Include="..\..\ePub3\ePub\property_holder.h" />
+    <ClInclude Include="..\..\ePub3\ePub\spine.h" />
     <ClInclude Include="..\..\ePub3\ePub\user_action.h" />
     <ClInclude Include="..\..\ePub3\ePub\zip_archive.h" />
     <ClInclude Include="..\..\ePub3\ThirdParty\google-url\base\basictypes.h" />
