@@ -49,6 +49,7 @@ typedef unsigned char xmlChar;
 
 #if EPUB_OS(WINDOWS)
 # include <codecvt>
+#pragma warning(disable:4996)
 #endif
 
 #include <utf8/utf8.h>
