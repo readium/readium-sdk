@@ -1,3 +1,18 @@
+# Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+#  
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+#  
+#  Licensed under Gnu Affero General Public License Version 3 (provided, notwithstanding this 
+#  notice, Readium Foundation reserves the right to license this material under a different 
+#  separate license, and if you have done so, the terms of that separate license control and 
+#  the following references to GPL do not apply).
+#  
+#  This program is free software: you can redistribute it and/or modify it under the terms 
+#  of the GNU Affero General Public License as published by the Free Software Foundation, 
+#  either version 3 of the License, or (at your option) any later version. You should have 
+#  received a copy of the GNU Affero General Public License along with this program.  If not, 
+#  see <http://www.gnu.org/licenses/>.
 
 LOCAL_PATH := $(call my-dir)/../..
 THIRD_PARTY := $(LOCAL_PATH)/ePub3/ThirdParty
@@ -258,10 +273,10 @@ LOCAL_SRC_FILES := \
 		ePub3/ePub/encryption.cpp \
 		ePub3/ePub/epub_collection.cpp \
 		ePub3/ePub/filter_chain.cpp \
+		ePub3/ePub/filter_chain_byte_stream.cpp \
+		ePub3/ePub/filter_chain_byte_stream_range.cpp \
 		ePub3/ePub/filter_manager_impl.cpp \
 		ePub3/ePub/filter_manager.cpp \
-		ePub3/ePub/filter_chain_byte_stream_range.cpp \
-		ePub3/ePub/filter_chain_byte_stream.cpp \
 		ePub3/ePub/PassThroughFilter.cpp \
 		ePub3/ePub/font_obfuscation.cpp \
 		ePub3/ePub/glossary.cpp \
@@ -306,7 +321,7 @@ LOCAL_SRC_FILES := \
 		Platform/Android/jni/jni/jni_ptr.cpp \
 		Platform/Android/jni/epub3.cpp \
 		Platform/Android/jni/container.cpp \
-		Platform/Android/jni/package.cpp \
+		Platform/Android/jni/packagejni.cpp \
 		Platform/Android/jni/iri.cpp \
 		Platform/Android/jni/resource_stream.cpp
 
