@@ -135,7 +135,7 @@ ByteStream::size_type FilterChainByteStreamRange::ReadBytes(void *bytes, size_ty
 
         if (filteredLen > len)
         {
-            ByteStream::size_type toCache = filteredLen - len;
+            //ByteStream::size_type toCache = filteredLen - len;
 
             //TODO cache remainder bytes for use next time round...
             // (e.g. when decrypted bytes are greater than original request?)

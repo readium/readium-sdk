@@ -42,7 +42,7 @@ int InputBuffer::read_cb(void *context, char *buffer, int len)
     uint8_t* buf = reinterpret_cast<uint8_t*>(buffer);
 
     size_t res = 0;
-    if (p->_encodingCheck == "utf-8" && len >= 3)
+    if (p->_encodingCheck != NULL && (std::strcmp(p->_encodingCheck, "utf-8") == 0) && len >= 3)
     {
         res = p->read(buf, 3);
 
@@ -135,7 +135,7 @@ bool StreamInputBuffer::close()
 size_t StreamInputBuffer::size() const
 {
     std::istream::pos_type pos = _input.tellg();
-    size_t result = _input.seekg(0, std::ios::end).tellg();
+    size_t result = (size_t)_input.seekg(0, std::ios::end).tellg();
     _input.seekg(pos);
     return result;
 }
@@ -155,7 +155,7 @@ bool StreamOutputBuffer::close()
 size_t StreamOutputBuffer::size() const
 {
     std::ostream::pos_type pos = _output.tellp();
-    size_t result = _output.seekp(0, std::ios::end).tellp();
+    size_t result = (size_t)_output.seekp(0, std::ios::end).tellp();
     _output.seekp(pos);
     return result;
 }
