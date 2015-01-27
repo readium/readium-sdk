@@ -43,7 +43,13 @@ static string Sanitized(const string& path)
     if ( path.find("%") != std::string::npos )
     {
         url_canon::RawCanonOutputW<256> output;
-        url_util::DecodeURLEscapeSequences(path.c_str(), static_cast<int>(path.size()), &output);
+
+        // note that std::string .size() is the same as
+        // ePub3:string .utf8_size() defined in utfstring.h (equivalent to strlen(str.c_str()) ),
+        // but not the same as ePub3:string .size() !!
+        // WATCH OUT!
+        url_util::DecodeURLEscapeSequences(path.c_str(), static_cast<int>(path.utf8_size()), &output);
+
         string path_(output.data(), output.length());
 
         if ( path_.find('/') == 0 )

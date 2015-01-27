@@ -68,10 +68,10 @@ std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifest
     // otherwise, attach the output pipe
     thisChain.back()->SetOutputLink(linkPipe.first);
 
-	static std::once_flag __once;
-	std::call_once(__once, [](){
-		_filterThreadPool.reset(new thread_pool(thread_pool::Automatic));
-	});
+    static std::once_flag __once;
+    std::call_once(__once, [](){
+        _filterThreadPool.reset(new thread_pool(thread_pool::Automatic));
+    });
     
     // set it to run on a runloop somewhere...
     _filterThreadPool->add([thisChain]() mutable {
@@ -102,16 +102,16 @@ std::shared_ptr<AsyncByteStream> FilterChain::GetFilteredOutputStreamForManifest
 
 std::shared_ptr<ByteStream> FilterChain::GetFilterChainByteStream(ConstManifestItemPtr item) const
 {
-	std::unique_ptr<ByteStream> rawInput = item->Reader();
-	if (rawInput->IsOpen() == false)
+    unique_ptr<SeekableByteStream> byteStream(dynamic_cast<SeekableByteStream *>(item->Reader().release()));
+    if (!byteStream || !byteStream->IsOpen())
     {
-		return nullptr;
+        return nullptr;
     }
-    
-    return shared_ptr<ByteStream>(GetFilterChainByteStream(item, rawInput.release()).release());
+
+    return shared_ptr<ByteStream>(GetFilterChainByteStream(item, byteStream.release()).release());
 }
 
-std::unique_ptr<ByteStream> FilterChain::GetFilterChainByteStream(ConstManifestItemPtr item, ByteStream *rawInput) const
+std::unique_ptr<ByteStream> FilterChain::GetFilterChainByteStream(ConstManifestItemPtr item, SeekableByteStream *rawInput) const
 {
     std::vector<ContentFilterPtr> thisChain;
     for (ContentFilterPtr filter : _filters)
@@ -120,14 +120,14 @@ std::unique_ptr<ByteStream> FilterChain::GetFilterChainByteStream(ConstManifestI
             thisChain.push_back(filter);
     }
     
-    unique_ptr<ByteStream> rawInputPtr(rawInput);
+    unique_ptr<SeekableByteStream> rawInputPtr(rawInput);
     return unique_ptr<FilterChainByteStream>(new FilterChainByteStream(std::move(rawInputPtr), thisChain, item));
 }
 
 std::shared_ptr<ByteStream> FilterChain::GetFilterChainByteStreamRange(ConstManifestItemPtr item) const
 {
     unique_ptr<SeekableByteStream> byteStream(dynamic_cast<SeekableByteStream *>(item->Reader().release()));
-    if (!byteStream)
+    if (!byteStream || !byteStream->IsOpen())
     {
         return nullptr;
     }
@@ -168,7 +168,7 @@ std::unique_ptr<ByteStream> FilterChain::GetFilterChainByteStreamRange(ConstMani
     if (!resultStream)
     {
         unique_ptr<SeekableByteStream> rawInputPtr(rawInput);
-        resultStream.reset(new FilterChainByteStreamRange(std::move(rawInputPtr)));
+        resultStream.reset(new FilterChainByteStreamRange(std::move(rawInputPtr), nullptr, nullptr));
     }
     
     return resultStream;
@@ -295,13 +295,13 @@ void FilterChain::ChainLinkProcessor::ScheduleProcessor(RunLoopPtr runLoop)
             case AsyncEvent::ErrorOccurred:
                 std::cerr << "ChainLinkProcessor input stream error: " << stream->Error() << std::endl;
                 stream->Close();
-				if (bool(_input))
-					_input->Close();
+                if (bool(_input))
+                    _input->Close();
                 break;
                 
             case AsyncEvent::EndEncountered:
-				if (bool(_input))
-					_input->Close();
+                if (bool(_input))
+                    _input->Close();
                 break;
                 
             default:
@@ -332,15 +332,15 @@ ssize_t FilterChain::ChainLinkProcessor::FunnelBytes()
             size_t filteredLen = 0;
             void* filteredData = _filter->FilterData(_context.get(), buf, thisChunk, &filteredLen);
             if ( filteredData == nullptr || filteredLen == 0 ) {
-				if (filteredData != nullptr && filteredData != buf)
-					delete[] reinterpret_cast<uint8_t*>(filteredData);
+                if (filteredData != nullptr && filteredData != buf)
+                    delete[] reinterpret_cast<uint8_t*>(filteredData);
                 throw std::logic_error("ChainLinkProcessor: ContentFilter::FilterData() returned no data!");
             }
 
             _output->WriteBytes(filteredData, filteredLen);
 
-			if (filteredData != buf)
-				delete[] reinterpret_cast<uint8_t*>(filteredData);
+            if (filteredData != buf)
+                delete[] reinterpret_cast<uint8_t*>(filteredData);
         }
         
         bytesToMove -= thisChunk;

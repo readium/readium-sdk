@@ -181,11 +181,19 @@ ConstManifestItemPtr PackageBase::ManifestItemAtRelativePath(const string& path)
 
     // Edge case...
     // before giving up, let's check for lower/upper-case percent encoding mismatch (e.g. %2B vs. %2b)
+    // (well, we're normalising to un-escaped paths)
 
     //if ( path.find("%") != std::string::npos ) SOMETIMES OPF MANIFEST ITEM HREF IS PERCENT-ESCAPED, BUT NOT HTML SRC !!
 
     url_canon::RawCanonOutputW<256> output;
-    url_util::DecodeURLEscapeSequences(path.c_str(), static_cast<int>(path.size()), &output);
+
+    // SEE BELOW FOR A DEBUGGING BREAKPOINT / CHECK
+    // note that std::string .size() is the same as
+    // ePub3:string .utf8_size() defined in utfstring.h (equivalent to strlen(str.c_str()) ),
+    // but not the same as ePub3:string .size() !!
+    // WATCH OUT!
+    url_util::DecodeURLEscapeSequences(path.c_str(), static_cast<int>(path.utf8_size()), &output);
+
     string path_(output.data(), output.length());
 
     string absPath_ = _pathBase + (path_[0] == '/' ? path_.substr(1) : path_);
@@ -194,7 +202,24 @@ ConstManifestItemPtr PackageBase::ManifestItemAtRelativePath(const string& path)
         string absolute = item.second->AbsolutePath();
 
         url_canon::RawCanonOutputW<256> output_;
-        url_util::DecodeURLEscapeSequences(absolute.c_str(), static_cast<int>(absolute.size()), &output_);
+
+//        THIS IS FOR DEBUGGING, SEE COMMENT BELOW ...
+        const char * absChars = absolute.c_str();
+        int absLength_STRLEN = (int)strlen(absChars);
+        int absLength_SIZE = static_cast<int>(absolute.size());
+        int absLength_UTF8SIZE = static_cast<int>(absolute.utf8_size());
+        if (absLength_STRLEN != absLength_SIZE || absLength_STRLEN != absLength_UTF8SIZE || absLength_SIZE != absLength_UTF8SIZE)
+        {
+            // Place breakpoint here
+            //printf("String length DIFF absLength_STRLEN:%d - absLength_SIZE:%d - absLength_UTF8SIZE:%d\n", absLength_STRLEN, absLength_SIZE, absLength_UTF8SIZE);
+        }
+
+        // note that std::string .size() is the same as
+        // ePub3:string .utf8_size() defined in utfstring.h (equivalent to strlen(str.c_str()) ),
+        // but not the same as ePub3:string .size() !!
+        // WATCH OUT!
+        url_util::DecodeURLEscapeSequences(absolute.c_str(), static_cast<int>(absolute.utf8_size()), &output_);
+
         string absolute_(output_.data(), output_.length());
 
         if (absolute_ == absPath_)
@@ -1233,7 +1258,9 @@ shared_ptr<ManifestItem> Package::ManifestItemForCFI(ePub3::CFI &cfi, CFI* pRema
 
 unique_ptr<ByteStream> Package::ReadStreamForRelativePath(const string &path) const
 {
-    return _archive->ByteStreamAtPath(_Str(_pathBase, path.stl_str()));
+    string absPath = _pathBase + (path[0] == '/' ? path.substr(1) : path);
+    //_Str(_pathBase, path.stl_str())
+    return _archive->ByteStreamAtPath(absPath);
 }
 
 #ifdef SUPPORT_ASYNC
@@ -1248,7 +1275,7 @@ shared_ptr<ByteStream> Package::GetFilterChainByteStream(ManifestItemPtr manifes
 	return _filterChain->GetFilterChainByteStream(manifestItem);
 }
 
-unique_ptr<ByteStream> Package::GetFilterChainByteStream(ManifestItemPtr manifestItem, ByteStream *rawInput) const
+unique_ptr<ByteStream> Package::GetFilterChainByteStream(ManifestItemPtr manifestItem, SeekableByteStream *rawInput) const
 {
     return _filterChain->GetFilterChainByteStream(manifestItem, rawInput);
 }

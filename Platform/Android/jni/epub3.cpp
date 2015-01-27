@@ -26,13 +26,14 @@
 #include <ePub3/archive.h>
 #include <ePub3/container.h>
 #include <ePub3/initialization.h>
+#include <ePub3/utilities/error_handler.h>
 
 #include "jni/jni.h"
 
 #include "epub3.h"
 #include "helpers.h"
 #include "container.h"
-#include "package.h"
+#include "packagejni.h"
 #include "iri.h"
 #include "resource_stream.h"
 
@@ -65,6 +66,9 @@ static const char *javaEPub3_createBufferSignature = "(I)Ljava/nio/ByteBuffer;";
 
 static const char *javaEPub3_appendBytesToBufferMethodName = "appendBytesToBuffer";
 static const char *javaEPub3_appendBytesToBufferSignature = "(Ljava/nio/ByteBuffer;[B)V";
+
+static const char *javaEPub3_handleSdkErrorMethodName = "handleSdkError";
+static const char *javaEPub3_handleSdkErrorSignature = "(Ljava/lang/String;Z)Z";
 
 
 /*
@@ -105,6 +109,7 @@ static jmethodID createStringList_ID;
 static jmethodID addStringToList_ID;
 static jmethodID createBuffer_ID;
 static jmethodID appendBytesToBuffer_ID;
+static jmethodID handleSdkError_ID;
 
 
 /*
@@ -173,13 +178,17 @@ jobject javaEPub3_createBuffer(JNIEnv *env, jint bufferSize) {
 }
 
 /**
- * Calls the java createBuffer method of EPub3 class
+ * Calls the java appendBytesToBuffer method of EPub3 class
  */
 void javaEPub3_appendBytesToBuffer(JNIEnv *env, jobject buffer, jbyteArray data) {
 	env->CallStaticVoidMethod(javaEPub3Class,
 			appendBytesToBuffer_ID, buffer, data);
 }
 
+jboolean javaEPub3_handleSdkError(JNIEnv *env, jstring message, jboolean isSevereEpubError) {
+	jboolean b = env->CallStaticBooleanMethod(javaEPub3Class, handleSdkError_ID, message, isSevereEpubError);
+	return b;
+}
 
 /*
  * Internal functions
@@ -200,20 +209,50 @@ static int onLoad_cacheJavaElements_epub3(JNIEnv *env) {
 			javaEPub3_createBufferMethodName, javaEPub3_createBufferSignature, ONLOAD_ERROR);
 	INIT_STATIC_METHOD_ID_RETVAL(appendBytesToBuffer_ID, javaEPub3Class, javaEPub3ClassName,
 			javaEPub3_appendBytesToBufferMethodName, javaEPub3_appendBytesToBufferSignature, ONLOAD_ERROR);
-
+	INIT_STATIC_METHOD_ID_RETVAL(handleSdkError_ID, javaEPub3Class, javaEPub3ClassName,
+			javaEPub3_handleSdkErrorMethodName, javaEPub3_handleSdkErrorSignature, ONLOAD_ERROR);
 	// Return JNI_VERSION for OK, if not one of the lines above already returned ONLOAD_ERROR
 	return JNI_VERSION;
+}
+
+// needed only for the LauncherErrorHandler() C++ callback,
+// set by initializeReadiumSDK()
+static JNIEnv* m_env = nullptr;
+
+static bool LauncherErrorHandler(const ePub3::error_details& err)
+{
+    const char * msg = err.message();
+
+	bool isSevereEpubError = (err.is_spec_error()
+			&& (err.severity() == ePub3::ViolationSeverity::Critical
+			|| err.severity() == ePub3::ViolationSeverity::Major));
+
+    LOGD("READIUM SDK ERROR HANDLER (%s): %s\n", isSevereEpubError ? "warning" : "info", msg);
+
+    jstring jmessage = m_env->NewStringUTF(msg);
+    jboolean b = javaEPub3_handleSdkError(m_env, jmessage, (jboolean)isSevereEpubError);
+    m_env->DeleteLocalRef(jmessage);
+    return (bool)b;
+    
+    // never throws an exception
+    //return ePub3::DefaultErrorHandler(err);
 }
 
 /**
  * Initializes the Readium SDK.
  */
-static void initializeReadiumSDK()
+static void initializeReadiumSDK(JNIEnv* env)
 {
+    m_env = env;
+    
 	LOGD("initializeReadiumSDK(): initializing Readium SDK...");
-    //ePub3::Archive::Initialize();
+
+    ePub3::ErrorHandlerFn launcherErrorHandler = LauncherErrorHandler;
+    ePub3::SetErrorHandler(launcherErrorHandler);
+ 
     ePub3::InitializeSdk();
     ePub3::PopulateFilterManager();
+    
 	LOGD("initializeReadiumSDK(): initialization of Readium SDK finished");
 }
 
@@ -325,7 +364,7 @@ Java_org_readium_sdk_android_EPub3_setCachePath(JNIEnv* env, jobject thiz, jstri
  */
 JNIEXPORT jboolean JNICALL Java_org_readium_sdk_android_EPub3_isEpub3Book(JNIEnv* env, jobject thiz, jstring path) {
 	// Initialize core ePub3 SDK
-	initializeReadiumSDK();
+	initializeReadiumSDK(env);
 
 	std::string _path = jni::StringUTF(env, path);
 	LOGD("EPub3.isEpub3Book(): path received is '%s'", _path.c_str());
@@ -381,7 +420,7 @@ JNIEXPORT jboolean JNICALL Java_org_readium_sdk_android_EPub3_isEpub3Book(JNIEnv
 JNIEXPORT jobject JNICALL
 Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring path) {
 	// Initialize core ePub3 SDK
-	initializeReadiumSDK();
+	initializeReadiumSDK(env);
 
 	char *nativePath;
 	GET_UTF8_RETVAL(nativePath, path, NULL);

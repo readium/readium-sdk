@@ -37,11 +37,14 @@
 #import <ePub3/utilities/byte_stream.h>
 #import "RDPackage.h"
 
+// Same as HTTPConnection.m (to avoid unnecessary intermediary buffer iterations)
+#define READ_CHUNKSIZE  (1024 * 256)
 
 @interface RDPackageResource() {
-	@private UInt8 m_buffer[4096];
+	@private UInt8 m_buffer[READ_CHUNKSIZE];
 	@private std::unique_ptr<ePub3::ByteStream> m_byteStream;
 	@private NSUInteger m_contentLength;
+	@private NSUInteger m_contentLengthCheck;
 	@private NSData *m_data;
 	@private RDPackage *m_package;
 	@private NSString *m_relativePath;
@@ -55,6 +58,7 @@
 
 
 @synthesize contentLength = m_contentLength;
+@synthesize contentLengthCheck = m_contentLengthCheck;
 @synthesize package = m_package;
 @synthesize relativePath = m_relativePath;
 
@@ -64,10 +68,14 @@
 
 - (NSData *)readDataFull {
 	if (m_data == nil) {
-		NSMutableData *md = [[NSMutableData alloc] initWithCapacity:m_contentLength == 0 ? 1 : m_contentLength];
 		
 		[self ensureProperByteStream:NO];
-		
+
+
+		NSMutableData *md = [[NSMutableData alloc] initWithCapacity:m_contentLength == 0 ? 1 : m_contentLength];
+
+		m_contentLengthCheck = 0;
+
 		while (YES)
 		{
 			std::size_t count = m_byteStream->ReadBytes(m_buffer, sizeof(m_buffer));
@@ -75,10 +83,18 @@
 			{
 				break;
 			}
-			
+
+			m_contentLengthCheck += count;
+
 			[md appendBytes:m_buffer length:count];
 		}
-		
+
+		if (m_contentLength != m_contentLengthCheck)
+		{
+			// place breakpoint here to debug (should occur with Content Filter, greater or smaller size is possible)
+			m_contentLength = m_contentLengthCheck;
+		}
+
 		m_data = md;
 	}
 	
@@ -133,6 +149,8 @@
 			}
 
 			[md appendBytes:m_buffer length:count];
+
+			m_contentLengthCheck += count;
 			totalRead += count;
 			range.Location(range.Location() + count);
 		}
@@ -146,8 +164,12 @@
 
 	ePub3::SeekableByteStream *seekableByteStream = dynamic_cast<ePub3::SeekableByteStream *>(m_byteStream.get());
 	if (seekableByteStream != nullptr
-		|| (m_contentLength - m_byteStream->BytesAvailable()) == offset) //not-seek-able-ByteStream does not expose its internal position! m_byteStream->Position()
+		|| true)
 	{
+		//ASSERT (m_contentLength - m_byteStream->BytesAvailable()) == offset
+		// (does not work because underlying raw byte stream may not map 1-1 to output ranges)
+		// ... we assume that this is part of a series of contiguous subsequent buffer requests from the HTTP chunking.
+
 		NSMutableData *md = [[NSMutableData alloc] initWithCapacity:length];
 
 		if (seekableByteStream != nullptr)
@@ -163,11 +185,17 @@
 			std::size_t count = m_byteStream->ReadBytes(m_buffer, toRead);
 			if (count == 0)
 			{
+				if (m_contentLength != m_contentLengthCheck)
+				{
+					// place breakpoint here to debug (should occur with Content Filter, greater or smaller size is possible)
+					m_contentLength = m_contentLengthCheck;
+				}
 				break;
 			}
 
 			[md appendBytes:m_buffer length:count];
 
+			m_contentLengthCheck += count;
 			totalRead += count;
 		}
 
@@ -189,6 +217,7 @@
 		ePub3::ByteStream *byteStream = m_byteStream.release();
 		m_byteStream.reset((ePub3::ByteStream *)[m_package getProperByteStream:m_relativePath currentByteStream:byteStream isRangeRequest:isRangeRequest]);
 		m_contentLength = m_byteStream->BytesAvailable();
+		m_contentLengthCheck = 0;
 		m_hasProperStream = YES;
 	}
 }

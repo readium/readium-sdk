@@ -37,7 +37,7 @@
 EPUB3_BEGIN_NAMESPACE
 
 class FilterContext;
-struct ByteRange;
+class ByteRange;
 
 class FilterChainByteStreamRange : public ByteStream
 {
@@ -50,8 +50,8 @@ private:
 
 public:
     FilterChainByteStreamRange() : ByteStream() {}
-    EPUB3_EXPORT FilterChainByteStreamRange(std::unique_ptr<SeekableByteStream> &&input, ContentFilterPtr &filter, ConstManifestItemPtr manifestItem);
-    EPUB3_EXPORT FilterChainByteStreamRange(std::unique_ptr<SeekableByteStream> &&input);
+    EPUB3_EXPORT FilterChainByteStreamRange(std::unique_ptr<SeekableByteStream> &&input, ContentFilterPtr filter, ConstManifestItemPtr manifestItem);
+    //EPUB3_EXPORT FilterChainByteStreamRange(std::unique_ptr<SeekableByteStream> &&input);
     virtual ~FilterChainByteStreamRange();
     
     virtual size_type BytesAvailable() const _NOEXCEPT OVERRIDE;
@@ -68,7 +68,10 @@ private:
     size_type ReadRawBytes(void *bytes, size_type len, ByteRange &byteRange);
     
     unique_ptr<SeekableByteStream> m_input;
-    shared_ptr<FilterNode> m_filterNode;
+
+    ContentFilterPtr m_filter;
+    std::unique_ptr<FilterContext> m_filterContext;
+
     ByteBuffer m_readCache;
 };
 

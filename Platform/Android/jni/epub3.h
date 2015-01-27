@@ -109,6 +109,7 @@ jobject javaEPub3_createBuffer(JNIEnv *env, jint bufferSize);
  */
 void javaEPub3_appendBytesToBuffer(JNIEnv *env, jobject buffer, jbyteArray data);
 
+jboolean javaEPub3_handleSdkError(JNIEnv *env, jstring message, jboolean isSevereEpubError);
 
 /*
  * JNI functions

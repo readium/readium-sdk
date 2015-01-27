@@ -48,8 +48,6 @@ EPUB3_BEGIN_NAMESPACE
 const char * const FontObfuscator::FontObfuscationAlgorithmID = "http://www.idpf.org/2008/embedding";
 #endif
 
-const char * const kBytesFiltered = "FontObfuscator::bytesFiltered";
-
 const REGEX_NS::regex FontObfuscator::TypeCheck("(?:font/.*|application/(?:x-font-.*|font-.*|vnd.ms-(?:opentype|fontobject)))");
 
 void * FontObfuscator::FilterData(FilterContext* context, void *data, size_t len, size_t *outputLen)
@@ -118,13 +116,13 @@ bool FontObfuscator::BuildKey(ConstContainerPtr container)
     if ( winerr != NO_ERROR )
         _THROW_WIN_ERROR_(winerr);
 #elif EPUB_PLATFORM(WINRT)
-	auto byteArray = ArrayReference<byte>(reinterpret_cast<byte*>(const_cast<char*>(str.data())), str.length());
-	auto inBuf = CryptographicBuffer::CreateFromByteArray(byteArray);
-	auto keyBuf = HashAlgorithmProvider::OpenAlgorithm(HashAlgorithmNames::Sha1)->HashData(inBuf);
+    auto byteArray = ArrayReference<byte>(reinterpret_cast<byte*>(const_cast<char*>(str.data())), str.length());
+    auto inBuf = CryptographicBuffer::CreateFromByteArray(byteArray);
+    auto keyBuf = HashAlgorithmProvider::OpenAlgorithm(HashAlgorithmNames::Sha1)->HashData(inBuf);
 
-	Array<byte>^ outArray = nullptr;
-	CryptographicBuffer::CopyToByteArray(keyBuf, &outArray);	// creates a new Array<byte>^ and returns it by reference
-	memcpy_s(_key, KeySize, outArray->Data, outArray->Length);
+    Array<byte>^ outArray = nullptr;
+    CryptographicBuffer::CopyToByteArray(keyBuf, &outArray);    // creates a new Array<byte>^ and returns it by reference
+    memcpy_s(_key, KeySize, outArray->Data, outArray->Length);
 #else
     // hash the accumulated string (using OpenSSL syntax for portability)
     SHA_CTX ctx;

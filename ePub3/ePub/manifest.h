@@ -121,7 +121,7 @@ public:
      @param p The property bitfield against which to check.
      @result Returns `true` if all set bits in `p` are also set in `this`.
      */
-    bool            HasProperty(unsigned int p)             const   { return (_p & p) == p; }
+    bool            HasProperty(ItemProperties::value_type p)             const   { return (_p & p) == p; }
     
     /**
      Checks for the presence of one or more properties.
@@ -294,9 +294,25 @@ public:
     // strips any query/fragment from the href before returning
     EPUB3_EXPORT
     string                      BaseHref()                          const;
-    
-    bool                        HasProperty(const string& property) const   { return _parsedProperties.HasProperty(ItemProperties(property)); }
-    bool                        HasProperty(ItemProperties::value_type prop)    const   { return _parsedProperties.HasProperty(prop); }
+
+    // NOTE: the two "HasProperty" functions below test for predefined "_parsedProperties"
+    // on the spine item, not for OPF package metadata.
+    // ... unlike the other HasProperty(std::vector<IRI>& properties) method further below!
+    // (TODO: very confusing API)
+    bool HasProperty(const string& property) const
+    {
+        auto itemProps = ItemProperties(property);
+        if (itemProps == ItemProperties::None)
+            return false;
+        return _parsedProperties.HasProperty(itemProps);
+    }
+    bool HasProperty(ItemProperties::value_type prop) const
+    {
+        if (prop == ItemProperties::value_type(ItemProperties::None))
+            return false;
+        return _parsedProperties.HasProperty(prop);
+    }
+
     EPUB3_EXPORT
     bool                        HasProperty(const std::vector<IRI>& properties)  const;
     
