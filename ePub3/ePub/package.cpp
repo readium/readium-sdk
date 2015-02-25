@@ -501,13 +501,15 @@ bool Package::Unpack()
     InstallPrefixesFromAttributeValue(val);
     
     // go through children to determine the CFI index of the <spine> tag
-    static xml::string kSpineName((const char*)"spine");
-    static xml::string kManifestName((const char*)"manifest");
-    static xml::string kMetadataName((const char*)"metadata");
+    /*static */xml::string kSpineName((const char*)"spine");
+    /*static */xml::string kManifestName((const char*)"manifest");
+    /*static */xml::string kMetadataName((const char*)"metadata");
+	
 
     _spineCFIIndex = 0;
     uint32_t idx = 0;
     auto child = root->FirstElementChild();
+	
     while ( bool(child) )
     {
         idx += 2;

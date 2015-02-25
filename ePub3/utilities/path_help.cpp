@@ -26,7 +26,7 @@ EPUB3_BEGIN_NAMESPACE
 
 string CleanupPath(const string& path)
 {
-	static REGEX_NS::regex _PathSplitter("/");
+	/*static*/ REGEX_NS::regex _PathSplitter("/");
 	std::vector<string> components = path.split(_PathSplitter);
 
 	auto begin = components.begin();

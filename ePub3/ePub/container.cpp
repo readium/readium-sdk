@@ -44,6 +44,9 @@ Container::Container() :
 #endif
 	_archive(nullptr), _ocf(nullptr), _packages(), _encryption(), _path()
 {
+#if EPUB_USE(LIBXML2)
+	xmlInitParser();	// Please check this invocation before any libxml2 parsing
+#endif
 }
 Container::Container(Container&& o) :
 #if EPUB_PLATFORM(WINRT)
@@ -55,6 +58,11 @@ _archive(std::move(o._archive)), _ocf(o._ocf), _packages(std::move(o._packages))
 }
 Container::~Container()
 {
+#if EPUB_USE(LIBXML2)
+	// Please check this invocation after any libxml2 parsing
+	// One should call xmlCleanupParser() only when the process has finished using the library and all XML/HTML documents built with it.
+	xmlCleanupParser();
+#endif
 }
 bool Container::Open(const string& path)
 {
@@ -126,7 +134,10 @@ ContainerPtr Container::OpenContainer(const string &path)
 	{
         result = future.get();
 		if (!bool(result))
-			return OpenContainerForContentModule(path);
+		{
+			ContainerPtr tempPtr = OpenContainerForContentModule(path);
+			return tempPtr;
+		}
 	}
 
 	if (!bool(result))

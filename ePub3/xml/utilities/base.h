@@ -123,7 +123,7 @@ struct LibXML2Private
         : __sig(_READIUM_XML_SIGNATURE), __ptr(nullptr)
         {}
     LibXML2Private(_Tp* __p)
-        : __sig(_READIUM_XML_SIGNATURE), __ptr(__p)
+		: __sig(_READIUM_XML_SIGNATURE), __ptr(std::shared_ptr<_Tp>(__p))
         {}
     LibXML2Private(std::shared_ptr<_Tp>& __p)
         : __sig(_READIUM_XML_SIGNATURE), __ptr(__p)
@@ -133,7 +133,7 @@ struct LibXML2Private
     
     // data member-- used to determine if this is a Readium-made pointer
     unsigned int __sig;
-    std::shared_ptr<_Tp> __ptr;
+    std::weak_ptr<_Tp> __ptr;
 };
 #endif
 
@@ -162,7 +162,24 @@ static inline std::shared_ptr<_Tp> Wrapped(_Nm * __n)
             _PrivatePtr __p = reinterpret_cast<_PrivatePtr>(__n->_private);
             if (__p->__sig == _READIUM_XML_SIGNATURE)
             {
-                return __p->__ptr;
+				std::shared_ptr<_Tp> toRet = __p->__ptr.lock();
+				if (!bool(toRet))// if there is no live reference to the readium wrapper, but 
+				{
+					delete __p;	// release unreferenced memory, if any
+					__n->_private = nullptr;
+
+					std::shared_ptr<_Tp> toRet = std::shared_ptr<_Tp>(new _Tp(__n));
+
+					//_PrivatePtr __p = new LibXML2Private<_Tp>(new _Tp(__n));
+					_PrivatePtr __p = new LibXML2Private<_Tp>(toRet);
+					__n->_private = __p;
+					//return __p->__ptr;
+					return toRet;
+				}
+				///////////////////////////////////////////////////
+				return toRet;
+				//return __p->__ptr;
+
             }
             else
             {
@@ -175,11 +192,14 @@ static inline std::shared_ptr<_Tp> Wrapped(_Nm * __n)
         if (__n->_private != nullptr)
             throw std::logic_error("XML _private already carries a value!");
     }
+	
+	std::shared_ptr<_Tp> toRet = std::shared_ptr<_Tp>(new _Tp(__n));
     
-    
-    _PrivatePtr __p = new LibXML2Private<_Tp>(new _Tp(__n));
+    //_PrivatePtr __p = new LibXML2Private<_Tp>(new _Tp(__n));
+	_PrivatePtr __p = new LibXML2Private<_Tp>(toRet);
     __n->_private = __p;
-    return __p->__ptr;
+    //return __p->__ptr;
+	return toRet;
 }
 
 /**
@@ -198,7 +218,7 @@ static inline void Rewrap(_Nm* __n, std::shared_ptr<_Tp> __t)
         if (IS_READIUM_WRAPPED_XML(__n))
         {
             _Private* __p = reinterpret_cast<_Private*>(__n->_private);
-            if (__p->__ptr == __t)
+			if (__p->__ptr.lock() && __p->__ptr.lock() == __t)
                 return;
             
             delete __p;
