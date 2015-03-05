@@ -29,6 +29,20 @@ EPUB3_EXPORT void InitializeSdk();
 
 EPUB3_EXPORT void PopulateFilterManager();
 
+// The static signleton object, to initialize and teardown the SDK
+// TODO: Add your global initialization and release code into Initialize() and Teardown() methods respectively
+class SDKInitializeAndRelease
+{
+private:
+public:
+    SDKInitializeAndRelease();
+    ~SDKInitializeAndRelease();
+    void Initialize();  // helper function, can be called to initialize the SDK memory (i.e. in case of memory leak debugging)
+    void Teardown();    // helper function, can be called to release the SDK memory (i.e. in case of memory leak debugging)
+    static SDKInitializeAndRelease& Instance();
+};
+
+
 EPUB3_END_NAMESPACE
 
 #endif
