@@ -26,44 +26,44 @@ EPUB3_BEGIN_NAMESPACE
 static REGEX_NS::regex _PathSplitter("/");
 string CleanupPath(const string& path)
 {
-	std::vector<string> components = path.split(_PathSplitter);
+    std::vector<string> components = path.split(_PathSplitter);
 
-	auto begin = components.begin();
-	auto end = components.end();
-	for (auto pos = begin; pos < end; ++pos)
-	{
-		if (*pos == ".." && pos != begin)
-		{
-			decltype(pos) dotDot, parent;
+    auto begin = components.begin();
+    auto end = components.end();
+    for (auto pos = begin; pos < end; ++pos)
+    {
+        if (*pos == ".." && pos != begin)
+        {
+            decltype(pos) dotDot, parent;
 
-			dotDot = pos--;
-			if (pos == begin)
-			{
-				parent = begin;
-				pos = dotDot;
-			}
-			else
-			{
-				parent = pos--;
-			}
+            dotDot = pos--;
+            if (pos == begin)
+            {
+                parent = begin;
+                pos = dotDot;
+            }
+            else
+            {
+                parent = pos--;
+            }
 
-			components.erase(parent, dotDot);
-			end = components.end();
-		}
-	}
+            components.erase(parent, dotDot);
+            end = components.end();
+        }
+    }
 
-	std::ostringstream ss;
-	for (auto& str : components)
-	{
-		ss << str;
-		ss << '/';
-	}
+    std::ostringstream ss;
+    for (auto& str : components)
+    {
+        ss << str;
+        ss << '/';
+    }
 
-	string result = ss.str();
-	if (path[path.size() - 1] != '/')
-		result.erase(result.size() - 1);
+    string result = ss.str();
+    if (path[path.size() - 1] != '/')
+        result.erase(result.size() - 1);
 
-	return result;
+    return result;
 }
 
 EPUB3_END_NAMESPACE
