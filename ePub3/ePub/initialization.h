@@ -37,9 +37,9 @@ private:
 public:
     SDKInitializeAndRelease();
     ~SDKInitializeAndRelease();
-    void Initialize();  // helper function, can be called to initialize the SDK memory (i.e. in case of memory leak debugging)
-    void Teardown();    // helper function, can be called to release the SDK memory (i.e. in case of memory leak debugging)
-    static SDKInitializeAndRelease& Instance();
+    EPUB3_EXPORT void Initialize();  // helper function, can be called to initialize the SDK memory (i.e. in case of memory leak debugging)
+    EPUB3_EXPORT void Teardown();    // helper function, can be called to release the SDK memory (i.e. in case of memory leak debugging)
+    EPUB3_EXPORT static SDKInitializeAndRelease& Instance();
 };
 
 
