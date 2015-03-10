@@ -172,7 +172,7 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
         }
         
         response = dataResponse;
-        return dataResponse;
+        return response;
     }
 	
 	// Fake script request, immediately invoked after epubReadingSystem hook is in place,
