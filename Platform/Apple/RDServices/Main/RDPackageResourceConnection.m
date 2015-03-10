@@ -149,6 +149,31 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 			return response;
 		}
 	}
+    
+    if ([path hasPrefix:@"readium-shared-js/"] || [path hasPrefix:@"wkwebview/"] || [path hasSuffix:@"reader.html"]) {
+        NSString* fileName = [[path lastPathComponent] stringByDeletingPathExtension];
+        NSString* extension = [path pathExtension];
+        
+        NSURL* readerURL = [[NSBundle mainBundle] URLForResource:fileName withExtension:extension];
+        if (!readerURL) {
+            readerURL = [[NSBundle mainBundle] URLForResource:fileName
+                                                withExtension:extension
+                                                 subdirectory:[path stringByDeletingLastPathComponent]];
+        }
+        NSData* readerData = [NSData dataWithContentsOfURL:readerURL];
+        RDPackageResourceDataResponse* dataResponse = [[RDPackageResourceDataResponse alloc] initWithData:readerData];
+        
+        if ([extension isEqualToString:@"html"]) {
+            dataResponse.contentType = @"text/html";
+        } else if ([extension isEqualToString:@"css"]) {
+            dataResponse.contentType = @"text/css";
+        } else if ([extension isEqualToString:@"js"]) {
+            dataResponse.contentType = @"text/javascript";
+        }
+        
+        response = dataResponse;
+        return dataResponse;
+    }
 	
 	// Fake script request, immediately invoked after epubReadingSystem hook is in place,
 	// => push the global window.navigator.epubReadingSystem into the iframe(s)
