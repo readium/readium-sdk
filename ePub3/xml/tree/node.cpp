@@ -170,7 +170,8 @@ Node::Node(const string & name, NodeType type, const string & content, const cla
 Node::Node(Node && o) : _xml(o._xml) {
     typedef LibXML2Private<Node> _Private;
     _Private* priv = reinterpret_cast<_Private*>(_xml->_private);
-    priv->__ptr.reset(this);
+    //priv->__ptr.reset(this);
+	priv->__ptr=std::shared_ptr<Node>(this);
     o._xml = NULL;
 }
 Node::~Node()
@@ -181,14 +182,17 @@ Node::~Node()
         return;
     
     _Private* priv = reinterpret_cast<_Private*>(_xml->_private);
-    if ( priv->__sig != _READIUM_XML_SIGNATURE || priv->__ptr.get() != this )
+    if (priv->__sig != _READIUM_XML_SIGNATURE || (priv->__ptr.lock()!=nullptr && priv->__ptr.lock().get() != this))
         return;
     
-    // free the underlying node if *and only if* it is detached
+	if (!bool(priv->__ptr.lock()))
+	{
+		_xml->_private = nullptr;
+		delete priv;
+	}
+	// free the underlying node if *and only if* it is detached
     if ( _xml->parent == nullptr && _xml->prev == nullptr && _xml->next == nullptr )
     {
-        _xml->_private = nullptr;
-        delete priv;
         xmlFreeNode(_xml);
     }
 }
@@ -213,7 +217,9 @@ string Node::Content() const
     const xmlChar* ch = xmlNodeGetContent(_xml);
     if (ch == nullptr)
         return string::EmptyString;
-    return ch;
+	string result(ch);
+	xmlFree((void*)ch);
+	return result;
 }
 void Node::SetContent(const string &content)
 {
@@ -251,7 +257,9 @@ string Node::Language() const
     const xmlChar * ch = xmlNodeGetLang(_xml);
     if ( ch == nullptr )
         return string();
-    return ch;
+	string result(ch);
+	xmlFree((void*)ch);
+	return result;
 }
 void Node::SetLanguage(const string &language)
 {
@@ -270,7 +278,9 @@ string Node::BaseURL() const
     const xmlChar * ch = xmlNodeGetBase(_xml->doc, _xml);
     if ( ch == nullptr )
         return string();
-    return ch;
+	string result(ch);
+	xmlFree((void*)ch);
+	return result;
 }
 void Node::SetBaseURL(const string &baseURL)
 {
@@ -352,7 +362,9 @@ string Node::StringValue() const
     const xmlChar * content = xmlNodeGetContent(_xml);
     if ( content == nullptr )
         return string();
-    return content;
+	string result(content);
+	xmlFree((void*)content);
+	return result;
 }
 int Node::IntValue() const
 {
@@ -634,7 +646,7 @@ void Node::Unwrap(_xmlNode *aNode)
             NsPrivate* ptr = reinterpret_cast<NsPrivate*>(__ns->_private);
             if (ptr->__sig == _READIUM_XML_SIGNATURE)
             {
-                ptr->__ptr->release();
+                //ptr->__ptr->release();
                 delete ptr;
             }
             __ns->_private = nullptr;
@@ -645,7 +657,7 @@ void Node::Unwrap(_xmlNode *aNode)
         NodePrivate* ptr = reinterpret_cast<NodePrivate*>(aNode->_private);
         if (ptr->__sig == _READIUM_XML_SIGNATURE)
         {
-            ptr->__ptr->release();
+            //ptr->__ptr->release();
             delete ptr;
         }
         aNode->_private = nullptr;

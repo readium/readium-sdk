@@ -315,9 +315,9 @@ IRI PropertyHolder::MakePropertyIRI(const string &reference, const string& prefi
     }
     return IRI(found->second + reference);
 }
+static REGEX_NS::regex re("^(?:(.+?):)?(.+)$");
 IRI PropertyHolder::PropertyIRIFromString(const string &attrValue) const
 {
-    static REGEX_NS::regex re("^(?:(.+?):)?(.+)$");
     REGEX_NS::smatch pieces;
     if ( REGEX_NS::regex_match(attrValue.stl_str(), pieces, re) == false )
         throw std::invalid_argument(_Str("Attribute '", attrValue, "' doesn't look like a property name to me"));

@@ -125,8 +125,8 @@ ContainerPtr Container::OpenContainer(const string &path)
 	if (future.wait_for(std::chrono::system_clock::duration(0)) == future_status::ready)
 	{
         result = future.get();
-		if (!bool(result))
-			return OpenContainerForContentModule(path);
+        if (!bool(result))
+            return OpenContainerForContentModule(path);
 	}
 
 	if (!bool(result))
