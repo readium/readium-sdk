@@ -156,8 +156,6 @@ cscript MakeHeaders.js</Command>
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_close.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_delete.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_dirent.c" />
-    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_entry_free.c" />
-    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_entry_new.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_error.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_error_clear.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_error_get.c" />
@@ -174,8 +172,6 @@ cscript MakeHeaders.js</Command>
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fopen.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fopen_index.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fread.c" />
-    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_free.c" />
-    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fseek.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_ftell.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_get_archive_comment.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_get_archive_flag.c" />
