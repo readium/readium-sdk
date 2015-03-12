@@ -182,7 +182,7 @@ Node::~Node()
         return;
     
     _Private* priv = reinterpret_cast<_Private*>(_xml->_private);
-	if (priv->__sig != _READIUM_XML_SIGNATURE || (priv->__ptr.lock()!=nullptr && priv->__ptr.lock().get() != this))
+    if (priv->__sig != _READIUM_XML_SIGNATURE || (priv->__ptr.lock()!=nullptr && priv->__ptr.lock().get() != this))
         return;
     
 	if (!bool(priv->__ptr.lock()))
@@ -214,7 +214,7 @@ void Node::SetName(const string &name)
 }
 string Node::Content() const
 {
-	const xmlChar* ch = xmlNodeGetContent(_xml);
+    const xmlChar* ch = xmlNodeGetContent(_xml);
     if (ch == nullptr)
         return string::EmptyString;
 	string result(ch);

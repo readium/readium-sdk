@@ -123,7 +123,7 @@ struct LibXML2Private
         : __sig(_READIUM_XML_SIGNATURE), __ptr(nullptr)
         {}
     LibXML2Private(_Tp* __p)
-		: __sig(_READIUM_XML_SIGNATURE), __ptr(std::shared_ptr<_Tp>(__p))
+        : __sig(_READIUM_XML_SIGNATURE), __ptr(std::shared_ptr<_Tp>(__p))
         {}
     LibXML2Private(std::shared_ptr<_Tp>& __p)
         : __sig(_READIUM_XML_SIGNATURE), __ptr(__p)
