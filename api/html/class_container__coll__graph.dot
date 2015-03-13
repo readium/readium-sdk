@@ -1,0 +1,24 @@
+digraph "Container"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="Container",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node2 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="PointerType\< Container \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_pointer_type.xhtml"];
+  Node3 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="std::enable_shared\l_from_this\< Container \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node4 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _packages" ,fontname="Helvetica"];
+  Node4 [label="shared_vector\< Package \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classshared__vector.xhtml"];
+  Node5 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="std::vector\< std::shared\l_ptr\< Package \> \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node6 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _path\n_appleIBooksDisplay\lOption_Orientation\n_appleIBooksDisplayOption\l_FixedLayout" ,fontname="Helvetica"];
+  Node6 [label="string",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classstring.xhtml"];
+  Node6 -> Node6 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" EmptyString" ,fontname="Helvetica"];
+  Node7 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _ocf" ,fontname="Helvetica"];
+  Node7 [label="shared_ptr\< xml::Document \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node8 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _encryption" ,fontname="Helvetica"];
+  Node8 [label="shared_vector\< Encryption\lInfo \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classshared__vector.xhtml"];
+  Node9 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="std::vector\< std::shared\l_ptr\< EncryptionInfo \> \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+}

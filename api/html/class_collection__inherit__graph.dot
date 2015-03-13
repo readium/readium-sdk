@@ -1,0 +1,16 @@
+digraph "Collection"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="Collection",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node2 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="PointerType\< Collection \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_pointer_type.xhtml"];
+  Node3 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="std::enable_shared\l_from_this\< Collection \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node4 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="OwnedBy\< Package \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_owned_by.xhtml"];
+  Node5 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="XMLIdentifiable",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_x_m_l_identifiable.xhtml"];
+  Node6 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="PropertyHolder",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_property_holder.xhtml"];
+}

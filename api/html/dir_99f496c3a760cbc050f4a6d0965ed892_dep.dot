@@ -1,0 +1,14 @@
+digraph "/Users/rkwright/Documents/github/readium-sdk/ePub3" {
+  compound=true
+  node [ fontsize="10", fontname="Helvetica"];
+  edge [ labelfontsize="10", labelfontname="Helvetica"];
+  subgraph clusterdir_99f496c3a760cbc050f4a6d0965ed892 {
+    graph [ bgcolor="#eeeeff", pencolor="black", label="" URL="dir_99f496c3a760cbc050f4a6d0965ed892.xhtml"];
+    dir_99f496c3a760cbc050f4a6d0965ed892 [shape=plaintext label="ePub3"];
+    dir_d81697a4833f1d44a7e9bc8387132cc4 [shape=box label="ePub" color="black" fillcolor="white" style="filled" URL="dir_d81697a4833f1d44a7e9bc8387132cc4.xhtml"];
+    dir_090fe5b49b20e659802fc7ff806b453c [shape=box label="utilities" color="black" fillcolor="white" style="filled" URL="dir_090fe5b49b20e659802fc7ff806b453c.xhtml"];
+    dir_d2dc3c0cadcebb3fe799a79b2b95c908 [shape=box label="xml" color="red" fillcolor="white" style="filled" URL="dir_d2dc3c0cadcebb3fe799a79b2b95c908.xhtml"];
+  }
+  dir_d81697a4833f1d44a7e9bc8387132cc4->dir_090fe5b49b20e659802fc7ff806b453c [headlabel="94", labeldistance=1.5 headhref="dir_000003_000004.xhtml"];
+  dir_090fe5b49b20e659802fc7ff806b453c->dir_d81697a4833f1d44a7e9bc8387132cc4 [headlabel="3", labeldistance=1.5 headhref="dir_000004_000003.xhtml"];
+}

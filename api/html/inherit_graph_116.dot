@@ -1,0 +1,27 @@
+digraph "Graphical Class Hierarchy"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="vector",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="shared_vector\< _Tp \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classshared__vector.xhtml"];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="shared_vector\< const\l SMILData::TimeContainer \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classshared__vector.xhtml"];
+  Node1 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="shared_vector\< ContentFilter \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classshared__vector.xhtml"];
+  Node1 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="shared_vector\< Encryption\lInfo \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classshared__vector.xhtml"];
+  Node1 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="shared_vector\< Link \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classshared__vector.xhtml"];
+  Node1 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="shared_vector\< Navigation\lElement \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classshared__vector.xhtml"];
+  Node1 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="shared_vector\< Package \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classshared__vector.xhtml"];
+  Node1 -> Node9 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="shared_vector\< Property \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classshared__vector.xhtml"];
+  Node1 -> Node10 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node10 [label="shared_vector\< PropertyExtension \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classshared__vector.xhtml"];
+  Node1 -> Node11 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node11 [label="shared_vector\< SMILData \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classshared__vector.xhtml"];
+}

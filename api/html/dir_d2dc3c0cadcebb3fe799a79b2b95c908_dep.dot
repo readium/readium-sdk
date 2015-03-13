@@ -1,0 +1,17 @@
+digraph "/Users/rkwright/Documents/github/readium-sdk/ePub3/xml" {
+  compound=true
+  node [ fontsize="10", fontname="Helvetica"];
+  edge [ labelfontsize="10", labelfontname="Helvetica"];
+  subgraph clusterdir_99f496c3a760cbc050f4a6d0965ed892 {
+    graph [ bgcolor="#ddddee", pencolor="black", label="ePub3" fontname="Helvetica", fontsize="10", URL="dir_99f496c3a760cbc050f4a6d0965ed892.xhtml"]
+  subgraph clusterdir_d2dc3c0cadcebb3fe799a79b2b95c908 {
+    graph [ bgcolor="#eeeeff", pencolor="black", label="" URL="dir_d2dc3c0cadcebb3fe799a79b2b95c908.xhtml"];
+    dir_d2dc3c0cadcebb3fe799a79b2b95c908 [shape=plaintext label="xml"];
+    dir_f24255c03ecd8d9b97df6bed7f990a1d [shape=box label="tree" color="black" fillcolor="white" style="filled" URL="dir_f24255c03ecd8d9b97df6bed7f990a1d.xhtml"];
+    dir_5423ae1c4c31ea4b8e02f4db1d30290b [shape=box label="utilities" color="black" fillcolor="white" style="filled" URL="dir_5423ae1c4c31ea4b8e02f4db1d30290b.xhtml"];
+    dir_2b136990b1780617ba2452913cc9c363 [shape=box label="validation" color="black" fillcolor="white" style="filled" URL="dir_2b136990b1780617ba2452913cc9c363.xhtml"];
+  }
+  }
+  dir_f24255c03ecd8d9b97df6bed7f990a1d->dir_2b136990b1780617ba2452913cc9c363 [headlabel="3", labeldistance=1.5 headhref="dir_000005_000006.xhtml"];
+  dir_5423ae1c4c31ea4b8e02f4db1d30290b->dir_f24255c03ecd8d9b97df6bed7f990a1d [headlabel="1", labeldistance=1.5 headhref="dir_000002_000005.xhtml"];
+}

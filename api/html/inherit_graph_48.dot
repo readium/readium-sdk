@@ -1,0 +1,9 @@
+digraph "Graphical Class Hierarchy"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="__task_base_shared\l_state\< void(_Args...)\>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$struct____task__base__shared__state.xhtml"];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="__task_shared_state\l\< _Fp, void(_Args...)\>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$struct____task__shared__state_3_01___fp_00_01void_07___args_8_8_8_08_4.xhtml"];
+}

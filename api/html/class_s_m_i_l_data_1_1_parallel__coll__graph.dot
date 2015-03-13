@@ -1,0 +1,24 @@
+digraph "SMILData::Parallel"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="SMILData::Parallel",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node2 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="SMILData::TimeContainer",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_s_m_i_l_data_1_1_time_container.xhtml"];
+  Node3 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="SMILData::TimeNode",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_s_m_i_l_data_1_1_time_node.xhtml"];
+  Node4 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="OwnedBy\< SMILData \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_owned_by.xhtml"];
+  Node5 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="std::enable_shared\l_from_this\< TimeNode \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node6 -> Node3 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _parent" ,fontname="Helvetica"];
+  Node6 [label="shared_ptr\< SMILData\l::TimeContainer \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node7 -> Node2 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _type" ,fontname="Helvetica"];
+  Node7 [label="string",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classstring.xhtml"];
+  Node7 -> Node7 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" EmptyString" ,fontname="Helvetica"];
+  Node8 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _audio" ,fontname="Helvetica"];
+  Node8 [label="shared_ptr\< SMILData\l::Audio \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node9 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _text" ,fontname="Helvetica"];
+  Node9 [label="shared_ptr\< SMILData\l::Text \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+}

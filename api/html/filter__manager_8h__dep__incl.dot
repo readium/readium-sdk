@@ -1,0 +1,20 @@
+digraph "/Users/rkwright/Documents/github/readium-sdk/ePub3/ePub/filter_manager.h"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="/Users/rkwright/Documents\l/github/readium-sdk/ePub3\l/ePub/filter_manager.h",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="/Users/rkwright/Documents\l/github/readium-sdk/ePub3\l/ePub/container.cpp",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$container_8cpp.xhtml"];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="/Users/rkwright/Documents\l/github/readium-sdk/ePub3\l/ePub/filter_manager.cpp",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$filter__manager_8cpp.xhtml"];
+  Node1 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="/Users/rkwright/Documents\l/github/readium-sdk/ePub3\l/ePub/font_obfuscation.cpp",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$font__obfuscation_8cpp.xhtml"];
+  Node1 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="/Users/rkwright/Documents\l/github/readium-sdk/ePub3\l/ePub/object_preprocessor.cpp",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$object__preprocessor_8cpp.xhtml"];
+  Node1 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="/Users/rkwright/Documents\l/github/readium-sdk/ePub3\l/ePub/package.cpp",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$package_8cpp.xhtml"];
+  Node1 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="/Users/rkwright/Documents\l/github/readium-sdk/ePub3\l/ePub/PassThroughFilter.cpp",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$_pass_through_filter_8cpp.xhtml"];
+  Node1 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="/Users/rkwright/Documents\l/github/readium-sdk/ePub3\l/ePub/switch_preprocessor.cpp",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$switch__preprocessor_8cpp.xhtml"];
+}

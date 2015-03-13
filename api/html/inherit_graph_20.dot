@@ -1,0 +1,7 @@
+digraph "Graphical Class Hierarchy"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="__epub3_compressed\l_pair_switch\< _T1, \l_T2, IsSame, true, false \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$struct____epub3__compressed__pair__switch_3_01___t1_00_01___t2_00_01_is_same_00_01true_00_01false_01_4.xhtml"];
+}

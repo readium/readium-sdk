@@ -1,0 +1,26 @@
+var class_navigation_table =
+[
+    [ "NavigationTable", "class_navigation_table.xhtml#a6b72fa11cf2775aeeb20d3cfca7c858c", null ],
+    [ "NavigationTable", "class_navigation_table.xhtml#a996c6930c78da99093ea71aaed2e068b", null ],
+    [ "~NavigationTable", "class_navigation_table.xhtml#a15503786b0cfe0380084c3e1c1a7b491", null ],
+    [ "BuildNavigationPoint", "class_navigation_table.xhtml#a11ae86ee5e9b8e647bfa1393d8a86031", null ],
+    [ "BuildNCXNavigationPoint", "class_navigation_table.xhtml#ad9c8729b8811049e1e367dbb47412e83", null ],
+    [ "LoadChildElements", "class_navigation_table.xhtml#a8f4cbd362c82cf620832232696a5b08b", null ],
+    [ "LoadChildNavPoint", "class_navigation_table.xhtml#a96deaf2e54a82d95dd48200bde79b9be", null ],
+    [ "ParseNCXNavList", "class_navigation_table.xhtml#aac3324feb03fdceeaa00ff40cb39f493", null ],
+    [ "ParseNCXNavMap", "class_navigation_table.xhtml#ab20fa58e323f71b4e707f1209baf5d29", null ],
+    [ "ParseNCXPageList", "class_navigation_table.xhtml#ac1049d2cda98cac277dd50eeb28f38d3", null ],
+    [ "ParseXML", "class_navigation_table.xhtml#a89ec6581b0d9b185028d427501b0fce0", null ],
+    [ "SetSourceHref", "class_navigation_table.xhtml#ac2d30a244e8b7207051da8fd7f2eb17f", null ],
+    [ "SetSourceHref", "class_navigation_table.xhtml#a0008cab2d5f24bf3750de9858724a3fd", null ],
+    [ "SetTitle", "class_navigation_table.xhtml#a0c6971bae695c500e6c0491496266432", null ],
+    [ "SetTitle", "class_navigation_table.xhtml#abca0ab02ee218ce410454c8cf9246f52", null ],
+    [ "SetType", "class_navigation_table.xhtml#a714e6fb358f098c3ce0264b8d627dfd9", null ],
+    [ "SetType", "class_navigation_table.xhtml#a7551423c357c9737fe4518e4fec7fc90", null ],
+    [ "SourceHref", "class_navigation_table.xhtml#a0fe2d5d543edb15095f9f4c7d8b1b69c", null ],
+    [ "Title", "class_navigation_table.xhtml#aefa5a60e9e3ddaa026061bdf69afdbc9", null ],
+    [ "Type", "class_navigation_table.xhtml#a63777f974ae89902cc952a86dd94b632", null ],
+    [ "_sourceHref", "class_navigation_table.xhtml#acdc3501c172becf0d52a957417bfd0a0", null ],
+    [ "_title", "class_navigation_table.xhtml#a9f644ee7d78bca4f30ce2c0923fd6aaa", null ],
+    [ "_type", "class_navigation_table.xhtml#a8c19805663eab538d21bf436f111bb09", null ]
+];

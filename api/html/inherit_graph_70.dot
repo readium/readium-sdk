@@ -1,0 +1,17 @@
+digraph "Graphical Class Hierarchy"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="ByteStream",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_byte_stream.xhtml"];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="FilterChainByteStream",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_filter_chain_byte_stream.xhtml"];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="FilterChainByteStreamRange",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_filter_chain_byte_stream_range.xhtml"];
+  Node1 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="SeekableByteStream",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_seekable_byte_stream.xhtml"];
+  Node4 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="FileByteStream",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_file_byte_stream.xhtml"];
+  Node4 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="ZipFileByteStream",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_zip_file_byte_stream.xhtml"];
+}

@@ -1,0 +1,8 @@
+digraph "std::uses_allocator&lt; EPUB3_NAMESPACE::promise&lt; _Rp &gt;, _Alloc &gt;"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="std::uses_allocator\l\< EPUB3_NAMESPACE::promise\l\< _Rp \>, _Alloc \>",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node2 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="true_type",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+}

@@ -1,0 +1,13 @@
+digraph "EPUB?? 3 Engine"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir=LR;
+  Node1 [label="EPUB?? 3 Model",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__epub-model.xhtml"];
+  Node0 [label="EPUB?? 3 Engine",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node2 [label="EPUB?? 3 Content Processing",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__content-proc.xhtml"];
+  Node3 [label="Events Mechanism",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__events.xhtml"];
+  Node0->Node1 [shape=plaintext, color="midnightblue", dir="back", style="solid"];
+  Node0->Node2 [shape=plaintext, color="midnightblue", dir="back", style="solid"];
+  Node0->Node3 [shape=plaintext, color="midnightblue", dir="back", style="solid"];
+}

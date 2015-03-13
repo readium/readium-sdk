@@ -1,0 +1,8 @@
+digraph "__is_swappable&lt; _Tp &gt;"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="__is_swappable\< _Tp \>",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node2 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="std::integral_constant\l\<bool, __detail::__swappable\l\<_Tp\>::value\>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+}

@@ -1,0 +1,12 @@
+digraph "/Users/rkwright/Documents/github/readium-sdk/ePub3/ePub/archive.h"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="/Users/rkwright/Documents\l/github/readium-sdk/ePub3\l/ePub/archive.h",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="/Users/rkwright/Documents\l/github/readium-sdk/ePub3\l/ePub/archive.cpp",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$archive_8cpp.xhtml"];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="/Users/rkwright/Documents\l/github/readium-sdk/ePub3\l/ePub/container.cpp",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$container_8cpp.xhtml"];
+  Node1 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="/Users/rkwright/Documents\l/github/readium-sdk/ePub3\l/ePub/package.cpp",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$package_8cpp.xhtml"];
+}

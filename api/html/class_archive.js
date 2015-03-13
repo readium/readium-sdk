@@ -1,0 +1,26 @@
+var class_archive =
+[
+    [ "CompressionLevel", "class_archive.xhtml#ae94c9a1c554efdbf7733cdc32670f385", null ],
+    [ "CreatorFn", "class_archive.xhtml#a458ef2e18c9f34c8e2346d3b4667b622", null ],
+    [ "SnifferFn", "class_archive.xhtml#a22f281d57454094587f7c58a0f239898", null ],
+    [ "~Archive", "class_archive.xhtml#a6a35f3ac3fc22e292b9d70b3a8b220c2", null ],
+    [ "Archive", "class_archive.xhtml#a4a2c0b86f5a65108d2355e652f627200", null ],
+    [ "Archive", "class_archive.xhtml#a787e747e4cb61e291a672c9cd25ff705", null ],
+    [ "Archive", "class_archive.xhtml#a76e67fc39bb4b248350c4218c7b7564f", null ],
+    [ "Archive", "class_archive.xhtml#aa0158039fa16c6a21775859802cbb3f1", null ],
+    [ "ByteStreamAtPath", "class_archive.xhtml#a5b58cc29a835d8b060c520fb60cff11f", null ],
+    [ "ContainsItem", "class_archive.xhtml#a5180f1094c4ce188124684b8e7e13a32", null ],
+    [ "CreateFolder", "class_archive.xhtml#a3cc91bdf62283b9e613f1b57ddde7a77", null ],
+    [ "DeleteItem", "class_archive.xhtml#a6d36890668c5b4d2d82cf2d5db19cbb2", null ],
+    [ "EachItem", "class_archive.xhtml#aadd820d8bfccf5f173fa28e6fd308073", null ],
+    [ "InfoAtPath", "class_archive.xhtml#a671ac99b858531c54d9bc5307239220a", null ],
+    [ "operator=", "class_archive.xhtml#a1c1b628a3e2236c8ecb2c0db518cc009", null ],
+    [ "operator=", "class_archive.xhtml#a6edb8189d1c918071fc16773f2808186", null ],
+    [ "Path", "class_archive.xhtml#ac98cd3885225f22cb20cf30d60844e83", null ],
+    [ "POSIXPermissions", "class_archive.xhtml#a788541c600016280edd96faf48163edb", null ],
+    [ "ReaderAtPath", "class_archive.xhtml#a0d44a1e4481ecdc61e323a530e9e5a0a", null ],
+    [ "SetPOSIXPermissions", "class_archive.xhtml#a567e821f1020c95602caee43953f2b40", null ],
+    [ "ShouldCompress", "class_archive.xhtml#a661e9f3618469a03582ba0292c2f9cb9", null ],
+    [ "WriterAtPath", "class_archive.xhtml#a02a5e112834408a3392aef3603966f57", null ],
+    [ "_path", "class_archive.xhtml#af2a793433a33f007c69accbffdf044d4", null ]
+];

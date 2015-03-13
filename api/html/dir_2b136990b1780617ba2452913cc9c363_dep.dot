@@ -1,0 +1,9 @@
+digraph "/Users/rkwright/Documents/github/readium-sdk/ePub3/xml/validation" {
+  compound=true
+  node [ fontsize="10", fontname="Helvetica"];
+  edge [ labelfontsize="10", labelfontname="Helvetica"];
+  subgraph clusterdir_d2dc3c0cadcebb3fe799a79b2b95c908 {
+    graph [ bgcolor="#ddddee", pencolor="black", label="xml" fontname="Helvetica", fontsize="10", URL="dir_d2dc3c0cadcebb3fe799a79b2b95c908.xhtml"]
+  dir_2b136990b1780617ba2452913cc9c363 [shape=box, label="validation", style="filled", fillcolor="#eeeeff", pencolor="black", URL="dir_2b136990b1780617ba2452913cc9c363.xhtml"];
+  }
+}

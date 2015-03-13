@@ -1,0 +1,17 @@
+digraph "XML Engine"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir=LR;
+  Node0 [label="XML Engine",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node2 [label="XML Parsers",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__parsing.xhtml"];
+  Node3 [label="DOM Tree",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__tree.xhtml"];
+  Node1 [label="Content Validation",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__validation.xhtml"];
+  Node5 [label="XML Security",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__xmlsec.xhtml"];
+  Node4 [label="Utilities",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__xml-utils.xhtml"];
+  Node0->Node1 [shape=plaintext, color="midnightblue", dir="back", style="solid"];
+  Node0->Node2 [shape=plaintext, color="midnightblue", dir="back", style="solid"];
+  Node0->Node3 [shape=plaintext, color="midnightblue", dir="back", style="solid"];
+  Node0->Node4 [shape=plaintext, color="midnightblue", dir="back", style="solid"];
+  Node0->Node5 [shape=plaintext, color="midnightblue", dir="back", style="solid"];
+}

@@ -1,0 +1,25 @@
+var class____basic__future =
+[
+    [ "future_ptr", "class____basic__future.xhtml#adc9f562e1d95939f04d231d2e18d2bce", null ],
+    [ "state", "class____basic__future.xhtml#abccc4c83897dea626d9724bab7d3a8b5", null ],
+    [ "__basic_future", "class____basic__future.xhtml#a90aacb268056ec9d3b63cc65dc23e1b0", null ],
+    [ "__basic_future", "class____basic__future.xhtml#a522592dd7e2281b7601f8b383c07ca20", null ],
+    [ "__basic_future", "class____basic__future.xhtml#a1d2e18bef86d1ddd54e7665af4d2b3ab", null ],
+    [ "__basic_future", "class____basic__future.xhtml#a8eabe7a0ba55f0529359ba785464efa5", null ],
+    [ "get_exception_ptr", "class____basic__future.xhtml#a2ffab7a7556342a2b31a4725a74e21c6", null ],
+    [ "get_state", "class____basic__future.xhtml#a904d911132d330424fd1a3c66c178f0c", null ],
+    [ "has_exception", "class____basic__future.xhtml#aad194fd94a849298a503698581775277", null ],
+    [ "has_value", "class____basic__future.xhtml#ae1a26e32927b4c1d187214bbfc537682", null ],
+    [ "is_ready", "class____basic__future.xhtml#aa38f14a648fdd043945b8895b59fdb5d", null ],
+    [ "launch_policy", "class____basic__future.xhtml#a41d63a671d37358a791c588564808f5c", null ],
+    [ "operator=", "class____basic__future.xhtml#ab6dfcd4a77ce7606633be1430a9dd9a4", null ],
+    [ "swap", "class____basic__future.xhtml#a87341e673f913d46f58e300adbe2ca6b", null ],
+    [ "valid", "class____basic__future.xhtml#a196b20b29e7f478e95b6e996bd0a03d9", null ],
+    [ "wait", "class____basic__future.xhtml#aca98e49ff8a2a3f6590c3ba0df450887", null ],
+    [ "wait_for", "class____basic__future.xhtml#a09355e14dccf9e138ae8642841b03fdb", null ],
+    [ "wait_until", "class____basic__future.xhtml#a0189510fba340bbcadabbc62d6a7fb3f", null ],
+    [ "make_ready_future", "class____basic__future.xhtml#a3f847bf15ce9f11f91ce39c02a43196f", null ],
+    [ "make_ready_future", "class____basic__future.xhtml#a4be0e9c60f03acc6c9dcd946997bf272", null ],
+    [ "make_ready_future", "class____basic__future.xhtml#a319fa8222b558ae878d674b57520e54e", null ],
+    [ "__future_", "class____basic__future.xhtml#accf0a262280993df2a6a49e94082058f", null ]
+];

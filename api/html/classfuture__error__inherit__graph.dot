@@ -1,0 +1,23 @@
+digraph "future_error"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="future_error",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node2 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="std::logic_error",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="broken_promise",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classbroken__promise.xhtml"];
+  Node1 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="future_already_retrieved",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classfuture__already__retrieved.xhtml"];
+  Node1 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="future_uninitialized",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classfuture__uninitialized.xhtml"];
+  Node1 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="promise_already_satisfied",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classpromise__already__satisfied.xhtml"];
+  Node1 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="promise_moved",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classpromise__moved.xhtml"];
+  Node1 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="task_already_started",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classtask__already__started.xhtml"];
+  Node1 -> Node9 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="task_moved",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classtask__moved.xhtml"];
+}

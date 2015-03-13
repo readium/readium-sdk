@@ -1,0 +1,27 @@
+var globals_dup =
+[
+    [ "_", "globals.xhtml", null ],
+    [ "a", "globals_0x61.xhtml", null ],
+    [ "b", "globals_0x62.xhtml", null ],
+    [ "c", "globals_0x63.xhtml", null ],
+    [ "d", "globals_0x64.xhtml", null ],
+    [ "e", "globals_0x65.xhtml", null ],
+    [ "f", "globals_0x66.xhtml", null ],
+    [ "g", "globals_0x67.xhtml", null ],
+    [ "h", "globals_0x68.xhtml", null ],
+    [ "i", "globals_0x69.xhtml", null ],
+    [ "k", "globals_0x6b.xhtml", null ],
+    [ "l", "globals_0x6c.xhtml", null ],
+    [ "m", "globals_0x6d.xhtml", null ],
+    [ "n", "globals_0x6e.xhtml", null ],
+    [ "o", "globals_0x6f.xhtml", null ],
+    [ "p", "globals_0x70.xhtml", null ],
+    [ "q", "globals_0x71.xhtml", null ],
+    [ "r", "globals_0x72.xhtml", null ],
+    [ "s", "globals_0x73.xhtml", null ],
+    [ "t", "globals_0x74.xhtml", null ],
+    [ "u", "globals_0x75.xhtml", null ],
+    [ "v", "globals_0x76.xhtml", null ],
+    [ "w", "globals_0x77.xhtml", null ],
+    [ "x", "globals_0x78.xhtml", null ]
+];

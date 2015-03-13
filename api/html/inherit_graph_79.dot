@@ -1,0 +1,7 @@
+digraph "Graphical Class Hierarchy"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="detail::iota\< _Int,\l _Sp, integer_sequence\l\< _Int, _Indices...\>, _Ep \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structdetail_1_1iota_3_01___int_00_01___sp_00_01integer__sequence_3_01___int_00_01___indices_8_8_8_4_00_01___ep_01_4.xhtml"];
+}

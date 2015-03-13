@@ -1,0 +1,28 @@
+var classoptional =
+[
+    [ "value_type", "classoptional.xhtml#a3f26724a44386aa29b5bc140dc1c6f8c", null ],
+    [ "optional", "classoptional.xhtml#a462a95f3f97ff66b720e9cf2f256f41e", null ],
+    [ "optional", "classoptional.xhtml#a4444bb635bae18a0282a87abbc8214ee", null ],
+    [ "optional", "classoptional.xhtml#a9dbe649e1dbfbd7034511d361bbdf180", null ],
+    [ "optional", "classoptional.xhtml#ae73ff7c8f8394e72f482db9f1ad0bc9e", null ],
+    [ "optional", "classoptional.xhtml#aaa17bca46854ba505e3d68d18cd79abe", null ],
+    [ "optional", "classoptional.xhtml#a064f84db840d36a07bb9df11edaffd73", null ],
+    [ "optional", "classoptional.xhtml#a635cfdf3fbf0d7fabf637ed0861a2314", null ],
+    [ "optional", "classoptional.xhtml#a266a94e8fae4a7bc8a3d6c48f30e43ed", null ],
+    [ "~optional", "classoptional.xhtml#ad652656e90ff9c63f3d11f7ccf9e604a", null ],
+    [ "emplace", "classoptional.xhtml#a77e514444be8fa17f3841f471fe9adf6", null ],
+    [ "emplace", "classoptional.xhtml#a3f2331c2162061e0a8a13fa3a6b868ac", null ],
+    [ "operator bool", "classoptional.xhtml#ac877d4ce573730d851aecaa36abb96f9", null ],
+    [ "operator*", "classoptional.xhtml#a0836167b48b1034293bdc05f6f0344e4", null ],
+    [ "operator*", "classoptional.xhtml#a0e3ea45c9f82fcf3c7904901297e9d7f", null ],
+    [ "operator->", "classoptional.xhtml#a11e211ddfb894e18dd51b8e84cf2b47f", null ],
+    [ "operator->", "classoptional.xhtml#ac80e8280f80c60a884694b0744ecf2fc", null ],
+    [ "operator=", "classoptional.xhtml#aba5e93829352baaa19eb9f5f4095d1a5", null ],
+    [ "operator=", "classoptional.xhtml#a603efb86fd483c63b48b22b269d245d6", null ],
+    [ "operator=", "classoptional.xhtml#a94b76d9e2c807902c1187ad5639a7277", null ],
+    [ "swap", "classoptional.xhtml#a387723a341174126f3483a7c3798db63", null ],
+    [ "value", "classoptional.xhtml#a003269d3a3f5bc6add48eeb8f75aba34", null ],
+    [ "value", "classoptional.xhtml#a0a8a17b04f860c5e1fd7fa1df83ff03a", null ],
+    [ "value_or", "classoptional.xhtml#a73fb85ba55d4aa6969392726ca1f413f", null ],
+    [ "value_or", "classoptional.xhtml#a3138564f5e0ed022cf6479492fe22a01", null ]
+];

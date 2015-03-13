@@ -1,0 +1,25 @@
+digraph "Graphical Class Hierarchy"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="WrapperBase",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="InputBuffer",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_input_buffer.xhtml"];
+  Node2 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="StreamInputBuffer",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_stream_input_buffer.xhtml"];
+  Node1 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="Node",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_node.xhtml"];
+  Node4 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="Document",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_document.xhtml"];
+  Node4 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="DTD",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_d_t_d.xhtml"];
+  Node4 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="Element",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_element.xhtml"];
+  Node1 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="OutputBuffer",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_output_buffer.xhtml"];
+  Node8 -> Node9 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="StreamOutputBuffer",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_stream_output_buffer.xhtml"];
+  Node1 -> Node10 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node10 [label="XPathEvaluator",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_x_path_evaluator.xhtml"];
+}

@@ -32,7 +32,7 @@ PROJECT_NAME           = "Readium SDK"
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = 0.6
+PROJECT_NUMBER         = 0.16
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description 
 # for a project that appears at the top of each page and should give viewer 
@@ -45,14 +45,14 @@ PROJECT_BRIEF          = "An EPUB 3 compliant rendering engine for eBooks"
 # exceed 55 pixels and the maximum width should not exceed 200 pixels. 
 # Doxygen will copy the logo to the output directory.
 
-PROJECT_LOGO           = logo.png
+PROJECT_LOGO           = /Users/rkwright/Documents/Sandbox_Readium/doc/Logos/Readium_Logo_64.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 
 # If a relative path is entered, it will be relative to the location 
 # where doxygen was started. If left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = .
+OUTPUT_DIRECTORY       = ../api
 
 # If the CREATE_SUBDIRS tag is set to YES, then doxygen will create 
 # 4096 sub-directories (in 2 levels) under the output directory of each output 
@@ -567,7 +567,7 @@ ENABLED_SECTIONS       =
 # documentation can be controlled using \showinitializer or \hideinitializer 
 # command in the documentation regardless of this setting.
 
-MAX_INITIALIZER_LINES  = 30
+MAX_INITIALIZER_LINES  = 33
 
 # Set the SHOW_USED_FILES tag to NO to disable the list of files generated 
 # at the bottom of the documentation of classes and structs. If set to YES the 
@@ -924,7 +924,7 @@ GENERATE_HTML          = YES
 # If a relative path is entered the value of OUTPUT_DIRECTORY will be 
 # put in front of it. If left blank `html' will be used as the default path.
 
-HTML_OUTPUT            = core-api-docs
+HTML_OUTPUT            = 
 
 # The HTML_FILE_EXTENSION tag can be used to specify the file extension for 
 # each generated HTML page (for example: .htm,.php,.asp). If it is left blank 

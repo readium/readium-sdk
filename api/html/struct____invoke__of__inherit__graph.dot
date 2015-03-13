@@ -1,0 +1,8 @@
+digraph "__invoke_of&lt; _Fp, _Args &gt;"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="__invoke_of\< _Fp, \l_Args \>",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node2 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="__invoke_of_imp\< _\l_invokable\< _Fp, _Args...\>\l::value, _Fp, _Args...\>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$struct____invoke__of__imp.xhtml"];
+}

@@ -1,0 +1,29 @@
+digraph "Graphical Class Hierarchy"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="logic_error",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="bad_optional_access",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classbad__optional__access.xhtml"];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="CFI::InvalidCFI",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_c_f_i_1_1_invalid_c_f_i.xhtml",tooltip="The exception thrown when an invalid CFI string is encountered."];
+  Node1 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="CFI::RangedCFIAppendAttempt",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_c_f_i_1_1_ranged_c_f_i_append_attempt.xhtml",tooltip="An attempt was made to append components to a ranged CFI, which is not valid."];
+  Node1 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="future_error",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classfuture__error.xhtml"];
+  Node5 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="broken_promise",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classbroken__promise.xhtml"];
+  Node5 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="future_already_retrieved",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classfuture__already__retrieved.xhtml"];
+  Node5 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="future_uninitialized",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classfuture__uninitialized.xhtml"];
+  Node5 -> Node9 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="promise_already_satisfied",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classpromise__already__satisfied.xhtml"];
+  Node5 -> Node10 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node10 [label="promise_moved",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classpromise__moved.xhtml"];
+  Node5 -> Node11 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node11 [label="task_already_started",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classtask__already__started.xhtml"];
+  Node5 -> Node12 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node12 [label="task_moved",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classtask__moved.xhtml"];
+}

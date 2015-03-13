@@ -1,0 +1,26 @@
+var class_library =
+[
+    [ "ContainerLookup", "class_library.xhtml#a2da5e80461728c3bfb6c28f2028b1639", null ],
+    [ "EPubIdentifier", "class_library.xhtml#a23710f7d32172f0410afbb49b255454f", null ],
+    [ "LookupEntry", "class_library.xhtml#a78bec7495733d4adc69892c442db4f93", null ],
+    [ "PackageLookup", "class_library.xhtml#a3701b680c77866cef37e2edb70b1e159", null ],
+    [ "Library", "class_library.xhtml#a2395ac0c49ea380c9018aa74c5a11b7f", null ],
+    [ "Library", "class_library.xhtml#a4abdc79e6294d30760806c3ab6aef5cd", null ],
+    [ "Library", "class_library.xhtml#a2de7d0a47954268dde2b2cbd137bcfa9", null ],
+    [ "Library", "class_library.xhtml#a55188650e48eae154b990f77ad02b91c", null ],
+    [ "~Library", "class_library.xhtml#a62120f28a9b50cc5b151d868e42ab936", null ],
+    [ "AddPublicationsInContainer", "class_library.xhtml#addfb6edd36b2c72273c90458f879b2f9", null ],
+    [ "AddPublicationsInContainerAtPath", "class_library.xhtml#ac3b59d619d24420f7892baef8cf6221d", null ],
+    [ "EPubCFIURLForManifestItem", "class_library.xhtml#a4f0ef35117480b2afc3d3eb960a7ddda", null ],
+    [ "EPubURLForPublication", "class_library.xhtml#a59f4a8b59f9c8bc23c7cdaa14ec8140d", null ],
+    [ "EPubURLForPublicationID", "class_library.xhtml#ab1dbaa1c66116c2914d3a5bfe2aa7484", null ],
+    [ "Load", "class_library.xhtml#ab33c8c19159783b942d4630e50c7814b", null ],
+    [ "ManifestItemForCFI", "class_library.xhtml#a785ad34485185c738d384ce3daad8ddd", null ],
+    [ "PackageForEPubURL", "class_library.xhtml#a985bb41db8f145b01efc9b1526359520", null ],
+    [ "PathForEPubWithPackageID", "class_library.xhtml#a1a478138cc9006a13fac9533b21adc59", null ],
+    [ "PathForEPubWithUniqueID", "class_library.xhtml#a3e4025fe215441bbaebd569445acc59a", null ],
+    [ "ReadStreamForEPubURL", "class_library.xhtml#a18596c53164fbbdb95ec9579afc6f930", null ],
+    [ "WriteToFile", "class_library.xhtml#a57672dd4e477b65f86505d7021aaa3a1", null ],
+    [ "_containers", "class_library.xhtml#ad518d7b03a0d9e982efddc8913789a5a", null ],
+    [ "_packages", "class_library.xhtml#ae16168fd8ede91c93c824cfc12b5e214", null ]
+];
