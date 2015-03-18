@@ -101,7 +101,7 @@ private:
 public:
     ///
     /// Returns the number of bytes that can be read at this time.
-    virtual size_type       BytesAvailable()                        const _NOEXCEPT  { return UnknownSize; }
+    virtual size_type       BytesAvailable()                        _NOEXCEPT  { return UnknownSize; }
     ///
     /// Returns the amount of space available for writing at this time.
     virtual size_type       SpaceAvailable()                        const _NOEXCEPT  { return UnknownSize; }
@@ -274,7 +274,7 @@ public:
     
     ///
     /// @copydoc ByteStream::BytesAvailable()
-    virtual size_type           BytesAvailable()                    const _NOEXCEPT  {
+    virtual size_type           BytesAvailable()                    _NOEXCEPT  {
         return (_readbuf ? _readbuf->BytesAvailable() : 0);
     }
     ///
@@ -491,7 +491,7 @@ private:
 public:
     ///
     /// @copydoc ByteStream::BytesAvailable()
-    virtual size_type       BytesAvailable()                        const _NOEXCEPT;
+    virtual size_type       BytesAvailable()                        _NOEXCEPT;
     ///
     /// @copydoc ByteStream::SpaceAvailable()
     virtual size_type       SpaceAvailable()                        const _NOEXCEPT;
@@ -580,7 +580,7 @@ private:
 public:
     ///
     /// @copydoc ByteStream::BytesAvailable()
-    virtual size_type       BytesAvailable()                        const _NOEXCEPT;
+    virtual size_type       BytesAvailable()                        _NOEXCEPT;
     ///
     /// @copydoc ByteStream::SpaceAvailable
     virtual size_type       SpaceAvailable()                        const _NOEXCEPT;
@@ -678,7 +678,7 @@ public:
     // use the ringbuffer-based availability functions from AsyncByteStream
     ///
     /// @copydoc AsyncByteStream::BytesAvailable
-    virtual size_type       BytesAvailable()    const _NOEXCEPT              { return __A::BytesAvailable(); }
+    virtual size_type       BytesAvailable()    _NOEXCEPT              { return __A::BytesAvailable(); }
     ///
     /// @copydoc AsyncByteStream::SpaceAvailable
     virtual size_type       SpaceAvailable()    const _NOEXCEPT              { return __A::SpaceAvailable(); }
@@ -758,7 +758,7 @@ public:
     // use the ringbuffer-based availability functions from AsyncByteStream
     ///
     /// @copydoc AsyncByteStream::BytesAvailable
-    virtual size_type       BytesAvailable()    const _NOEXCEPT              { return __A::BytesAvailable(); }
+    virtual size_type       BytesAvailable()    _NOEXCEPT              { return __A::BytesAvailable(); }
     ///
     /// @copydoc AsyncByteStream::SpaceAvailable
     virtual size_type       SpaceAvailable()    const _NOEXCEPT              { return __A::SpaceAvailable(); }

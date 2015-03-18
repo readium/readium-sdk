@@ -63,9 +63,14 @@ public:
     EPUB3_EXPORT FilterChainByteStream(std::unique_ptr<SeekableByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem);
     virtual ~FilterChainByteStream();
     
-    virtual size_type BytesAvailable() const _NOEXCEPT OVERRIDE
+    virtual size_type BytesAvailable() _NOEXCEPT OVERRIDE
     {
-        if (_needs_cache && _input->AtEnd()) {
+        if (_needs_cache)
+		{
+			if (_cache.GetBufferSize() == 0)
+			{
+				CacheBytes();
+			}
             return _cache.GetBufferSize();
         } else {
             return _input->BytesAvailable();
