@@ -460,7 +460,9 @@ unique_ptr<ArchiveReader> Package::ReaderForRelativePath(const string& path)    
 {
     return _archive->ReaderAtPath((_pathBase + path).stl_str());
 }
-
+static xml::string kSpineName((const char*)"spine");
+static xml::string kManifestName((const char*)"manifest");
+static xml::string kMetadataName((const char*)"metadata");
 bool Package::Unpack()
 {
     PackagePtr sharedMe = shared_from_this();
@@ -501,10 +503,6 @@ bool Package::Unpack()
     InstallPrefixesFromAttributeValue(val);
     
     // go through children to determine the CFI index of the <spine> tag
-    /*static */xml::string kSpineName((const char*)"spine");
-    /*static */xml::string kManifestName((const char*)"manifest");
-    /*static */xml::string kMetadataName((const char*)"metadata");
-	
 
     _spineCFIIndex = 0;
     uint32_t idx = 0;
