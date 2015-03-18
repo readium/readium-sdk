@@ -742,6 +742,7 @@ std::shared_ptr<SeekableByteStream> FileByteStream::Clone() const
 
 ZipFileByteStream::ZipFileByteStream(struct zip* archive, const string& path, int flags) : SeekableByteStream(), _file(nullptr), _mode(0)
 {
+    bytes_left = total_size = 0;
     Open(archive, path, flags);
 }
 ZipFileByteStream::~ZipFileByteStream()
@@ -750,9 +751,13 @@ ZipFileByteStream::~ZipFileByteStream()
 }
 ByteStream::size_type ZipFileByteStream::BytesAvailable() const _NOEXCEPT
 {
-    if ( _file == nullptr )
+    //if ( _file == nullptr )
+        //return 0;
+    //return _file->bytes_left;
+
+    if (_file == nullptr)
         return 0;
-    return _file->bytes_left;
+    return bytes_left;
 }
 ByteStream::size_type ZipFileByteStream::SpaceAvailable() const _NOEXCEPT
 {
@@ -770,6 +775,17 @@ bool ZipFileByteStream::Open(struct zip *archive, const string &path, int flags)
         Close();
     
     _file = zip_fopen(archive, Sanitized(path).c_str(), flags);
+
+    if (_file != nullptr)
+    {
+        struct zip_stat st;
+        if (zip_source_stat(_file->src, &st) == 0)
+        {
+            total_size = st.size;
+            bytes_left = total_size;
+        }
+    }
+
     return ( _file != nullptr );
 }
 void ZipFileByteStream::Close()
@@ -794,7 +810,9 @@ ByteStream::size_type ZipFileByteStream::ReadBytes(void *buf, size_type len)
         return 0;
     }
 
-	_eof = (_file->bytes_left == 0);
+	//_eof = (_file->bytes_left == 0);
+    bytes_left -= numRead;
+    _eof = (bytes_left == 0);
     
     return numRead;
 }
@@ -805,6 +823,9 @@ ByteStream::size_type ZipFileByteStream::WriteBytes(const void *buf, size_type l
 }
 ByteStream::size_type ZipFileByteStream::Seek(size_type by, std::ios::seekdir dir)
 {
+    assert(0);
+    return 0;
+#if 0   // this functionality is disabled due to macro incompatibility with the latest libzip
     int whence = ZIP_SEEK_SET;
     switch (dir)
     {
@@ -823,13 +844,23 @@ ByteStream::size_type ZipFileByteStream::Seek(size_type by, std::ios::seekdir di
     zip_fseek(_file, long(by), whence);
 	_eof = (_file->bytes_left == 0);
     return Position();
+#endif
 }
 ByteStream::size_type ZipFileByteStream::Position() const
 {
+    // this functionality is disabled due to macro incompatibility with the latest libzip
+    assert(0);
+    return 0;
+#if 0 
     return size_type(zip_ftell(_file));
+#endif
 }
 std::shared_ptr<SeekableByteStream> ZipFileByteStream::Clone() const
 {
+    assert(0);
+    return nullptr;
+
+#if 0
 	if (_file == nullptr)
 		return nullptr;
 
@@ -847,6 +878,7 @@ std::shared_ptr<SeekableByteStream> ZipFileByteStream::Clone() const
 	}
 
 	return result;
+ #endif
 }
 
 #ifdef SUPPORT_ASYNC

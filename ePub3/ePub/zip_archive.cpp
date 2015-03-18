@@ -93,7 +93,7 @@ static string GetTempFilePath(const string& ext)
     return string(buf);
 #endif
 }
-
+#if 0
 class ZipReader : public ArchiveReader
 {
 public:
@@ -111,6 +111,39 @@ private:
     struct zip_file * _file;
 	size_t _total_size;
 };
+#endif
+class ZipReader : public ArchiveReader
+{
+public:
+    ZipReader(struct zip_file* file) : _file(file), _total_size(0), bytes_left(0)
+    {
+        struct zip_stat st;
+        if (zip_source_stat(file->src, &st) == 0)
+        {
+            _total_size = st.size;
+            bytes_left = _total_size;
+        }
+    }
+    ZipReader(ZipReader&& o) : _file(o._file) { o._file = nullptr; }
+    virtual ~ZipReader() { if (_file != nullptr) zip_fclose(_file); }
+
+    virtual bool operator !() const { return _file == nullptr || bytes_left == 0; }
+    virtual ssize_t read(void* p, size_t len) const {
+        size_t curLen = zip_fread(_file, p, std::min(bytes_left, len));
+        if (curLen != -1)
+            ((ZipReader*)this)->bytes_left -= curLen;
+        return curLen;
+    }
+
+    virtual size_t total_size() const { return _total_size; }
+    virtual size_t position() const { return _total_size - bytes_left; }
+
+private:
+    struct zip_file * _file;
+    size_t _total_size;
+    size_t bytes_left;
+};
+
 
 class ZipWriter : public ArchiveWriter
 {
@@ -291,7 +324,9 @@ size_t ZipWriter::DataBlob::Read(void *data, size_t len)
 ZipWriter::ZipWriter(struct zip *zip, const string& path, bool compressed)
     : _compressed(compressed)
 {
-    _zsrc = zip_source_function(zip, &ZipWriter::_source_callback, reinterpret_cast<void*>(this));
+    // It seems that ZipWriter is not actually used in the Readium launchers, so it is temporary commented out
+    assert(0);
+    //_zsrc = zip_source_function(zip, &ZipWriter::_source_callback, reinterpret_cast<void*>(this));
 }
 ZipWriter::ZipWriter(ZipWriter&& o) : _compressed(o._compressed), _data(std::move(o._data)), _zsrc(o._zsrc)
 {

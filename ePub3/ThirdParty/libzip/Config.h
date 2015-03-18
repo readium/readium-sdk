@@ -15,7 +15,7 @@
 #define HAVE__STRICMP
 /* #undef HAVE_FSEEKO */
 /* #undef HAVE_FTELLO */
-#define HAVE_OPEN
+//#define HAVE_OPEN
 /* #undef HAVE_MKSTEMP */
 /* #undef HAVE_SNPRINTF */
 /* #undef HAVE_STRCASECMP */

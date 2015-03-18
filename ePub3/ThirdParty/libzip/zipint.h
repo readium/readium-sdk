@@ -53,6 +53,7 @@
 
 #include "zip.h"
 #include "config.h"
+#include "_config.h"
 
 #ifndef _WIN32
 #define _zip_rename	rename
@@ -73,9 +74,9 @@
 #define fileno		_fileno
 #endif
 /* Windows' open() doesn't understand Unix permissions */
-#if defined(HAVE__OPEN)
-#define open(a, b, c)	_open((a), (b))
-#endif
+//#if defined(HAVE__OPEN)
+//#define open(a, b, c)	_open((a), (b))
+//#endif
 #if defined(HAVE__SNPRINTF)
 #define snprintf	_snprintf
 #endif
