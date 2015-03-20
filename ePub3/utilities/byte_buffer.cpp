@@ -151,7 +151,7 @@ size_t ByteBuffer::MoveTo(unsigned char *targetBuffer, size_t targetBufferSize)
     if (m_bufferSize <= targetBufferSize)
     {
         ::memmove(targetBuffer, m_buffer, m_bufferSize);
-        ::bzero(targetBuffer+m_bufferSize, targetBufferSize-m_bufferSize);
+        bzero(targetBuffer+m_bufferSize, targetBufferSize-m_bufferSize);
         resultLen = m_bufferSize;
         
         if ( m_secure )
@@ -244,7 +244,7 @@ void ByteBuffer::EnsureCapacity(size_t desired)
 
 void ByteBuffer::Clean(unsigned char *ptr, size_t len)
 {
-    ::bzero(ptr, len);
+    bzero(ptr, len);
 
 #ifdef ENABLE_SYS_CACHE_FLUSH
     epub_sys_cache_flush(ptr, len);

@@ -149,8 +149,8 @@ ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type 
 
                 streamPos = _input->Position();
 
-                byteRange.Location(streamPos - result);
-                byteRange.Length(result);
+                byteRange.Location((uint32_t)(streamPos - result));
+                byteRange.Length((uint32_t)result);
             }
             filterContextRange->GetByteRange() = byteRange;
             filterContextRange->SetSeekableByteStream(_input.get());

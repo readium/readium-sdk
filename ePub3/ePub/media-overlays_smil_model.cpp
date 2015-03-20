@@ -229,9 +229,9 @@ public:
                     _totalDuration = SmilClockValuesParser::ToWholeMilliseconds(durationStr);
                     //printf("Media Overlays TOTAL DURATION (milliseconds): %ld\n", (long) _totalDuration);
                 }
-                catch (const std::invalid_argument & exc)
+                catch (const std::invalid_argument & error)
                 {
-                    HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str("OPF package -- media:duration=", durationStr, " => invalid SMIL Clock Value syntax"));
+                    HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str("OPF package -- media:duration=", durationStr, " => invalid SMIL Clock Value syntax (", error.what(), ")"));
                 }
                 //catch (...)
                 //{
@@ -299,14 +299,14 @@ public:
 
                         accumulatedDurationMilliseconds += durationWholeMilliseconds;
                     }
-                    catch (const std::invalid_argument & exc)
+                    catch (const std::invalid_argument & error)
                     {
                         allFake = false;
 
                         const std::shared_ptr<SMILData> smilData = std::make_shared<class SMILData>(sharedMe, item, spineItem, 0);
                         _smilDatas.push_back(smilData); // creates a *copy* of the shared smart pointer (reference count++)
 
-                        HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str(item->Href(), " -- media:duration=", itemDurationStr, " => invalid SMIL Clock Value syntax"));
+                        HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str(item->Href(), " -- media:duration=", itemDurationStr, " => invalid SMIL Clock Value syntax (", error.what(), ")"));
                     }
                     //catch (...)
                     //{
@@ -486,7 +486,7 @@ public:
 
                 shared_ptr<SMILData> smilData = nullptr;
                 string id = item->Identifier();
-                for (int i = 0; i < _smilDatas.size(); i++)
+                for (shared_vector<SMILData>::size_type i = 0; i < _smilDatas.size(); i++)
                 {
                     const std::shared_ptr<SMILData> data = _smilDatas.at(i); // does not make a copy of the smart pointer (NO reference count++)
 
@@ -561,7 +561,7 @@ public:
 
             const char * str = iri.c_str();
             size_t size = strlen(str);
-            for (int j = 0; j < size; j++)
+            for (size_t j = 0; j < size; j++)
             {
                 char c = str[j];
                 if (c == '#')
@@ -908,9 +908,9 @@ public:
                     {
                         clipBeginMilliseconds = SmilClockValuesParser::ToWholeMilliseconds(clipBeginStr);
                     }
-                    catch (const std::invalid_argument & exc)
+                    catch (const std::invalid_argument & error)
                     {
-                        HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str(item->Href().c_str(), " -- clipBegin=", clipBeginStr, " => invalid SMIL Clock Value syntax"));
+                        HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str(item->Href().c_str(), " -- clipBegin=", clipBeginStr, " => invalid SMIL Clock Value syntax (", error.what(), ")"));
                     }
                     //catch (...)
                     //{
@@ -925,9 +925,9 @@ public:
                     {
                         clipEndMilliseconds = SmilClockValuesParser::ToWholeMilliseconds(clipEndStr);
                     }
-                    catch (const std::invalid_argument & exc)
+                    catch (const std::invalid_argument & error)
                     {
-                        HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str(item->Href().c_str(), " -- clipEnd=", clipEndStr, " => invalid SMIL Clock Value syntax"));
+                        HandleError(EPUBError::MediaOverlayInvalidSmilClockValue, _Str(item->Href().c_str(), " -- clipEnd=", clipEndStr, " => invalid SMIL Clock Value syntax (", error.what(), ")"));
                     }
                     //catch (...)
                     //{
@@ -1081,7 +1081,7 @@ public:
         {
             uint32_t offset = 0;
 
-            for (int i = 0; i < _smilDatas.size(); i++)
+            for (shared_vector<SMILData>::size_type i = 0; i < _smilDatas.size(); i++)
             {
                 const std::shared_ptr<SMILData> data = _smilDatas.at(i); // does not make a copy of the smart pointer (NO reference count++)
                 uint32_t timeAdjusted = timeMilliseconds - offset;
