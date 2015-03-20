@@ -205,7 +205,7 @@ ConstManifestItemPtr PackageBase::ManifestItemAtRelativePath(const string& path)
 
 //        THIS IS FOR DEBUGGING, SEE COMMENT BELOW ...
         const char * absChars = absolute.c_str();
-        int absLength_STRLEN = strlen(absChars);
+        int absLength_STRLEN = (int)strlen(absChars);
         int absLength_SIZE = static_cast<int>(absolute.size());
         int absLength_UTF8SIZE = static_cast<int>(absolute.utf8_size());
         if (absLength_STRLEN != absLength_SIZE || absLength_STRLEN != absLength_UTF8SIZE || absLength_SIZE != absLength_UTF8SIZE)

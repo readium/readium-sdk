@@ -39,7 +39,7 @@
 EPUB3_BEGIN_NAMESPACE
 
 class FilterContext;
-struct ByteRange;
+class ByteRange;
 
 
 class FilterChain : public PointerType<FilterChain>

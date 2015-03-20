@@ -171,7 +171,7 @@ EPUB3_BEGIN_NAMESPACE
                         return false;
                     }
                     
-                    for (int i = 0; i < _children.size(); i++)
+                    for (shared_vector<const TimeContainer>::size_type i = 0; i < _children.size(); i++)
                     {
                         auto container = _children[i];
                         if (container->IsParallel())
@@ -220,7 +220,7 @@ EPUB3_BEGIN_NAMESPACE
                     
                     uint32_t offset = 0;
 
-                    for (int i = 0; i < _children.size(); i++)
+                    for (shared_vector<const TimeContainer>::size_type i = 0; i < _children.size(); i++)
                     {
                         uint32_t timeAdjusted = timeMilliseconds - offset;
 
@@ -267,7 +267,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 shared_ptr<const Parallel> NthParallel(uint32_t index, uint32_t & count) const
                 {
-                    for (int i = 0; i < _children.size(); i++)
+                    for (shared_vector<const TimeContainer>::size_type i = 0; i < _children.size(); i++)
                     {
                         auto container = _children[i];
                         if (container->IsParallel())
@@ -377,7 +377,7 @@ EPUB3_BEGIN_NAMESPACE
                     
                     uint32_t total = 0;
 
-                    for (int i = 0; i < _children.size(); i++)
+                    for (shared_vector<const TimeContainer>::size_type i = 0; i < _children.size(); i++)
                     {
                         auto container = _children[i];
                         if (container->IsParallel())
