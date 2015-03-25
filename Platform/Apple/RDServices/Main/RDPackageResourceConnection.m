@@ -163,7 +163,7 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 		NSData *data = [noop dataUsingEncoding:NSUTF8StringEncoding];
 		RDPackageResourceDataResponse *dataResponse = [[RDPackageResourceDataResponse alloc] initWithData:data];
 		dataResponse.contentType = @"text/javascript";
-		return response;
+		return dataResponse;
 	}
 	
 	// Synchronize using a process-level lock to guard against multiple threads accessing a
