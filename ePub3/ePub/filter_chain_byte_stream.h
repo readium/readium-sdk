@@ -58,7 +58,7 @@ private:
     FilterChainByteStream&         operator=(FilterChainByteStream&&)                         _DELETED_;
 
 public:
-    FilterChainByteStream() : ByteStream() {}
+    FilterChainByteStream() : ByteStream(), _cacheHasBeenFilledUp(false) {}
     //EPUB3_EXPORT FilterChainByteStream(std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr &manifestItem);
     EPUB3_EXPORT FilterChainByteStream(std::unique_ptr<SeekableByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem);
     virtual ~FilterChainByteStream();
@@ -67,7 +67,7 @@ public:
     {
         if (_needs_cache)
 		{
-			if (_cache.GetBufferSize() == 0)
+			if (_cache.GetBufferSize() == 0 && !_cacheHasBeenFilledUp)
 			{
 				CacheBytes();
 			}
@@ -113,6 +113,8 @@ private:
     void CacheBytes();
     size_type FilterBytes(void* bytes, size_type len);
     //size_type FilterBytes(void* bytes, ByteRange &byteRange);
+    
+    bool _cacheHasBeenFilledUp;
 };
 
 EPUB3_END_NAMESPACE
