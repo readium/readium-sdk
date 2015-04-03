@@ -54,7 +54,7 @@ public:
     //EPUB3_EXPORT FilterChainByteStreamRange(std::unique_ptr<SeekableByteStream> &&input);
     virtual ~FilterChainByteStreamRange();
     
-    virtual size_type BytesAvailable() const _NOEXCEPT OVERRIDE;
+    virtual size_type BytesAvailable() _NOEXCEPT OVERRIDE;
     virtual size_type SpaceAvailable() const _NOEXCEPT OVERRIDE { return 0; }
     virtual bool IsOpen() const _NOEXCEPT OVERRIDE { return m_input->IsOpen(); }
     virtual void Close() OVERRIDE { m_input->Close(); }
