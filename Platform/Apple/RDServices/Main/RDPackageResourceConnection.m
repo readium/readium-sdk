@@ -206,7 +206,7 @@ static BOOL m_provideCoreResourcesIsKnown = NO;
 
 	if ([path hasSuffix:@"readium_epubReadingSystem_inject.js"]) {
 
-		NSString* cmd = @"var epubRSInject = function(win) { if (win.frames) { for (var i = 0; i < win.frames.length; i++) { var iframe = win.frames[i]; if (iframe.readium_set_epubReadingSystem) { iframe.readium_set_epubReadingSystem(window.navigator.epubReadingSystem); } epubRSInject(iframe); } } }; epubRSInject(window);";
+		NSString* cmd = @"var epubRSInject = function(win, isTopIframe) { if (win.frames) { for (var i = 0; i < win.frames.length; i++) { var iframe = win.frames[i]; if (iframe.readium_set_epubReadingSystem) { iframe.readium_set_epubReadingSystem(window.navigator.epubReadingSystem, isTopIframe); } epubRSInject(iframe, false); } } }; epubRSInject(window, true);";
 		// Iterate top-level iframes, inject global window.navigator.epubReadingSystem if the expected hook function exists ( readium_set_epubReadingSystem() ).
 		[m_packageResourceServer executeJavaScript:cmd];
 		
@@ -314,13 +314,17 @@ static BOOL m_provideCoreResourcesIsKnown = NO;
 			} else {
 				// Installs "hook" function so that top-level window (application) can later inject the window.navigator.epubReadingSystem into this HTML document's iframe
 				NSString *inject_epubReadingSystem1 = [NSString stringWithFormat:@"<script id=\"readium_epubReadingSystem_inject1\" type=\"text/javascript\">\n//<![CDATA[\n%@\n//]]>\n</script>",
-													   @"window.readium_set_epubReadingSystem = function (obj) {\
+													   @"window.readium_set_epubReadingSystem = function (obj, isTopIframe) {\
 													   \nwindow.navigator.epubReadingSystem = obj;\
 													   \nwindow.readium_set_epubReadingSystem = undefined;\
 													   \nvar el1 = document.getElementById(\"readium_epubReadingSystem_inject1\");\
 													   \nif (el1 && el1.parentNode) { el1.parentNode.removeChild(el1); }\
 													   \nvar el2 = document.getElementById(\"readium_epubReadingSystem_inject2\");\
 													   \nif (el2 && el2.parentNode) { el2.parentNode.removeChild(el2); }\
+													   \nif (isTopIframe) {\
+													   \nwindow.parent = window;\
+													   \nwindow.top = window;\
+													   \n}\
 													   \n};"];
 
 				// Fake script, generates HTTP request => triggers the push of window.navigator.epubReadingSystem into this HTML document's iframe
