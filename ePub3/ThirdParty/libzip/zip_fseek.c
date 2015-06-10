@@ -109,13 +109,14 @@ int _zip_fseek_bytes(struct zip_file* zf, off_t abspos, off_t flen)
     /* CAN set offset past EOF: keeps offset, sets EOF */
     else if (abspos >= flen) {
         zf->flags |= ZIP_ZF_EOF;
-        zf->bytes_left = 0;
+        zf->bytes_left = zf->cbytes_left = 0;
     }
     /* not at or past EOF? ensure EOF is unset and update bytes_left */
     else {
         zf->flags &= ~ZIP_ZF_EOF;
-        zf->bytes_left = flen - abspos;
+        zf->cbytes_left = zf->bytes_left = flen - abspos;
     }
+    zf->fpos += abspos;
     zf->file_fpos = abspos;
     return 0;
 }
