@@ -44,7 +44,7 @@ FilterChainByteStreamRange::FilterChainByteStreamRange(std::unique_ptr<SeekableB
 //{
 //}
 
-ByteStream::size_type FilterChainByteStreamRange::BytesAvailable() const _NOEXCEPT
+ByteStream::size_type FilterChainByteStreamRange::BytesAvailable() _NOEXCEPT
 {
     if (m_filter)
     {
