@@ -53,7 +53,7 @@ FilterChainByteStream::~FilterChainByteStream()
 //}
 
 FilterChainByteStream::FilterChainByteStream(std::unique_ptr<SeekableByteStream>&& input, std::vector<ContentFilterPtr>& filters, ConstManifestItemPtr manifestItem)
-: _input(std::move(input)), m_filters(), m_filterContexts(), _needs_cache(false), _cache(), _read_cache()
+: _input(std::move(input)), m_filters(), m_filterContexts(), _needs_cache(false), _cache(), _read_cache(), _cacheHasBeenFilledUp(false)
 {
     _cache.SetUsesSecureErasure();
     _read_cache.SetUsesSecureErasure();
@@ -62,10 +62,13 @@ FilterChainByteStream::FilterChainByteStream(std::unique_ptr<SeekableByteStream>
     {
         m_filters.push_back(filter);
         m_filterContexts.push_back(std::unique_ptr<FilterContext>(filter->MakeFilterContext(manifestItem)));
-
-        if (filter->GetOperatingMode() == ContentFilter::OperatingMode::RequiresCompleteData && !_needs_cache)
-            _needs_cache = true;
     }
+	
+	// We are currently hardcoding _needs_cache to true, because we realized that this is the only way to realiably compute
+	// the content length of any resource being read by FilterChainByteStream. Only by processing the raw conten of a given
+	// resource through all the filters in the chaing, and storing the result in the cache, that we can reliably stablish the
+	// size of the resource after being processed.
+	_needs_cache = true;
 }
 
 ByteStream::size_type FilterChainByteStream::ReadBytes(void* bytes, size_type len)
@@ -74,7 +77,7 @@ ByteStream::size_type FilterChainByteStream::ReadBytes(void* bytes, size_type le
 
     if (_needs_cache)
     {
-        if (_cache.GetBufferSize() == 0 && _input->AtEnd() == false)
+        if (_cache.GetBufferSize() == 0 && !_cacheHasBeenFilledUp)
             CacheBytes();
 
         return ReadBytesFromCache(bytes, len);
@@ -264,6 +267,7 @@ void FilterChainByteStream::CacheBytes()
 
         _cache = std::move(_read_cache);
         _read_cache.RemoveBytes(_read_cache.GetBufferSize());
+        _cacheHasBeenFilledUp = true;
     }
 
     // this potentially contains decrypted data, so use secure erasure
