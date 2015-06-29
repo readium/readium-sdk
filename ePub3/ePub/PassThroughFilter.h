@@ -28,6 +28,9 @@
 #include <cstring>
 #import <ePub3/utilities/byte_stream.h>
 
+#define PASS_THROUGH_FILTER_ID "3439DA53-2559-400D-8231-981ABA6A85B4"
+
+
 EPUB3_BEGIN_NAMESPACE
 
 

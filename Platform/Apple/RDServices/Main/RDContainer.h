@@ -29,11 +29,19 @@
 
 #import <Foundation/Foundation.h>
 
+
+extern NSString * const EPub3ContentFilterErrorDomain;
+extern NSString * const EPub3ContentFilterIdentifierKey;
+extern NSString * const EPub3ContentFilterErrorCodeKey;
+extern NSString * const EPub3ContentFilterErrorMessage;
+
+
 @class RDContainer;
 
 @protocol RDContainerDelegate <NSObject>
 
 - (BOOL)container:(RDContainer *)container handleSdkError:(NSString *)message isSevereEpubError:(BOOL)isSevereEpubError;
+- (void)container:(RDContainer *)container handleContentFilterError:(NSError *)error;
 
 @end
 

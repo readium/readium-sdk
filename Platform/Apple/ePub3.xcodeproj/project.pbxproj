@@ -16,6 +16,8 @@
 		1EFA3ACB17AB0BEF003A4BC2 /* filter_manager_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EFA3ACA17AB0BEF003A4BC2 /* filter_manager_impl.cpp */; };
 		1EFA3ACC17AB0C7A003A4BC2 /* filter_manager_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EFA3ACA17AB0BEF003A4BC2 /* filter_manager_impl.cpp */; };
 		3418BA7D16C4151E009AA7EF /* ring_buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA88FD116C2B4ED00F2014B /* ring_buffer.cpp */; };
+		586C95941B41FCCE00FD3700 /* filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 586C95931B41FCCE00FD3700 /* filter.cpp */; };
+		586C95951B41FCCE00FD3700 /* filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 586C95931B41FCCE00FD3700 /* filter.cpp */; };
 		588D24201A02EF8F006A92BB /* PassThroughFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 588D241E1A02EF8F006A92BB /* PassThroughFilter.cpp */; };
 		588D24211A02EF8F006A92BB /* PassThroughFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 588D241E1A02EF8F006A92BB /* PassThroughFilter.cpp */; };
 		588D24221A02EF8F006A92BB /* PassThroughFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 588D241F1A02EF8F006A92BB /* PassThroughFilter.h */; };
@@ -445,6 +447,7 @@
 		1ED0084717A9DC6F00819EBD /* initialization.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = initialization.cpp; sourceTree = "<group>"; };
 		1EFA3AC917AB0BC0003A4BC2 /* filter_manager_impl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = filter_manager_impl.h; sourceTree = "<group>"; };
 		1EFA3ACA17AB0BEF003A4BC2 /* filter_manager_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filter_manager_impl.cpp; sourceTree = "<group>"; };
+		586C95931B41FCCE00FD3700 /* filter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filter.cpp; sourceTree = "<group>"; };
 		588D241E1A02EF8F006A92BB /* PassThroughFilter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PassThroughFilter.cpp; sourceTree = "<group>"; };
 		588D241F1A02EF8F006A92BB /* PassThroughFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PassThroughFilter.h; sourceTree = "<group>"; };
 		850B1AE816A75AB000619C3C /* TestData */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TestData; path = ../../TestData; sourceTree = "<group>"; };
@@ -1098,6 +1101,7 @@
 				A250D24D05706C9BB1AA54ED /* filter_chain_byte_stream_range.h */,
 				A250DFDBD90C7E9C632B1E00 /* filter_chain_byte_stream.cpp */,
 				A250D26DB00356B591AEFC29 /* filter_chain_byte_stream.h */,
+				586C95931B41FCCE00FD3700 /* filter.cpp */,
 			);
 			name = Filters;
 			sourceTree = "<group>";
@@ -2030,6 +2034,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				ABA4BAEF16ADF64400161B77 /* string16.cc in Sources */,
+				586C95951B41FCCE00FD3700 /* filter.cpp in Sources */,
 				ABA4BAF016ADF64400161B77 /* gurl.cc in Sources */,
 				AB5284D417CBC395003D7BBF /* CPUCacheUtils.c in Sources */,
 				ABA4BAF316ADF64400161B77 /* url_canon_etc.cc in Sources */,
@@ -2174,6 +2179,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				ABB18FE61656863300CFC651 /* mkstemp.c in Sources */,
+				586C95941B41FCCE00FD3700 /* filter.cpp in Sources */,
 				AB718C04184CEEA900F86C6B /* xml_bridge_dtrace_probes.d in Sources */,
 				ABB18FE81656863300CFC651 /* zip_add.c in Sources */,
 				ABB18FE91656863300CFC651 /* zip_add_dir.c in Sources */,

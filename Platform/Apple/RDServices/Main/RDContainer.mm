@@ -31,7 +31,13 @@
 #import <ePub3/container.h>
 #import <ePub3/initialization.h>
 #import <ePub3/utilities/error_handler.h>
+#import <epub3/filter.h>
 #import "RDPackage.h"
+
+NSString * const EPub3ContentFilterErrorDomain   = @"ePub3ContentFilterErrorDomain";
+NSString * const EPub3ContentFilterIdentifierKey = @"ePub3ContentFilterIdentifierKey";
+NSString * const EPub3ContentFilterErrorCodeKey  = @"ePub3ContentFilterErrorCodeKey";
+NSString * const EPub3ContentFilterErrorMessage  = @"ePub3ContentFilterErrorMessageKey";
 
 
 @interface RDContainer () {
@@ -81,6 +87,21 @@
 			//return ePub3::DefaultErrorHandler(err);
 		};
 		ePub3::SetErrorHandler(sdkErrorHandler);
+        
+        ePub3::ContentFilterErrorHandlerFn contentFilterErrorHandler = ^(const std::string &filterId, unsigned int errorCode, const std::string &message) {
+            
+            NSDictionary *errorDictionary = @{
+                                              EPub3ContentFilterIdentifierKey : [NSString stringWithUTF8String:filterId.c_str()],
+                                              EPub3ContentFilterErrorCodeKey : [[NSNumber alloc] initWithUnsignedInt:errorCode],
+                                              EPub3ContentFilterErrorMessage : [NSString stringWithUTF8String:message.c_str()]
+                                              };
+            
+            NSError *error = [[NSError alloc] initWithDomain:EPub3ContentFilterErrorDomain code:errorCode userInfo:errorDictionary];
+            
+            [m_delegate container:self handleContentFilterError:error];
+        };
+        
+        ePub3::ContentFilter::ResetContentFilterErrorHandler(contentFilterErrorHandler);
 
 		ePub3::InitializeSdk();
 		ePub3::PopulateFilterManager();

@@ -43,7 +43,7 @@ bool PassThroughFilter::SniffPassThroughContent(ConstManifestItemPtr item)
     // auto mediaType = item->MediaType();
     // return (mediaType == "audio/mp4" || mediaType == "audio/mpeg" || mediaType == "video/mp4" || mediaType == "video/mpeg");
 
-	return false;
+    return false;
 }
 
 ContentFilterPtr PassThroughFilter::PassThroughFactory(ConstPackagePtr package)
@@ -96,6 +96,10 @@ void *PassThroughFilter::FilterData(FilterContext *context, void *data, size_t l
 
     if (!byteStream->IsOpen())
     {
+        HandleContentFilterError(
+                                 std::string(PASS_THROUGH_FILTER_ID),
+                                 ContentFilterError::InputStreamCannotBeOpened,
+                                 std::string("Input ByteStream is not opened"));
         return nullptr;
     }
 

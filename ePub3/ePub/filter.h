@@ -40,6 +40,19 @@ typedef std::shared_ptr<Package>    PackagePtr;
 class ContentFilter;
 typedef std::shared_ptr<ContentFilter>  ContentFilterPtr;
 
+enum class ContentFilterError : unsigned int
+{
+    GenericError = 0,
+    InputStreamCannotBeOpened,
+    OutputStreamCannotBeSought,
+    CorruptedResource,
+    NoLicenseForDecryption,
+    NotEnoughBytesAvailable
+    };
+    
+typedef std::function<void(const std::string &, unsigned int code, const std::string &)> ContentFilterErrorHandlerFn;
+
+
 // -------------------------------------------------------------------------------------------
 
 class ByteRange
@@ -287,6 +300,10 @@ private:
     /// No default constructor.
     ContentFilter() _DELETED_;
     
+    static void DefaultContentFilterErrorHandler(const std::string &filterId, unsigned int code, const std::string &message) { };
+    
+    static ContentFilterErrorHandlerFn s_contentFilterErrorHandler;
+    
 public:
     ///
     /// Copy constructor.
@@ -364,6 +381,23 @@ public:
      */
     virtual void *FilterData(FilterContext* context, void *data, size_t len, size_t *outputLen) = 0;
     
+    /**
+     Reset the ContentFilteErrorHandler function.
+     
+     Any app that is using the Readium SDK (and its associated ContentFilter classes) may
+     want to set up its own ContentFilterErrorHandler function. This way, the app can be notified
+     when there is an error in the processing done by the ContentFilter objects. Notice that,
+     unless this function is called and reset to something meaningful, the default
+     ContentFilterErrorHandler function is called, which will simply ignore any errors from the
+     ContentFilter.
+     
+     @param contentFilterErrorHandler A new ContentFilterErrorHandler function
+     */
+    static void ResetContentFilterErrorHandler(ContentFilterErrorHandlerFn contentFilterErrorHandler)
+    {
+        s_contentFilterErrorHandler = contentFilterErrorHandler;
+    }
+    
 protected:
     TypeSnifferFn       _sniffer;
     
@@ -387,6 +421,47 @@ protected:
      @result An object containing per-item data, or nullptr.
      */
     virtual FilterContext *InnerMakeFilterContext(ConstManifestItemPtr item) const { return nullptr; }
+    
+    /**
+     Report an error during the processing done by a ContentFilter.
+     
+     When a ContentFilter is processing a sequence of bytes, it may reach an error. In that
+     case, the ContentFilter will want to report to the underlying app that something went
+     wrong, so that it can report that to the user. The two overloads of HandleContentFilterError(),
+     below, do exactly that: they allow an app to receive the error description (as parameters)
+     whenever an error happens in a given ContentFilter.
+     
+     Notice that the first parameter of both overloads is the filterId. The filterId is a UUID (or
+     GUID) that identifies uniquely a different class of ContentFilter. This way, no matter how many
+     ContentFilter classes are created all over, there will be a unique way to identify each one of
+     them, and any app that uses the Readium SDK will not run the risk of mistaking one class of
+     ContentFilter by another.
+     
+     @param filterId A UUID (or GUID) that will uniquely identify a given class of ContentFilter.
+     @param error One of the possible values of the ContentFilterError enumeration.
+     @param message An optional text message, containing whatever the ContentFilter wants to say.
+     */
+    static void HandleContentFilterError(const std::string &filterId, ContentFilterError error, const std::string &message)
+    {
+        HandleContentFilterError(filterId, (unsigned int)error, message);
+    }
+    
+    /**
+     Report an error during the processing done by a ContentFilter.
+     
+     This overload of HandleContentFilterError does exactly the same as the previous overload, with
+     one difference: the caller can pass an unsigned integer for error code, instead of the
+     ContentFilterError enumeration. The reason is that different people writing ContentFilter classes
+     may decide to use their own error codes for things.
+     
+     @param filterId A UUID (or GUID) that will uniquely identify a given class of ContentFilter.
+     @param error An unsigned integer that corresponds to an error code.
+     @param message An optional text message, containing whatever the ContentFilter wants to say.
+     */
+    static void HandleContentFilterError(const std::string &filterId, unsigned int errorCode, const std::string &message)
+    {
+        s_contentFilterErrorHandler(filterId, errorCode, message);
+    }
 
 };
 
