@@ -559,6 +559,9 @@ protected:
 class ZipFileByteStream : public SeekableByteStream
 {
 public:
+    uint64_t _idx;
+    struct zip *_archive;
+
     ///
     /// Create a new unattached stream.
                             ZipFileByteStream() : SeekableByteStream(), _file(nullptr) {}

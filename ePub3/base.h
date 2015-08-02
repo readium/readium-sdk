@@ -45,7 +45,7 @@
 #if EPUB_OS(WINDOWS)
 #define VISUAL_LEAK_DETECTOR 
 #ifdef VISUAL_LEAK_DETECTOR
-#include "vld.h"
+//#include "vld.h"
 #endif
 #endif
 

@@ -20,11 +20,15 @@
 
 #include "zip_archive.h"
 #include <libzip/zipint.h>
+#undef open     //undefine the macro because of further complation error
+#undef close    //undefine the macro because of further complation error
+
 #include "byte_stream.h"
 #include "make_unique.h"
 #include <sstream>
 #include <fstream>
 #include <iostream>
+
 #if EPUB_OS(UNIX)
 #include <unistd.h>
 #endif
@@ -262,6 +266,13 @@ bool ZipArchive::CreateFolder(const string & path)
 }
 unique_ptr<ByteStream> ZipArchive::ByteStreamAtPath(const string &path) const
 {
+    /*zip_uint64_t idx = 0;
+    if ((idx = zip_name_locate(_zip, path.c_str(), 0)) < 0)
+        return nullptr;
+    zip_error_t error;
+    zip_uint64_t val = _zip_file_get_offset(_zip, idx, &error);*/
+
+
     return make_unique<ZipFileByteStream>(_zip, path);
 }
 

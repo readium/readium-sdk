@@ -773,6 +773,8 @@ bool ZipFileByteStream::Open(struct zip *archive, const string &path, int flags)
 {
     if ( _file != nullptr )
         Close();
+
+    _archive = archive;
     
     _file = zip_fopen(archive, Sanitized(path).c_str(), flags);
 
@@ -784,6 +786,7 @@ bool ZipFileByteStream::Open(struct zip *archive, const string &path, int flags)
             total_size = st.size;
             bytes_left = total_size;
         }
+        _idx = zip_name_locate(archive, path.c_str(), 0);
     }
 
     return ( _file != nullptr );
@@ -813,6 +816,19 @@ ByteStream::size_type ZipFileByteStream::ReadBytes(void *buf, size_type len)
 	//_eof = (_file->bytes_left == 0);
     bytes_left -= numRead;
     _eof = (bytes_left == 0);
+
+    
+    //if ((_idx = zip_name_locate(_file, path.c_str(), 0)) < 0)
+    //    return 0;
+    //zip_error_t error;   zip_uint64_t val = _zip_file_get_offset(_archive, _idx, &error);
+    ///zip_int64_t tellVal = zip_source_tell(_file->src->src->src);
+    //zip_int64_t tellVal = zip_source_tell(_file->src->src);
+    
+    //zip_int64_t tellVal = zip_source_tell(_file->src);
+    //int iRet = zip_source_seek(_file->src, tellVal-1, SEEK_SET);
+    //iRet = zip_source_seek(_file->src, tellVal/2, SEEK_SET);
+    //iRet = zip_source_seek(_file->src, 0, SEEK_SET);
+
     
     return numRead;
 }

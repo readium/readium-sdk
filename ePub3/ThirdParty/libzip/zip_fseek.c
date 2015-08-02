@@ -53,6 +53,27 @@ static int _zip_fseek_comp(struct zip_file* zf, off_t abspos, off_t flen);
 static int _zip_fseek_to_start(struct zip_file* zf);
 static int _zip_fseek_by_reading(struct zip_file* zf, size_t toread);
 
+#define ZIP_SEEK_CUR SEEK_CUR
+#define ZIP_SEEK_SET SEEK_SET
+#define ZIP_SEEK_END SEEK_END
+
+#if 0
+struct zip_file {
+    zip_t *za;		/* zip archive containing this file */
+    zip_error_t error;	/* error information */
+    bool eof;
+    zip_source_t *src;	/* data source */
+};
+
+if ((idx = zip_name_locate(za, fname, flags)) < 0)
+    return NULL;
+
+zip_uint64_t
+_zip_file_get_offset(const zip_t *za, zip_uint64_t idx, zip_error_t *error)
+
+
+#endif
+
 ZIP_EXTERN int
 zip_fseek(struct zip_file *zf, long pos, int whence)
 {
@@ -66,8 +87,17 @@ zip_fseek(struct zip_file *zf, long pos, int whence)
     
     if (pos == 0 && whence == ZIP_SEEK_CUR)
         return 0;
+
+    // get the zip_file_t stats
+    struct zip_stat st; zip_stat_init(&st);
+    if (zip_source_stat(zf->src, &st) != 0) {
+        return -1;
+    }
+
     
-    flen = zf->za->cdir->entry[zf->file_index].uncomp_size;
+    flen = st.size;//zf->za->entry[zf->file_index].uncomp_size;
+
+    //zip_int64_t zip_source_tell(zip_source_t *src);
     
     switch (whence)
     {
@@ -98,6 +128,7 @@ zip_fseek(struct zip_file *zf, long pos, int whence)
     }
 }
 
+
 /* seeking by raw byte amounts - no compression/decompression to handle */
 int _zip_fseek_bytes(struct zip_file* zf, off_t abspos, off_t flen)
 {
@@ -110,11 +141,27 @@ int _zip_fseek_bytes(struct zip_file* zf, off_t abspos, off_t flen)
     else if (abspos >= flen) {
         zf->flags |= ZIP_ZF_EOF;
         zf->bytes_left = 0;
+
+        /* added by DRM inside, C.H. Yu on 2015-04-13 */
+        // Without following added codes, uncompressed EPUB media content would not be properly random accessed,
+        // such as bad index access error
+        zf->fpos = _zip_file_get_offset_safe(zf->za, zf->file_index);
+        zf->fpos += flen;
+        zf->cbytes_left = 0;
+        /* adding end */
     }
     /* not at or past EOF? ensure EOF is unset and update bytes_left */
     else {
         zf->flags &= ~ZIP_ZF_EOF;
         zf->bytes_left = flen - abspos;
+
+        /* added by DRM inside, C.H. Yu on 2015-04-13 */
+        // Without following added codes, uncompressed EPUB media content would not be properly random accessed,
+        // such as bad index access error
+        zf->fpos += (abspos - zf->file_fpos);
+        zf->cbytes_left = zf->bytes_left;
+        /* adding end */
+    }
     }
     zf->file_fpos = abspos;
     return 0;

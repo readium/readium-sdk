@@ -49,8 +49,8 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\include;$(MSBuildProjectDirectory)\..\..\ePub3;$(MSBuildProjectDirectory)\..\..\ePub3\utilities;$(MSBuildProjectDirectory)\..\..\ePub3\ePub;$(MSBuildProjectDirectory)\..\..\ePub3\xml;$(MSBuildProjectDirectory)\Prebuilt\Include;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\google-url\src;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\utf8-cpp\include;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\icu4c\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;BUILDING_EPUB3;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\include;$(MSBuildProjectDirectory)\..\..\ePub3;$(MSBuildProjectDirectory)\..\..\ePub3\utilities;$(MSBuildProjectDirectory)\..\..\ePub3\ePub;$(MSBuildProjectDirectory)\..\..\ePub3\xml;$(MSBuildProjectDirectory)\Prebuilt\Include;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\google-url\src;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\utf8-cpp\include;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\icu4c\include;$(MSBuildProjectDirectory)\..\..\Platform\Windows\include\libzip</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;BUILDING_EPUB3;_DEBUG;_LIB;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -78,9 +78,9 @@ cscript MakeHeaders.js</Command>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;BUILDING_EPUB3;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;BUILDING_EPUB3;NDEBUG;_LIB;HAVE_CONFIG_H;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\include;$(MSBuildProjectDirectory)\..\..\ePub3;$(MSBuildProjectDirectory)\..\..\ePub3\utilities;$(MSBuildProjectDirectory)\..\..\ePub3\ePub;$(MSBuildProjectDirectory)\..\..\ePub3\xml;$(MSBuildProjectDirectory)\Prebuilt\Include;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\google-url\src;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\utf8-cpp\include;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\icu4c\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\include;$(MSBuildProjectDirectory)\..\..\ePub3;$(MSBuildProjectDirectory)\..\..\ePub3\utilities;$(MSBuildProjectDirectory)\..\..\ePub3\ePub;$(MSBuildProjectDirectory)\..\..\ePub3\xml;$(MSBuildProjectDirectory)\Prebuilt\Include;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\google-url\src;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\utf8-cpp\include;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\icu4c\include;$(MSBuildProjectDirectory)\..\..\Platform\Windows\include\libzip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -154,6 +154,7 @@ cscript MakeHeaders.js</Command>
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_add.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_add_dir.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_add_entry.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_buffer.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_close.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_delete.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_dirent.c" />
@@ -182,12 +183,17 @@ cscript MakeHeaders.js</Command>
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_replace.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_set_comment.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_set_external_attributes.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_set_mtime.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_strerror.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fopen.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fopen_encrypted.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fopen_index.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fopen_index_encrypted.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fread.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fseek.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_get_archive_comment.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_get_archive_flag.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_get_compression_implementation.c" />
@@ -196,6 +202,7 @@ cscript MakeHeaders.js</Command>
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_get_name.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_get_num_entries.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_get_num_files.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_io_util.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_memdup.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_name_locate.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_new.c" />
@@ -208,8 +215,11 @@ cscript MakeHeaders.js</Command>
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_set_file_comment.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_set_file_compression.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_set_name.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_begin_write.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_buffer.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_call.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_close.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_commit_write.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_crc.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_deflate.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_error.c" />
@@ -217,13 +227,33 @@ cscript MakeHeaders.js</Command>
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_filep.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_free.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_function.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_is_deleted.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_layered.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_open.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_pkware.c" />
-    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_pop.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_read.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_remove.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_rollback_write.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_seek.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_seek_write.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_stat.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_supports.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_tell.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_tell_write.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_win32a.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_win32handle.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_win32utf8.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_win32w.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_window.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_write.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_zip.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_zip_new.c" />
     <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_stat.c" />
