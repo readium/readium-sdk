@@ -111,6 +111,8 @@ void javaEPub3_appendBytesToBuffer(JNIEnv *env, jobject buffer, jbyteArray data)
 
 jboolean javaEPub3_handleSdkError(JNIEnv *env, jstring message, jboolean isSevereEpubError);
 
+void javaEPub3_handleContentFilterError(JNIEnv *env, jstring filterId, jlong errorCode, jstring message);
+
 /*
  * JNI functions
  **************************************************/

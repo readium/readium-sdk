@@ -169,4 +169,16 @@ public class EPub3 {
     	// never throws an exception
     	return true;
 	}
+	
+	private static ContentFilterErrorHandler m_contentFilterErrorHandler = null;
+	
+	public static void setContentFilterErrorHandler(ContentFilterErrorHandler handler) {
+		m_contentFilterErrorHandler = handler;
+	}
+	
+	private static void handleContentFilterError(String filterId, long errorCode, String message) {
+		if (m_contentFilterErrorHandler != null) {
+			m_contentFilterErrorHandler.handleContentFilterError(filterId, errorCode, message);
+		}
+	}
 }

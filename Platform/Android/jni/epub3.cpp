@@ -25,6 +25,7 @@
 
 #include <ePub3/archive.h>
 #include <ePub3/container.h>
+#include <ePub3/filter.h>
 #include <ePub3/initialization.h>
 #include <ePub3/utilities/error_handler.h>
 
@@ -70,6 +71,9 @@ static const char *javaEPub3_appendBytesToBufferSignature = "(Ljava/nio/ByteBuff
 static const char *javaEPub3_handleSdkErrorMethodName = "handleSdkError";
 static const char *javaEPub3_handleSdkErrorSignature = "(Ljava/lang/String;Z)Z";
 
+static const char *javaEPub3_handleContentFilterErrorMethodName = "handleContentFilterError";
+static const char *javaEPub3_handleContentFilterErrorSignature = "(Ljava/lang/String;JLjava/lang/String;)V";
+
 
 /*
  * Exported variables
@@ -95,6 +99,11 @@ jmethodID createManifestItem_ID;
 jmethodID addManifestItemToList_ID;
 
 
+// Global variable to store the current Java virtual machine.
+// This will be needed by the ContentFilterErrorHandler() function.
+JavaVM *g_vm = NULL;
+
+
 /*
  * Internal variables
  **************************************************/
@@ -110,7 +119,7 @@ static jmethodID addStringToList_ID;
 static jmethodID createBuffer_ID;
 static jmethodID appendBytesToBuffer_ID;
 static jmethodID handleSdkError_ID;
-
+static jmethodID handleContentFilterError_ID;
 
 /*
  * Exported functions
@@ -190,6 +199,10 @@ jboolean javaEPub3_handleSdkError(JNIEnv *env, jstring message, jboolean isSever
 	return b;
 }
 
+void javaEPub3_handleContentFilterError(JNIEnv *env, jstring filterId, jlong errorCode, jstring message) {
+	env->CallStaticVoidMethod(javaEPub3Class, handleContentFilterError_ID, filterId, errorCode, message);
+}
+
 /*
  * Internal functions
  **************************************************/
@@ -211,11 +224,13 @@ static int onLoad_cacheJavaElements_epub3(JNIEnv *env) {
 			javaEPub3_appendBytesToBufferMethodName, javaEPub3_appendBytesToBufferSignature, ONLOAD_ERROR);
 	INIT_STATIC_METHOD_ID_RETVAL(handleSdkError_ID, javaEPub3Class, javaEPub3ClassName,
 			javaEPub3_handleSdkErrorMethodName, javaEPub3_handleSdkErrorSignature, ONLOAD_ERROR);
+	INIT_STATIC_METHOD_ID_RETVAL(handleContentFilterError_ID, javaEPub3Class, javaEPub3ClassName,
+			javaEPub3_handleContentFilterErrorMethodName, javaEPub3_handleContentFilterErrorSignature, ONLOAD_ERROR);
 	// Return JNI_VERSION for OK, if not one of the lines above already returned ONLOAD_ERROR
 	return JNI_VERSION;
 }
 
-// needed only for the LauncherErrorHandler() C++ callback,
+// needed only for the following C++ callbacks,
 // set by initializeReadiumSDK()
 static JNIEnv* m_env = nullptr;
 
@@ -239,6 +254,30 @@ static bool LauncherErrorHandler(const ePub3::error_details& err)
 }
 
 /**
+ * Callback to be invoked when any ContentFilter has an error.
+ */
+
+static void ContentFilterErrorHandler(const std::string &filterId, unsigned int errorCode, const std::string &message)
+{
+	// Making sure that we have the right JNI environment pointer for every thread.
+	// This function may be called in different threads, and you must have the right
+	// JNI environment pointer for the current thread, otherwise it will crash the app.
+	JNIEnv *env;
+    if (g_vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION) != JNI_OK) {
+    	LOGE("ContentFilterErrorHandler: failed to get environment. VM doesn't support JNI version 1.6");
+        return;
+    }
+
+	jstring jFilterId = env->NewStringUTF(filterId.c_str());
+	jstring jMessage = env->NewStringUTF(message.c_str());
+
+	javaEPub3_handleContentFilterError(env, jFilterId, (jlong)errorCode, jMessage);
+
+	env->DeleteLocalRef(jFilterId);
+	env->DeleteLocalRef(jMessage);
+}
+
+/**
  * Initializes the Readium SDK.
  */
 static void initializeReadiumSDK(JNIEnv* env)
@@ -249,6 +288,9 @@ static void initializeReadiumSDK(JNIEnv* env)
 
     ePub3::ErrorHandlerFn launcherErrorHandler = LauncherErrorHandler;
     ePub3::SetErrorHandler(launcherErrorHandler);
+
+    ePub3::ContentFilterErrorHandlerFn contentFilterErrorHandler = ContentFilterErrorHandler;
+    ePub3::ContentFilter::ResetContentFilterErrorHandler(contentFilterErrorHandler);
  
     ePub3::InitializeSdk();
     ePub3::PopulateFilterManager();
@@ -266,6 +308,8 @@ static void initializeReadiumSDK(JNIEnv* env)
  */
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
+	g_vm = vm;
+
 	// Get the JNI Environment to be able to initialize the cached the java elements
     JNIEnv* env;
     if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION) != JNI_OK) {
