@@ -98,7 +98,7 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 - (NSObject <HTTPResponse> *)httpResponseForMethod:(NSString *)method URI:(NSString *)path {
 	if (m_packageResourceServer == nil ||
 		method == nil ||
-		![method isEqualToString:@"GET"] ||
+		(![method isEqualToString:@"GET"] && ![method isEqualToString:@"HEAD"]) ||
 		path == nil ||
 		path.length == 0)
 	{
