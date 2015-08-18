@@ -1182,31 +1182,17 @@ static NSMutableArray *recentNonces;
 		{
 			[response setHeaderField:@"Transfer-Encoding" value:@"chunked"];
 		}
-		else
-		{
-			NSString *contentLengthStr = [NSString stringWithFormat:@"%qu", contentLength];
-			[response setHeaderField:@"Content-Length" value:contentLengthStr];
-		}
-	}
-	else
-	{
-		if ([ranges count] == 1)
-		{
-			response = [self newUniRangeResponse:contentLength];
-		}
-		else
-		{
-			response = [self newMultiRangeResponse:contentLength];
-		}
 	}
 	
 	BOOL isZeroLengthResponse = !isChunked && (contentLength == 0);
-    
+	
 	// If they issue a 'HEAD' command, we don't have to include the file
 	// If they issue a 'GET' command, we need to include the file
 	
 	if ([[request method] isEqualToString:@"HEAD"] || isZeroLengthResponse)
 	{
+		NSString *contentLengthStr = [NSString stringWithFormat:@"%qu", contentLength];
+		[response setHeaderField:@"Content-Length" value:contentLengthStr];
 		NSData *responseData = [self preprocessResponse:response];
 		[asyncSocket writeData:responseData withTimeout:TIMEOUT_WRITE_HEAD tag:HTTP_RESPONSE];
 		
@@ -1214,10 +1200,6 @@ static NSMutableArray *recentNonces;
 	}
 	else
 	{
-		// Write the header response
-		NSData *responseData = [self preprocessResponse:response];
-		[asyncSocket writeData:responseData withTimeout:TIMEOUT_WRITE_HEAD tag:HTTP_PARTIAL_RESPONSE_HEADER];
-		
 		sentResponseHeaders = YES;
 		
 		// Now we need to send the body of the response
@@ -1225,6 +1207,19 @@ static NSMutableArray *recentNonces;
 		{
 			// Regular request
 			NSData *data = [httpResponse readDataOfLength:READ_CHUNKSIZE];
+			
+			contentLength = [httpResponse contentLength]; // [data length];
+			
+			// Write the header response with correct contentLength.
+			// The content length header response should be written here, after the call to
+			// [data length]. The reason for that is that [data length] will cause the Readium SDK
+			// to use whatever ContentFilter objects that apply to calculate the actual content length
+			// (for example, encrypted files are smaller when decrypted) and by setting the content
+			// length here, we can get the right value.
+			NSString *contentLengthStr = [NSString stringWithFormat:@"%qu", contentLength];
+			[response setHeaderField:@"Content-Length" value:contentLengthStr];
+			NSData *responseData = [self preprocessResponse:response];
+			[asyncSocket writeData:responseData withTimeout:TIMEOUT_WRITE_HEAD tag:HTTP_PARTIAL_RESPONSE_HEADER];
 			
 			if ([data length] > 0)
 			{
@@ -1270,8 +1265,18 @@ static NSMutableArray *recentNonces;
 				
 				NSData *data = [httpResponse readDataOfLength:bytesToRead];
 				
+				response = [self newUniRangeResponse:[httpResponse contentLength]];
+				
+				// Write the header response for the range-request
+				NSData *responseData = [self preprocessResponse:response];
+				[asyncSocket writeData:responseData withTimeout:TIMEOUT_WRITE_HEAD tag:HTTP_PARTIAL_RESPONSE_HEADER];
+				
 				if ([data length] > 0)
 				{
+					if (bytesToRead != READ_CHUNKSIZE && [data length] < bytesToRead)   { // Fix the last chunk which can be smaller due to some decryption filtering
+						range.length = [data length];
+					}
+					
 					[responseDataSizes addObject:[NSNumber numberWithUnsignedInteger:[data length]]];
 					
 					long tag = [data length] == range.length ? HTTP_RESPONSE : HTTP_PARTIAL_RANGE_RESPONSE_BODY;
@@ -1295,6 +1300,8 @@ static NSMutableArray *recentNonces;
 				NSUInteger bytesToRead = range.length < READ_CHUNKSIZE ? (NSUInteger)range.length : READ_CHUNKSIZE;
 				
 				NSData *data = [httpResponse readDataOfLength:bytesToRead];
+				
+				response = [self newMultiRangeResponse:[httpResponse contentLength]];
 				
 				if ([data length] > 0)
 				{
