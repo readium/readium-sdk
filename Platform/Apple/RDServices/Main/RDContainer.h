@@ -35,6 +35,15 @@
 
 - (BOOL)container:(RDContainer *)container handleSdkError:(NSString *)message isSevereEpubError:(BOOL)isSevereEpubError;
 
+@optional
+
+/**
+ * Called just after the container populated the default filters into
+ * the filter manager.
+ * You can implement this to register custom filters.
+ */
+- (void)containerRegisterFilters:(RDContainer *)container;
+
 @end
 
 @class RDPackage;

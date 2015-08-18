@@ -107,13 +107,6 @@ bool Container::Open(const string& path)
 			_packages.push_back(pkg);
 	}
 
-    auto fm = FilterManager::Instance();
-	for (auto& pkg : _packages)
-	{
-        auto fc = fm->BuildFilterChainForPackage(pkg);
-		pkg->SetFilterChain(fc);
-	}
-
 	return true;
 }
 ContainerPtr Container::OpenContainer(const string &path)
