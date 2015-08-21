@@ -1185,12 +1185,14 @@ static NSMutableArray *recentNonces;
 	}
 	
 	BOOL isZeroLengthResponse = !isChunked && (contentLength == 0);
-    
+	
 	// If they issue a 'HEAD' command, we don't have to include the file
 	// If they issue a 'GET' command, we need to include the file
 	
 	if ([[request method] isEqualToString:@"HEAD"] || isZeroLengthResponse)
 	{
+		NSString *contentLengthStr = [NSString stringWithFormat:@"%qu", contentLength];
+		[response setHeaderField:@"Content-Length" value:contentLengthStr];
 		NSData *responseData = [self preprocessResponse:response];
 		[asyncSocket writeData:responseData withTimeout:TIMEOUT_WRITE_HEAD tag:HTTP_RESPONSE];
 		
@@ -1206,7 +1208,8 @@ static NSMutableArray *recentNonces;
 			// Regular request
 			NSData *data = [httpResponse readDataOfLength:READ_CHUNKSIZE];
 			
-			contentLength = [data length];
+			contentLength = [httpResponse contentLength]; // [data length];
+			
 			// Write the header response with correct contentLength.
 			// The content length header response should be written here, after the call to
 			// [data length]. The reason for that is that [data length] will cause the Readium SDK

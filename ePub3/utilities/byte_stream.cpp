@@ -583,7 +583,7 @@ FileByteStream::~FileByteStream()
 {
     Close();
 }
-ByteStream::size_type FileByteStream::BytesAvailable() const _NOEXCEPT
+ByteStream::size_type FileByteStream::BytesAvailable() _NOEXCEPT
 {
     if ( !IsOpen() )
         return 0;
@@ -749,7 +749,7 @@ ZipFileByteStream::~ZipFileByteStream()
 {
     Close();
 }
-ByteStream::size_type ZipFileByteStream::BytesAvailable() const _NOEXCEPT
+ByteStream::size_type ZipFileByteStream::BytesAvailable() _NOEXCEPT
 {
     //if ( _file == nullptr )
         //return 0;
