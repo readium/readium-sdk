@@ -839,52 +839,40 @@ ByteStream::size_type ZipFileByteStream::WriteBytes(const void *buf, size_type l
 }
 ByteStream::size_type ZipFileByteStream::Seek(size_type by, std::ios::seekdir dir)
 {
-    assert(0);
-    return 0;
-#if 0   // this functionality is disabled due to macro incompatibility with the latest libzip
-    int whence = ZIP_SEEK_SET;
+    int whence = SEEK_SET;
     switch (dir)
     {
         case std::ios::beg:
             break;
         case std::ios::cur:
-            whence = ZIP_SEEK_CUR;
+            whence = SEEK_CUR;
             break;
         case std::ios::end:
-            whence = ZIP_SEEK_END;
+            whence = SEEK_END;
             break;
         default:
             return Position();
     }
-    
-    zip_fseek(_file, long(by), whence);
-	_eof = (_file->bytes_left == 0);
+    zip_source_seek(_file->src, long(by), whence);  //zip_fseek(_file, long(by), whence);
+    //by = Position();
+    bytes_left = total_size - by;                   //_eof = (_file->bytes_left == 0);
+    _eof = (bytes_left == 0);
     return Position();
-#endif
 }
 ByteStream::size_type ZipFileByteStream::Position() const
 {
-    // this functionality is disabled due to macro incompatibility with the latest libzip
-    assert(0);
-    return 0;
-#if 0 
-    return size_type(zip_ftell(_file));
-#endif
+    return zip_source_tell(_file->src); //return size_type(zip_ftell(_file));
 }
 std::shared_ptr<SeekableByteStream> ZipFileByteStream::Clone() const
 {
-    assert(0);
-    return nullptr;
-
-#if 0
 	if (_file == nullptr)
 		return nullptr;
 
-	struct zip_file* newFile = zip_fopen_index(_file->za, _file->file_index, _file->flags);
+    struct zip_file* newFile = zip_fopen_index(_file->za, _idx, _file->za->flags);
 	if (newFile == nullptr)
 		return nullptr;
     
-    zip_fseek(newFile, Position(), ZIP_SEEK_SET);
+    zip_source_seek(newFile->src, 0, SEEK_SET);
 
 	auto result = std::make_shared<ZipFileByteStream>();
 	if (bool(result))
@@ -894,7 +882,6 @@ std::shared_ptr<SeekableByteStream> ZipFileByteStream::Clone() const
 	}
 
 	return result;
- #endif
 }
 
 #ifdef SUPPORT_ASYNC
