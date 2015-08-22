@@ -134,14 +134,14 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
 
             const void PercentToPosition(double percent, SMILDataPtr & smilData, uint32_t & smilIndex, shared_ptr<const SMILData::Parallel>& par, uint32_t & parIndex, uint32_t & milliseconds) const;
 
-            //EPUB3_EXPORT
+            EPUB3_EXPORT
 
             static std::vector<string>::size_type GetSkippablesCount()
             {
                 return _Skippables.size();
             }
 
-            //EPUB3_EXPORT
+            EPUB3_EXPORT
 
             static string GetSkippable(std::vector<string>::size_type i)
             {
@@ -154,14 +154,14 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
                 return str;
             }
 
-            //EPUB3_EXPORT
+            EPUB3_EXPORT
 
             static std::vector<string>::size_type GetEscapablesCount()
             {
                 return _Escapables.size();
             }
 
-            //EPUB3_EXPORT
+            EPUB3_EXPORT
 
             static string GetEscapable(std::vector<string>::size_type i)
             {
@@ -174,10 +174,10 @@ http://www.idpf.org/epub/30/spec/epub30-mediaoverlays.html
                 return str;
             }
 
-        private:
+        public:
             static const std::vector<string> _Skippables;
             static const std::vector<string> _Escapables;
-
+        private:
             bool _excludeAudioDuration;
 
             void resetData();
