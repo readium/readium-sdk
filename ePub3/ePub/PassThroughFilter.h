@@ -26,7 +26,7 @@
 #include <ePub3/encryption.h>
 #include REGEX_INCLUDE
 #include <cstring>
-#import <ePub3/utilities/byte_stream.h>
+#include <ePub3/utilities/byte_stream.h> //#import <ePub3/utilities/byte_stream.h>
 
 EPUB3_BEGIN_NAMESPACE
 

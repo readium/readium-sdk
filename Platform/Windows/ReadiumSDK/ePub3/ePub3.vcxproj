@@ -27,7 +27,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -261,16 +261,29 @@ cscript MakeHeaders.js</Command>
     <ClCompile Include="..\..\..\..\ePub3\ePub\cfi.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\container.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\content_handler.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\content_module_manager.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\credential_request.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\encryption.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\epub_collection.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_chain.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_chain_byte_stream.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_chain_byte_stream_range.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager_impl.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\font_obfuscation.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\glossary.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\initialization.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\library.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\link.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\manifest.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media-overlays_smil_data.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media-overlays_smil_model.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\media_support_info.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\nav_point.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\nav_table.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\object_preprocessor.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\package.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\PassThroughFilter.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\property.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\property_extension.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\property_holder.cpp" />
@@ -323,6 +336,8 @@ cscript MakeHeaders.js</Command>
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fopen_index.c" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fread.c" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_free.c" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fseek.c" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_ftell.c" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_archive_comment.c" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_archive_flag.c" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_file_comment.c" />
@@ -352,9 +367,16 @@ cscript MakeHeaders.js</Command>
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange_all.c" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange_archive.c" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange_data.c" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\byte_buffer.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\byte_stream.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\CPUCacheUtils_win.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\epub_locale.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\error_handler.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\executor.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\future.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\iri.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\optional.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\path_help.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\ref_counted.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\ring_buffer.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\run_loop_windows.cpp" />
