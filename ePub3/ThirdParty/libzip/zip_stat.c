@@ -1,6 +1,6 @@
 /*
   zip_stat.c -- get information about file by name
-  Copyright (C) 1999-2007 Dieter Baron and Thomas Klausner
+  Copyright (C) 1999-2014 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <libzip@nih.at>
@@ -31,19 +31,17 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 
 #include "zipint.h"
 
-
 
 ZIP_EXTERN int
-zip_stat(struct zip *za, const char *fname, int flags, struct zip_stat *st)
+zip_stat(zip_t *za, const char *fname, zip_flags_t flags, zip_stat_t *st)
 {
-    int idx;
+    zip_int64_t idx;
 
     if ((idx=zip_name_locate(za, fname, flags)) < 0)
 	return -1;
 
-    return zip_stat_index(za, idx, flags, st);
+    return zip_stat_index(za, (zip_uint64_t)idx, flags, st);
 }

@@ -1,5 +1,3 @@
-/* $NiH: mkstemp.c,v 1.3 2006/04/23 14:51:45 wiz Exp $ */
-
 /* Adapted from NetBSB libc by Dieter Baron */
 
 /*	NetBSD: gettemp.c,v 1.13 2003/12/05 00:57:36 uebayasi Exp 	*/
@@ -40,50 +38,41 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+#ifdef _WIN32
+#include <io.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
-#if defined(_MSC_VER)
-# include <windows.h>
-# include <io.h>
-# define open _open
-#else
-# include <unistd.h>
-#endif
 
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
 
-
 
 int
 _zip_mkstemp(char *path)
 {
+#ifdef _WIN32
+	int ret;
+	ret = _creat(_mktemp(path), _S_IREAD|_S_IWRITE);
+	if (ret == -1) {
+		return 0;
+	} else {
+		return ret;
+	}
+#else
 	int fd;   
 	char *start, *trv;
-    struct stat sbuf;
-
-#if defined(_MSC_VER)
-    unsigned long long pid;
-    {
-        SYSTEMTIME st;
-        FILETIME ft;
-
-        GetSystemTime(&st);
-        SystemTimeToFileTime(&st, &ft);
-
-        pid = ((unsigned long long)ft.dwHighDateTime << 32) | (unsigned long long)ft.dwLowDateTime;
-    }
-#else
+	struct stat sbuf;
 	pid_t pid;
-    pid = getpid();
-#endif
 
 	/* To guarantee multiple calls generate unique names even if
 	   the file is not created. 676 different possibilities with 7
 	   or more X's, 26 with 6 or less. */
-	static char xtra[2] = {'a','a'};
+	static char xtra[2] = "aa";
 	int xcnt = 0;
+
+	pid = getpid();
 
 	/* Move to end of path and count trailing X's. */
 	for (trv = path; *trv; ++trv)
@@ -126,7 +115,7 @@ _zip_mkstemp(char *path)
 			*trv = '\0';
 			if (stat(path, &sbuf))
 				return (0);
-			if ((sbuf.st_mode & S_IFDIR) != S_IFDIR) {
+			if (!S_ISDIR(sbuf.st_mode)) {
 				errno = ENOTDIR;
 				return (0);
 			}
@@ -157,4 +146,5 @@ _zip_mkstemp(char *path)
 		}
 	}
 	/*NOTREACHED*/
+#endif
 }
