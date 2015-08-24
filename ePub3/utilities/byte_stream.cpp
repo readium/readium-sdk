@@ -638,7 +638,6 @@ bool FileByteStream::Open(const string &path, std::ios::openmode mode)
             return false;
         }
     }
-    
 	// store the mode so we can Clone() later
 	_mode = mode;
     return true;
@@ -774,19 +773,25 @@ bool ZipFileByteStream::Open(struct zip *archive, const string &path, int flags)
     if ( _file != nullptr )
         Close();
 
-    _archive = archive;
+    _path = path;
+    _openFlags = flags;
     
     _file = zip_fopen(archive, Sanitized(path).c_str(), flags);
 
     if (_file != nullptr)
     {
-        struct zip_stat st;
-        if (zip_source_stat(_file->src, &st) == 0)
+        zip_stat_t _st;
+        zip_flags_t _flags=0;
+
+        _idx = zip_name_locate(archive, path.c_str(), 0);
+        
+        if (0==zip_stat_index(_file->za, _idx, _flags, &_st))  // worked
+        //if (zip_source_stat(_file->src, &_st) == 0) // didn't work
         {
-            total_size = st.size;
+            total_size = _st.size;
             bytes_left = total_size;
         }
-        _idx = zip_name_locate(archive, path.c_str(), 0);
+        _supports = zip_source_supports(_file->src);
     }
 
     return ( _file != nullptr );
@@ -837,6 +842,74 @@ ByteStream::size_type ZipFileByteStream::WriteBytes(const void *buf, size_type l
     // no write support at this moment
     return 0;
 }
+int ZipFileByteStream::SeekByRewind(long pos, int whence)
+{
+    off_t abspos = 0, flen = total_size;
+
+    if (Position() == 0 && whence == SEEK_CUR)
+        return 0;
+    
+    switch (whence)
+    {
+    case SEEK_CUR:
+        abspos = Position() + pos;
+        break;
+    case SEEK_SET:
+        abspos = pos;
+        break;
+    case SEEK_END:
+        abspos = flen + pos;
+        break;
+    default:    // incorrect/unspecified 'whence' parameter 
+        return -1;
+    }
+
+    if (abspos == Position())
+        return 0;       // no change 
+
+    if (abspos >= flen) 
+    {
+        return SeekByReading(bytes_left);   // just move to the end of stream
+    }
+    else if (abspos > Position())
+    {
+        // read & decompress bytes until we reach the right position
+        return SeekByReading(abspos - Position());
+    }
+
+    //at this point, we're definitely moving backwards 
+    if (abspos < 0) // can't set a negative offset 
+        return -1;
+    if (!SeekToStart())
+        return -1;      // error already set */
+    // this is a no-op for abspos == 0 *
+    return SeekByReading(abspos);
+}
+
+bool ZipFileByteStream::SeekToStart()
+{
+    return Open(_file->za, _path, _openFlags);
+}
+int ZipFileByteStream::SeekByReading(size_t toread)
+{
+    char bytes[1024];
+    while (toread > 0) 
+    {
+        ssize_t numRead = ReadBytes(bytes, (toread < 1024 ? toread : 1024));
+        if (numRead < 0)
+            return -1;      // error already set 
+
+        if (numRead == 0)   // avoid infinite loops 
+            return -1;
+        
+        toread -= numRead;
+    }
+
+    /* zf has been updated for us by zip_fread() already */
+    return 0;
+}
+
+
 ByteStream::size_type ZipFileByteStream::Seek(size_type by, std::ios::seekdir dir)
 {
     int whence = SEEK_SET;
@@ -853,14 +926,25 @@ ByteStream::size_type ZipFileByteStream::Seek(size_type by, std::ios::seekdir di
         default:
             return Position();
     }
-    zip_source_seek(_file->src, long(by), whence);  //zip_fseek(_file, long(by), whence);
-    //by = Position();
-    bytes_left = total_size - by;                   //_eof = (_file->bytes_left == 0);
+    
+    if ((_file->src->supports & ZIP_SOURCE_MAKE_COMMAND_BITMASK(ZIP_SOURCE_SEEK)) == 0)     // if the source doesn't support seek operation
+    {
+        return SeekByRewind(by, whence);    // Emulation of Seek operation by rewind
+    }
+    
+    // this is called if the libzip source below supports the ZIP_SOURCE_SEEK operation
+    zip_source_seek(_file->src, long(by), whence);  
+    bytes_left = total_size - by;                  
     _eof = (bytes_left == 0);
     return Position();
 }
 ByteStream::size_type ZipFileByteStream::Position() const
 {
+    if ((_file->src->supports & ZIP_SOURCE_MAKE_COMMAND_BITMASK(ZIP_SOURCE_TELL)) == 0)     // if the source doesn't support seek operation
+    {
+        return total_size - bytes_left;
+    }
+
     return zip_source_tell(_file->src); //return size_type(zip_ftell(_file));
 }
 std::shared_ptr<SeekableByteStream> ZipFileByteStream::Clone() const
