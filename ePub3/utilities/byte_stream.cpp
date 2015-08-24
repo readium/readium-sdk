@@ -844,7 +844,7 @@ ByteStream::size_type ZipFileByteStream::WriteBytes(const void *buf, size_type l
 }
 int ZipFileByteStream::SeekByRewind(long pos, int whence)
 {
-    off_t abspos = 0, flen = total_size;
+    long abspos = 0, flen = total_size;
 
     if (Position() == 0 && whence == SEEK_CUR)
         return 0;
@@ -871,7 +871,7 @@ int ZipFileByteStream::SeekByRewind(long pos, int whence)
     {
         return SeekByReading(bytes_left);   // just move to the end of stream
     }
-    else if (abspos > Position())
+    else if (abspos > (long)Position())
     {
         // read & decompress bytes until we reach the right position
         return SeekByReading(abspos - Position());
