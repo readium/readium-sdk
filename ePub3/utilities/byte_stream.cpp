@@ -933,10 +933,13 @@ ByteStream::size_type ZipFileByteStream::Seek(size_type by, std::ios::seekdir di
     }
     
     // this is called if the libzip source below supports the ZIP_SOURCE_SEEK operation
-    zip_source_seek(_file->src, long(by), whence);  
-    bytes_left = total_size - by;                  
-    _eof = (bytes_left == 0);
-    return Position();
+    if (-1 != zip_source_seek(_file->src, long(by), whence))
+    {
+        bytes_left = total_size - by;
+        _eof = (bytes_left == 0);
+        return Position();
+    }
+    return -1;
 }
 ByteStream::size_type ZipFileByteStream::Position() const
 {

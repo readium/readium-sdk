@@ -160,8 +160,30 @@ crc_read(zip_source_t *src, void *_ctx, void *data, zip_uint64_t len, zip_source
             free(ctx);
             return 0;
             
+        case ZIP_SOURCE_SEEK:
+            if (zip_source_supports(src)&ZIP_SOURCE_MAKE_COMMAND_BITMASK(ZIP_SOURCE_SEEK))
+                return _zip_source_call(src, data, len, cmd);
+            zip_error_set(&ctx->error, ZIP_ER_OPNOTSUPP, 0);
+            return -1;
+            break;
+        case ZIP_SOURCE_TELL:
+            if (zip_source_supports(src)&ZIP_SOURCE_MAKE_COMMAND_BITMASK(ZIP_SOURCE_TELL))
+                return _zip_source_call(src, data, len, cmd);
+            zip_error_set(&ctx->error, ZIP_ER_OPNOTSUPP, 0);
+            return -1;
+            break;
+
         case ZIP_SOURCE_SUPPORTS:
-            return zip_source_make_command_bitmap(ZIP_SOURCE_OPEN, ZIP_SOURCE_READ, ZIP_SOURCE_CLOSE, ZIP_SOURCE_STAT, ZIP_SOURCE_ERROR, ZIP_SOURCE_FREE, -1);
+        {
+            zip_int64_t support = zip_source_make_command_bitmap(ZIP_SOURCE_OPEN, ZIP_SOURCE_READ, ZIP_SOURCE_CLOSE, ZIP_SOURCE_STAT, ZIP_SOURCE_ERROR, ZIP_SOURCE_FREE, -1);
+            if (src)
+            {
+                support |= zip_source_supports(src)&ZIP_SOURCE_MAKE_COMMAND_BITMASK(ZIP_SOURCE_SEEK);
+                support |= zip_source_supports(src)&ZIP_SOURCE_MAKE_COMMAND_BITMASK(ZIP_SOURCE_TELL);
+            }
+            
+            return support;
+        }
             
         default:
             zip_error_set(&ctx->error, ZIP_ER_OPNOTSUPP, 0);
