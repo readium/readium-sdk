@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.readium</groupId>
+    <artifactId>readium-sdk-android</artifactId>
+    <version>0.20.0</version>
+  </parent>
+  <artifactId>readium-sdk-android-runtime</artifactId>
+
+  <packaging>jar</packaging>
+  <description>Readium SDK (Android API)</description>
+  <url>https://github.com/readium/readium-sdk</url>
+
+  <dependencies>
+    <dependency>
+      <groupId>android</groupId>
+      <artifactId>android</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>../src/</sourceDirectory>
+  </build>
+
+</project>
