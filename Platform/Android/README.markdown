@@ -54,8 +54,11 @@ Everything else should be set up appropriately by that script.
 ### Maven Package
 
 Once the `ndk-compile.sh` command above has been executed, the native library
-and Java code can be packaged into standard Java jar archives with the following
-command:
+and Java code can be packaged into standard Maven packages and deployed to
+repositories to be referenced as dependencies from Android applications.
+Assuming that the Android artifacts have been deployed to a local repository
+(with the [maven-android-sdk-deployer](https://github.com/simpligility/maven-android-sdk-deployer),
+for example), packages can be produced with the following command:
 
 ```bash
 $ mvn clean package
