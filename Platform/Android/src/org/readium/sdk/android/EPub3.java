@@ -120,6 +120,15 @@ public class EPub3 {
 	 */
 	public static native void setCachePath(String cachePath);
 	
+  /**
+   * Sets a handler that will be called after the filter chain
+   * has been populated. This allows the application to
+   * register any additional filters from within the handler.
+   * This needs to be called before any ePub3 library calls.
+   * @param handler The handler that will be called
+   */
+  public static native void setPostFilterPopulationHandler(Runnable handler);
+
 	/**
 	 * Checks if the supplied book is EPUB3. 
 	 * @param path Path to the book.
