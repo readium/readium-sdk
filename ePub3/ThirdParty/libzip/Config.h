@@ -12,9 +12,13 @@
 #define HAVE__OPEN
 #define HAVE__SNPRINTF
 #define HAVE__STRDUP
-#define HAVE__STRICMP
+//#define HAVE__STRICMP
 //#define __STDC__ 1
 #define HAVE_STDBOOL_H
+
+#define HAVE_FSEEKO
+#define HAVE_FTELLO
+
 /* #undef HAVE_FSEEKO */
 /* #undef HAVE_FTELLO */
 //#define HAVE_OPEN

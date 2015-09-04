@@ -58,7 +58,7 @@ SDKInitializeAndRelease g_instance;
 SDKInitializeAndRelease::SDKInitializeAndRelease()
 {
     if (this != &g_instance)
-        throw std::exception("SDKInitializeAndRelease should be a global static");
+        throw std::logic_error("SDKInitializeAndRelease should be a global static");
 
     Initialize();
 }
