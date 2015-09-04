@@ -791,7 +791,8 @@ bool ZipFileByteStream::Open(struct zip *archive, const string &path, int flags)
             total_size = _st.size;
             bytes_left = total_size;
         }
-        _supports = zip_source_supports(_file->src);
+//        _supports = zip_source_supports(_file->src);
+        _supports = _file->src->supports;
     }
 
     return ( _file != nullptr );
