@@ -489,10 +489,10 @@ _zip_fseek_u(FILE *f, zip_uint64_t offset, int whence, zip_error_t *error)
 static int
 _zip_fseek(FILE *f, zip_int64_t offset, int whence, zip_error_t *error)
 {
-    if (offset > ZIP_FSEEK_MAX || offset < ZIP_FSEEK_MIN) {
-	zip_error_set(error, ZIP_ER_SEEK, EOVERFLOW);
-	return -1;
-    }
+    //if (offset > ZIP_FSEEK_MAX || offset < ZIP_FSEEK_MIN) {
+	//zip_error_set(error, ZIP_ER_SEEK, EOVERFLOW);
+	//return -1;
+    //}
     if (fseeko(f, (off_t)offset, whence) < 0) {
 	zip_error_set(error, ZIP_ER_SEEK, errno);
 	return -1;

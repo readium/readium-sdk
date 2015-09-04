@@ -783,7 +783,7 @@ bool ZipFileByteStream::Open(struct zip *archive, const string &path, int flags)
         zip_stat_t _st;
         zip_flags_t _flags=0;
 
-        _idx = zip_name_locate(archive, path.c_str(), 0);
+        _idx = zip_name_locate(archive, Sanitized(path).c_str(), 0);
         
         if (0==zip_stat_index(_file->za, _idx, _flags, &_st))  // worked
         //if (zip_source_stat(_file->src, &_st) == 0) // didn't work
