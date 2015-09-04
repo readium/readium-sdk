@@ -35,7 +35,7 @@
 */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "Config.h"
 #endif
 
 /* to have *_MAX definitions for all types when compiling with g++ */
