@@ -288,7 +288,8 @@ unique_ptr<ArchiveReader> ZipArchive::ReaderAtPath(const string & path) const
     if (_zip == nullptr)
         return nullptr;
     
-    struct zip_file* file = zip_fopen(_zip, Sanitized(path).c_str(), 0);
+    const char* spath = Sanitized(path).c_str();
+    struct zip_file* file = zip_fopen(_zip, spath, 0);
 
     if (file == nullptr)
         return nullptr;
