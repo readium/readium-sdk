@@ -34,9 +34,9 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifdef HAVE_CONFIG_H
+//#ifdef HAVE_CONFIG_H
 #include "Config.h"
-#endif
+//#endif
 
 /* to have *_MAX definitions for all types when compiling with g++ */
 #define __STDC_LIMIT_MACROS
