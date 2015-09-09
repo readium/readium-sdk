@@ -21,9 +21,7 @@
 
 package org.readium.sdk.android;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -93,7 +91,7 @@ public class Package {
 
 	private Package(long nativePtr) {
     	// Log creation
-        Log.i(TAG, "Creating package [ptr:" + String.format("%X", nativePtr) + "]");
+        Log.d(TAG, "Creating package [ptr:" + String.format("%X", nativePtr) + "]");
 		__nativePtr = nativePtr;
 //        Log.i(TAG, "package nativePtr: "+nativePtr);
         loadData();
@@ -119,7 +117,7 @@ public class Package {
 	public void close() {
 		if(!mClosed) {
 	    	// Log closing
-	        Log.i(TAG, "Closing package [ptr:" + String.format("%X", __nativePtr) + "]");
+	        Log.d(TAG, "Closing package [ptr:" + String.format("%X", __nativePtr) + "]");
 	    	
 			//TODO: cleanup data
 			
@@ -163,42 +161,40 @@ public class Package {
 		authorList = nativeGetAuthorList(__nativePtr);
 		subjects = nativeGetSubjects(__nativePtr);
 		spineItems = nativeGetSpineItems(__nativePtr);
-		manifestTable = nativeGetManifestTable(__nativePtr);
 		smilDataJson = nativeGetSmilDataAsJson(__nativePtr);
 		rendition_layout = nativeGetProperty(__nativePtr, "layout", "rendition");
 		rendition_flow = nativeGetProperty(__nativePtr, "flow", "rendition");
 		rendition_orientation = nativeGetProperty(__nativePtr, "orientation", "rendition");
 		rendition_spread = nativeGetProperty(__nativePtr, "spread", "rendition");
-		Log.i(TAG, "package nativePtr: " + __nativePtr);
-		Log.i(TAG, "title: "+title);
-		Log.i(TAG, "subtitle: "+subtitle);
-		Log.i(TAG, "shortTitle: "+shortTitle);
-		Log.i(TAG, "collectionTitle: "+collectionTitle);
-		Log.i(TAG, "editionTitle: "+editionTitle);
-		Log.i(TAG, "expandedTitle: "+expandedTitle);
-		Log.i(TAG, "fullTitle: "+fullTitle);
-		Log.i(TAG, "uniqueID: "+uniqueID);
-		Log.i(TAG, "urlSafeUniqueID: "+urlSafeUniqueID);
-		Log.i(TAG, "packageID: "+packageID);
-		Log.i(TAG, "basePath: "+basePath);
-		Log.i(TAG, "type: "+type);
-		Log.i(TAG, "version: "+version);
-		Log.i(TAG, "isbn: "+isbn);
-		Log.i(TAG, "language: "+language);
-		Log.i(TAG, "copyrightOwner: "+copyrightOwner);
-		Log.i(TAG, "source: "+source);
-		Log.i(TAG, "authors: "+authors);
-		Log.i(TAG, "authorList: "+authorList);
-		Log.i(TAG, "modificationDate: "+modificationDate);
-		Log.i(TAG, "pageProgressionDirection: "+pageProgressionDirection);
-		Log.i(TAG, "subjects: "+subjects);
-		Log.i(TAG, "spineItems: "+spineItems.size());
-		Log.i(TAG, "manifestTable: "+manifestTable.size());
-		Log.i(TAG, "rendition_layout: "+rendition_layout);
-		Log.i(TAG, "rendition_flow: "+rendition_flow);
-		Log.i(TAG, "rendition_orientation: "+rendition_orientation);
-		Log.i(TAG, "rendition_spread: "+rendition_spread);
-		//Log.i(TAG, "smilDataJson: "+ smilDataJson);
+		Log.d(TAG, "package nativePtr: " + __nativePtr);
+		Log.d(TAG, "title: "+title);
+		Log.d(TAG, "subtitle: "+subtitle);
+		Log.d(TAG, "shortTitle: "+shortTitle);
+		Log.d(TAG, "collectionTitle: "+collectionTitle);
+		Log.d(TAG, "editionTitle: "+editionTitle);
+		Log.d(TAG, "expandedTitle: "+expandedTitle);
+		Log.d(TAG, "fullTitle: "+fullTitle);
+		Log.d(TAG, "uniqueID: "+uniqueID);
+		Log.d(TAG, "urlSafeUniqueID: "+urlSafeUniqueID);
+		Log.d(TAG, "packageID: "+packageID);
+		Log.d(TAG, "basePath: "+basePath);
+		Log.d(TAG, "type: "+type);
+		Log.d(TAG, "version: "+version);
+		Log.d(TAG, "isbn: "+isbn);
+		Log.d(TAG, "language: "+language);
+		Log.d(TAG, "copyrightOwner: "+copyrightOwner);
+		Log.d(TAG, "source: "+source);
+		Log.d(TAG, "authors: "+authors);
+		Log.d(TAG, "authorList: "+authorList);
+		Log.d(TAG, "modificationDate: "+modificationDate);
+		Log.d(TAG, "pageProgressionDirection: "+pageProgressionDirection);
+		Log.d(TAG, "subjects: "+subjects);
+		Log.d(TAG, "spineItems: "+spineItems.size());
+//		Log.d(TAG, "smilDataJson: "+ smilDataJson);
+		Log.d(TAG, "rendition_layout: "+rendition_layout);
+		Log.d(TAG, "rendition_flow: "+rendition_flow);
+		Log.d(TAG, "rendition_orientation: "+rendition_orientation);
+		Log.d(TAG, "rendition_spread: "+rendition_spread);
 	}
 
 	public long getNativePtr() {
@@ -309,6 +305,18 @@ public class Package {
 		return subjects;
 	}
 
+	/**
+	 * This method is left for backward compatibility, just in case some people access it.
+	 * This is why the structure is lazily initialized.
+	 * @return The list of {@link org.readium.sdk.android.ManifestItem}.
+	 */
+	@Deprecated
+    public List<ManifestItem> getManifestTable() {
+		if (manifestTable == null)
+			manifestTable = nativeGetManifestTable(__nativePtr);
+		return manifestTable;
+    }
+
 	public List<SpineItem> getSpineItems() {
 		return spineItems;
 	}
@@ -323,41 +331,41 @@ public class Package {
 	}
 
 	public NavigationTable getTableOfContents() {
-		if (tableOfContents == null) {
+		if (tableOfContents == null && !mClosed) {
 			tableOfContents = nativeGetTableOfContents(__nativePtr);
-			Log.i(TAG, "tableOfContents: "+tableOfContents);
+			Log.d(TAG, "tableOfContents: "+tableOfContents);
 		}
 		return tableOfContents;
 	}
 
 	public NavigationTable getListOfFigures() {
-		if (listOfFigures == null) {
+		if (listOfFigures == null && !mClosed) {
 			listOfFigures = nativeGetListOfFigures(__nativePtr);
-			Log.i(TAG, "listOfFigures: "+listOfFigures);
+			Log.d(TAG, "listOfFigures: "+listOfFigures);
 		}
 		return listOfFigures;
 	}
 
 	public NavigationTable getListOfIllustrations() {
-		if (listOfIllustrations == null) {
+		if (listOfIllustrations == null && !mClosed) {
 			listOfIllustrations = nativeGetListOfIllustrations(__nativePtr);
-			Log.i(TAG, "listOfIllustrations: "+listOfIllustrations);
+			Log.d(TAG, "listOfIllustrations: "+listOfIllustrations);
 		}
 		return listOfIllustrations;
 	}
 
 	public NavigationTable getListOfTables() {
-		if (listOfTables == null) {
+		if (listOfTables == null && !mClosed) {
 			listOfTables = nativeGetListOfTables(__nativePtr);
-			Log.i(TAG, "listOfTables: "+listOfTables);
+			Log.d(TAG, "listOfTables: "+listOfTables);
 		}
 		return listOfTables;
 	}
 
 	public NavigationTable getPageList() {
-		if (pageList == null) {
+		if (pageList == null && !mClosed) {
 			pageList = nativeGetPageList(__nativePtr);
-			Log.i(TAG, "pageList: "+pageList);
+			Log.d(TAG, "pageList: "+pageList);
 		}
 		return pageList;
 	}
@@ -383,13 +391,18 @@ public class Package {
 	 * @return a manifest item or null
 	 */
 	public ManifestItem getManifestItem(String relativePath) {
-		for (ManifestItem item : manifestTable) {
-			if (relativePath.equals(item.getHref())) {
-				return item;
-			}
-		}
-		return null;
+		return nativeGetManifestItemByRelativePath(__nativePtr, relativePath);
 	}
+
+    /**
+     * Returns a manifest item if one is found.
+     * Returns null if not found.
+     * @param id needed to find a manifest item
+     * @return a manifest item or null
+     */
+    public ManifestItem getManifestItemById(String id) {
+		return nativeGetManifestItemById(__nativePtr, id);
+    }
 
     public PackageResource getResourceAtRelativePath(String relativePath) {
         return new PackageResource(this, relativePath);
@@ -421,6 +434,10 @@ public class Package {
 	 * @return the InputStream. If no data is retrieved, the InputStream is null.
 	 */
 	public InputStream getInputStream(String relativePath, int bufferSize, boolean isRangeRequest) {
+		// Avoid native crash
+        if (mClosed) {
+            return null;
+        }
 		return nativeInputStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath, bufferSize, isRangeRequest);
 	}
 
@@ -430,6 +447,10 @@ public class Package {
      * @return the InputStream. If no data is retrieved, the InputStream is null.
      */
     public InputStream getRawInputStream(String relativePath, int bufferSize) {
+		// Avoid native crash
+		if (mClosed) {
+			return null;
+		}
         return nativeRawInputStreamForRelativePath(__nativePtr, container.getNativePtr(), relativePath, bufferSize);
     }
 
@@ -440,8 +461,32 @@ public class Package {
 	 * @return the size of the file or -1 if no resource match the path
 	 */
 	public int getArchiveInfoSize(String relativePath) {
+		// Avoid native crash
+        if (mClosed) {
+            return 0;
+        }
 		return nativeGetArchiveInfoSize(__nativePtr, container.getNativePtr(), relativePath);
 	}
+
+    public String getProperty(String name) {
+        return getProperty(name, "");
+    }
+
+    private String getProperty(String name, String prefix) {
+		// Avoid native crash
+        if (mClosed) {
+            return null;
+        }
+        return nativeGetProperty(__nativePtr, name, prefix);
+    }
+
+    public boolean containsProperty(String name, String prefix) {
+		// Avoid native crash
+        if (mClosed) {
+            return false;
+        }
+        return nativeContainsProperty(__nativePtr, name, prefix);
+    }
 
 	// sensible legacy defaults
 	private String _rootUrl = "/";
@@ -477,8 +522,8 @@ public class Package {
 			spine.put("direction", pageProgressionDirection);
 			o.put("spine", spine);
 
-			JSONObject mo = new JSONObject(smilDataJson);
-			o.put("media_overlay", mo);
+            JSONObject mo = new JSONObject(smilDataJson);
+            o.put("media_overlay", mo);
 			
 //			Log.i(TAG, "JSON: " + o.toString(2));
 		} catch (JSONException e) {
@@ -514,7 +559,8 @@ public class Package {
 	private native List<String> nativeGetSubjects(long nativePtr);
 	private native List<SpineItem> nativeGetSpineItems(long nativePtr);
 	private native String nativeGetProperty(long nativePtr, String propertyName, String prefix);
-	
+	private native boolean nativeContainsProperty(long nativePtr, String propertyName, String prefix);
+
 	/*
 	 * Navigation tables
 	 */
@@ -524,7 +570,9 @@ public class Package {
 	private native NavigationTable nativeGetListOfTables(long nativePtr);
 	private native NavigationTable nativeGetPageList(long nativePtr);
 	private native List<ManifestItem> nativeGetManifestTable(long nativePtr);
-	
+	private native ManifestItem nativeGetManifestItemByRelativePath(long nativePtr, String relativePath);
+	private native ManifestItem nativeGetManifestItemById(long nativePtr, String id);
+
 	/*
 	 * Content 
 	 */

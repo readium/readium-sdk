@@ -102,8 +102,8 @@ public abstract class JavaObjectsFactory {
 	 * @return manifest item
 	 */
 	@SuppressWarnings("unused")
-	private static ManifestItem createManifestItem(String href, String mediaType) {
-		return new ManifestItem(href, mediaType);
+	private static ManifestItem createManifestItem(long nativePtr, String id, String href, String mediaType) {
+		return new ManifestItem(nativePtr, id, href, mediaType);
 	}
 
 	/**

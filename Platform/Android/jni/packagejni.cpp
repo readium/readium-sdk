@@ -26,6 +26,7 @@
 
 #include <ePub3/archive.h>
 #include <ePub3/container.h>
+#include <ePub3/manifest.h>
 #include <ePub3/media-overlays_smil_model.h>	// ePub3::MediaOverlaysSmilModel
 #include <ePub3/media-overlays_smil_data.h>		// ePub3::SMILData
 #include <ePub3/package.h>
@@ -170,7 +171,7 @@ static void loadChildren(JNIEnv* env, jobject jparent, shared_ptr<ePub3::Navigat
 	}
 }
 
-static jobject loadNavigationTable(JNIEnv* env, shared_ptr<class ePub3::NavigationTable> navigationTable, char* defaultName)
+static jobject loadNavigationTable(JNIEnv* env, shared_ptr<class ePub3::NavigationTable> navigationTable, const char* defaultName)
 {
     if (navigationTable != nullptr) {
 		jni::StringUTF type(env, (std::string&) navigationTable->Type().stl_str());
@@ -695,24 +696,86 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetManifest
 	for (auto i = manifest.begin(); i != manifest.end(); i++) {
 		std::shared_ptr<ePub3::ManifestItem> item = i->second;
 
+    	jni::StringUTF identifier(env, (std::string&) item->Identifier().stl_str());
+    	jstring id = (jstring) identifier;
     	jni::StringUTF hr(env, (std::string&) item->Href().stl_str());
     	jstring href = (jstring) hr;
     	jni::StringUTF mt(env, (std::string&) item->MediaType().stl_str());
     	jstring mediaType = (jstring) mt;
 
-//    	LOGD("ManifestItem: href:%s, mediatype:%s", hr.c_str(), mt.c_str());
+//    	LOGD("ManifestItem: id:%s, href:%s, mediatype:%s", identifier.c_str(), hr.c_str(), mt.c_str());
+
+    	// Save package before sending it to Java
+    	jni::Pointer manifestItemPtr(item, POINTER_GPS("manifestItem"));
 
     	jobject manifestItem = env->CallStaticObjectMethod(javaJavaObjectsFactoryClass, createManifestItem_ID,
-    			href, mediaType);
+    			manifestItemPtr.getId(), id, href, mediaType);
 
 		env->CallStaticVoidMethod(javaJavaObjectsFactoryClass, addManifestItemToList_ID,
 				manifestItemList, manifestItem);
+		env->DeleteLocalRef(id);
 		env->DeleteLocalRef(href);
 		env->DeleteLocalRef(mediaType);
 		env->DeleteLocalRef(manifestItem);
 	}
 	return manifestItemList;
 }
+
+// This section has been added in the context of a performance improvement. Before this,
+// the lookup of manifest items was achieved through... an iteration ! We now rely on maps...
+static jobject createManifestItem(JNIEnv* env, std::shared_ptr<ePub3::ManifestItem> item)
+{
+	jni::StringUTF identifier(env, (std::string&) item->Identifier().stl_str());
+	jstring id = (jstring) identifier;
+	jni::StringUTF hr(env, (std::string&) item->Href().stl_str());
+	jstring href = (jstring) hr;
+	jni::StringUTF mt(env, (std::string&) item->MediaType().stl_str());
+	jstring mediaType = (jstring) mt;
+
+	// Save package before sending it to Java
+	jni::Pointer manifestItemPtr(item, POINTER_GPS("manifestItem"));
+
+	jobject manifestItem = env->CallStaticObjectMethod(javaJavaObjectsFactoryClass, createManifestItem_ID,
+			manifestItemPtr.getId(), id, href, mediaType);
+
+	env->DeleteLocalRef(id);
+	env->DeleteLocalRef(href);
+	env->DeleteLocalRef(mediaType);
+
+	return manifestItem;
+}
+
+typedef shared_ptr<ePub3::ManifestItem> (ePub3::Package::*finderMethodPtr_t)(ePub3::string path) const;
+
+jobject nativeGetManifestItemByIdOrRelativePath
+		(JNIEnv* env, jobject thiz, jlong pckgPtr, jstring value, finderMethodPtr_t finderMethod)
+{
+	std::shared_ptr<ePub3::Package> package = PCKG(pckgPtr);
+	char *valueAsChar = (char *) env->GetStringUTFChars(value, NULL);
+	auto valueAsEpub3String = ePub3::string(valueAsChar);
+
+	auto item = (*package.*finderMethod)(valueAsEpub3String);
+
+	if (!item) {
+		LOGD ("--- nativeGetManifestItemByIdOrRelativePath didn't find item with value '%s'", valueAsChar);
+		return NULL;
+	}
+	env->ReleaseStringUTFChars(value, valueAsChar);
+	return createManifestItem(env, item);
+}
+
+JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetManifestItemById
+		(JNIEnv* env, jobject thiz, jlong pckgPtr, jstring id)
+{
+	return nativeGetManifestItemByIdOrRelativePath(env, thiz, pckgPtr, id, (finderMethodPtr_t)&ePub3::Package::ManifestItemWithID);
+}
+
+JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetManifestItemByRelativePath
+		(JNIEnv* env, jobject thiz, jlong pckgPtr, jstring relPath)
+{
+	return nativeGetManifestItemByIdOrRelativePath(env, thiz, pckgPtr, relPath, (finderMethodPtr_t)&ePub3::Package::ManifestItemAtRelativePath);
+}
+
 JNIEXPORT jint JNICALL Java_org_readium_sdk_android_Package_nativeGetArchiveInfoSize
 		(JNIEnv* env, jobject thiz, jlong pckgPtr, jlong contnrPtr, jstring jrelativePath)
 {
@@ -761,15 +824,16 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeInputStream
 		(JNIEnv* env, jobject thiz, jlong pckgPtr, jlong contnrPtr, jstring jrelativePath, jint bufferSize, jboolean isRange)
 {
 	char *relativePath = (char *) env->GetStringUTFChars(jrelativePath, NULL);
-	LOGI("Package.nativeInputStreamForRelativePath(): received relative path '%s'", relativePath);
+	LOGD("Package.nativeInputStreamForRelativePath(): received relative path '%s'", relativePath);
 	auto basePath = ePub3::string(PCKG(pckgPtr)->BasePath());
-	LOGI("Package.nativeInputStreamForRelativePath(): package base path '%s'", basePath.c_str());
+	LOGD("Package.nativeInputStreamForRelativePath(): package base path '%s'", basePath.c_str());
     auto path = basePath.append(relativePath);
 	LOGI("Package.nativeInputStreamForRelativePath(): final path '%s'", path.c_str());
     auto archive = contnr->GetArchive();
     bool containsPath = archive->ContainsItem(path);
     if (!containsPath) {
         LOGE("Package.nativeInputStreamForRelativePath(): no archive found for path '%s'", path.c_str());
+        env->ReleaseStringUTFChars(jrelativePath, relativePath);
         return NULL;
     }
 
@@ -812,6 +876,20 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetProperty
     RELEASE_UTF8(jprefix, prefix);
 
     return jprop;
+}
+
+JNIEXPORT jboolean JNICALL Java_org_readium_sdk_android_Package_nativeContainsProperty
+		(JNIEnv* env, jobject thiz, jlong pckgPtr, jstring jpropertyName, jstring jprefix)
+{
+    char* propertyName = (char *) env->GetStringUTFChars(jpropertyName, NULL);
+    char* prefix = (char *) env->GetStringUTFChars(jprefix, NULL);
+
+    bool contains = (&*PCKG(pckgPtr))->ContainsProperty(propertyName, prefix);
+
+    RELEASE_UTF8(jpropertyName, propertyName);
+    RELEASE_UTF8(jprefix, prefix);
+
+    return contains;
 }
 
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetSmilDataAsJson

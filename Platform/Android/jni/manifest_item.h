@@ -1,4 +1,9 @@
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//
+//  manifest_item.h
+//  ePub3
+//
+//  Created by Yonathan Teitelbaum (Mantano) on 2015-09-08.
+//  Copyright (c) 2015 Readium Foundation and/or its licensees. All rights reserved.
 //  
 //  This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 //  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
@@ -13,28 +18,27 @@
 //  the License, or (at your option) any later version. You should have received a copy of the GNU 
 //  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.readium.sdk.android.components.navigation;
 
-import android.util.Log;
+#include <jni.h>
 
-public class NavigationTable extends NavigationElement {
 
-    private static final String TAG = "NavigationTable";
-	private final String type;
-    private final String sourceHref;
+#ifndef _MANIFEST_ITEM_JNI_H_
+#define _MANIFEST_ITEM_JNI_H_
 
-    public NavigationTable(String type, String title, String sourceHref) {
-    	super(title);
-        this.type = type;
-        this.sourceHref = sourceHref;
-        Log.d(TAG, "type: "+type+", title: "+title+", sourceHref: "+sourceHref);
-    }
 
-    public String getType() {
-        return type;
-    }
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    public String getSourceHref() {
-        return sourceHref;
-    }
+/*
+ * Class:     org_readium_sdk_android_ManifestItem
+ * Method:    nativeHasProperty
+ * Signature: (I)Z;
+ */
+JNIEXPORT jboolean JNICALL Java_org_readium_sdk_android_ManifestItem_nativeHasProperty(JNIEnv* env, jobject thiz, jlong manifestItemPtr, jint flag);
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif //ifndef _MANIFEST_ITEM_JNI_H_

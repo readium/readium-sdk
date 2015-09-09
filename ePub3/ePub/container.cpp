@@ -69,8 +69,10 @@ bool Container::Open(const string& path)
 	if (!reader) {
 		throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
 	}
+    
 #if EPUB_USE(LIBXML2)
-	_ocf = reader.xmlReadDocument(gContainerFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
+    // XML_PARSE_NONET is used to avoid network calls when loading DTDs
+	_ocf = reader.xmlReadDocument(gContainerFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR|XML_PARSE_NONET);
 #else
 	decltype(_ocf) __tmp(reader.ReadDocument(gContainerFilePath, nullptr, /*RESOLVE_EXTERNALS*/ 1));
 	_ocf = __tmp;
