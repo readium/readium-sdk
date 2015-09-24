@@ -8,7 +8,7 @@
   <parent>
     <groupId>org.readium</groupId>
     <artifactId>readium-sdk-android</artifactId>
-    <version>0.20.0</version>
+    <version>0.22.0-alpha</version>
   </parent>
   <artifactId>libepub3</artifactId>
 
