@@ -104,12 +104,14 @@ jmethodID addManifestItemToList_ID;
  */
 
 static jclass javaEPub3Class = NULL;
+static jobject postFilterPopulateHandler = NULL;
 
 static jmethodID createStringList_ID;
 static jmethodID addStringToList_ID;
 static jmethodID createBuffer_ID;
 static jmethodID appendBytesToBuffer_ID;
 static jmethodID handleSdkError_ID;
+static jmethodID postFilterPopulateHandler_Run_ID;
 
 
 /*
@@ -243,16 +245,21 @@ static bool LauncherErrorHandler(const ePub3::error_details& err)
  */
 static void initializeReadiumSDK(JNIEnv* env)
 {
-    m_env = env;
-    
+  m_env = env;
+
 	LOGD("initializeReadiumSDK(): initializing Readium SDK...");
 
-    ePub3::ErrorHandlerFn launcherErrorHandler = LauncherErrorHandler;
-    ePub3::SetErrorHandler(launcherErrorHandler);
- 
-    ePub3::InitializeSdk();
-    ePub3::PopulateFilterManager();
-    
+  ePub3::ErrorHandlerFn launcherErrorHandler = LauncherErrorHandler;
+  ePub3::SetErrorHandler(launcherErrorHandler);
+
+  ePub3::InitializeSdk();
+  ePub3::PopulateFilterManager();
+
+  if (postFilterPopulateHandler != NULL) {
+    LOGD("initializeReadiumSDK(): calling post filter handler %p", postFilterPopulateHandler);
+    env->CallVoidMethod(postFilterPopulateHandler, postFilterPopulateHandler_Run_ID);
+  }
+
 	LOGD("initializeReadiumSDK(): initialization of Readium SDK finished");
 }
 
@@ -355,6 +362,37 @@ Java_org_readium_sdk_android_EPub3_setCachePath(JNIEnv* env, jobject thiz, jstri
 	strlcpy(gAndroidCacheDir, str, PATH_MAX);
 	// Release the c string
 	RELEASE_UTF8(cachePath, str);
+}
+
+/*
+ * Class:     org_readium_sdk_android_EPub3
+ * Method:    setPostFilterPopulationHandler
+ * Signature: (Ljava/lang/Runnable;)V
+ */
+JNIEXPORT void JNICALL
+Java_org_readium_sdk_android_EPub3_setPostFilterPopulationHandler(JNIEnv* env, jobject thiz, jobject handler) {
+
+  LOGD("EPub3.setPostFilterPopulationHandler(): received handler object %p", handler);
+  if (handler != NULL) {
+
+    /**
+     * Save a global reference to the handler object and attempt to find a void-returning
+     * parameterless method on it called 'run'.
+     */
+
+    jobject hg = env->NewGlobalRef(handler);
+    jclass rc = env->GetObjectClass(hg);
+    jmethodID m = env->GetMethodID(rc, "run", "()V");
+    if (m == NULL) {
+      LOGE("EPub3.setPostFilterPopulationHandler(): could not find 'run' method on handler class");
+      env->DeleteGlobalRef (hg);
+      return;
+    }
+
+    LOGD("EPub3.setPostFilterPopulationHandler(): saved object %p, method %p", hg, m);
+    postFilterPopulateHandler = hg;
+    postFilterPopulateHandler_Run_ID = m;
+  }
 }
 
 /*
