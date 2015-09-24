@@ -721,6 +721,14 @@ public:
      */
     EPUB3_EXPORT
     const string&           Language()                              const;
+    
+    /**
+     Retrieves the manifest item that is declared as cover for the
+     book, if available. Compatible with EPUB 2 and 3 covers.
+     @result A ManifestItem pointer, or `nullptr` if no manifest item is the cover
+     */
+    EPUB3_EXPORT
+    shared_ptr<ManifestItem> CoverManifestItem() const;
 
     /**
      Retrieves the Media Overlays media:active-class (may be empty string, if unspecified in the OPF package)
