@@ -393,7 +393,19 @@ bool Package::Open(const string& path)
 #if _XML_OVERRIDE_SWITCHES
     __setupLibXML();
 #endif
-    auto status = PackageBase::Open(path) && Unpack();
+    auto status = PackageBase::Open(path);
+	
+	if (status) {
+        // Setup the content filter chain before unpacking the package
+        // to filter its manifest items if needed. For example with
+        // some encrypted EPUB the navigation tables must be decrypted
+        // before being parsed.
+		auto fm = FilterManager::Instance();
+		auto fc = fm->BuildFilterChainForPackage(shared_from_this());
+		SetFilterChain(fc);
+		
+		status = Unpack();
+	}
 
     if (status)
     {

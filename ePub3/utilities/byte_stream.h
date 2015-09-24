@@ -124,6 +124,45 @@ public:
      @result Returns the number of bytes actually copied into `buf`.
      */
     virtual size_type       ReadBytes(void* buf, size_type len)                     = 0;
+	
+	/**
+	 Read all data from the stream.
+	 @param buf A pointer to a buffer which will be allocated
+	 @result Returns the number of bytes copied into `buf`.
+	 */
+	virtual size_type       ReadAllBytes(void** buf)
+	{
+        unsigned char* resbuf = nullptr;
+        unsigned char* temp;
+        size_t resbuflen = 0;
+        
+        unsigned char rdbuf [4096] = {0};
+        size_t rdbuflen = 4096;
+        std::size_t count = this->ReadBytes(rdbuf, rdbuflen);
+        if(count)
+        {
+            resbuf = (unsigned char*)malloc(count);
+            memcpy(resbuf, rdbuf, count);
+            resbuflen = count;
+        }
+        while(count)
+        {
+            count = this->ReadBytes(rdbuf, rdbuflen);
+            
+            temp = (unsigned char*)malloc(count + resbuflen);
+            memcpy(temp, resbuf, resbuflen);
+            free(resbuf);
+            resbuf = temp;
+            memcpy(resbuf+resbuflen, rdbuf, count);
+            resbuflen += count;
+        }
+		
+		if (resbuflen > 0)
+			*buf = resbuf;
+		
+		return resbuflen;
+	}
+	
     /**
      Write some data to the stream.
      @param buf A buffer containing data to write.
