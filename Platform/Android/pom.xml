@@ -27,6 +27,48 @@
     <maven>3.2.1</maven>
   </prerequisites>
 
+  <scm>
+    <url>https://github.com/readium/readium-sdk</url>
+    <connection>scm:https://github.com/readium/readium-sdk</connection>
+    <developerConnection>scm:https://github.com/readium/readium-sdk</developerConnection>
+  </scm>
+
+  <issueManagement>
+    <url>https://github.com/readium/readium-sdk/issues</url>
+    <system>GitHub</system>
+  </issueManagement>
+
+  <distributionManagement>
+    <site>
+      <id>GitHub</id>
+      <name>GitHub</name>
+      <url>${project.url}</url>
+    </site>
+  </distributionManagement>
+
+  <licenses>
+    <license>
+      <name>3-Clause BSD License</name>
+      <url>http://opensource.org/licenses/BSD-3-Clause</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Daniel Weck</name>
+      <email>daniel.weck@gmail.com</email>
+      <organization>Readium Foundation</organization>
+      <organizationUrl>http://readium.org/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Mark Raynsford</name>
+      <email>code@io7m.com</email>
+      <roles>
+        <role>Maven operator</role>
+      </roles>
+    </developer>
+  </developers>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -128,6 +170,8 @@
               <goal>test-jar-no-fork</goal>
             </goals>
             <configuration>
+              <forceCreation>true</forceCreation>
+              <includePom>true</includePom>
               <archive>
                 <manifestEntries>
                   <Specification-Title>${project.name}</Specification-Title>
@@ -188,5 +232,30 @@
       </plugin>
     </plugins>
   </build>
+
+  <!-- Optionally PGP sign artifacts. -->
+  <profiles>
+    <profile>
+      <id>readium-sign</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>
