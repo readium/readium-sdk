@@ -40,5 +40,5 @@ zip_ftell(struct zip_file* zf)
     if (!zf)
         return -1;
     
-    return zf->file_fpos;
+    return (long)(zf->file_fpos);
 }

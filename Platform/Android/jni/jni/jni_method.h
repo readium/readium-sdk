@@ -363,7 +363,7 @@ public:
 		if (!_id.IsEmpty()) {
 			// Log call
 			std::string method(_id);
-			LOGD("StaticMethod(): calling static method '%s'", method.c_str());
+			//LOGD("StaticMethod(): calling static method '%s'", method.c_str());
 			// Call
 			va_start(args, env);
 			result = _id.Call(env, args);

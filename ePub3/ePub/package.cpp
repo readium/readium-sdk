@@ -90,7 +90,7 @@ PackageBase::PackageBase(const shared_ptr<Container>& owner, const string& type)
     if ( !_archive )
         throw std::invalid_argument("Owner doesn't have an archive!");
 }
-PackageBase::PackageBase(PackageBase&& o) : _archive(o._archive), _opf(std::move(o._opf)), _pathBase(std::move(o._pathBase)), _type(std::move(o._type)), _manifest(std::move(o._manifest)), _spine(std::move(o._spine))
+PackageBase::PackageBase(PackageBase&& o) : _archive(o._archive), _opf(std::move(o._opf)), _pathBase(std::move(o._pathBase)), _type(std::move(o._type)), _manifestByID(std::move(o._manifestByID)), _manifestByAbsolutePath(std::move(o._manifestByAbsolutePath)), _spine(std::move(o._spine))
 {
     o._archive = nullptr;
 }
@@ -102,7 +102,8 @@ bool PackageBase::Open(const string& path)
 {
     ArchiveXmlReader reader(_archive->ReaderAtPath(path.stl_str()));
 #if EPUB_USE(LIBXML2)
-    _opf = reader.xmlReadDocument(path.c_str(), nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
+    // XML_PARSE_NONET is used to avoid network calls when loading DTDs
+    _opf = reader.xmlReadDocument(path.c_str(), nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR|XML_PARSE_NONET);
 #elif EPUB_USE(WIN_XML)
 	_opf = reader.ReadDocument(path.c_str(), nullptr, 0);
 #endif
@@ -146,8 +147,8 @@ size_t PackageBase::IndexOfSpineItemWithIDRef(const string &idref) const
 }
 shared_ptr<ManifestItem> PackageBase::ManifestItemWithID(const string &ident) const
 {
-    auto found = _manifest.find(ident);
-    if ( found == _manifest.end() )
+    auto found = _manifestByID.find(ident);
+    if ( found == _manifestByID.end() )
         return nullptr;
     
     return found->second;
@@ -163,20 +164,20 @@ string PackageBase::CFISubpathForManifestItemWithID(const string &ident) const
 const shared_vector<ManifestItem> PackageBase::ManifestItemsWithProperties(PropertyIRIList properties) const
 {
     shared_vector<ManifestItem> result;
-    for ( auto& item : _manifest )
+    for ( auto& item : _manifestByID )
     {
         if ( item.second->HasProperty(properties) )
             result.push_back(item.second);
     }
     return result;
 }
-ConstManifestItemPtr PackageBase::ManifestItemAtRelativePath(const string& path) const
+shared_ptr<ManifestItem> PackageBase::ManifestItemAtRelativePath(const string& path) const
 {
-    string absPath = _pathBase + (path[0] == '/' ? path.substr(1) : path);
-	for (auto& item : _manifest)
-	{
-		if (item.second->AbsolutePath() == absPath)
-			return item.second;
+	string absPath = _pathBase + (path[0] == '/' ? path.substr(1) : path);
+	
+	auto found = _manifestByAbsolutePath.find(absPath);
+	if (found != _manifestByAbsolutePath.end()) {
+		return found->second;
 	}
 
     // Edge case...
@@ -197,7 +198,7 @@ ConstManifestItemPtr PackageBase::ManifestItemAtRelativePath(const string& path)
     string path_(output.data(), output.length());
 
     string absPath_ = _pathBase + (path_[0] == '/' ? path_.substr(1) : path_);
-    for (auto& item : _manifest)
+    for (auto& item : _manifestByID)
     {
         string absolute = item.second->AbsolutePath();
 
@@ -569,9 +570,11 @@ bool Package::Unpack()
             if ( p->ParseXML(node) )
             {
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
-                _manifest.emplace(p->Identifier(), p);
+                _manifestByID.emplace(p->Identifier(), p);
+                _manifestByAbsolutePath.emplace(p->AbsolutePath(), p);
 #else
-                _manifest[p->Identifier()] = p;
+                _manifestByID[p->Identifier()] = p;
+                _manifestByAbsolutePath[p->AbsolutePath()] = p;
 #endif
                 StoreXMLIdentifiable(p);
             }
@@ -584,7 +587,7 @@ bool Package::Unpack()
         // check fallback chains
         typedef std::map<string, bool> IdentSet;
         IdentSet idents;
-        for ( auto &pair : _manifest )
+        for ( auto &pair : _manifestByID )
         {
             ManifestItemPtr item = pair.second;
             if ( item->FallbackID().empty() )
@@ -616,8 +619,8 @@ bool Package::Unpack()
             }
             
             // validation of idref
-            auto manifestFound = _manifest.find(next->Idref());
-            if ( manifestFound == _manifest.end() )
+            auto manifestFound = _manifestByID.find(next->Idref());
+            if ( manifestFound == _manifestByID.end() )
             {
                 HandleError(EPUBError::OPFInvalidSpineIdref, _Str(next->Idref(), " does not correspond to a manifest item"));
                 continue;
@@ -731,7 +734,15 @@ bool Package::Unpack()
             }
             else if ( _getProp(node, "name").size() > 0 )
             {
-                // it's an ePub2 item-- ignore it
+                // It's an EPUB 2 property, we save them to allow
+                // backward compatiblity by host apps.
+                string name = _getProp(node, "name");
+                string content = _getProp(node, "content");
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+                _EPUB2Properties.emplace(name, content);
+#else
+                _EPUB2Properties[name] = content;
+#endif
                 continue;
             }
             else if ( _getProp(node, "refines").empty() )
@@ -981,7 +992,7 @@ bool Package::Unpack()
 	if (isEPUB3)
 	{
 		// look for EPUB3 navigation document(s)
-		for ( auto item : _manifest )
+		for ( auto item : _manifestByID )
 		{
 			if ( !item.second->HasProperty(ItemProperties::Navigation) )
 	            continue;
@@ -1571,6 +1582,18 @@ const string& Package::Language() const
         return string::EmptyString;
     return items[0]->Value();
 }
+shared_ptr<ManifestItem> Package::CoverManifestItem() const
+{
+	string EPUB2CoverID = EPUB2PropertyMatching(string("cover"));
+	for (auto& item : _manifestByID)
+	{
+		if (item.second->HasProperty(ePub3::ItemProperties::CoverImage) || (EPUB2CoverID.empty() && item.second->Identifier() == EPUB2CoverID)) {
+			return item.second;
+		}
+	}
+	
+	return nullptr;
+}
 const string& Package::MediaOverlays_ActiveClass() const
 {
     // See:
@@ -1752,7 +1775,7 @@ shared_ptr<MediaHandler> Package::OPFHandlerForMediaType(const string &mediaType
 const Package::StringList Package::AllMediaTypes() const
 {
     std::map<string, bool>   set;
-    for ( auto pair : _manifest )
+    for ( auto pair : _manifestByID )
     {
         set[pair.second->MediaType()] = true;
     }
@@ -1822,6 +1845,17 @@ void Package::InitMediaSupport()
         }
     }
 }
+
+string Package::EPUB2PropertyMatching(string name) const
+{
+	auto found = _EPUB2Properties.find(string("cover"));
+	if (found != _EPUB2Properties.end()) {
+		return found->second;
+	}
+	
+	return string::EmptyString;
+}
+
 void Package::CompileSpineItemTitles()
 {
 	NavigationTablePtr toc = TableOfContents();

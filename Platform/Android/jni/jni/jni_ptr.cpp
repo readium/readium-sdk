@@ -188,7 +188,7 @@ jlong PointerPool::add(Pointer ptr) {
 	jlong id = ptr.getId();
 	_pool[id] = ptr;
 
-	LOGD("PointerPool::add(): added pointer %llX(%i) %s", id, ptr.useCount(), ptr.getName().c_str());
+	//LOGD("PointerPool::add(): added pointer %llX(%i) %s", id, ptr.useCount(), ptr.getName().c_str());
 	return id;
 }
 
@@ -200,7 +200,7 @@ Pointer PointerPool::get(jlong id) {
 	if(p != _pool.end()) {
 		Pointer ptr(p->second);
 
-		LOGD("PointerPool::get(): got pointer %llX(%i) %s", id, ptr.useCount(), ptr.getName().c_str());
+		//LOGD("PointerPool::get(): got pointer %llX(%i) %s", id, ptr.useCount(), ptr.getName().c_str());
 		return ptr;
 	} else {
 		LOGE("PointerPool::get(): attempting to get non existing pointer from pool");
@@ -221,7 +221,7 @@ void PointerPool::del(jlong id) {
 		// Verify that we are deleting a pointer that is unique
 		// without any other copies alive, and raise warning otherwise
 		if(ptr.isUnique()) {
-			LOGD("PointerPool::del(): deleted pointer %llX(%i) %s", id, ptr.useCount(), ptr.getName().c_str());
+			//LOGD("PointerPool::del(): deleted pointer %llX(%i) %s", id, ptr.useCount(), ptr.getName().c_str());
 		} else {
 			LOGW("PointerPool::del(): deleted non-unique pointer %llX(%i) %s", id, ptr.useCount(), ptr.getName().c_str());
 		}

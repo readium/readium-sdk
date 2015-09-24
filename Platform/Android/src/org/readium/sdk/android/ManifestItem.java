@@ -23,6 +23,28 @@ package org.readium.sdk.android;
 
 public class ManifestItem {
 
+	public enum ItemProperties {
+
+		None                (0),        ///< No properties defined.
+		CoverImage          (1<<0),     ///< This item is the cover image for the publication.
+		ContainsMathML      (1<<1),     ///< This item contains MathML markup.
+		Navigation          (1<<2),     ///< This item is the EPUB 3 navigation document for the publication.
+		HasRemoteResources  (1<<3),     ///< This item accesses resources located outside the EPUB container.
+		HasScriptedContent  (1<<4),     ///< This item has content which uses JavaScript or HTML5 forms.
+		ContainsSVG         (1<<5),     ///< This item contains SVG markup.
+		ContainsSwitch      (1<<6),     ///< This item contains an `epub:switch` element.
+
+		AllPropertiesMask   ((1<<7)-1); ///< A mask for all standard EPUB 3 properties.
+		private final int flag;
+
+		ItemProperties(int flag) {
+
+			this.flag = flag;
+		}
+	}
+
+	private final long __nativePtr;
+	private final String mId;
 	/**
 	 * Location, relative to the manifestation's Package document.
 	 */
@@ -33,9 +55,15 @@ public class ManifestItem {
 	 */
 	private final String mMediaType;
 
-	public ManifestItem(String href, String mediaType) {
+	public ManifestItem(long nativePtr, String id, String href, String mediaType) {
+		__nativePtr = nativePtr;
+		mId = id;
 		mHref = href;
 		mMediaType = mediaType;
+	}
+
+	public String getId() {
+		return mId;
 	}
 
 	public String getHref() {
@@ -46,6 +74,40 @@ public class ManifestItem {
 		return mMediaType;
 	}
 	
+	public boolean isCover() {
+		return hasProperty(ItemProperties.CoverImage);
+	}
+
+	public boolean isMathml() {
+		return hasProperty(ItemProperties.ContainsMathML);
+	}
+
+	public boolean isNavigation() {
+		return hasProperty(ItemProperties.Navigation);
+	}
+
+	public boolean hasRemoteResources() {
+		return hasProperty(ItemProperties.HasRemoteResources);
+	}
+
+	public boolean hasScriptedContent() {
+		return hasProperty(ItemProperties.HasScriptedContent);
+	}
+
+	public boolean containsSVG() {
+		return hasProperty(ItemProperties.ContainsSVG);
+	}
+
+	public boolean containsSwitch() {
+		return hasProperty(ItemProperties.ContainsSwitch);
+	}
+
+	private boolean hasProperty(ItemProperties itemProperty) {
+		return nativeHasProperty(__nativePtr, itemProperty.flag);
+	}
+
+	private native boolean nativeHasProperty(long nativePtr, int flag);
+
 	/**
 	 * Returns true if the manifest item is an HTML resource.
 	 * Returns false otherwise.

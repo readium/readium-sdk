@@ -256,7 +256,7 @@ shared_ptr<xml::Document> ManifestItem::ReferencedDocument() const
 
     shared_ptr<xml::Document> result(nullptr);
 #if EPUB_USE(LIBXML2)
-    int flags = XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR;
+    int flags = XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR|XML_PARSE_NONET;
     if ( _mediaType == "text/html" )
         result = reader->htmlReadDocument(path.c_str(), encoding, flags);
     else
