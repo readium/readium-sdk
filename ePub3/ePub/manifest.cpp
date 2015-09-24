@@ -256,11 +256,10 @@ shared_ptr<xml::Document> ManifestItem::ReferencedDocument() const
 
     shared_ptr<xml::Document> result(nullptr);
 #if EPUB_USE(LIBXML2)
-    int flags = XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR;
     if ( _mediaType == "text/html" )
-        result = reader->htmlReadDocument(path.c_str(), encoding, flags);
+        result = reader->htmlReadDocument(path.c_str(), encoding);
     else
-        result = reader->xmlReadDocument(path.c_str(), encoding, flags);
+        result = reader->xmlReadDocument(path.c_str(), encoding);
 #elif EPUB_USE(WIN_XML)
 	result = reader->ReadDocument(path.c_str(), "utf-8", 0);
 #endif
