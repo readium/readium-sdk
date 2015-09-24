@@ -213,7 +213,6 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 			{
 				// Can be used to check / debug encoding issues
 				NSString * dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-				NSLog(@"XHTML SOURCE: %@", dataStr);
 
 				// FORCE HTML WebView parser
 				//@"application/xhtml+xml"

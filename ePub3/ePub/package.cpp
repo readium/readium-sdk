@@ -393,7 +393,17 @@ bool Package::Open(const string& path)
 #if _XML_OVERRIDE_SWITCHES
     __setupLibXML();
 #endif
-    auto status = PackageBase::Open(path) && Unpack();
+    auto status = PackageBase::Open(path);
+	
+	if (status) {
+		// We want to setup the content filters chain before unpacking
+		// the package, in case its resources are encrypted.
+		auto fm = FilterManager::Instance();
+		auto fc = fm->BuildFilterChainForPackage(shared_from_this());
+		SetFilterChain(fc);
+		
+		status = Unpack();
+	}
 
     if (status)
     {

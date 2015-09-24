@@ -493,6 +493,7 @@ public:
     
     unique_ptr<ArchiveReader>   ReaderForRelativePath(const string& path)       const;
 
+	// FIXME: this might be obsolete (not in use)
     unique_ptr<ArchiveXmlReader>    XmlReaderForRelativePath(const string& path)    const {
         try { return unique_ptr<ArchiveXmlReader>(new ArchiveXmlReader(ReaderForRelativePath(path))); }
         catch (std::invalid_argument&) { return nullptr; }
