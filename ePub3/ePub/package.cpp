@@ -731,6 +731,15 @@ bool Package::Unpack()
             }
             else if ( _getProp(node, "name").size() > 0 )
             {
+                // It's an EPUB 2 property, we save them to allow
+                // backward compatiblity by host apps.
+                string name = _getProp(node, "name");
+                string content = _getProp(node, "content");
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+	                _EPUB2Properties.emplace(name, content);
+#else
+	                _EPUB2Properties[name] = content;
+#endif
                 // it's an ePub2 item-- ignore it
                 continue;
             }
@@ -1822,6 +1831,17 @@ void Package::InitMediaSupport()
         }
     }
 }
+
+string Package::EPUB2PropertyMatching(string name) const
+{
+    auto found = _EPUB2Properties.find(name);
+    if (found != _EPUB2Properties.end()) {
+        return found->second;
+    }
+
+    return string::EmptyString;
+}
+
 void Package::CompileSpineItemTitles()
 {
 	NavigationTablePtr toc = TableOfContents();

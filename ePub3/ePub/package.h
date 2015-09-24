@@ -352,6 +352,14 @@ public:
      */
     typedef std::map<string, MediaSupportInfoPtr>	MediaSupportList;
     
+    /**
+     Map of EPUB 2 properties for backward compatibility.
+     The keys are the properties names and the values are their
+     content.
+     eg. <meta name="cover" content="cover.png"/>
+     */
+    typedef std::map<string, string> EPUB2PropertyList;
+    
 private:
                             Package()                                   _DELETED_;
                             Package(const Package&)                     _DELETED_;
@@ -875,6 +883,13 @@ public:
     virtual void            SetMediaSupport(MediaSupportList&& list);
     
     /**
+     Returns the value (content) of the EPUB 2 property with given
+     name. Used to provide backward compatibility by host app.
+     @param name Name of the property (name attribute of the <meta> tag)
+     */
+    virtual string          EPUB2PropertyMatching(string name) const;
+    
+    /**
      Assigns a filter chain to this package.
      
      This is called automatically by Container at the end of its initialization. The
@@ -917,6 +932,7 @@ public:
 protected:
     LoadEventHandler        _loadEventHandler;      ///< The current handler for load events.
     MediaSupportList        _mediaSupport;          ///< A list of media types with their support details.
+    EPUB2PropertyList       _EPUB2Properties;       ///< A list of EPUB 2 properties for backward compatibility.
     
     void                    InitMediaSupport();
     
