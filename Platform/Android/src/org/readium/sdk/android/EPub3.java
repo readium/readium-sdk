@@ -41,7 +41,7 @@ public class EPub3 {
 	 */
 	static {
 		// Load the ePub3 Native lib
-        System.loadLibrary("epub3");
+		System.loadLibrary("epub3");
 	}
 	
 	
@@ -107,9 +107,9 @@ public class EPub3 {
 	}
 	
 	
-    /*
-     * Static native JNI exported methods
-     */
+	/*
+	 * Static native JNI exported methods
+	 */
 	
 	/**
 	 * Sets the core ePub3 SDK cache path, where it can
@@ -120,14 +120,14 @@ public class EPub3 {
 	 */
 	public static native void setCachePath(String cachePath);
 	
-  /**
-   * Sets a handler that will be called after the filter chain
-   * has been populated. This allows the application to
-   * register any additional filters from within the handler.
-   * This needs to be called before any ePub3 library calls.
-   * @param handler The handler that will be called
-   */
-  public static native void setPostFilterPopulationHandler(Runnable handler);
+	/**
+	 * Sets a handler that will be called after the filter chain
+	 * has been populated. This allows the application to
+	 * register any additional filters from within the handler.
+	 * This needs to be called before any ePub3 library calls.
+	 * @param handler The handler that will be called
+	 */
+	public static native void setPostFilterPopulationHandler(Runnable handler);
 
 	/**
 	 * Checks if the supplied book is EPUB3. 
@@ -163,19 +163,19 @@ public class EPub3 {
 		container.close();
 	}
 
-    public static SdkErrorHandler m_SdkErrorHandler = null;
-    public static void setSdkErrorHandler(SdkErrorHandler sdkErrorHandler) {
-        m_SdkErrorHandler = sdkErrorHandler;
-    }
+	public static SdkErrorHandler m_SdkErrorHandler = null;
+	public static void setSdkErrorHandler(SdkErrorHandler sdkErrorHandler) {
+		m_SdkErrorHandler = sdkErrorHandler;
+	}
 
 	private static boolean handleSdkError(String message, boolean isSevereEpubError) {
-        if (m_SdkErrorHandler != null) {
-            return m_SdkErrorHandler.handleSdkError(message, isSevereEpubError);
-        }
-            
-        System.out.println("!SdkErrorHandler: " + message + " (" + (isSevereEpubError ? "warning" : "info") + ")");
+		if (m_SdkErrorHandler != null) {
+			return m_SdkErrorHandler.handleSdkError(message, isSevereEpubError);
+		}
+			
+		System.out.println("!SdkErrorHandler: " + message + " (" + (isSevereEpubError ? "warning" : "info") + ")");
 
-    	// never throws an exception
-    	return true;
+		// never throws an exception
+		return true;
 	}
 }
