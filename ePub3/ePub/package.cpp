@@ -1580,6 +1580,18 @@ const string& Package::Language() const
         return string::EmptyString;
     return items[0]->Value();
 }
+shared_ptr<ManifestItem> Package::CoverManifestItem() const
+{
+    string EPUB2CoverID = EPUB2PropertyMatching(string("cover"));
+    for (auto& item : _manifest)
+    {
+        if (item.second->HasProperty(ePub3::ItemProperties::CoverImage) || item.second->Identifier() == EPUB2CoverID) {
+            return item.second;
+        }
+    }
+
+    return nullptr;
+}
 const string& Package::MediaOverlays_ActiveClass() const
 {
     // See:
