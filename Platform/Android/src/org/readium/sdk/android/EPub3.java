@@ -127,7 +127,7 @@ public class EPub3 {
 	 * This needs to be called before any ePub3 library calls.
 	 * @param handler The handler that will be called
 	 */
-	public static native void setPostFilterPopulationHandler(Runnable handler);
+	public static native void setContentFiltersRegistrationHandler(Runnable handler);
 
 	/**
 	 * Checks if the supplied book is EPUB3. 

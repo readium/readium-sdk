@@ -85,8 +85,8 @@
 		ePub3::InitializeSdk();
 		ePub3::PopulateFilterManager();
 		
-		if ([delegate respondsToSelector:@selector(containerRegisterFilters:)]) {
-			[delegate containerRegisterFilters:self];
+		if ([delegate respondsToSelector:@selector(containerRegisterContentFilters:)]) {
+			[delegate containerRegisterContentFilters:self];
 		}
 
 		m_path = path;

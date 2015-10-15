@@ -104,14 +104,14 @@ jmethodID addManifestItemToList_ID;
  */
 
 static jclass javaEPub3Class = NULL;
-static jobject postFilterPopulateHandler = NULL;
+static jobject contentFiltersRegistrationHandler = NULL;
 
 static jmethodID createStringList_ID;
 static jmethodID addStringToList_ID;
 static jmethodID createBuffer_ID;
 static jmethodID appendBytesToBuffer_ID;
 static jmethodID handleSdkError_ID;
-static jmethodID postFilterPopulateHandler_Run_ID;
+static jmethodID contentFiltersRegistrationHandler_Run_ID;
 
 
 /*
@@ -255,9 +255,9 @@ static void initializeReadiumSDK(JNIEnv* env)
     ePub3::InitializeSdk();
     ePub3::PopulateFilterManager();
 
-    if (postFilterPopulateHandler != NULL) {
-        LOGD("initializeReadiumSDK(): calling post filter handler %p", postFilterPopulateHandler);
-        env->CallVoidMethod(postFilterPopulateHandler, postFilterPopulateHandler_Run_ID);
+    if (contentFiltersRegistrationHandler != NULL) {
+        LOGD("initializeReadiumSDK(): calling content filters registration handler %p", contentFiltersRegistrationHandler);
+        env->CallVoidMethod(contentFiltersRegistrationHandler, contentFiltersRegistrationHandler_Run_ID);
     }
 
 	LOGD("initializeReadiumSDK(): initialization of Readium SDK finished");
@@ -366,13 +366,13 @@ Java_org_readium_sdk_android_EPub3_setCachePath(JNIEnv* env, jobject thiz, jstri
 
 /*
  * Class:     org_readium_sdk_android_EPub3
- * Method:    setPostFilterPopulationHandler
+ * Method:    setContentFiltersRegistrationHandler
  * Signature: (Ljava/lang/Runnable;)V
  */
 JNIEXPORT void JNICALL
-Java_org_readium_sdk_android_EPub3_setPostFilterPopulationHandler(JNIEnv* env, jobject thiz, jobject handler) {
+Java_org_readium_sdk_android_EPub3_setContentFiltersRegistrationHandler(JNIEnv* env, jobject thiz, jobject handler) {
 
-    LOGD("EPub3.setPostFilterPopulationHandler(): received handler object %p", handler);
+    LOGD("EPub3.setContentFiltersRegistrationHandler(): received handler object %p", handler);
     if (handler != NULL) {
         /**
          * Save a global reference to the handler object and attempt to find a void-returning
@@ -384,14 +384,14 @@ Java_org_readium_sdk_android_EPub3_setPostFilterPopulationHandler(JNIEnv* env, j
         jmethodID m = env->GetMethodID(rc, "run", "()V");
         
         if (m == NULL) {
-            LOGE("EPub3.setPostFilterPopulationHandler(): could not find 'run' method on handler class");
+            LOGE("EPub3.setContentFiltersRegistrationHandler(): could not find 'run' method on handler class");
             env->DeleteGlobalRef (hg);
             return;
         }
 
-        LOGD("EPub3.setPostFilterPopulationHandler(): saved object %p, method %p", hg, m);
-        postFilterPopulateHandler = hg;
-        postFilterPopulateHandler_Run_ID = m;
+        LOGD("EPub3.setContentFiltersRegistrationHandler(): saved object %p, method %p", hg, m);
+        contentFiltersRegistrationHandler = hg;
+        contentFiltersRegistrationHandler_Run_ID = m;
     }
 }
 

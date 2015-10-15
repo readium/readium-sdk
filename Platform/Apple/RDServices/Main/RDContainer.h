@@ -42,7 +42,7 @@
  * the filter manager.
  * You can implement this to register custom filters.
  */
-- (void)containerRegisterFilters:(RDContainer *)container;
+- (void)containerRegisterContentFilters:(RDContainer *)container;
 
 @end
 

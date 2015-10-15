@@ -139,10 +139,10 @@ JNIEXPORT void JNICALL Java_org_readium_sdk_android_EPub3_setCachePath(JNIEnv* e
 
 /*
  * Class:     org_readium_sdk_android_EPub3
- * Method:    setPostFilterPopulationHandler
+ * Method:    setContentFiltersRegistrationHandler
  * Signature: (Ljava/lang/Runnable;)V
  */
-JNIEXPORT void JNICALL Java_org_readium_sdk_android_EPub3_setPostFilterPopulationHandler(JNIEnv* env, jobject thiz, jobject handler);
+JNIEXPORT void JNICALL Java_org_readium_sdk_android_EPub3_setContentFiltersRegistrationHandler(JNIEnv* env, jobject thiz, jobject handler);
 
 /*
  * Class:     org_readium_sdk_android_EPub3
