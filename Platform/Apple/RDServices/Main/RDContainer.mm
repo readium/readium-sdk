@@ -32,7 +32,7 @@
 #import <ePub3/initialization.h>
 #import <ePub3/utilities/error_handler.h>
 #import "RDPackage.h"
-
+#include <lcp/initialization.h>
 
 @interface RDContainer () {
 	@private std::shared_ptr<ePub3::Container> m_container;
@@ -84,6 +84,9 @@
 
 		ePub3::InitializeSdk();
 		ePub3::PopulateFilterManager();
+
+        // LCP content module and authentication handerl ininitialization
+        lcp::Initialize();
 
 		m_path = path;
 		m_container = ePub3::Container::OpenContainer(path.UTF8String);

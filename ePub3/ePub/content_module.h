@@ -76,6 +76,10 @@ public:
     async_result<bool>
     ApproveUserAction(const UserAction& action)             = 0;
     
+    virtual string GetModuleName()                          = 0;
+    
+    virtual void init()                                     = 0;
+
 };
 
 EPUB3_END_NAMESPACE
