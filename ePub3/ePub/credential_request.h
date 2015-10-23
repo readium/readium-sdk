@@ -50,10 +50,10 @@ public:
     CredentialRequest(const string& title,
                       const string& message);
     CredentialRequest(const CredentialRequest& o)
-        : m_components(o.m_components), m_credentials(), m_promise()
+        : m_components(o.m_components), m_credentials(), m_promise(), m_pressedButtonIndex(0)
         {}
     CredentialRequest(CredentialRequest&& o)
-        : m_components(std::move(o.m_components)), m_credentials(std::move(o.m_credentials)), m_promise(std::move(o.m_promise))
+        : m_components(std::move(o.m_components)), m_credentials(std::move(o.m_credentials)), m_promise(std::move(o.m_promise)), m_pressedButtonIndex(std::move(o.m_pressedButtonIndex))
         {}
     virtual ~CredentialRequest()
         {}
@@ -63,6 +63,7 @@ public:
 			m_components = o.m_components;
 			m_credentials = o.m_credentials;
 			m_promise = promise<Credentials>();
+            m_pressedButtonIndex = o.m_pressedButtonIndex;
             return *this;
 		}
     CredentialRequest& operator=(CredentialRequest&& o)
@@ -70,6 +71,7 @@ public:
             m_components.swap(o.m_components);
             m_credentials.swap(o.m_credentials);
             m_promise.swap(o.m_promise);
+            m_pressedButtonIndex = o.m_pressedButtonIndex;
             return *this;
         }
     
@@ -111,13 +113,13 @@ private:
     {
     public:
         Component(Type type, const string& title)
-            : m_type(type), m_title(title), m_secret(type == Type::MaskedInput), m_default()
+        : m_type(type), m_title(title), m_secret(type == Type::MaskedInput), m_default(), m_btnHandler()
             {}
         Component(Type type, string&& title)
-            : m_type(type), m_title(title), m_secret(type == Type::MaskedInput), m_default()
+        : m_type(type), m_title(title), m_secret(type == Type::MaskedInput), m_default(), m_btnHandler()
             {}
         Component(const Component& o)
-            : m_type(o.m_type), m_title(o.m_title), m_secret(o.m_secret), m_default(o.m_default)
+        : m_type(o.m_type), m_title(o.m_title), m_secret(o.m_secret), m_default(o.m_default), m_btnHandler(o.m_btnHandler)
             {}
         ~Component() {}
         
@@ -126,6 +128,9 @@ private:
         string      m_title;
         bool        m_secret;
         string      m_default;
+        /* added by hslee 15/04/28 */
+        ButtonHandler m_btnHandler;
+        /* end added*/
         
         friend class CredentialRequest;
         
@@ -134,6 +139,33 @@ private:
     std::vector<Component>          m_components;
     Credentials                     m_credentials;
     promised_result<Credentials>    m_promise;
+    
+    /* added by hslee 15/04/13 */
+    /* modified by hslee 15/04/28 */
+    std::size_t                     m_pressedButtonIndex;
+public:
+    std::size_t
+    GetComponentCount() { return m_components.size(); }
+    
+    void
+    SetCredentialItem(string title, string input);
+    
+    future<Credentials>
+    GetSignal() { return m_promise.get_future(); }
+    
+    string&
+    GetDefaultValue(std::size_t idx);
+    
+    ButtonHandler
+    GetButtonHandler(std::size_t idx);
+    
+    std::size_t
+    GetPressedButtonIndex(){ return m_pressedButtonIndex; }
+    
+    void
+    SetPressedButtonIndex(std::size_t idx){ m_pressedButtonIndex = idx; }
+    /* end added */
+
 };
 
 EPUB3_END_NAMESPACE
