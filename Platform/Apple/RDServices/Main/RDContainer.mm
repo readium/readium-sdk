@@ -65,43 +65,54 @@
 	if (self = [super init]) {
 		m_delegate = delegate;
 
-		ePub3::ErrorHandlerFn sdkErrorHandler = ^(const ePub3::error_details& err) {
+        try {
+            ePub3::ErrorHandlerFn sdkErrorHandler = ^(const ePub3::error_details& err) {
 
-			const char * msg = err.message();
+                const char * msg = err.message();
 
-			BOOL isSevereEpubError = NO;
-			if (err.is_spec_error()
-					&& (err.severity() == ePub3::ViolationSeverity::Critical
-					|| err.severity() == ePub3::ViolationSeverity::Major))
-				isSevereEpubError = YES;
+                BOOL isSevereEpubError = NO;
+                if (err.is_spec_error()
+                        && (err.severity() == ePub3::ViolationSeverity::Critical
+                        || err.severity() == ePub3::ViolationSeverity::Major))
+                    isSevereEpubError = YES;
 
-			BOOL res = [m_delegate container:self handleSdkError:[NSString stringWithUTF8String:msg] isSevereEpubError:isSevereEpubError];
+                BOOL res = [m_delegate container:self handleSdkError:[NSString stringWithUTF8String:msg] isSevereEpubError:isSevereEpubError];
 
-			return (res == YES ? true : false);
-			//return ePub3::DefaultErrorHandler(err);
-		};
-		ePub3::SetErrorHandler(sdkErrorHandler);
+                return (res == YES ? true : false);
+                //return ePub3::DefaultErrorHandler(err);
+            };
+            ePub3::SetErrorHandler(sdkErrorHandler);
 
-		ePub3::InitializeSdk();
-		ePub3::PopulateFilterManager();
+            ePub3::InitializeSdk();
+            ePub3::PopulateFilterManager();
 
-        // LCP content module and authentication handerl ininitialization
-        lcp::Initialize();
+            // LCP content module and authentication handerl ininitialization
+            lcp::Initialize();
 
-		m_path = path;
-		m_container = ePub3::Container::OpenContainer(path.UTF8String);
+            m_path = path;
+            m_container = ePub3::Container::OpenContainer(path.UTF8String);
 
-		if (m_container == nullptr) {
-			return nil;
-		}
+            if (m_container == nullptr) {
+                return nil;
+            }
 
-		m_packageList = m_container->Packages();
-		m_packages = [[NSMutableArray alloc] initWithCapacity:4];
+            m_packageList = m_container->Packages();
+            m_packages = [[NSMutableArray alloc] initWithCapacity:4];
 
-		for (auto i = m_packageList.begin(); i != m_packageList.end(); i++) {
-			RDPackage *package = [[RDPackage alloc] initWithPackage:i->get()];
-			[m_packages addObject:package];
-		}
+            for (auto i = m_packageList.begin(); i != m_packageList.end(); i++) {
+                RDPackage *package = [[RDPackage alloc] initWithPackage:i->get()];
+                [m_packages addObject:package];
+            }
+        
+        } catch (std::exception& e) {
+            auto msg = e.what();
+            
+            UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"EPUB warning:" message:[NSString stringWithUTF8String:msg] delegate:self cancelButtonTitle:@"ok" otherButtonTitles:nil];
+            [alert show];
+        } catch (...) {
+            NSLog(@"unknown exceprion");
+        }
+
 	}
 
 	return self;
