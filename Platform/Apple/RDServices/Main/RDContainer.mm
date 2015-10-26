@@ -105,10 +105,12 @@
             }
         
         } catch (std::exception& e) {
-            auto msg = e.what();
-            
-            UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"EPUB warning:" message:[NSString stringWithUTF8String:msg] delegate:self cancelButtonTitle:@"ok" otherButtonTitles:nil];
-            [alert show];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                auto msg = e.what();
+                
+                UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"EPUB warning:" message:[NSString stringWithUTF8String:msg] delegate:self cancelButtonTitle:@"ok" otherButtonTitles:nil];
+                [alert show];
+            });
         } catch (...) {
             NSLog(@"unknown exceprion");
         }
