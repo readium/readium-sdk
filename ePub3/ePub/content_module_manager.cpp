@@ -93,10 +93,6 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
             if (bool(container)) {
                 // we have a valid container already
                 /* modified by hslee 15/03/18 */
-                /* ***** Description *****
-                 주석 처리한 부분을 풀 경우, 여기서 리턴되는 future의 ContainerPtr은 nullptr이 되어
-                 주석 처리함. 아래의 future_status가 ready가 아닌 경우 또한 마찬가지.
-                 */
 //				result = make_ready_future(container);
 //                result = result.then([modulePtr](future<ContainerPtr> fut) {
 //                    ContainerPtr ptr = fut.get();
