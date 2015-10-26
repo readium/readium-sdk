@@ -77,8 +77,6 @@ public:
     ApproveUserAction(const UserAction& action)             = 0;
     
     virtual string GetModuleName()                          = 0;
-    
-    virtual void init()                                     = 0;
 
 };
 
