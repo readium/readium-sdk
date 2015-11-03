@@ -56,7 +56,8 @@ bool EncryptionInfo::ParseXML(shared_ptr<xml::Node> node)
     // Added by DRM inside, T.H. Kim on 2015-04-15
     // To get additional information for the compressed and encrypted contents
     strings = xpath.Strings("./enc:EncryptionProperties/enc:EncryptionProperty/ep:compression/@method", node);
-    if (!strings.empty()) {
+    if (!strings.empty())
+    {
         if (strings[0] == "0" || strings[0] == "8")
             _compression_method = strings[0];
         else
@@ -67,7 +68,8 @@ bool EncryptionInfo::ParseXML(shared_ptr<xml::Node> node)
         _compression_method = "0";
     
     strings = xpath.Strings("./enc:EncryptionProperties/enc:EncryptionProperty/ep:compression/@sourceSize", node);
-    if (!strings.empty()) {
+    if (!strings.empty())
+    {
         for ( int i = 0 ; i < strings[0].size() ; i++)
             if (strings[0][i] < '0' || strings[0][i] > '9' )
                 return false;

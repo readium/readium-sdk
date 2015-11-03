@@ -112,7 +112,7 @@
                 [alert show];
             });
         } catch (...) {
-            NSLog(@"unknown exceprion");
+            NSLog(@"unknown exceprion during initialization of RDContainer.mm");
         }
 
 	}

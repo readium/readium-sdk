@@ -144,26 +144,19 @@ private:
     /* modified by hslee 15/04/28 */
     std::size_t                     m_pressedButtonIndex;
 public:
-    std::size_t
-    GetComponentCount() { return m_components.size(); }
+    std::size_t     GetComponentCount() { return m_components.size(); }
     
-    void
-    SetCredentialItem(string title, string input);
+    void            SetCredentialItem(string title, string input);
     
-    future<Credentials>
-    GetSignal() { return m_promise.get_future(); }
+    future<Credentials>     GetSignal() { return m_promise.get_future(); }
     
-    string&
-    GetDefaultValue(std::size_t idx);
+    string&                 GetDefaultValue(std::size_t idx);
     
-    ButtonHandler
-    GetButtonHandler(std::size_t idx);
+    ButtonHandler           GetButtonHandler(std::size_t idx);
     
-    std::size_t
-    GetPressedButtonIndex(){ return m_pressedButtonIndex; }
+    std::size_t             GetPressedButtonIndex(){ return m_pressedButtonIndex; }
     
-    void
-    SetPressedButtonIndex(std::size_t idx){ m_pressedButtonIndex = idx; }
+    void                    SetPressedButtonIndex(std::size_t idx){ m_pressedButtonIndex = idx; }
     /* end added */
 
 };
