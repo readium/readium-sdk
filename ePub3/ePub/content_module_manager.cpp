@@ -85,6 +85,14 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
         // check the state of the future -- has it already been set?
         future_status status = result.wait_for(std::chrono::system_clock::duration(0));
         
+        /*
+         Following 'if-else' clauses which have 'result.then' make a malfunction
+         while Content Module processing for DRM implementation.
+         But there is no problem to handle both plain and encrypted resources 
+         with next clauses which are detouring result.then
+         */
+        
+        /*
         // if it's ready, the call to get() will never block
         if (status == future_status::ready) {
 			// unpack the future
@@ -92,29 +100,40 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
 
             if (bool(container)) {
                 // we have a valid container already
-                /* modified by hslee 15/03/18 */
-//				result = make_ready_future(container);
-//                result = result.then([modulePtr](future<ContainerPtr> fut) {
-//                    ContainerPtr ptr = fut.get();
+				result = make_ready_future(container);
+                result = result.then([modulePtr](future<ContainerPtr> fut) {
+                    ContainerPtr ptr = fut.get();
                     modulePtr->RegisterContentFilters();
-//                    return ptr;
-//                });
-                /* end modified */
-                found = true;
+                    return ptr;
+                });
                 break;
             } else {
                 continue;       // no container, so try the next module
             }
         } else {
-            /* modified by hslee 15/03/18 */
             // it must be 'timeout' or 'deferred', which means the module is attempting to process the file
             // we take this to mean that we stop looking and return the result
-//            result = result.then([modulePtr](future<ContainerPtr> fut) {
-//                ContainerPtr ptr = fut.get();
+            result = result.then([modulePtr](future<ContainerPtr> fut) {
+                ContainerPtr ptr = fut.get();
                 modulePtr->RegisterContentFilters();
-//                return ptr;
-//            });
-            /* end modified */
+                return ptr;
+            });
+            break;
+        }
+        */
+        
+        if (status == future_status::ready) {
+            ContainerPtr container = result.get();
+            
+            if (bool(container)) {
+                modulePtr->RegisterContentFilters();
+                found = true;
+                break;
+            } else {
+                continue;
+            }
+        } else {
+            modulePtr->RegisterContentFilters();
             found = true;
             break;
         }
