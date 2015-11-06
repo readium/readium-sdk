@@ -89,7 +89,7 @@
                 [delegate containerRegisterContentFilters:self];
             }
             
-            //Content Modules for each DRM library, if any, should be registered in the function
+            //Content Modules for each DRM library, if any, should be registered in the function.
             if ([delegate respondsToSelector:@selector(containerRegisterContentModules:)]) {
                 [delegate containerRegisterContentModules:self];
             }
