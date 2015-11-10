@@ -434,6 +434,9 @@ Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring p
     }
     catch (const std::invalid_argument& ex) {
     	LOGD("OpenContainer() EXCEPTION: %s\n", ex.what());
+        jstring jmessage = m_env->NewStringUTF(ex.what());
+        javaEPub3_handleSdkError(env, jmessage, true);
+        return nullptr;
     }
     
     LOGD("EPub3.openBook(): _container OK, version: %s\n", _container->Version().c_str());
