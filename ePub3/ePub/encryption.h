@@ -53,15 +53,16 @@ public:
     typedef string                  algorithm_type;
     
 public:
+    /// Modified by T.H. Kim on 2015-04-15
     ///
     /// Creates a new EncryptionInfo with no details filled in.
-                    EncryptionInfo(ContainerPtr owner) : OwnedBy(owner), _algorithm(), _path() {}
+                    EncryptionInfo(ContainerPtr owner) : OwnedBy(owner), _algorithm(), _path(), _compression_method(), _uncompressed_size() {}
     ///
     /// Copy constructor.
-                    EncryptionInfo(const EncryptionInfo& o) : OwnedBy(o), _algorithm(o._algorithm), _path(o._path) {}
+                    EncryptionInfo(const EncryptionInfo& o) : OwnedBy(o), _algorithm(o._algorithm), _path(o._path), _compression_method(o._compression_method), _uncompressed_size(o._uncompressed_size) {}
     ///
     /// Move constructor.
-                    EncryptionInfo(EncryptionInfo&& o) : OwnedBy(std::move(o)), _algorithm(std::move(o._algorithm)), _path(std::move(o._path)) {}
+                    EncryptionInfo(EncryptionInfo&& o) : OwnedBy(std::move(o)), _algorithm(std::move(o._algorithm)), _path(std::move(o._path)),  _compression_method(std::move(o._compression_method)), _uncompressed_size(std::move(o._uncompressed_size)) {}
     virtual         ~EncryptionInfo() {}
     
     
@@ -93,9 +94,19 @@ public:
     virtual void                    SetPath(const string& path)                     { _path = path; }
     virtual void                    SetPath(string&& path)                          { _path = path; }
     
+    // Added by DRM inside T.H. Kim on 2015-04-15
+    // Return additional information for the compressed and encrypted contents
+    virtual const string&           CompressionMethod()						const	{ return _compression_method; }
+    virtual const string&           UnCompressedSize()						const	{ return _uncompressed_size;}
+
 protected:
     algorithm_type  _algorithm;     ///< The algorithm identifier, as per XML-ENC or OCF.
     string          _path;          ///< The Container-relative path to an encrypted resource.
+
+    // Added by DRM inside T.H. Kim on 2015-04-15
+    // To get additional information for the compressed and encrypted contents
+    string          _compression_method;  //  Compression method : 0(no compression), 8(deflated)
+    string          _uncompressed_size;   //  Uncompressed size of the content
 
 };
 

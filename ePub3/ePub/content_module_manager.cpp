@@ -76,6 +76,7 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
     }
     
     future<ContainerPtr> result;
+    bool found = false;
     for (auto& item : _known_modules)
     {
         auto modulePtr = item.second;
@@ -84,6 +85,14 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
         // check the state of the future -- has it already been set?
         future_status status = result.wait_for(std::chrono::system_clock::duration(0));
         
+        /*
+         Following 'if-else' clauses which have 'result.then' make a malfunction
+         while Content Module processing for DRM implementation.
+         But there is no problem to handle both plain and encrypted resources 
+         with next clauses which are detouring result.then
+         */
+        
+        /*
         // if it's ready, the call to get() will never block
         if (status == future_status::ready) {
 			// unpack the future
@@ -111,6 +120,28 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
             });
             break;
         }
+        */
+        
+        if (status == future_status::ready) {
+            ContainerPtr container = result.get();
+            
+            if (bool(container)) {
+                modulePtr->RegisterContentFilters();
+                found = true;
+                break;
+            } else {
+                continue;
+            }
+        } else {
+            modulePtr->RegisterContentFilters();
+            found = true;
+            break;
+        }
+    }
+    
+    if ( !found && result.__future_ == nullptr )
+    {
+        throw std::invalid_argument("Unsupported DRM EPUB");
     }
     
     return result;
