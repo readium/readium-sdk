@@ -53,5 +53,35 @@ void PopulateFilterManager()
     });
 }
 
-EPUB3_END_NAMESPACE
+SDKInitializeAndRelease g_instance;
 
+SDKInitializeAndRelease::SDKInitializeAndRelease()
+{
+    if (this != &g_instance)
+        throw std::logic_error("SDKInitializeAndRelease should be a global static");
+
+    Initialize();
+}
+SDKInitializeAndRelease::~SDKInitializeAndRelease()
+{
+    Teardown();
+}
+void SDKInitializeAndRelease::Initialize()
+{
+#if EPUB_USE(LIBXML2)
+    xmlInitParser();	// Please check this invocation before any libxml2 parsing
+#endif
+}
+void SDKInitializeAndRelease::Teardown()
+{
+#if EPUB_USE(LIBXML2)
+    // One should call xmlCleanupParser() only when the process has finished using the library and all XML/HTML documents built with it.
+    xmlCleanupParser();
+#endif
+}
+SDKInitializeAndRelease& SDKInitializeAndRelease::Instance()
+{
+    return g_instance;  // returns the global static instance (for memory debugging purposes as the example)
+}
+
+EPUB3_END_NAMESPACE

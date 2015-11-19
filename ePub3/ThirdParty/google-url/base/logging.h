@@ -417,7 +417,12 @@ enum { DEBUG_MODE = 0 };
 // above.
 class LogMessage {
  public:
-	 LogMessage(const char* file, int line, LogSeverity severity, int ctr) {}
+     LogMessage(const char* file, int line, LogSeverity severity, int ctr)
+#if _WIN32 || _WIN64
+    ;
+#else
+    {}
+#endif
 
   // Two special constructors that generate reduced amounts of code at
   // LOG call sites for common cases.
@@ -427,22 +432,42 @@ class LogMessage {
   //
   // Using this constructor instead of the more complex constructor above
   // saves a couple of bytes per call site.
-	 LogMessage(const char* file, int line) {}
+     LogMessage(const char* file, int line)
+#if _WIN32 || _WIN64
+    ;
+#else
+    {}
+#endif
 
   // Used for LOG(severity) where severity != INFO.  Implied
   // are: ctr = 0
   //
   // Using this constructor instead of the more complex constructor above
   // saves a couple of bytes per call site.
-	 LogMessage(const char* file, int line, LogSeverity severity) {}
+     LogMessage(const char* file, int line, LogSeverity severity)
+#if _WIN32 || _WIN64
+    ;
+#else
+    {}
+#endif
 
   // A special constructor used for check failures.
   // Implied severity = LOG_FATAL
-	 LogMessage(const char* file, int line, const CheckOpString& result) {}
+     LogMessage(const char* file, int line, const CheckOpString& result)
+#if _WIN32 || _WIN64
+    ;
+#else
+    {}
+#endif
 
-	 ~LogMessage() {}
+     ~LogMessage()
+#if _WIN32 || _WIN64
+    ;
+#else
+    {}
+#endif
 
-  std::ostream& stream() { return stream_; }
+     std::ostream& stream() { return stream_; }
 
  private:
   void Init(const char* file, int line);

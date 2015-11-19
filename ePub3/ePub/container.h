@@ -102,6 +102,7 @@ public:
     
     ///
     /// Creates and returns a new Container instance by calling OpenContainerAsync() and blocking.
+	EPUB3_EXPORT
     static ContainerPtr
         OpenContainer(const string& path);
 

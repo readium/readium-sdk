@@ -216,15 +216,6 @@
     <ClInclude Include="..\..\..\..\ePub3\ThirdParty\utf8-cpp\include\utf8.h">
       <Filter>Source Files\ThirdParty\utf8</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\libzip\Config.h">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\libzip\zip.h">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\libzip\zipint.h">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\ePub3\ThirdParty\google-url\base\basictypes.h">
       <Filter>Source Files\ThirdParty\google-url</Filter>
     </ClInclude>
@@ -296,6 +287,21 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\ePub3\utilities\xml_identifiable.h">
       <Filter>Source Files\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\libzip\zipwin32.h">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\libzip\zipint.h">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\libzip\zipconf.h">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\libzip\zip.h">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\ePub3\ThirdParty\libzip\Config.h">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -404,168 +410,6 @@
     <ClCompile Include="..\..\..\..\ePub3\ePub\font_obfuscation.cpp">
       <Filter>Source Files\ePub\Filters\Encryption</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\mkstemp.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_add.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_add_dir.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_close.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_delete.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_dirent.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_entry_free.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_entry_new.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_err_str.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error_clear.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error_get.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error_get_sys_type.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error_strerror.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error_to_str.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fclose.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_error_clear.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_error_get.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_get_offset.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_strerror.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_filerange_crc.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fopen.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fopen_index.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fread.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_free.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_archive_comment.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_archive_flag.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_file_comment.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_name.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_num_files.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_memdup.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_name_locate.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_new.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_open.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_rename.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_replace.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_set_archive_comment.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_set_archive_flag.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_set_file_comment.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_set_name.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_buffer.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_file.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_filep.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_free.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_function.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_zip.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_stat.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_stat_index.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_stat_init.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_strerror.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange_all.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange_archive.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange_data.c">
-      <Filter>Source Files\ThirdParty\libzip</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\base\logging.cc">
       <Filter>Source Files\ThirdParty\google-url</Filter>
     </ClCompile>
@@ -637,6 +481,369 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ePub\property_holder.cpp">
       <Filter>Source Files\ePub\Components\Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\byte_buffer.cpp">
+      <Filter>Source Files\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\CPUCacheUtils_win.cpp">
+      <Filter>Source Files\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\error_handler.cpp">
+      <Filter>Source Files\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\executor.cpp">
+      <Filter>Source Files\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\future.cpp">
+      <Filter>Source Files\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\optional.cpp">
+      <Filter>Source Files\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\utilities\path_help.cpp">
+      <Filter>Source Files\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\content_module_manager.cpp">
+      <Filter>Source Files\ePub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\credential_request.cpp">
+      <Filter>Source Files\ePub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\epub_collection.cpp">
+      <Filter>Source Files\ePub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_chain.cpp">
+      <Filter>Source Files\ePub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_chain_byte_stream.cpp">
+      <Filter>Source Files\ePub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_chain_byte_stream_range.cpp">
+      <Filter>Source Files\ePub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager.cpp">
+      <Filter>Source Files\ePub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager_impl.cpp">
+      <Filter>Source Files\ePub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\initialization.cpp">
+      <Filter>Source Files\ePub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\link.cpp">
+      <Filter>Source Files\ePub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media-overlays_smil_data.cpp">
+      <Filter>Source Files\ePub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media-overlays_smil_model.cpp">
+      <Filter>Source Files\ePub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ePub\PassThroughFilter.cpp">
+      <Filter>Source Files\ePub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_utf-8.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange_data.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange_archive.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange_all.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_string.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_strerror.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_stat_init.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_stat_index.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_stat.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_zip_new.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_zip.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_write.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_window.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_win32handle.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_tell_write.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_tell.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_supports.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_stat.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_seek_write.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_seek.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_rollback_write.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_remove.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_read.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_pkware.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_open.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_layered.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_is_deleted.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_function.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_free.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_filep.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_file.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_error.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_deflate.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_crc.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_commit_write.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_close.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_call.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_buffer.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_source_begin_write.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_set_name.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_set_file_compression.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_set_file_comment.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_set_default_password.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_set_archive_flag.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_set_archive_comment.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_replace.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_rename.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_open.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_new.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_name_locate.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_memdup.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_io_util.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_num_files.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_num_entries.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_name.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_file_comment.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_encryption_implementation.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_compression_implementation.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_archive_flag.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_archive_comment.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fread.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fopen_index_encrypted.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fopen_index.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fopen_encrypted.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fopen.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_filerange_crc.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_strerror.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_set_mtime.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_set_external_attributes.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_set_comment.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_replace.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_rename.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_get_offset.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_get_external_attributes.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_get_comment.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_error_get.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_error_clear.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_file_add.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fdopen.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fclose.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_extra_field_api.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_extra_field.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error_to_str.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error_strerror.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error_get_sys_type.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error_get.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error_clear.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_error.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_err_str.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_entry.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_discard.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_dirent.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_dir_add.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_delete.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_close.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_buffer.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_add_entry.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_add_dir.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_add.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\mkstemp.c">
+      <Filter>Source Files\ThirdParty\libzip</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

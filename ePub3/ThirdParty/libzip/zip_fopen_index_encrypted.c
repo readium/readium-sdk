@@ -1,6 +1,6 @@
 /*
-  zip_free.c -- free struct zip
-  Copyright (C) 1999-2007 Dieter Baron and Thomas Klausner
+  zip_fopen_index_encrypted.c -- open file for reading by index w/ password
+  Copyright (C) 1999-2014 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <libzip@nih.at>
@@ -31,51 +31,57 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 
+#include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "zipint.h"
 
-
+static zip_file_t *_zip_file_new(zip_t *za);
 
-/* _zip_free:
-   frees the space allocated to a zipfile struct, and closes the
-   corresponding file. */
 
-void
-_zip_free(struct zip *za)
+ZIP_EXTERN zip_file_t *
+zip_fopen_index_encrypted(zip_t *za, zip_uint64_t index, zip_flags_t flags,
+			  const char *password)
 {
-    int i;
+    zip_file_t *zf;
+    zip_source_t *src;
 
-    if (za == NULL)
-	return;
+    if ((src=_zip_source_zip_new(za, za, index, flags, 0, 0, password)) == NULL)
+	return NULL;
 
-    if (za->zn)
-	free(za->zn);
-
-    if (za->zp)
-	fclose(za->zp);
-
-    _zip_cdir_free(za->cdir);
-
-    if (za->entry) {
-	for (i=0; i<za->nentry; i++) {
-	    _zip_entry_free(za->entry+i);
-	}
-	free(za->entry);
+    if (zip_source_open(src) < 0) {
+	_zip_error_set_from_source(&za->error, src);
+	zip_source_free(src);
+	return NULL;
     }
 
-    for (i=0; i<za->nfile; i++) {
-	if (za->file[i]->error.zip_err == ZIP_ER_OK) {
-	    _zip_error_set(&za->file[i]->error, ZIP_ER_ZIPCLOSED, 0);
-	    za->file[i]->za = NULL;
-	}
+    if ((zf=_zip_file_new(za)) == NULL) {
+	zip_source_free(src);
+	return NULL;
     }
 
-    free(za->file);
-    
-    free(za);
+    zf->src = src;
 
-    return;
+    return zf;
+}
+
+
+static zip_file_t *
+_zip_file_new(zip_t *za)
+{
+    zip_file_t *zf;
+
+    if ((zf=(zip_file_t *)malloc(sizeof(struct zip_file))) == NULL) {
+	zip_error_set(&za->error, ZIP_ER_MEMORY, 0);
+	return NULL;
+    }
+
+    zf->za = za;
+    zip_error_init(&zf->error);
+    zf->eof = 0;
+    zf->src = NULL;
+
+    return zf;
 }

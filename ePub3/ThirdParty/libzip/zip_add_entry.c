@@ -1,6 +1,6 @@
 /*
-  zip_entry_free.c -- free struct zip_entry
-  Copyright (C) 1999-2007 Dieter Baron and Thomas Klausner
+  zip_add_entry.c -- create and init struct zip_entry
+  Copyright (C) 1999-2014 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <libzip@nih.at>
@@ -31,22 +31,40 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 
 #include <stdlib.h>
 
 #include "zipint.h"
 
-
 
-void
-_zip_entry_free(struct zip_entry *ze)
+/* NOTE: Signed due to -1 on error.  See zip_add.c for more details. */
+
+zip_int64_t
+_zip_add_entry(zip_t *za)
 {
-    free(ze->ch_filename);
-    ze->ch_filename = NULL;
-    free(ze->ch_comment);
-    ze->ch_comment = NULL;
-    ze->ch_comment_len = -1;
+    zip_uint64_t idx;
 
-    _zip_unchange_data(ze);
+    if (za->nentry+1 >= za->nentry_alloc) {
+	zip_entry_t *rentries;
+	zip_uint64_t nalloc = za->nentry_alloc + 16;
+	zip_uint64_t realloc_size = sizeof(struct zip_entry) * (size_t)nalloc;
+
+	if (sizeof(struct zip_entry) * (size_t)za->nentry_alloc > realloc_size) {
+	    zip_error_set(&za->error, ZIP_ER_MEMORY, 0);
+	    return -1;
+	}
+	rentries = (zip_entry_t *)realloc(za->entry, sizeof(struct zip_entry) * (size_t)nalloc);
+	if (!rentries) {
+	    zip_error_set(&za->error, ZIP_ER_MEMORY, 0);
+	    return -1;
+	}
+	za->entry = rentries;
+	za->nentry_alloc = nalloc;
+    }
+
+    idx = za->nentry++;
+
+    _zip_entry_init(za->entry+idx);
+
+    return (zip_int64_t)idx;
 }

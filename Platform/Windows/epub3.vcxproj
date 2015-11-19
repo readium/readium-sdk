@@ -1,0 +1,372 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{033B6AAA-D741-4696-B687-F5BA0520436F}</ProjectGuid>
+    <RootNamespace>ReadiumSDK</RootNamespace>
+    <ProjectName>ePub3</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>C:\Program Files %28x86%29\Visual Leak Detector\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\Visual Leak Detector\lib\Win32;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\include;$(MSBuildProjectDirectory)\ReadiumSDK\include;$(MSBuildProjectDirectory)\..\..\ePub3;$(MSBuildProjectDirectory)\..\..\ePub3\utilities;$(MSBuildProjectDirectory)\..\..\ePub3\ePub;$(MSBuildProjectDirectory)\..\..\ePub3\xml;$(MSBuildProjectDirectory)\ReadiumSDK\Prebuilt\Include;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\google-url\src;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\utf8-cpp\include;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\icu4c\include;$(MSBuildProjectDirectory)\..\..\Platform\Windows\include\libzip</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;BUILDING_EPUB3;_DEBUG;_LIB;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(MSBuildProjectDirectory)\ReadiumSDK\Prebuilt\Lib\x86\libxml2_a.lib;$(MSBuildProjectDirectory)\ReadiumSDK\Prebuilt\Lib\x86\zlib.lib;Advapi32.lib;ws2_32.lib;User32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PreBuildEvent>
+      <Command>cd $(MSBuildProjectDirectory)
+cscript MakeHeaders.js</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Build canonical headers</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;BUILDING_EPUB3;NDEBUG;_LIB;HAVE_CONFIG_H;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\include;$(MSBuildProjectDirectory)\ReadiumSDK\include;$(MSBuildProjectDirectory)\..\..\ePub3;$(MSBuildProjectDirectory)\..\..\ePub3\utilities;$(MSBuildProjectDirectory)\..\..\ePub3\ePub;$(MSBuildProjectDirectory)\..\..\ePub3\xml;$(MSBuildProjectDirectory)\ReadiumSDK\Prebuilt\Include;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\google-url\src;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\utf8-cpp\include;$(MSBuildProjectDirectory)\..\..\ePub3\ThirdParty\icu4c\include;$(MSBuildProjectDirectory)\..\..\Platform\Windows\include\libzip</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>$(MSBuildProjectDirectory)\ReadiumSDK\Prebuilt\Lib\x86\libxml2_a.lib;$(MSBuildProjectDirectory)\ReadiumSDK\Prebuilt\Lib\x86\zlib.lib;Advapi32.lib;ws2_32.lib;User32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PreBuildEvent>
+      <Command>cd $(MSBuildProjectDirectory)
+cscript MakeHeaders.js</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Build canonical headers</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\ePub3\ePub\archive.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\archive_xml.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\cfi.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\container.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\content_handler.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\content_module_manager.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\credential_request.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\encryption.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\epub_collection.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\filter_chain.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\filter_chain_byte_stream.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\filter_chain_byte_stream_range.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\filter_manager.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\filter_manager_impl.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\font_obfuscation.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\glossary.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\initialization.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\library.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\link.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\manifest.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\media-overlays_smil_data.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\media-overlays_smil_model.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\media_support_info.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\nav_point.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\nav_table.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\object_preprocessor.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\package.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\PassThroughFilter.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\property.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\property_extension.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\property_holder.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\signatures.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\spine.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\switch_preprocessor.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\xpath_wrangler.cpp" />
+    <ClCompile Include="..\..\ePub3\ePub\zip_archive.cpp" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\base\logging.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\base\string16.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\gurl.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_cpp11.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_etc.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_filesystemurl.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_fileurl.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_host.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_internal.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_ip.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_mailtourl.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_path.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_pathurl.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_query.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_relative.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_stdurl.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\url_parse.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\url_parse_file.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\google-url\src\url_util.cc" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\mkstemp.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_add.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_add_dir.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_add_entry.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_buffer.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_close.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_delete.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_dirent.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_dir_add.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_discard.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_entry.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_error.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_error_clear.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_error_get.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_error_get_sys_type.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_error_strerror.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_error_to_str.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_err_str.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_extra_field.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_extra_field_api.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fclose.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fdopen.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_filerange_crc.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_add.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_error_clear.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_error_get.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_get_comment.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_get_external_attributes.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_get_offset.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_rename.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_replace.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_set_comment.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_set_external_attributes.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_set_mtime.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_file_strerror.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fopen.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fopen_encrypted.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fopen_index.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fopen_index_encrypted.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fread.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_fseek.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_get_archive_comment.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_get_archive_flag.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_get_compression_implementation.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_get_encryption_implementation.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_get_file_comment.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_get_name.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_get_num_entries.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_get_num_files.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_io_util.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_memdup.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_name_locate.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_new.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_open.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_rename.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_replace.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_set_archive_comment.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_set_archive_flag.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_set_default_password.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_set_file_comment.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_set_file_compression.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_set_name.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_begin_write.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_buffer.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_call.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_close.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_commit_write.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_crc.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_deflate.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_error.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_file.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_filep.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_free.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_function.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_is_deleted.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_layered.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_open.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_pkware.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_read.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_remove.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_rollback_write.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_seek.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_seek_write.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_stat.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_supports.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_tell.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_tell_write.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_window.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_write.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_zip.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_source_zip_new.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_stat.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_stat_index.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_stat_init.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_strerror.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_string.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_unchange.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_unchange_all.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_unchange_archive.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_unchange_data.c" />
+    <ClCompile Include="..\..\ePub3\ThirdParty\libzip\zip_utf-8.c" />
+    <ClCompile Include="..\..\ePub3\utilities\byte_buffer.cpp" />
+    <ClCompile Include="..\..\ePub3\utilities\byte_stream.cpp" />
+    <ClCompile Include="..\..\ePub3\utilities\CPUCacheUtils_win.cpp" />
+    <ClCompile Include="..\..\ePub3\utilities\epub_locale.cpp" />
+    <ClCompile Include="..\..\ePub3\utilities\error_handler.cpp" />
+    <ClCompile Include="..\..\ePub3\utilities\future.cpp" />
+    <ClCompile Include="..\..\ePub3\utilities\iri.cpp" />
+    <ClCompile Include="..\..\ePub3\utilities\path_help.cpp" />
+    <ClCompile Include="..\..\ePub3\utilities\ring_buffer.cpp" />
+    <ClCompile Include="..\..\ePub3\utilities\run_loop_windows.cpp" />
+    <ClCompile Include="..\..\ePub3\utilities\utfstring.cpp" />
+    <ClCompile Include="..\..\ePub3\xml\tree\document.cpp" />
+    <ClCompile Include="..\..\ePub3\xml\tree\element.cpp" />
+    <ClCompile Include="..\..\ePub3\xml\tree\node.cpp" />
+    <ClCompile Include="..\..\ePub3\xml\tree\xpath.cpp" />
+    <ClCompile Include="..\..\ePub3\xml\utilities\base.cpp" />
+    <ClCompile Include="..\..\ePub3\xml\utilities\io.cpp" />
+    <ClCompile Include="..\..\ePub3\xml\validation\c14n.cpp" />
+    <ClCompile Include="..\..\ePub3\xml\validation\ns.cpp" />
+    <ClCompile Include="..\..\ePub3\xml\validation\schema.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\ePub3\ePub\switch_preprocessor.h" />
+    <ClInclude Include="..\..\..\ePub3\ePub\xpath_wrangler.h" />
+    <ClInclude Include="..\..\ePub3\base.h" />
+    <ClInclude Include="..\..\ePub3\ePub\archive.h" />
+    <ClInclude Include="..\..\ePub3\ePub\archive_xml.h" />
+    <ClInclude Include="..\..\ePub3\ePub\cfi.h" />
+    <ClInclude Include="..\..\ePub3\ePub\container.h" />
+    <ClInclude Include="..\..\ePub3\ePub\content_handler.h" />
+    <ClInclude Include="..\..\ePub3\ePub\content_module.h" />
+    <ClInclude Include="..\..\ePub3\ePub\content_module_manager.h" />
+    <ClInclude Include="..\..\ePub3\ePub\credential_request.h" />
+    <ClInclude Include="..\..\ePub3\ePub\encryption.h" />
+    <ClInclude Include="..\..\ePub3\ePub\epub3.h" />
+    <ClInclude Include="..\..\ePub3\ePub\epub_collection.h" />
+    <ClInclude Include="..\..\ePub3\ePub\filter.h" />
+    <ClInclude Include="..\..\ePub3\ePub\filter_chain.h" />
+    <ClInclude Include="..\..\ePub3\ePub\filter_chain_byte_stream.h" />
+    <ClInclude Include="..\..\ePub3\ePub\filter_chain_byte_stream_range.h" />
+    <ClInclude Include="..\..\ePub3\ePub\filter_manager.h" />
+    <ClInclude Include="..\..\ePub3\ePub\filter_manager_impl.h" />
+    <ClInclude Include="..\..\ePub3\ePub\font_obfuscation.h" />
+    <ClInclude Include="..\..\ePub3\ePub\glossary.h" />
+    <ClInclude Include="..\..\ePub3\ePub\initialization.h" />
+    <ClInclude Include="..\..\ePub3\ePub\library.h" />
+    <ClInclude Include="..\..\ePub3\ePub\link.h" />
+    <ClInclude Include="..\..\ePub3\ePub\manifest.h" />
+    <ClInclude Include="..\..\ePub3\ePub\media-overlays_smil_data.h" />
+    <ClInclude Include="..\..\ePub3\ePub\media-overlays_smil_model.h" />
+    <ClInclude Include="..\..\ePub3\ePub\media-overlays_smil_utils.h" />
+    <ClInclude Include="..\..\ePub3\ePub\media_support_info.h" />
+    <ClInclude Include="..\..\ePub3\ePub\nav_element.h" />
+    <ClInclude Include="..\..\ePub3\ePub\nav_point.h" />
+    <ClInclude Include="..\..\ePub3\ePub\nav_table.h" />
+    <ClInclude Include="..\..\ePub3\ePub\object_preprocessor.h" />
+    <ClInclude Include="..\..\ePub3\ePub\package.h" />
+    <ClInclude Include="..\..\ePub3\ePub\PassThroughFilter.h" />
+    <ClInclude Include="..\..\ePub3\ePub\property.h" />
+    <ClInclude Include="..\..\ePub3\ePub\property_extension.h" />
+    <ClInclude Include="..\..\ePub3\ePub\property_holder.h" />
+    <ClInclude Include="..\..\ePub3\ePub\signatures.h" />
+    <ClInclude Include="..\..\ePub3\ePub\spine.h" />
+    <ClInclude Include="..\..\ePub3\ePub\user_action.h" />
+    <ClInclude Include="..\..\ePub3\ePub\zip_archive.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\google-url\base\basictypes.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\google-url\base\string16.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\google-url\src\gurl.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\google-url\src\url_canon.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_internal.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_internal_file.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_ip.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\google-url\src\url_canon_stdstring.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\google-url\src\url_common.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\google-url\src\url_file.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\google-url\src\url_parse.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\google-url\src\url_parse_internal.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\google-url\src\url_test_utils.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\google-url\src\url_util.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\google-url\src\url_util_internal.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\libzip\Config.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\libzip\zip.h" />
+    <ClInclude Include="..\..\ePub3\ThirdParty\libzip\zipint.h" />
+    <ClInclude Include="..\..\ePub3\utilities\alphanum.hpp" />
+    <ClInclude Include="..\..\ePub3\utilities\basic.h" />
+    <ClInclude Include="..\..\ePub3\utilities\byte_buffer.h" />
+    <ClInclude Include="..\..\ePub3\utilities\byte_stream.h" />
+    <ClInclude Include="..\..\ePub3\utilities\epub_locale.h" />
+    <ClInclude Include="..\..\ePub3\utilities\error_handler.h" />
+    <ClInclude Include="..\..\ePub3\utilities\future.h" />
+    <ClInclude Include="..\..\ePub3\utilities\iri.h" />
+    <ClInclude Include="..\..\ePub3\utilities\path_help.h" />
+    <ClInclude Include="..\..\ePub3\utilities\ring_buffer.h" />
+    <ClInclude Include="..\..\ePub3\utilities\run_loop.h" />
+    <ClInclude Include="..\..\ePub3\utilities\utfstring.h" />
+    <ClInclude Include="..\..\ePub3\xml\tree\document.h" />
+    <ClInclude Include="..\..\ePub3\xml\tree\element.h" />
+    <ClInclude Include="..\..\ePub3\xml\tree\node.h" />
+    <ClInclude Include="..\..\ePub3\xml\tree\xpath.h" />
+    <ClInclude Include="..\..\ePub3\xml\utilities\base.h" />
+    <ClInclude Include="..\..\ePub3\xml\utilities\io.h" />
+    <ClInclude Include="..\..\ePub3\xml\validation\c14n.h" />
+    <ClInclude Include="..\..\ePub3\xml\validation\dtd.h" />
+    <ClInclude Include="..\..\ePub3\xml\validation\ns.h" />
+    <ClInclude Include="..\..\ePub3\xml\validation\schema.h" />
+    <ClInclude Include="..\..\ePub3\_compiler.h" />
+    <ClInclude Include="..\..\ePub3\_config.h" />
+    <ClInclude Include="..\..\ePub3\_platform.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

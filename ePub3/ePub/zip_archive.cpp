@@ -20,11 +20,15 @@
 
 #include "zip_archive.h"
 #include <libzip/zipint.h>
+#undef open     //undefine the macro because of further complation error
+#undef close    //undefine the macro because of further complation error
+
 #include "byte_stream.h"
 #include "make_unique.h"
 #include <sstream>
 #include <fstream>
 #include <iostream>
+
 #if EPUB_OS(UNIX)
 #include <unistd.h>
 #endif
@@ -93,7 +97,7 @@ static string GetTempFilePath(const string& ext)
     return string(buf);
 #endif
 }
-
+#if 0
 class ZipReader : public ArchiveReader
 {
 public:
@@ -111,6 +115,39 @@ private:
     struct zip_file * _file;
 	size_t _total_size;
 };
+#endif
+class ZipReader : public ArchiveReader
+{
+public:
+    ZipReader(struct zip_file* file) : _file(file), _total_size(0), bytes_left(0)
+    {
+        struct zip_stat st;
+        if (zip_source_stat(file->src, &st) == 0)
+        {
+            _total_size = st.size;
+            bytes_left = _total_size;
+        }
+    }
+    ZipReader(ZipReader&& o) : _file(o._file) { o._file = nullptr; }
+    virtual ~ZipReader() { if (_file != nullptr) zip_fclose(_file); }
+
+    virtual bool operator !() const { return _file == nullptr || bytes_left == 0; }
+    virtual ssize_t read(void* p, size_t len) const {
+        size_t curLen = zip_fread(_file, p, std::min(bytes_left, len));
+        if (curLen != -1)
+            ((ZipReader*)this)->bytes_left -= curLen;
+        return curLen;
+    }
+
+    virtual size_t total_size() const { return _total_size; }
+    virtual size_t position() const { return _total_size - bytes_left; }
+
+private:
+    struct zip_file * _file;
+    size_t _total_size;
+    size_t bytes_left;
+};
+
 
 class ZipWriter : public ArchiveWriter
 {
@@ -229,6 +266,13 @@ bool ZipArchive::CreateFolder(const string & path)
 }
 unique_ptr<ByteStream> ZipArchive::ByteStreamAtPath(const string &path) const
 {
+    /*zip_uint64_t idx = 0;
+    if ((idx = zip_name_locate(_zip, path.c_str(), 0)) < 0)
+        return nullptr;
+    zip_error_t error;
+    zip_uint64_t val = _zip_file_get_offset(_zip, idx, &error);*/
+
+
     return make_unique<ZipFileByteStream>(_zip, path);
 }
 
@@ -244,7 +288,8 @@ unique_ptr<ArchiveReader> ZipArchive::ReaderAtPath(const string & path) const
     if (_zip == nullptr)
         return nullptr;
     
-    struct zip_file* file = zip_fopen(_zip, Sanitized(path).c_str(), 0);
+    const char* spath = Sanitized(path).c_str();
+    struct zip_file* file = zip_fopen(_zip, spath, 0);
 
     if (file == nullptr)
         return nullptr;
@@ -291,7 +336,9 @@ size_t ZipWriter::DataBlob::Read(void *data, size_t len)
 ZipWriter::ZipWriter(struct zip *zip, const string& path, bool compressed)
     : _compressed(compressed)
 {
-    _zsrc = zip_source_function(zip, &ZipWriter::_source_callback, reinterpret_cast<void*>(this));
+    // It seems that ZipWriter is not actually used in the Readium launchers, so it is temporary commented out
+    assert(0);
+    //_zsrc = zip_source_function(zip, &ZipWriter::_source_callback, reinterpret_cast<void*>(this));
 }
 ZipWriter::ZipWriter(ZipWriter&& o) : _compressed(o._compressed), _data(std::move(o._data)), _zsrc(o._zsrc)
 {

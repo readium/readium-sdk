@@ -598,6 +598,7 @@ protected:
 class ZipFileByteStream : public SeekableByteStream
 {
 public:
+    
     ///
     /// Create a new unattached stream.
                             ZipFileByteStream() : SeekableByteStream(), _file(nullptr) {}
@@ -671,9 +672,23 @@ public:
 	virtual std::shared_ptr<SeekableByteStream> Clone() const OVERRIDE;
     
 protected:
+
     struct zip_file*        _file;      ///< The underlying Zip file stream.
 	std::ios::openmode		_mode;		///< The mode used to open the file (used by Clone()).
 
+    // Seek by rewind emulation support
+    size_type bytes_left;
+    size_type total_size;
+    uint64_t _idx;          // the file index identifier inside zip file structure
+private:
+    // helper functions to emulate seek operation if it is not supported by lower layers of libzip
+    int     SeekByReading(size_t toread);
+    bool    SeekToStart();
+    int     SeekByRewind(long pos, int whence);
+    
+    int64_t _supports;
+    string  _path;
+    int     _openFlags;
 };
 
 #ifdef SUPPORT_ASYNC

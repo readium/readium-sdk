@@ -1,7 +1,6 @@
 /*
-  zip_ftell.c -- obtain location in file within zip archive
-  Copyright (C) 1999-2013 Dieter Baron and Thomas Klausner
-  Original implementation contributed by Jim Dovey.
+  zip_source_begin_write.c -- start a new file for writing
+  Copyright (C) 2014 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <libzip@nih.at>
@@ -32,13 +31,23 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+
 #include "zipint.h"
 
-ZIP_EXTERN long
-zip_ftell(struct zip_file* zf)
+
+ZIP_EXTERN int
+zip_source_begin_write(zip_source_t *src)
 {
-    if (!zf)
+    if (ZIP_SOURCE_IS_OPEN_WRITING(src)) {
+        zip_error_set(&src->error, ZIP_ER_INVAL, 0);
         return -1;
+    }
     
-    return zf->file_fpos;
+    if (_zip_source_call(src, NULL, 0, ZIP_SOURCE_BEGIN_WRITE) < 0) {
+        return -1;
+    }
+
+    src->write_state = ZIP_SOURCE_WRITE_OPEN;
+    
+    return 0;
 }
