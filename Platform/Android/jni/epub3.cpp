@@ -104,12 +104,14 @@ jmethodID addManifestItemToList_ID;
  */
 
 static jclass javaEPub3Class = NULL;
+static jobject contentFiltersRegistrationHandler = NULL;
 
 static jmethodID createStringList_ID;
 static jmethodID addStringToList_ID;
 static jmethodID createBuffer_ID;
 static jmethodID appendBytesToBuffer_ID;
 static jmethodID handleSdkError_ID;
+static jmethodID contentFiltersRegistrationHandler_Run_ID;
 
 
 /*
@@ -244,15 +246,20 @@ static bool LauncherErrorHandler(const ePub3::error_details& err)
 static void initializeReadiumSDK(JNIEnv* env)
 {
     m_env = env;
-    
+
 	LOGD("initializeReadiumSDK(): initializing Readium SDK...");
 
     ePub3::ErrorHandlerFn launcherErrorHandler = LauncherErrorHandler;
     ePub3::SetErrorHandler(launcherErrorHandler);
- 
+
     ePub3::InitializeSdk();
     ePub3::PopulateFilterManager();
-    
+
+    if (contentFiltersRegistrationHandler != NULL) {
+        LOGD("initializeReadiumSDK(): calling content filters registration handler %p", contentFiltersRegistrationHandler);
+        env->CallVoidMethod(contentFiltersRegistrationHandler, contentFiltersRegistrationHandler_Run_ID);
+    }
+
 	LOGD("initializeReadiumSDK(): initialization of Readium SDK finished");
 }
 
@@ -355,6 +362,37 @@ Java_org_readium_sdk_android_EPub3_setCachePath(JNIEnv* env, jobject thiz, jstri
 	strlcpy(gAndroidCacheDir, str, PATH_MAX);
 	// Release the c string
 	RELEASE_UTF8(cachePath, str);
+}
+
+/*
+ * Class:     org_readium_sdk_android_EPub3
+ * Method:    setContentFiltersRegistrationHandler
+ * Signature: (Ljava/lang/Runnable;)V
+ */
+JNIEXPORT void JNICALL
+Java_org_readium_sdk_android_EPub3_setContentFiltersRegistrationHandler(JNIEnv* env, jobject thiz, jobject handler) {
+
+    LOGD("EPub3.setContentFiltersRegistrationHandler(): received handler object %p", handler);
+    if (handler != NULL) {
+        /**
+         * Save a global reference to the handler object and attempt to find a void-returning
+         * parameterless method on it called 'run'.
+         */
+
+        jobject hg = env->NewGlobalRef(handler);
+        jclass rc = env->GetObjectClass(hg);
+        jmethodID m = env->GetMethodID(rc, "run", "()V");
+        
+        if (m == NULL) {
+            LOGE("EPub3.setContentFiltersRegistrationHandler(): could not find 'run' method on handler class");
+            env->DeleteGlobalRef (hg);
+            return;
+        }
+
+        LOGD("EPub3.setContentFiltersRegistrationHandler(): saved object %p, method %p", hg, m);
+        contentFiltersRegistrationHandler = hg;
+        contentFiltersRegistrationHandler_Run_ID = m;
+    }
 }
 
 /*

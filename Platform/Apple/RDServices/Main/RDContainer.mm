@@ -84,6 +84,10 @@
 
 		ePub3::InitializeSdk();
 		ePub3::PopulateFilterManager();
+		
+		if ([delegate respondsToSelector:@selector(containerRegisterContentFilters:)]) {
+			[delegate containerRegisterContentFilters:self];
+		}
 
 		m_path = path;
 		m_container = ePub3::Container::OpenContainer(path.UTF8String);
