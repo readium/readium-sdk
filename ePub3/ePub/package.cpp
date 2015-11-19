@@ -1597,7 +1597,7 @@ const string& Package::Language() const
 shared_ptr<ManifestItem> Package::CoverManifestItem() const
 {
     string EPUB2CoverID = EPUB2PropertyMatching(string("cover"));
-    for (auto& item : _manifest)
+    for (auto& item : _manifestByID)
     {
         if (item.second->HasProperty(ePub3::ItemProperties::CoverImage) || item.second->Identifier() == EPUB2CoverID) {
             return item.second;
