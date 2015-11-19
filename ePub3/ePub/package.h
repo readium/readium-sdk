@@ -134,7 +134,7 @@ public:
     
     ///
     /// Returns an immutable reference to the manifest table.
-    const ManifestTable&    Manifest()              const       { return _manifest; }
+    const ManifestTable&    Manifest()              const       { return _manifestByID; }
     ///
     /// Returns an immutable reference to the map of navigation tables.
     const NavigationMap&    NavigationTables()      const       { return _navigation; }
@@ -209,7 +209,7 @@ public:
 	 @result A ManifestItem pointer, or `nullptr` if no manifest item matches the path.
 	 */
 	EPUB3_EXPORT
-	ConstManifestItemPtr    ManifestItemAtRelativePath(const string& path) const;
+	shared_ptr<ManifestItem> ManifestItemAtRelativePath(const string& path) const;
     
     /// @}
     
@@ -251,16 +251,17 @@ public:
     uint32_t                SpineCFIIndex()                 const   { return _spineCFIIndex; }
     
 protected:
-    shared_ptr<Archive>			_archive;           ///< The archive from which the package was loaded.
-    shared_ptr<xml::Document>   _opf;               ///< The XML document representing the package.
-    string						_pathBase;          ///< The base path of the document within the archive.
-    string						_type;              ///< The MIME type of the package document.
-    ManifestTable				_manifest;          ///< All manifest items, indexed by unique identifier.
-    NavigationMap				_navigation;        ///< All navigation tables, indexed by type.
-    ContentHandlerMap			_contentHandlers;   ///< All installed content handlers, indexed by media-type.
-    shared_ptr<SpineItem>		_spine;             ///< The first item in the spine (SpineItems are a linked list).
-    XMLIDLookup					_xmlIDLookup;       ///< Lookup table for all items with XML ID values.
-    CollectionList              _collections;       ///< List of all parsed <collection> elements.
+    shared_ptr<Archive>       _archive;                ///< The archive from which the package was loaded.
+    shared_ptr<xml::Document> _opf;                    ///< The XML document representing the package.
+    string                    _pathBase;               ///< The base path of the document within the archive.
+    string                    _type;                   ///< The MIME type of the package document.
+    ManifestTable             _manifestByID;           ///< All manifest items, indexed by unique identifier.
+    ManifestTable             _manifestByAbsolutePath; ///< All manifest items, indexed by absolute path.
+    NavigationMap             _navigation;             ///< All navigation tables, indexed by type.
+    ContentHandlerMap         _contentHandlers;        ///< All installed content handlers, indexed by media-type.
+    shared_ptr<SpineItem>     _spine;                  ///< The first item in the spine (SpineItems are a linked list).
+    XMLIDLookup               _xmlIDLookup;            ///< Lookup table for all items with XML ID values.
+    CollectionList            _collections;            ///< List of all parsed <collection> elements.
 
 protected:
     // used to verify/correct CFIs

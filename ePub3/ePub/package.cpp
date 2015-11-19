@@ -90,7 +90,7 @@ PackageBase::PackageBase(const shared_ptr<Container>& owner, const string& type)
     if ( !_archive )
         throw std::invalid_argument("Owner doesn't have an archive!");
 }
-PackageBase::PackageBase(PackageBase&& o) : _archive(o._archive), _opf(std::move(o._opf)), _pathBase(std::move(o._pathBase)), _type(std::move(o._type)), _manifest(std::move(o._manifest)), _spine(std::move(o._spine))
+PackageBase::PackageBase(PackageBase&& o) : _archive(o._archive), _opf(std::move(o._opf)), _pathBase(std::move(o._pathBase)), _type(std::move(o._type)), _manifestByID(std::move(o._manifestByID)), _manifestByAbsolutePath(std::move(o._manifestByAbsolutePath)), _spine(std::move(o._spine))
 {
     o._archive = nullptr;
 }
@@ -146,8 +146,8 @@ size_t PackageBase::IndexOfSpineItemWithIDRef(const string &idref) const
 }
 shared_ptr<ManifestItem> PackageBase::ManifestItemWithID(const string &ident) const
 {
-    auto found = _manifest.find(ident);
-    if ( found == _manifest.end() )
+    auto found = _manifestByID.find(ident);
+    if ( found == _manifestByID.end() )
         return nullptr;
     
     return found->second;
@@ -163,20 +163,20 @@ string PackageBase::CFISubpathForManifestItemWithID(const string &ident) const
 const shared_vector<ManifestItem> PackageBase::ManifestItemsWithProperties(PropertyIRIList properties) const
 {
     shared_vector<ManifestItem> result;
-    for ( auto& item : _manifest )
+    for ( auto& item : _manifestByID )
     {
         if ( item.second->HasProperty(properties) )
             result.push_back(item.second);
     }
     return result;
 }
-ConstManifestItemPtr PackageBase::ManifestItemAtRelativePath(const string& path) const
+shared_ptr<ManifestItem> PackageBase::ManifestItemAtRelativePath(const string& path) const
 {
-    string absPath = _pathBase + (path[0] == '/' ? path.substr(1) : path);
-	for (auto& item : _manifest)
-	{
-		if (item.second->AbsolutePath() == absPath)
-			return item.second;
+	string absPath = _pathBase + (path[0] == '/' ? path.substr(1) : path);
+	
+	auto found = _manifestByAbsolutePath.find(absPath);
+	if (found != _manifestByAbsolutePath.end()) {
+		return found->second;
 	}
 
     // Edge case...
@@ -197,7 +197,7 @@ ConstManifestItemPtr PackageBase::ManifestItemAtRelativePath(const string& path)
     string path_(output.data(), output.length());
 
     string absPath_ = _pathBase + (path_[0] == '/' ? path_.substr(1) : path_);
-    for (auto& item : _manifest)
+    for (auto& item : _manifestByID)
     {
         string absolute = item.second->AbsolutePath();
 
@@ -581,9 +581,11 @@ bool Package::Unpack()
             if ( p->ParseXML(node) )
             {
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
-                _manifest.emplace(p->Identifier(), p);
+                _manifestByID.emplace(p->Identifier(), p);
+                _manifestByAbsolutePath.emplace(p->AbsolutePath(), p);
 #else
-                _manifest[p->Identifier()] = p;
+                _manifestByID[p->Identifier()] = p;
+                _manifestByAbsolutePath[p->AbsolutePath()] = p;
 #endif
                 StoreXMLIdentifiable(p);
             }
@@ -596,7 +598,7 @@ bool Package::Unpack()
         // check fallback chains
         typedef std::map<string, bool> IdentSet;
         IdentSet idents;
-        for ( auto &pair : _manifest )
+        for ( auto &pair : _manifestByID )
         {
             ManifestItemPtr item = pair.second;
             if ( item->FallbackID().empty() )
@@ -628,8 +630,8 @@ bool Package::Unpack()
             }
             
             // validation of idref
-            auto manifestFound = _manifest.find(next->Idref());
-            if ( manifestFound == _manifest.end() )
+            auto manifestFound = _manifestByID.find(next->Idref());
+            if ( manifestFound == _manifestByID.end() )
             {
                 HandleError(EPUBError::OPFInvalidSpineIdref, _Str(next->Idref(), " does not correspond to a manifest item"));
                 continue;
@@ -1002,7 +1004,7 @@ bool Package::Unpack()
 	if (isEPUB3)
 	{
 		// look for EPUB3 navigation document(s)
-		for ( auto item : _manifest )
+		for ( auto item : _manifestByID )
 		{
 			if ( !item.second->HasProperty(ItemProperties::Navigation) )
 	            continue;
@@ -1785,7 +1787,7 @@ shared_ptr<MediaHandler> Package::OPFHandlerForMediaType(const string &mediaType
 const Package::StringList Package::AllMediaTypes() const
 {
     std::map<string, bool>   set;
-    for ( auto pair : _manifest )
+    for ( auto pair : _manifestByID )
     {
         set[pair.second->MediaType()] = true;
     }
