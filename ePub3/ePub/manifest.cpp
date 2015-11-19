@@ -262,20 +262,18 @@ shared_ptr<xml::Document> ManifestItem::ReferencedDocument() const
 	void *docBuf = nullptr;
 	std::size_t resbuflen = byteStream->ReadAllBytes(&docBuf);
 	
-    int flags = XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR;
-	
     // In some EPUBs, UTF-8 XML/HTML files have a superfluous (erroneous?) BOM, so we either:
     // pass "utf-8" and expect InputBuffer::read_cb (in io.cpp) to skip the 3 erroneous bytes
     // (otherwise the XML parser fails),
     // or we pass NULL (in which case the parser auto-detects encoding)
     const char * encoding = nullptr;
     //const char * encoding = "utf-8";
-	
+
 	xmlDocPtr raw;
     if ( _mediaType == "text/html" ) {
-        raw = htmlReadMemory((const char*)docBuf, resbuflen, path.c_str(), encoding, flags);
+        raw = htmlReadMemory((const char*)docBuf, resbuflen, path.c_str(), encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
     } else {
-        raw = xmlReadMemory((const char*)docBuf, resbuflen, path.c_str(), encoding, flags);
+        raw = xmlReadMemory((const char*)docBuf, resbuflen, path.c_str(), encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
     }
 	
 	result = xml::Wrapped<xml::Document>(raw);

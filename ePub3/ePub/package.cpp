@@ -102,7 +102,7 @@ bool PackageBase::Open(const string& path)
 {
     ArchiveXmlReader reader(_archive->ReaderAtPath(path.stl_str()));
 #if EPUB_USE(LIBXML2)
-    _opf = reader.xmlReadDocument(path.c_str(), nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
+    _opf = reader.xmlReadDocument(path.c_str(), nullptr);
 #elif EPUB_USE(WIN_XML)
 	_opf = reader.ReadDocument(path.c_str(), nullptr, 0);
 #endif
@@ -743,6 +743,15 @@ bool Package::Unpack()
             }
             else if ( _getProp(node, "name").size() > 0 )
             {
+                // It's an EPUB 2 property, we save them to allow
+                // backward compatiblity by host apps.
+                string name = _getProp(node, "name");
+                string content = _getProp(node, "content");
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+	                _EPUB2Properties.emplace(name, content);
+#else
+	                _EPUB2Properties[name] = content;
+#endif
                 // it's an ePub2 item-- ignore it
                 continue;
             }
@@ -1583,6 +1592,18 @@ const string& Package::Language() const
         return string::EmptyString;
     return items[0]->Value();
 }
+shared_ptr<ManifestItem> Package::CoverManifestItem() const
+{
+    string EPUB2CoverID = EPUB2PropertyMatching(string("cover"));
+    for (auto& item : _manifest)
+    {
+        if (item.second->HasProperty(ePub3::ItemProperties::CoverImage) || item.second->Identifier() == EPUB2CoverID) {
+            return item.second;
+        }
+    }
+
+    return nullptr;
+}
 const string& Package::MediaOverlays_ActiveClass() const
 {
     // See:
@@ -1834,6 +1855,17 @@ void Package::InitMediaSupport()
         }
     }
 }
+
+string Package::EPUB2PropertyMatching(string name) const
+{
+    auto found = _EPUB2Properties.find(name);
+    if (found != _EPUB2Properties.end()) {
+        return found->second;
+    }
+
+    return string::EmptyString;
+}
+
 void Package::CompileSpineItemTitles()
 {
 	NavigationTablePtr toc = TableOfContents();

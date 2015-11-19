@@ -25,6 +25,8 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+const int ArchiveXmlReader::DEFAULT_OPTIONS = XML_PARSE_RECOVER | XML_PARSE_NOENT | XML_PARSE_DTDATTR | XML_PARSE_NONET;
+
 ArchiveXmlReader::ArchiveXmlReader(ArchiveReader * r) : _reader(r)
 {
     if ( _reader == nullptr )
@@ -56,6 +58,16 @@ size_t ArchiveXmlReader::read(uint8_t *buf, size_t len)
 bool ArchiveXmlReader::close()
 {
     return true;
+}
+
+std::shared_ptr<xml::Document> ArchiveXmlReader::xmlReadDocument(const char * url, const char * encoding)
+{
+	return InputBuffer::xmlReadDocument(url, encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
+}
+
+std::shared_ptr<xml::Document> ArchiveXmlReader::htmlReadDocument(const char * url, const char * encoding)
+{
+	return InputBuffer::htmlReadDocument(url, encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
 }
 
 ArchiveXmlWriter::ArchiveXmlWriter(ArchiveWriter* w) : _writer(w)
