@@ -44,6 +44,11 @@
  */
 - (void)containerRegisterContentFilters:(RDContainer *)container;
 
+/**
+ * You can implement this to register content modules.
+ */
+- (void)containerRegisterContentModules:(RDContainer *)container;
+
 @end
 
 @class RDPackage;
