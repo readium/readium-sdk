@@ -68,7 +68,7 @@ FilterContext *PassThroughFilter::InnerMakeFilterContext(ConstManifestItemPtr it
     return new PassThroughContext;
 }
 
-ByteStream::size_type PassThroughFilter::BytesAvailable(SeekableByteStream *byteStream) const
+ByteStream::size_type PassThroughFilter::BytesAvailable(FilterContext *context, SeekableByteStream *byteStream) const
 {
     return byteStream->BytesAvailable();
 }
