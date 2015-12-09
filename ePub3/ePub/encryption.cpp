@@ -32,11 +32,12 @@ bool EncryptionInfo::ParseXML(shared_ptr<xml::Node> node)
     // To add ReadiumURI namespace to process the addition information
 
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-    XPathWrangler xpath(node->Document(), {{"enc", XMLENCNamespaceURI}, {"dsig", XMLDSigNamespaceURI} , { "ep", ReadiumURI }});
+    XPathWrangler xpath(node->Document(), {{"enc", XMLENCNamespaceURI}, {"dsig", XMLDSigNamespaceURI} , {"ds", XMLDSigNamespaceURI}, { "ep", ReadiumURI }});
 #else
     XPathWrangler::NamespaceList nsList;
     nsList["enc"] = XMLENCNamespaceURI;
     nsList["dsig"] = XMLDSigNamespaceURI;
+    nsList["ds"] = XMLDSigNamespaceURI;
     nsList["ep"] = ReadiumURI;
     XPathWrangler xpath(node->doc, nsList);
 #endif
@@ -46,6 +47,13 @@ bool EncryptionInfo::ParseXML(shared_ptr<xml::Node> node)
         return false;
     
     _algorithm = strings[0];
+
+    // This is used for LCP detection
+    // @see https://docs.google.com/document/d/1oNfXQZRSGqwpexLrhw0-0a2taEvVDXS9cPs8oBKLb0U/edit#bookmark=id.fdwd1ub4whd8
+    strings = xpath.Strings("./ds:KeyInfo/ds:RetrievalMethod/@Type", node);
+    if ( !strings.empty() ) {
+        _keyRetrievalMethodType = strings[0];
+    }
     
     strings = xpath.Strings("./enc:CipherData/enc:CipherReference/@URI", node);
     if ( strings.empty() )
