@@ -30,6 +30,7 @@
 #import "RDContainer.h"
 #import <ePub3/container.h>
 #import <ePub3/initialization.h>
+#import <ePub3/utilities/byte_stream.h>
 #import <ePub3/utilities/error_handler.h>
 #import "RDPackage.h"
 
@@ -113,5 +114,24 @@
 	return self;
 }
 
+- (BOOL)fileExistsAtPath:(NSString *)relativePath {
+    return m_container->FileExistsAtPath([relativePath UTF8String]);
+}
+
+- (NSString *)contentsOfFileAtPath:(NSString *)relativePath encoding:(NSStringEncoding)encoding {
+    if (![self fileExistsAtPath:relativePath])
+    	return nil;
+
+    std::unique_ptr<ePub3::ByteStream> stream = m_container->ReadStreamAtPath([relativePath UTF8String]);
+    if (stream == nullptr)
+    	return nil;
+
+    void *buffer = nullptr;
+    size_t length = stream->ReadAllBytes(&buffer);
+    std::string nativeContent((char *)buffer, length);
+    free (buffer);
+
+    return [NSString stringWithCString:nativeContent.c_str() encoding:encoding];
+}
 
 @end
