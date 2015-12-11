@@ -34,6 +34,17 @@ EPUB3_BEGIN_NAMESPACE
 class ArchiveXmlReader : public xml::InputBuffer
 {
 public:
+	/**
+	 * The default options when reading XML documents from EPUB 3
+	 * archives. To use with xmlReadDocument().
+	 *
+	 *   XML_PARSE_RECOVER: Recover on errors
+	 *   XML_PARSE_NOENT:   Substitute entities
+	 *   XML_PARSE_DTDATTR: Default DTD attributes
+	 *   XML_PARSE_NONET:   Forbid network access (ie. when loading DTD)
+	 */
+    static const int DEFAULT_OPTIONS;
+    
     EPUB3_EXPORT ArchiveXmlReader(ArchiveReader * r);
     EPUB3_EXPORT ArchiveXmlReader(unique_ptr<ArchiveReader>&& r);
     EPUB3_EXPORT ArchiveXmlReader(ArchiveXmlReader&& o);
@@ -46,6 +57,16 @@ public:
 	virtual size_t offset() const { return _reader->position(); }
     
     bool operator !() const { return !bool(_reader); }
+	
+	using InputBuffer::xmlReadDocument;
+	using InputBuffer::htmlReadDocument;
+	
+	/**
+	 * Will read the given XML documents using the default options
+	 * from ArchiveXmlReader::DEFAULT_OPTIONS.
+	 */
+	std::shared_ptr<xml::Document> xmlReadDocument(const char * url, const char * encoding);
+    std::shared_ptr<xml::Document> htmlReadDocument(const char * url, const char * encoding);
     
 protected:
     std::unique_ptr<ArchiveReader>  _reader;

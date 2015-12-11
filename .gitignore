@@ -1,13 +1,12 @@
-#########################
-# .gitignore file for Xcode4 / OS X Source projects
-#
+################################################################################
+# Mac OS X / iOS
+
 # NB: if you are storing "built" products, this WILL NOT WORK,
 #   and you should use a different .gitignore (or none at all)
 # This file is for SOURCE projects, where there are many extra
 #   files that we want to exclude
 #
 # For updates, see: http://stackoverflow.com/questions/49478/git-ignore-file-for-xcode-projects
-#########################
 
 #####
 # OS X temporary files that should never be committed
@@ -121,10 +120,39 @@ UserInterfaceState.xcuserstate
 *.moved-aside
 
 
-####
-# UNKNOWN: recommended by others, but I can't discover what these files are
-#
-# ...none. Everything is now explained.
+################################################################################
+# Android
 
 Platform/Android/.settings/org.eclipse.cdt.core.prefs
 Platform/Android/local.properties
+
+# Eclipse project files
+.classpath
+.project
+
+# IDEA project files
+# https://intellij-support.jetbrains.com/entries/23393067
+# Directory based project format (.idea directory)
+# This format is used by all the recent IDE versions by default. Here is what you need to share:
+# All the files under .idea directory in the project root except the workspace.xml and tasks.xml files which store user specific settings
+# All the .iml module files that can be located in different module directories (applies to IntelliJ IDEA)
+# Be careful about sharing the following:
+# Android artifacts that produce a signed build (will contain keystore passwords) dataSources.ids, datasources.xml
+# (can contain database passwords)
+# You may consider not to share the following:
+# gradle.xml file, see this discussion user dictionaries folder (to avoid conflicts if other developer has the same name)
+# XML files under .idea/libraries in case they are generated from Gradle project
+*.eml
+*.iml
+.idea
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/vcs.xml
+.idea/libraries
+.idea/misc.xml
+
+
+################################################################################
+# Windows
+
+Thumbs.db

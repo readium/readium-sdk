@@ -20,7 +20,7 @@ THIRD_PARTY := $(LOCAL_PATH)/ePub3/ThirdParty
 ###########################################################
 # Prebuilt libraries for ICU
 
-ICU_LIB_PATH := ePub3/ThirdParty/icu4c/lib
+ICU_LIB_PATH := ePub3/ThirdParty/icu4c/lib/$(TARGET_ARCH_ABI)
 ICU_INCLUDE_PATH := $(THIRD_PARTY)/icu4c/include
 
 # Unicode
@@ -58,7 +58,7 @@ include $(PREBUILT_STATIC_LIBRARY)
 ###########################################################
 # Prebuilt libraries for OpenSSL
 
-OPENSSL_LIB_PATH := ePub3/ThirdParty/openssl-android/lib
+OPENSSL_LIB_PATH := ePub3/ThirdParty/openssl-android/lib/$(TARGET_ARCH_ABI)
 OPENSSL_INCLUDE_PATH := $(THIRD_PARTY)/openssl-android/include
 
 # Crypto
@@ -82,7 +82,7 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 # As of GCC 4.8, we no longer need boost::regex !
 
-BOOST_LIB_PATH := ePub3/ThirdParty/boost/lib
+BOOST_LIB_PATH := ePub3/ThirdParty/boost/lib/$(TARGET_ARCH_ABI)
 BOOST_INCLUDE_PATH := $(THIRD_PARTY)/boost/include
 
 # Regex
@@ -164,6 +164,11 @@ subdirs := $(addprefix $(LOCAL_PATH)/, )
 LOCAL_MODULE := epub3
 LOCAL_CPPFLAGS := -std=gnu++11 -include prefix.h -fpermissive -DBUILDING_EPUB3
 LOCAL_CFLAGS := -std=gnu11 -include prefix.h -DBUILDING_EPUB3
+
+ifeq ($(TARGET_ARCH_ABI),x86)
+    LOCAL_CFLAGS += -mtune=atom -mssse3 -mfpmath=sse
+endif
+
 LOCAL_CXXFLAGS := -std=gnu++11 -include prefix.h -fpermissive -DBUILDING_EPUB3
 LOCAL_CPP_FEATURES += exceptions rtti
 LOCAL_C_INCLUDES += include

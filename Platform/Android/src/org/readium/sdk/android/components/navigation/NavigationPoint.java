@@ -25,7 +25,7 @@ public class NavigationPoint extends NavigationElement {
     public NavigationPoint(String title, String content) {
     	super(title);
         this.content = content;
-        Log.i(TAG, "title: "+title+", content: "+content);
+        //Log.d(TAG, "title: "+title+", content: "+content);
     }
 
     public String getContent() {
