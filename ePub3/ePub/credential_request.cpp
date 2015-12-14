@@ -41,6 +41,11 @@ std::size_t CredentialRequest::AddButton(const string& title, ButtonHandler&& ha
 {
     std::size_t result = m_components.size();
     m_components.emplace_back(Type::Button, title);
+    
+    //hslee
+    if(handler != nullptr)
+        m_components.back().m_btnHandler = handler;
+    
     return result;
 }
 CredentialRequest::Type CredentialRequest::GetItemType(std::size_t idx) const
@@ -55,5 +60,28 @@ const string& CredentialRequest::GetItemTitle(std::size_t idx) const
         throw std::out_of_range("CredentialRequest::GetItemTitle");
     return m_components[idx].m_title;
 }
+
+/* added by hslee 15/04/13 */
+void CredentialRequest::SetCredentialItem(string title, string input)
+{
+    m_credentials.insert(std::make_pair(title, input));
+}
+
+string& CredentialRequest::GetDefaultValue(std::size_t idx)
+{
+    if (idx >= m_components.size())
+        throw std::out_of_range("CredentialRequest::GetItemTitle");
+    return m_components[idx].m_default;
+}
+
+CredentialRequest::ButtonHandler
+CredentialRequest::GetButtonHandler(std::size_t idx)
+{
+    if (idx >= m_components.size())
+        throw std::out_of_range("CredentialRequest::GetItemTitle");
+    return m_components[idx].m_btnHandler;
+}
+/* end added */
+
 
 EPUB3_END_NAMESPACE

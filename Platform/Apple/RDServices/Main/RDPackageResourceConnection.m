@@ -103,7 +103,7 @@ static BOOL m_provideCoreResourcesIsKnown = NO;
 - (NSObject <HTTPResponse> *)httpResponseForMethod:(NSString *)method URI:(NSString *)path {
 	if (m_packageResourceServer == nil ||
 		method == nil ||
-		![method isEqualToString:@"GET"] ||
+		(![method isEqualToString:@"GET"] && ![method isEqualToString:@"HEAD"]) ||
 		path == nil ||
 		path.length == 0)
 	{
@@ -293,7 +293,7 @@ static BOOL m_provideCoreResourcesIsKnown = NO;
 
 				// Can be used to check / debug encoding issues
 				NSString * dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-				NSLog(@"XHTML SOURCE: %@", dataStr);
+				//NSLog(@"XHTML SOURCE: %@", dataStr);
 
 				// FORCE HTML WebView parser
 				//@"application/xhtml+xml"

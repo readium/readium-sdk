@@ -22,6 +22,7 @@
 #include "package.h"
 #include "byte_stream.h"
 #include "container.h"
+#include "ePub3/xml/document.h"
 #include REGEX_INCLUDE
 #include <sstream>
 
@@ -242,11 +243,25 @@ shared_ptr<xml::Document> ManifestItem::ReferencedDocument() const
     auto package = this->Owner();
     if ( !package )
         return nullptr;
-    
-    unique_ptr<ArchiveXmlReader> reader = package->XmlReaderForRelativePath(path);
-    if ( !reader )
+	
+    shared_ptr<xml::Document> result(nullptr);
+	
+#if EPUB_USE(LIBXML2)
+    // Sometimes, we want to filter the manifest items through
+    // the content filter chain when unpacking the Package. For
+    // example, with some DRM algorithms, the navigation tables are
+    // encrypted and should be filtered before being parsed.
+    ePub3::ManifestItemPtr manifestRef = std::const_pointer_cast<ManifestItem>(Ptr());
+    if (!manifestRef)
         return nullptr;
-
+	
+    shared_ptr<ByteStream> byteStream = package->GetFilterChainByteStream(manifestRef);
+    if (!byteStream)
+        return nullptr;
+	
+	void *docBuf = nullptr;
+	std::size_t resbuflen = byteStream->ReadAllBytes(&docBuf);
+	
     // In some EPUBs, UTF-8 XML/HTML files have a superfluous (erroneous?) BOM, so we either:
     // pass "utf-8" and expect InputBuffer::read_cb (in io.cpp) to skip the 3 erroneous bytes
     // (otherwise the XML parser fails),
@@ -254,16 +269,28 @@ shared_ptr<xml::Document> ManifestItem::ReferencedDocument() const
     const char * encoding = nullptr;
     //const char * encoding = "utf-8";
 
-    shared_ptr<xml::Document> result(nullptr);
-#if EPUB_USE(LIBXML2)
-    int flags = XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR;
-    if ( _mediaType == "text/html" )
-        result = reader->htmlReadDocument(path.c_str(), encoding, flags);
-    else
-        result = reader->xmlReadDocument(path.c_str(), encoding, flags);
+	xmlDocPtr raw;
+    if ( _mediaType == "text/html" ) {
+        raw = htmlReadMemory((const char*)docBuf, resbuflen, path.c_str(), encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
+    } else {
+        raw = xmlReadMemory((const char*)docBuf, resbuflen, path.c_str(), encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
+    }
+	
+	result = xml::Wrapped<xml::Document>(raw);
+	
+    if (docBuf)
+        free(docBuf);
+	
 #elif EPUB_USE(WIN_XML)
-	result = reader->ReadDocument(path.c_str(), "utf-8", 0);
+	// TODO: filtering referenced document through Content Filters
+	// is not yet supported on Windows
+    unique_ptr<ArchiveXmlReader> reader = package->XmlReaderForRelativePath(path);
+    if ( !reader )
+        return nullptr;
+	
+    result = reader->ReadDocument(path.c_str(), "utf-8", 0);
 #endif
+	
     return result;
 }
 unique_ptr<ByteStream> ManifestItem::Reader() const
