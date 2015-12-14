@@ -98,8 +98,8 @@ public:
      only used during construction.
      @see BuildKey(const Container*)
      */
-    FontObfuscator(ConstContainerPtr container) : ContentFilter(FontTypeSniffer) {
-        BuildKey(container);
+    FontObfuscator(ConstContainerPtr container, ConstPackagePtr package) : ContentFilter(FontTypeSniffer) {
+        BuildKey(container, package);
     }
     ///
     /// Copy constructor.
@@ -135,7 +135,7 @@ protected:
      @see http://www.idpf.org/epub/30/spec/epub30-ocf.html#fobfus-keygen
      */
     EPUB3_EXPORT
-    bool BuildKey(ConstContainerPtr container);
+    bool BuildKey(ConstContainerPtr container, ConstPackagePtr package);
     
     virtual FilterContext *InnerMakeFilterContext(ConstManifestItemPtr) const OVERRIDE { return new FontObfuscationContext; }
 };

@@ -66,20 +66,20 @@ void * FontObfuscator::FilterData(FilterContext* context, void *data, size_t len
     *outputLen = len;
     return buf;
 }
-bool FontObfuscator::BuildKey(ConstContainerPtr container)
+bool FontObfuscator::BuildKey(ConstContainerPtr container, ConstPackagePtr pkg)
 {
     REGEX_NS::regex re("\\s+");
     std::stringstream ss;
     
-    for ( auto pkg : container->Packages() )
-    {
+//    for ( auto pkg : container->Packages() )
+//    {
         if ( ss.tellp() > 0 )
             ss << ' ';
         
         // we use a C++11 regex to remove all whitespace in the value
         std::string replacement;
         ss << REGEX_NS::regex_replace(pkg->PackageID().stl_str(), re, replacement);
-    }
+//    }
 
     auto str = ss.str();
     
@@ -139,7 +139,7 @@ ContentFilterPtr FontObfuscator::FontObfuscatorFactory(ConstPackagePtr package)
     {
         if ( encInfo->Algorithm() == FontObfuscationAlgorithmID )
         {
-            return New(container);
+            return New(container, package);
         }
     }
     
