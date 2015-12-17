@@ -125,7 +125,7 @@
 
 -(void)epubWarningShow:(NSString*)msg
 {
-    UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"EPUB warning:" message:msg delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil];
+    UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"EPUB Warning:" message:msg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
     [alert show];
 }
 
