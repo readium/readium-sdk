@@ -34,10 +34,10 @@ REGEX_NS::regex SwitchPreprocessor::CaseContentExtractor("<(?:epub:)?case\\s+req
 REGEX_NS::regex SwitchPreprocessor::DefaultContentExtractor("<(?:epub:)?default(?:.|\\n|\\r)*?>((?:.|\\n|\\r)*?)</(?:epub:)?default(?:.|\\n|\\r)*?>", SwitchRegexFlags);
 
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-SwitchPreprocessor::NamespaceList SwitchPreprocessor::_supportedNamespaces{};
+SwitchPreprocessor::NamespaceList SwitchPreprocessor::_supportedNamespaces{ ePub3NamespaceURI, MathMLNamespaceURI, PLSNamespaceURI, SSMLNamespaceURI, SVGNamespaceURI, XHTMLNamespaceURI };
 #else
-static const string __default_namespaces[1] = {MathMLNamespaceURI};
-SwitchPreprocessor::NamespaceList SwitchPreprocessor::_supportedNamespaces(&__default_namespaces[0], &__default_namespaces[1]);
+static const string __default_namespaces[6] = { ePub3NamespaceURI, MathMLNamespaceURI, PLSNamespaceURI, SSMLNamespaceURI, SVGNamespaceURI, XHTMLNamespaceURI };
+SwitchPreprocessor::NamespaceList SwitchPreprocessor::_supportedNamespaces(&__default_namespaces[0], &__default_namespaces[5]);
 #endif
 
 bool SwitchPreprocessor::SniffSwitchableContent(ConstManifestItemPtr item)
@@ -60,7 +60,8 @@ void SwitchPreprocessor::Register()
 void * SwitchPreprocessor::FilterData(FilterContext* context, void *data, size_t len, size_t *outputLen)
 {
     char* input = reinterpret_cast<char*>(data);
-    
+    //printf("\n\n%s\n\n", input);
+
     // handle partially-commented switch statements
     std::string inputStr(reinterpret_cast<const char*>(data));
     std::string replacement("$1$2$3");
@@ -123,14 +124,30 @@ void * SwitchPreprocessor::FilterData(FilterContext* context, void *data, size_t
     }
     
     *outputLen = output.size();
-    if ( output.size() < len )
+
+    if (*outputLen == 0)
     {
-        output.copy(input, output.size());
+        *outputLen = len;
+        return input;
+    }
+
+// DEBUG: to test large buffer addition to original resource size
+//    output += "\n<!--\n";
+//    for (int i = 0; i < 500; i++)
+//    {
+//        output += "abcdefghijklmnopqrstuvwxyz-0123456789_";
+//    }
+//    output += "\n-->\n";
+//    *outputLen = output.size();
+
+    if (*outputLen < len)
+    {
+        output.copy(input, *outputLen);
         return input;
     }
     
-    char* result = new char[output.size()];
-    output.copy(result, output.size());
+    char* result = new char[*outputLen];
+    output.copy(result, *outputLen);
     return result;
 }
 
