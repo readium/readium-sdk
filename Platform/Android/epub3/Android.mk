@@ -14,7 +14,8 @@
 #  received a copy of the GNU Affero General Public License along with this program.  If not, 
 #  see <http://www.gnu.org/licenses/>.
 
-LOCAL_PATH := $(call my-dir)/../..
+PROJECT_PATH := $(call my-dir)
+LOCAL_PATH := $(PROJECT_PATH)/../../..
 THIRD_PARTY := $(LOCAL_PATH)/ePub3/ThirdParty
 
 ###########################################################
@@ -143,15 +144,8 @@ LOCAL_SRC_FILES := \
 		ePub3/ThirdParty/libxml2-android/xmlwriter.c \
 		ePub3/ThirdParty/libxml2-android/schematron.c
 LOCAL_C_INCLUDES += \
-		$(THIRD_PARTY)/libxml2-android/include \
-		$(ICU_INCLUDE_PATH) \
-		$(LOCAL_PATH)/ePub3 \
-		$(LOCAL_PATH)/Platform/Android/jni \
-		$(LOCAL_PATH)/Platform/Android/jni/android \
-		$(LOCAL_PATH)/Platform/Android/jni/android/gnucxx-clang
+		$(PROJECT_PATH)/include
 LOCAL_LDLIBS := -lz -lm
-LOCAL_STATIC_LIBRARIES := icuuc icui18n icuio icudata
-LOCAL_CFLAGS := -include prefix.h
 
 include $(BUILD_STATIC_LIBRARY)
 
@@ -162,28 +156,19 @@ include $(CLEAR_VARS)
 subdirs := $(addprefix $(LOCAL_PATH)/, )
 
 LOCAL_MODULE := epub3
-LOCAL_CPPFLAGS := -std=gnu++11 -include prefix.h -fpermissive -DBUILDING_EPUB3
-LOCAL_CFLAGS := -std=gnu11 -include prefix.h -DBUILDING_EPUB3
+LOCAL_CPPFLAGS := -std=gnu++11 -fpermissive -DBUILDING_EPUB3
+LOCAL_CFLAGS := -std=gnu11 -DBUILDING_EPUB3
 
 ifeq ($(TARGET_ARCH_ABI),x86)
     LOCAL_CFLAGS += -mtune=atom -mssse3 -mfpmath=sse
 endif
 
-LOCAL_CXXFLAGS := -std=gnu++11 -include prefix.h -fpermissive -DBUILDING_EPUB3
+LOCAL_CXXFLAGS := -std=gnu++11 -fpermissive -DBUILDING_EPUB3
 LOCAL_CPP_FEATURES += exceptions rtti
-LOCAL_C_INCLUDES += include
-#		$(LOCAL_PATH)/ePub3 \
-#		$(LOCAL_PATH)/ePub3/utilities \
-#		$(LOCAL_PATH)/ePub3/ThirdParty \
-        $(LOCAL_PATH)/ePub3/ThirdParty/google-url/src \
-#		$(LOCAL_PATH)/ePub3/ThirdParty/boost/include \
-#		$(LOCAL_PATH)/ePub3/ThirdParty/utf8-cpp/include \
-#		$(LOCAL_PATH)/Platform/Android/src/gnucxx-clang
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/ePub3 $(LOCAL_PATH)/ePub3/utilities
-LOCAL_C_INCLUDES += ${shell find $(LOCAL_PATH)/ePub3/xml -type d}
-LOCAL_C_INCLUDES += ${shell find $(LOCAL_PATH)/ePub3/ePub -type d}
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/Platform/Android/jni \
-		$(LOCAL_PATH)/Platform/Android/jni/android
+LOCAL_C_INCLUDES += \
+		$(PROJECT_PATH)/include \
+		$(PROJECT_PATH)/include/ePub3 \
+		$(PROJECT_PATH)/include/ePub3/utilities
 LOCAL_STATIC_LIBRARIES := xml2 crypto boost_regex
 LOCAL_LDLIBS := -lz -landroid -llog
 LOCAL_SRC_FILES := \
@@ -244,90 +229,47 @@ LOCAL_SRC_FILES := \
 		ePub3/ThirdParty/libzip/zip_unchange_archive.c \
 		ePub3/ThirdParty/libzip/zip_unchange_data.c \
 		ePub3/xml/utilities/base.cpp \
-		ePub3/xml/utilities/io.cpp \
-		ePub3/xml/validation/schema.cpp \
-		ePub3/xml/validation/ns.cpp \
-		ePub3/xml/validation/c14n.cpp \
-		ePub3/xml/tree/document.cpp \
-		ePub3/xml/tree/element.cpp \
-		ePub3/xml/tree/node.cpp \
-		ePub3/xml/tree/xpath.cpp \
-		ePub3/utilities/byte_buffer.cpp \
-		ePub3/utilities/byte_stream.cpp \
-		ePub3/utilities/CPUCacheUtils_arm.S \
-		ePub3/utilities/CPUCacheUtils_i386.S \
-		ePub3/utilities/CPUCacheUtils_x64.S \
-		ePub3/utilities/CPUCacheUtils.c \
-		ePub3/utilities/epub_locale.cpp \
-		ePub3/utilities/error_handler.cpp \
-		ePub3/utilities/executor.cpp \
-		ePub3/utilities/future.cpp \
-		ePub3/utilities/iri.cpp \
-		ePub3/utilities/optional.cpp \
-		ePub3/utilities/path_help.cpp \
-		ePub3/utilities/ring_buffer.cpp \
-		ePub3/utilities/run_loop_android.cpp \
-		ePub3/utilities/utfstring.cpp \
-		ePub3/ePub/archive_xml.cpp \
-		ePub3/ePub/archive.cpp \
-		ePub3/ePub/cfi.cpp \
-		ePub3/ePub/container.cpp \
-		ePub3/ePub/content_handler.cpp \
-		ePub3/ePub/content_module_manager.cpp \
-		ePub3/ePub/credential_request.cpp \
-		ePub3/ePub/encryption.cpp \
-		ePub3/ePub/epub_collection.cpp \
-		ePub3/ePub/filter_chain.cpp \
-		ePub3/ePub/filter_chain_byte_stream.cpp \
-		ePub3/ePub/filter_chain_byte_stream_range.cpp \
-		ePub3/ePub/filter_manager_impl.cpp \
-		ePub3/ePub/filter_manager.cpp \
-		ePub3/ePub/PassThroughFilter.cpp \
-		ePub3/ePub/font_obfuscation.cpp \
-		ePub3/ePub/glossary.cpp \
-		ePub3/ePub/initialization.cpp \
-		ePub3/ePub/library.cpp \
-		ePub3/ePub/link.cpp \
-		ePub3/ePub/manifest.cpp \
-		ePub3/ePub/media_support_info.cpp \
-		ePub3/ePub/media-overlays_smil_data.cpp \
-		ePub3/ePub/media-overlays_smil_model.cpp \
-		ePub3/ePub/nav_point.cpp \
-		ePub3/ePub/nav_table.cpp \
-		ePub3/ePub/object_preprocessor.cpp \
-		ePub3/ePub/package.cpp \
-		ePub3/ePub/property_extension.cpp \
-		ePub3/ePub/property_holder.cpp \
-		ePub3/ePub/property.cpp \
-		ePub3/ePub/signatures.cpp \
-		ePub3/ePub/spine.cpp \
-		ePub3/ePub/switch_preprocessor.cpp \
-		ePub3/ePub/xpath_wrangler.cpp \
-		ePub3/ePub/zip_archive.cpp \
-		ePub3/ThirdParty/google-url/base/string16.cc \
-		ePub3/ThirdParty/google-url/src/gurl.cc \
-		ePub3/ThirdParty/google-url/src/url_canon_etc.cc \
-		ePub3/ThirdParty/google-url/src/url_canon_filesystemurl.cc \
-		ePub3/ThirdParty/google-url/src/url_canon_fileurl.cc \
-		ePub3/ThirdParty/google-url/src/url_canon_host.cc \
-		ePub3/ThirdParty/google-url/src/url_canon_internal.cc \
-		ePub3/ThirdParty/google-url/src/url_canon_ip.cc \
-		ePub3/ThirdParty/google-url/src/url_canon_mailtourl.cc \
-		ePub3/ThirdParty/google-url/src/url_canon_path.cc \
-		ePub3/ThirdParty/google-url/src/url_canon_pathurl.cc \
-		ePub3/ThirdParty/google-url/src/url_canon_query.cc \
-		ePub3/ThirdParty/google-url/src/url_canon_relative.cc \
-		ePub3/ThirdParty/google-url/src/url_canon_stdurl.cc \
-		ePub3/ThirdParty/google-url/src/url_parse.cc \
-		ePub3/ThirdParty/google-url/src/url_parse_file.cc \
-		ePub3/ThirdParty/google-url/src/url_util.cc \
-		ePub3/ThirdParty/google-url/src/url_canon_cpp11.cc \
-		Platform/Android/jni/android/backup_atomics.cpp \
-		Platform/Android/jni/jni/jni_ptr.cpp \
-		Platform/Android/jni/epub3.cpp \
-		Platform/Android/jni/container.cpp \
-		Platform/Android/jni/packagejni.cpp \
-		Platform/Android/jni/iri.cpp \
-		Platform/Android/jni/resource_stream.cpp
+        ePub3/xml/utilities/io.cpp \
+        ePub3/xml/validation/schema.cpp \
+        ePub3/xml/validation/ns.cpp \
+        ePub3/xml/validation/c14n.cpp \
+        ePub3/xml/tree/document.cpp \
+        ePub3/xml/tree/element.cpp \
+        ePub3/xml/tree/node.cpp \
+        ePub3/xml/tree/xpath.cpp \
+        ePub3/utilities/byte_buffer.cpp \
+        ePub3/utilities/byte_stream.cpp \
+        ePub3/utilities/CPUCacheUtils_arm.S \
+        ePub3/utilities/CPUCacheUtils_i386.S \
+        ePub3/utilities/CPUCacheUtils_x64.S \
+        ePub3/utilities/CPUCacheUtils.c \
+        ePub3/utilities/epub_locale.cpp \
+        ePub3/utilities/error_handler.cpp \
+        ePub3/utilities/executor.cpp \
+        ePub3/utilities/future.cpp \
+        ePub3/utilities/iri.cpp \
+        ePub3/utilities/optional.cpp \
+        ePub3/utilities/path_help.cpp \
+        ePub3/utilities/ring_buffer.cpp \
+        ePub3/utilities/run_loop_android.cpp \
+        ePub3/utilities/utfstring.cpp \
+        ePub3/ThirdParty/google-url/base/string16.cc \
+        ePub3/ThirdParty/google-url/src/gurl.cc \
+        ePub3/ThirdParty/google-url/src/url_canon_etc.cc \
+        ePub3/ThirdParty/google-url/src/url_canon_filesystemurl.cc \
+        ePub3/ThirdParty/google-url/src/url_canon_fileurl.cc \
+        ePub3/ThirdParty/google-url/src/url_canon_host.cc \
+        ePub3/ThirdParty/google-url/src/url_canon_internal.cc \
+        ePub3/ThirdParty/google-url/src/url_canon_ip.cc \
+        ePub3/ThirdParty/google-url/src/url_canon_mailtourl.cc \
+        ePub3/ThirdParty/google-url/src/url_canon_path.cc \
+        ePub3/ThirdParty/google-url/src/url_canon_pathurl.cc \
+        ePub3/ThirdParty/google-url/src/url_canon_query.cc \
+        ePub3/ThirdParty/google-url/src/url_canon_relative.cc \
+        ePub3/ThirdParty/google-url/src/url_canon_stdurl.cc \
+        ePub3/ThirdParty/google-url/src/url_parse.cc \
+        ePub3/ThirdParty/google-url/src/url_parse_file.cc \
+        ePub3/ThirdParty/google-url/src/url_util.cc \
+        ePub3/ThirdParty/google-url/src/url_canon_cpp11.cc \
 
-include $(BUILD_SHARED_LIBRARY)
+include $(BUILD_STATIC_LIBRARY)

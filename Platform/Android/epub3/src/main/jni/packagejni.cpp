@@ -40,7 +40,7 @@
 
 #include "epub3.h"
 #include "helpers.h"
-#include "package.h"
+#include "packagejni.h"
 #include "resource_stream.h"
 #include "ePub3/filter_chain_byte_stream_range.h"
 

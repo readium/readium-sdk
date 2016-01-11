@@ -28,10 +28,11 @@
 #define _EPUB3_JNI_H_
 
 
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 /*
  * Constants
@@ -46,7 +47,6 @@ extern "C" {
  * JNI version to use
  */
 #define JNI_VERSION		JNI_VERSION_1_6
-
 
 /*
  * Exported variables
