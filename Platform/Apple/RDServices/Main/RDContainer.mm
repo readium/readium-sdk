@@ -65,53 +65,71 @@
 	if (self = [super init]) {
 		m_delegate = delegate;
 
-		ePub3::ErrorHandlerFn sdkErrorHandler = ^(const ePub3::error_details& err) {
-
-			const char * msg = err.message();
-
-			BOOL isSevereEpubError = NO;
-			if (err.is_spec_error()
-					&& (err.severity() == ePub3::ViolationSeverity::Critical
-					|| err.severity() == ePub3::ViolationSeverity::Major))
-				isSevereEpubError = YES;
-
-			BOOL res = [m_delegate container:self handleSdkError:[NSString stringWithUTF8String:msg] isSevereEpubError:isSevereEpubError];
-
-			return (res == YES ? true : false);
-			//return ePub3::DefaultErrorHandler(err);
-		};
-		ePub3::SetErrorHandler(sdkErrorHandler);
-
-		ePub3::InitializeSdk();
-		ePub3::PopulateFilterManager();
-		
-		if ([delegate respondsToSelector:@selector(containerRegisterContentFilters:)]) {
-			[delegate containerRegisterContentFilters:self];
-		}
         
-               //Content Modules for each DRM library, if any, should be registered in the function.
-               if ([delegate respondsToSelector:@selector(containerRegisterContentModules:)]) {
-                       [delegate containerRegisterContentModules:self];
-                }
+        ePub3::ErrorHandlerFn sdkErrorHandler = ^(const ePub3::error_details& err) {
 
-		m_path = path;
-		m_container = ePub3::Container::OpenContainer(path.UTF8String);
+            const char * msg = err.message();
 
-		if (m_container == nullptr) {
-			return nil;
-		}
+            BOOL isSevereEpubError = NO;
+            if (err.is_spec_error()
+                    && (err.severity() == ePub3::ViolationSeverity::Critical
+                    || err.severity() == ePub3::ViolationSeverity::Major))
+                isSevereEpubError = YES;
 
-		m_packageList = m_container->Packages();
-		m_packages = [[NSMutableArray alloc] initWithCapacity:4];
+            BOOL res = [m_delegate container:self handleSdkError:[NSString stringWithUTF8String:msg] isSevereEpubError:isSevereEpubError];
 
-		for (auto i = m_packageList.begin(); i != m_packageList.end(); i++) {
-			RDPackage *package = [[RDPackage alloc] initWithPackage:i->get()];
-			[m_packages addObject:package];
-		}
+            return (res == YES ? true : false);
+            //return ePub3::DefaultErrorHandler(err);
+        };
+        ePub3::SetErrorHandler(sdkErrorHandler);
+
+        ePub3::InitializeSdk();
+        ePub3::PopulateFilterManager();
+        
+        if ([delegate respondsToSelector:@selector(containerRegisterContentFilters:)]) {
+            [delegate containerRegisterContentFilters:self];
+        }
+        
+        //Content Modules for each DRM library, if any, should be registered in the function.
+        if ([delegate respondsToSelector:@selector(containerRegisterContentModules:)]) {
+               [delegate containerRegisterContentModules:self];
+        }
+
+        m_path = path;
+    
+        try {
+            m_container = ePub3::Container::OpenContainer(path.UTF8String);
+        } catch (std::exception& e) {
+            auto msg = e.what();
+            [self performSelectorOnMainThread:@selector(epubWarningShow:) withObject:[NSString stringWithUTF8String:msg] waitUntilDone:NO];
+            
+        } catch (...) {
+            NSLog(@"unknown exceprion");
+        }
+
+        if (m_container == nullptr) {
+            return nil;
+        }
+
+        m_packageList = m_container->Packages();
+        m_packages = [[NSMutableArray alloc] initWithCapacity:4];
+
+        for (auto i = m_packageList.begin(); i != m_packageList.end(); i++) {
+            RDPackage *package = [[RDPackage alloc] initWithPackage:i->get()];
+            [m_packages addObject:package];
+        }
+            
+        
+        
 	}
 
 	return self;
 }
 
+-(void)epubWarningShow:(NSString*)msg
+{
+    UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"EPUB Warning:" message:msg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+    [alert show];
+}
 
 @end
