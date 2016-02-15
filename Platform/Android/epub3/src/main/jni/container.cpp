@@ -30,6 +30,7 @@
 #include "helpers.h"
 #include "container.h"
 #include "packagejni.h"
+#include "resource_stream.h"
 
 
 using namespace std;
@@ -125,6 +126,22 @@ void javaContainer_addPackageToContainer(JNIEnv *env, jobject container, jlong p
 JNIEXPORT void JNICALL
 Java_org_readium_sdk_android_Container_nativeLoadData(JNIEnv* env, jobject thiz, jlong pckgPtr) {
 	//TODO: load the container data instead of passing the path only, as in the package
+}
+
+JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Container_nativeGetInputStream
+		(JNIEnv* env, jobject obj, jlong containerPtr, jstring jRelativePath) {
+	const char *relativePath = env->GetStringUTFChars(jRelativePath, 0);
+	ePub3::Container * container = (ePub3::Container *) containerPtr;
+	bool containsPath = container->FileExistsAtPath(relativePath);
+
+    if (!containsPath) {
+		return NULL;
+	}
+
+	unique_ptr<ePub3::ByteStream> byteStream = container->ReadStreamAtPath(relativePath);
+	env->ReleaseStringUTFChars(jRelativePath, relativePath);
+	ResourceStream *stream = new ResourceStream(byteStream, 0);
+	return javaResourceInputStream_createResourceInputStream(env, (long) stream);
 }
 
 
