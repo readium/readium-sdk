@@ -97,6 +97,17 @@ PackageBase::PackageBase(PackageBase&& o) : _archive(o._archive), _opf(std::move
 PackageBase::~PackageBase()
 {
     // our Container owns the archive
+    
+    // When destructed, a linked list made of shared pointers will cause a
+    // stack overflow with very large lists (occurred on iOS with around
+    // 4000 spine items). This trick will destruct the list linearly.
+    // Source: http://stackoverflow.com/questions/17804235/shared-pointers-delete-recursive-data-structures-recursively-and-the-stack-overf/17804870#17804870
+    auto next = _spine->Next();
+    _spine = nullptr;
+    while (next) {
+        // move next forward, deleting old next
+        next = next->Next();
+    }
 }
 bool PackageBase::Open(const string& path)
 {
