@@ -1,0 +1,100 @@
+//
+//  css_preprocessor.hpp
+//  ePub3
+//
+//  Created by Olivier Körner on 03/03/2016.
+//  Copyright © 2016 The Readium Foundation and contributors. All rights reserved.
+//
+
+#ifndef __ePub3__css_preprocessor_hpp
+#define __ePub3__css_preprocessor_hpp
+
+#include <ePub3/epub3.h>
+#include <ePub3/filter.h>
+#include <ePub3/utilities/iri.h>
+#include <ePub3/content_handler.h>
+#include REGEX_INCLUDE
+
+EPUB3_BEGIN_NAMESPACE
+
+class Package;
+
+/**
+ Implements a filter for reading content documents which statically replaces `object`
+ elements with `iframe` elements referencing the appropriate DHTML handler.
+ @ingroup filters
+ */
+class CSSPreprocessor : public ContentFilter, public PointerType<CSSPreprocessor>
+{
+protected:
+    ///
+    /// Matches only mnifest items with a media-type of "application/xhtml+xml" or "text/html" or "text/css".
+    static bool ShouldApply(ConstManifestItemPtr item);
+    
+    /// The factory routine
+    static ContentFilterPtr CSSFilterFactory(ConstPackagePtr package);
+    
+private:
+    ///
+    /// No default constructor.
+    //CSSPreprocessor() : ContentFilter(ShouldApply) { }
+    CSSPreprocessor()                                    _DELETED_;
+
+    // Filter context for CSS preprocessing: is the stream CSS or HTML?
+    class CSSFilterContext : public FilterContext
+    {
+    private:
+        bool          _isCSS;
+        
+    public:
+        CSSFilterContext() : FilterContext(), _isCSS(false) {}
+        CSSFilterContext(ConstManifestItemPtr item) { _isCSS = (item->MediaType().compare("text/css") == 0); }
+        
+        bool  isCSS() const      { return _isCSS; }
+        void setCSS(bool val)  { _isCSS = val; }
+        
+    };
+    
+public:
+    /**
+     Initializes a preprocessor and associates it with a Package object, from which
+     it can obtain foreign media handler details.
+     @param pkg The package to which this filter will apply.
+     */
+    EPUB3_EXPORT
+    CSSPreprocessor(ConstPackagePtr pkg);
+    //CSSPreprocessor(ConstPackagePtr pkg) : ContentFilter(ShouldApply);
+    
+    ///
+    /// Standard copy constructor.
+    CSSPreprocessor(const CSSPreprocessor& o) : ContentFilter(o) {}
+    
+    ///
+    /// C++11 'move' constructor.
+    CSSPreprocessor(CSSPreprocessor&& o) : ContentFilter(std::move(o)) {}
+    
+    ///
+    /// Destructor.
+    
+    ///
+    /// This preprocessor requires access to the entire content document at once.
+    virtual OperatingMode GetOperatingMode() const OVERRIDE { return OperatingMode::RequiresCompleteData; }
+    
+    /**
+     Performs the static replacement of `object` tags whose `type` attribute
+     identifies a media-type for which the Publication provides a media handler.
+     
+     */
+    virtual void*   FilterData(FilterContext* context, void* data, size_t len, size_t* outputLen) OVERRIDE;
+    
+    // register with the filter manager
+    static void Register();
+    
+protected:
+
+    virtual FilterContext *InnerMakeFilterContext(ConstManifestItemPtr item) const OVERRIDE { return new CSSFilterContext(item); }
+};
+
+EPUB3_END_NAMESPACE
+
+#endif /* defined(__ePub3__css_preprocessor__) */

@@ -25,6 +25,7 @@
 #include <ePub3/font_obfuscation.h>
 #include <ePub3/switch_preprocessor.h>
 #include <ePub3/object_preprocessor.h>
+#include <ePub3/css_preprocessor.h>
 #include <ePub3/PassThroughFilter.h>
 
 EPUB3_BEGIN_NAMESPACE
@@ -47,9 +48,10 @@ void PopulateFilterManager()
 		// simply uncomment the line below. Also take a look at the file PassThroughFilter.cpp
 		// to see if the class is enabling itself.
 		//
-        // PassThroughFilter::Register();
+        PassThroughFilter::Register();
         SwitchPreprocessor::Register();
         ObjectPreprocessor::Register();
+        CSSPreprocessor::Register();
     });
 }
 
