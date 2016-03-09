@@ -23,13 +23,13 @@
 #include "filter_manager.h"
 
 static const REGEX_NS::regex::flag_type regexFlags(REGEX_NS::regex::ECMAScript|REGEX_NS::regex::optimize|REGEX_NS::regex::icase);
-static const REGEX_NS::regex reEscaper("\\\\\\.\\(\\)\\[\\]\\$\\^\\*\\+\\?\\:\\=\\|", regexFlags);
+//static const REGEX_NS::regex reEscaper("\\\\\\.\\(\\)\\[\\]\\$\\^\\*\\+\\?\\:\\=\\|", regexFlags);
 
 EPUB3_BEGIN_NAMESPACE
 
 static REGEX_NS::regex CSSMatcher("page\\-break\\-(after|before|inside) *\\: *(always|avoid|left|right)", regexFlags);
 static REGEX_NS::regex StyleAttributeMatcher("<[^>]+style=\\\"([^\\\"]*)\"", regexFlags);
-static REGEX_NS::regex StyleTagMatcher("<style>.*?<\\/style>", regexFlags);
+static REGEX_NS::regex StyleTagMatcher("<style[^>]*>((.|\n|\r)*?)<\\/style>", regexFlags);
 
 static const std::string PageBreakReplacement ="-webkit-column-break-$1: $2";
 
@@ -40,13 +40,31 @@ static const std::string PageBreakReplacement ="-webkit-column-break-$1: $2";
 bool CSSPreprocessor::ShouldApply(ConstManifestItemPtr item)
 {
     auto mediaType = item->MediaType();
-    std::cout << "CSSPreprocessor ShouldApply " << mediaType << " " << item->Href();
+    bool itemPrepaginated = false;
+    auto iprop = item->PropertyMatching("layout", "rendition");
+    if (iprop != nullptr) {
+        auto ilayout = iprop->Value();
+        itemPrepaginated = (ilayout == "pre-paginated");
+    }
+    bool pkgPrepaginated = false;
+    auto prop = item->GetPackage()->PropertyMatching("layout", "rendition");
+    if (prop != nullptr) {
+        auto layout = prop->Value();
+        pkgPrepaginated = (layout == "pre-paginated");
+    }
+    
+    if (itemPrepaginated || pkgPrepaginated)
+        return false;
+    
+    //std::cout << "CSSPreprocessor ShouldApply " << mediaType << " " << item->Href();
     return (mediaType == "application/xhtml+xml" || mediaType == "text/html" || mediaType == "text/css");
 }
 
 ContentFilterPtr CSSPreprocessor::CSSFilterFactory(ConstPackagePtr package)
 {
-    return New(package);
+    CSSSubstitution pageBreakSub(CSSMatcher, PageBreakReplacement);
+    std::vector<CSSSubstitution> substitutions { pageBreakSub };
+    return New(package, substitutions);
 }
 
 void CSSPreprocessor::Register()
@@ -54,7 +72,7 @@ void CSSPreprocessor::Register()
     FilterManager::Instance()->RegisterFilter("CSSPreprocessor", ValidationComplete, CSSFilterFactory);
 }
 
-CSSPreprocessor::CSSPreprocessor(ConstPackagePtr pkg) : ContentFilter(ShouldApply)
+CSSPreprocessor::CSSPreprocessor(ConstPackagePtr pkg, CSSSubstitutionList substitutions) : ContentFilter(ShouldApply), m_substitutions(substitutions)
 {
 }
 
@@ -67,11 +85,13 @@ void* CSSPreprocessor::FilterData(FilterContext* context, void *data, size_t len
     
     std::string output;
     if (isCSS) {
-        output = REGEX_NS::regex_replace(input, CSSMatcher, PageBreakReplacement);
+        output.assign(input, len);
+        for (CSSSubstitution& substitution: m_substitutions) {
+            output = REGEX_NS::regex_replace(output, substitution.GetSearchRegex(), substitution.GetReplaceFormat());
+        }
     }
     else
     {
-        char* input = reinterpret_cast<char*>(data);
         std::string toutput;
         // find each `style` tags
         REGEX_NS::cregex_iterator pos(input, input+len, StyleTagMatcher);
@@ -83,12 +103,19 @@ void* CSSPreprocessor::FilterData(FilterContext* context, void *data, size_t len
         else
         {
             while (pos != end) {
-                std::cout << "style tag prefix" << pos->prefix();
+                //std::cout << "style tag prefix" << pos->prefix();
                 toutput += pos->prefix();
                 
-                std::string styleout = pos->str();
-                std::cout << "style match" << pos->str();
-                toutput += REGEX_NS::regex_replace(pos->str(), CSSMatcher, PageBreakReplacement);
+                //for (int i = 0; i < pos->size(); i++) {
+                //    std::cout << "style tag match " << i <<" "<< pos->length(i) <<" "<< pos->str(i) << "// ";
+                //}
+                
+                //std::cout << "style match" << pos->str();
+                std::string str = pos->str();
+                for (CSSSubstitution& substitution: m_substitutions) {
+                    str = REGEX_NS::regex_replace(str, substitution.GetSearchRegex(), substitution.GetReplaceFormat());
+                }
+                toutput += str;
                 
                 auto here = pos++;
                 if ( pos == end )
@@ -105,11 +132,18 @@ void* CSSPreprocessor::FilterData(FilterContext* context, void *data, size_t len
         }
         else {
             while (apos != aend) {
-                std::cout << "style tag prefix" << apos->prefix();
+                //std::cout << "style attr prefix" << apos->prefix();
                 output += apos->prefix();
                 
-                std::string styleout = apos->str();
-                output += REGEX_NS::regex_replace(pos->str(), CSSMatcher, PageBreakReplacement);
+                //for (int i = 0; i < apos->size(); i++) {
+                //    std::cout << "style attr match " << i <<" "<< apos->length(i) <<" "<< apos->str(i) << "// ";
+                //}
+                
+                std::string str = apos->str();
+                for (CSSSubstitution& substitution: m_substitutions) {
+                    str = REGEX_NS::regex_replace(str, substitution.GetSearchRegex(), substitution.GetReplaceFormat());
+                }
+                output += str;
                 
                 auto here = apos++;
                 if ( apos == aend )

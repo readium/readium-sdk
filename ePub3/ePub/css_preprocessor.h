@@ -35,11 +35,12 @@ protected:
     static ContentFilterPtr CSSFilterFactory(ConstPackagePtr package);
     
 private:
+    
     ///
     /// No default constructor.
     //CSSPreprocessor() : ContentFilter(ShouldApply) { }
     CSSPreprocessor()                                    _DELETED_;
-
+    
     // Filter context for CSS preprocessing: is the stream CSS or HTML?
     class CSSFilterContext : public FilterContext
     {
@@ -56,22 +57,48 @@ private:
     };
     
 public:
+    class CSSSubstitution
+    {
+    public:
+        CSSSubstitution(const REGEX_NS::regex& search_re, const std::string& replace) : m_search_re(search_re), m_replace(replace) {}
+        CSSSubstitution(const CSSSubstitution &o) : m_search_re(o.m_search_re), m_replace(o.m_replace) {}
+        CSSSubstitution(CSSSubstitution &&o) : m_search_re(std::move(o.m_search_re)), m_replace(std::move(o.m_replace)) {}
+        virtual ~CSSSubstitution() {}
+        
+        const REGEX_NS::regex& GetSearchRegex() const
+        {
+            return m_search_re;
+        }
+        const std::string& GetReplaceFormat() const
+        {
+            return m_replace;
+        }
+        
+    private:
+        
+        REGEX_NS::regex              m_search_re;
+        std::string                  m_replace;
+        
+    };
+
+    typedef std::vector<CSSSubstitution>     CSSSubstitutionList;
+
     /**
      Initializes a preprocessor and associates it with a Package object, from which
      it can obtain foreign media handler details.
      @param pkg The package to which this filter will apply.
      */
     EPUB3_EXPORT
-    CSSPreprocessor(ConstPackagePtr pkg);
+    CSSPreprocessor(ConstPackagePtr pkg, CSSSubstitutionList substitutions);
     //CSSPreprocessor(ConstPackagePtr pkg) : ContentFilter(ShouldApply);
     
     ///
     /// Standard copy constructor.
-    CSSPreprocessor(const CSSPreprocessor& o) : ContentFilter(o) {}
+    CSSPreprocessor(const CSSPreprocessor& o) : ContentFilter(o), m_substitutions(o.m_substitutions) {}
     
     ///
     /// C++11 'move' constructor.
-    CSSPreprocessor(CSSPreprocessor&& o) : ContentFilter(std::move(o)) {}
+    CSSPreprocessor(CSSPreprocessor&& o) : ContentFilter(std::move(o)), m_substitutions(std::move(o.m_substitutions)) {}
     
     ///
     /// Destructor.
@@ -89,7 +116,10 @@ public:
     
     // register with the filter manager
     static void Register();
-    
+
+private:
+    CSSSubstitutionList m_substitutions;
+
 protected:
 
     virtual FilterContext *InnerMakeFilterContext(ConstManifestItemPtr item) const OVERRIDE { return new CSSFilterContext(item); }
