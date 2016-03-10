@@ -1,42 +1,15 @@
-apply plugin: 'com.android.model.library'
+if (rootProject.hasProperty("readium_ndk_debug") && rootProject.readium_ndk_debug) {
+    // Use gradle experimental receipt to debug C/C++ code
+    println "${project.name}: Use gradle experimental to build application"
+    apply from: 'build_experimental.gradle'
+} else {
+    apply from: 'build_stable.gradle'
+}
 
-model {
-    android {
-        compileSdkVersion = 23
-        buildToolsVersion = "23.0.2"
+tasks.whenTaskAdded { task ->
+    def taskName = task.name
 
-        defaultConfig.with {
-            minSdkVersion.apiLevel   = 19
-            targetSdkVersion.apiLevel = 23
-        }
-    }
-
-    android.sources {
-        main {
-            jniLibs {
-                dependencies {
-                    project ":epub3"
-                }
-            }
-        }
-    }
-
-    android.buildTypes {
-        release {
-            minifyEnabled = true
-        }
-        debug {
-            minifyEnabled = false
-        }
-    }
-
-    android.productFlavors {
-        create ("arm") {
-        }
-
-        create ("x86") {
-        }
-
-        create("all")
+    if (taskName.startsWith("compile")) {
+        task.dependsOn ":epub3:buildMk"
     }
 }

@@ -1,88 +1,14 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 
-apply plugin: 'com.android.model.native'
-
-model {
-    android {
-        compileSdkVersion = 23
-    }
-
-    android.sources {
-        main {
-            jni {
-                source {
-                    srcDirs = [
-                            './src/main/jni',
-                            '../../../ePub3/ePub'
-                    ]
-                }
-                exportedHeaders {
-                    srcDir "./src/main/jni"
-                }
-            }
-        }
-    }
-
-    android.ndk {
-        moduleName = "epub3"
-
-        stl = "gnustl_shared"
-
-        cppFlags.addAll([
-                "-std=gnu++11",
-                "-fpermissive",
-                "-fexceptions",
-                "-frtti",
-                "-DBUILDING_EPUB3",
-                "-I../prefix.h",
-                "-I${file("./include")}".toString(),
-                "-I${file("./include/ePub3")}".toString(),
-                "-I${file("./include/ePub3/utilities")}".toString()
-        ])
-        ldLibs.addAll(['z', 'android', 'log', 'epub3', 'xml2', 'boost_regex', 'crypto', 'icuuc', 'icui18n', 'icuio', 'icudata'])
-    }
-
-    android.buildTypes {
-        release {
-
-        }
-        debug {
-            ndk.with {
-                debuggable = true
-            }
-        }
-    }
-
-    android.productFlavors {
-        create ("arm") {
-            ndk.with {
-                abiFilters.add("armeabi-v7a")
-                ldFlags.addAll([
-                        "-L${file("./obj/local/armeabi-v7a")}".toString(),
-                        "-L${file("../../../ePub3/ThirdParty/openssl-android/lib/armeabi-v7a")}".toString(),
-                        "-L${file("../../../ePub3/ThirdParty/icu4c/lib/armeabi-v7a")}".toString(),
-                        "-L${file("../../../ePub3/ThirdParty/boost/lib/armeabi-v7a")}".toString()
-                ])
-            }
-        }
-        create("x86") {
-            ndk.with {
-                abiFilters.add("x86")
-                ldFlags.addAll([
-                        "-L${file("./obj/local/x86")}".toString(),
-                        "-L${file("../../../ePub3/ThirdParty/openssl-android/lib/x86")}".toString(),
-                        "-L${file("../../../ePub3/ThirdParty/icu4c/lib/x86")}".toString(),
-                        "-L${file("../../../ePub3/ThirdParty/boost/lib/x86")}".toString()
-                ])
-            }
-        }
-    }
+if (rootProject.hasProperty("readium_ndk_debug") && rootProject.readium_ndk_debug) {
+    // Use gradle experimental receipt to debug C/C++ code
+    println "${project.name}: Use gradle experimental to build application"
+    apply from: 'build_experimental.gradle'
 }
 
 /**
  * Prebuild using ndk
  */
-
 task copyBoostIncludes(type: Copy) {
     from '../../../ePub3/ThirdParty/boost/include/boost'
     into './include/boost'
@@ -167,11 +93,15 @@ task buildMk(dependsOn: "buildIncludes", type: Exec) {
 
     // Call ndk build
     def ndkBuildExt = Os.isFamily(Os.FAMILY_WINDOWS) ? ".cmd" : ""
+    def projectPath = file('.').absolutePath
+    def buildScript = (rootProject.hasProperty("readium_ndk_debug") &&
+            rootProject.readium_ndk_debug) ? "Experimental.mk" : "Stable.mk"
+
     commandLine "$ndkDir/ndk-build${ndkBuildExt}",
-            '-C', file('.').absolutePath,
+            '-C', projectPath,
             'NDK_APPLICATION_MK=Application.mk',
-            'APP_BUILD_SCRIPT=Android.mk',
-            'NDK_PROJECT_PATH=.'
+            "APP_BUILD_SCRIPT=${buildScript}",
+            "NDK_PROJECT_PATH=${projectPath}"
 }
 
 tasks.whenTaskAdded { task ->

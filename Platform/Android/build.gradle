@@ -1,15 +1,31 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
-       jcenter()
+        jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle-experimental:0.6.0-alpha5'
+        // Retrieve ndk debug settings
+        Properties properties = new Properties()
+        properties.load(rootProject.file('local.properties').newDataInputStream())
+        def ndkDebug = properties.getProperty('readium.ndk_debug', "false")
+        ndkDebug = (ndkDebug == "true") ? true : false;
+        rootProject.ext.set('readium_ndk_debug', ndkDebug)
+
+        // Use stable gradle or experimental gradle
+        if (ndkDebug) {
+            classpath "com.android.tools.build:gradle-experimental:0.6.0-beta6"
+        } else {
+            classpath "com.android.tools.build:gradle:1.5.0"
+        }
+
     }
 }
 
 allprojects {
     repositories {
         jcenter()
+        flatDir {
+            dirs 'libs'
+        }
     }
 }
