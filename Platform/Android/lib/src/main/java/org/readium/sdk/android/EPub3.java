@@ -130,7 +130,12 @@ public class EPub3 {
 	public static native void setContentFiltersRegistrationHandler(Runnable handler);
 
 	/**
-	 * Checks if the supplied book is EPUB3. 
+	 * Initialize readium sdk
+	 */
+	public static native void initialize();
+
+	/**
+	 * Checks if the supplied book is EPUB3.
 	 * @param path Path to the book.
 	 * @return True if the book is EPUB3.
 	 */

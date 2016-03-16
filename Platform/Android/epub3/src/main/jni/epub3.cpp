@@ -506,6 +506,16 @@ Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring p
 
 /*
  * Class:     org_readium_sdk_android_EPub3
+ * Method:    initialize
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_readium_sdk_android_EPub3_initialize(JNIEnv* env, jobject thiz) {
+	// Initialize core ePub3 SDK
+	initializeReadiumSDK(env);
+}
+
+/*
+ * Class:     org_readium_sdk_android_EPub3
  * Method:    releaseNativePointer
  * Signature: (J)V
  */
