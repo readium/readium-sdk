@@ -79,22 +79,6 @@ LOCAL_EXPORT_C_INCLUDES := $(OPENSSL_INCLUDE_PATH)
 include $(PREBUILT_STATIC_LIBRARY)
 
 ###########################################################
-# Prebuilt libraries for Boost
-
-# As of GCC 4.8, we no longer need boost::regex !
-
-BOOST_LIB_PATH := $(THIRD_PARTY_PATH)/boost/lib/$(TARGET_ARCH_ABI)
-BOOST_INCLUDE_PATH := $(THIRD_PARTY_PATH)/boost/include
-
-# Regex
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := boost_regex
-LOCAL_SRC_FILES := $(BOOST_LIB_PATH)/libboost_regex.a
-LOCAL_EXPORT_C_INCLUDES := $(BOOST_INCLUDE_PATH)
-include $(PREBUILT_STATIC_LIBRARY)
-
-###########################################################
 # libxml2
 
 include $(CLEAR_VARS)

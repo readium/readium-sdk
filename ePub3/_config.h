@@ -110,14 +110,6 @@ typedef signed long ssize_t;
 #if EPUB_OS(ANDROID)
 //# define UTF_USE_ICU 1
 # define CXX11_STRING_UNAVAILABLE 1
-# undef REGEX_INCLUDE
-# define REGEX_INCLUDE <boost/regex.hpp>
-# undef REGEX_NS
-# define REGEX_NS boost
-# undef LOCALE_INCLUDE
-# define LOCALE_INCLUDE <boost/locale.hpp>
-# undef LOCALE_NS
-# define LOCALE_NS boost
 # if EPUB_COMPILER(CLANG)
 #  define nan(x) __builtin_nan(x)
 # endif

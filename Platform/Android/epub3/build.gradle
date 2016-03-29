@@ -78,7 +78,7 @@ task buildIncludes {
 }
 
 buildIncludes.dependsOn "copyEpub3Includes",
-"copyBoostIncludes",
+//"copyBoostIncludes",
 "copyLibxmlIncludes",
 "copyOpensslIncludes",
 "copyUtf8Includes",
