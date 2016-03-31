@@ -3,7 +3,7 @@
 //  ePub3
 //
 //  Created by Olivier Körner on 2016-03-08.
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2016 Readium Foundation and/or its licensees. All rights reserved.
 //
 //  This program is distributed in the hope that it will be useful, but WITHOUT ANY
 //  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -23,7 +23,6 @@
 #include "filter_manager.h"
 
 static const REGEX_NS::regex::flag_type regexFlags(REGEX_NS::regex::ECMAScript|REGEX_NS::regex::optimize|REGEX_NS::regex::icase);
-//static const REGEX_NS::regex reEscaper("\\\\\\.\\(\\)\\[\\]\\$\\^\\*\\+\\?\\:\\=\\|", regexFlags);
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -31,11 +30,8 @@ static REGEX_NS::regex CSSMatcher("page\\-break\\-(after|before|inside) *\\: *(a
 static REGEX_NS::regex StyleAttributeMatcher("<[^>]+style=\\\"([^\\\"]*)\"", regexFlags);
 static REGEX_NS::regex StyleTagMatcher("<style[^>]*>((.|\n|\r)*?)<\\/style>", regexFlags);
 
-static const std::string PageBreakReplacement ="-webkit-column-break-$1: $2";
+static const std::string PageBreakReplacement = "-webkit-column-break-$1: $2; column-break-$&: $2";
 
-//CSSFilterContext::CSSFilterContext(ConstManifestItemPtr item) {
-//    this->setCSS(item->MediaType() == "text/css");
-//}
 
 bool CSSPreprocessor::ShouldApply(ConstManifestItemPtr item)
 {
@@ -56,7 +52,6 @@ bool CSSPreprocessor::ShouldApply(ConstManifestItemPtr item)
     if (itemPrepaginated || pkgPrepaginated)
         return false;
     
-    //std::cout << "CSSPreprocessor ShouldApply " << mediaType << " " << item->Href();
     return (mediaType == "application/xhtml+xml" || mediaType == "text/html" || mediaType == "text/css");
 }
 
@@ -85,6 +80,7 @@ void* CSSPreprocessor::FilterData(FilterContext* context, void *data, size_t len
     
     std::string output;
     if (isCSS) {
+        // Data is pure CSS, proceed with substitutions
         output.assign(input, len);
         for (CSSSubstitution& substitution: m_substitutions) {
             output = REGEX_NS::regex_replace(output, substitution.GetSearchRegex(), substitution.GetReplaceFormat());
@@ -92,25 +88,21 @@ void* CSSPreprocessor::FilterData(FilterContext* context, void *data, size_t len
     }
     else
     {
+        // Data is HTML, look for <style> elements and style attributes
+        
         std::string toutput;
         // find each `style` tags
         REGEX_NS::cregex_iterator pos(input, input+len, StyleTagMatcher);
         REGEX_NS::cregex_iterator end;
         if ( pos == end )
         {
-            toutput.assign(input, len);
+            toutput.assign(input, len); // no match
         }
         else
         {
             while (pos != end) {
-                //std::cout << "style tag prefix" << pos->prefix();
                 toutput += pos->prefix();
                 
-                //for (int i = 0; i < pos->size(); i++) {
-                //    std::cout << "style tag match " << i <<" "<< pos->length(i) <<" "<< pos->str(i) << "// ";
-                //}
-                
-                //std::cout << "style match" << pos->str();
                 std::string str = pos->str();
                 for (CSSSubstitution& substitution: m_substitutions) {
                     str = REGEX_NS::regex_replace(str, substitution.GetSearchRegex(), substitution.GetReplaceFormat());
@@ -128,16 +120,11 @@ void* CSSPreprocessor::FilterData(FilterContext* context, void *data, size_t len
         REGEX_NS::sregex_iterator aend;
         if ( apos == aend )
         {
-            output = toutput;        // no match == no change
+            output = toutput;        // no match
         }
         else {
             while (apos != aend) {
-                //std::cout << "style attr prefix" << apos->prefix();
                 output += apos->prefix();
-                
-                //for (int i = 0; i < apos->size(); i++) {
-                //    std::cout << "style attr match " << i <<" "<< apos->length(i) <<" "<< apos->str(i) << "// ";
-                //}
                 
                 std::string str = apos->str();
                 for (CSSSubstitution& substitution: m_substitutions) {
@@ -156,12 +143,12 @@ void* CSSPreprocessor::FilterData(FilterContext* context, void *data, size_t len
     *outputLen = output.size();
     if ( output.size() < len )
     {
-        // use the incoming buffer directly
+        // use the incoming buffer
         output.copy(input, output.size());
         return input;
     }
     
-    // allocate an output buffer
+    // allocate a new buffer and copy
     char* result = new char[output.size()];
     output.copy(result, output.size());
     return result;
