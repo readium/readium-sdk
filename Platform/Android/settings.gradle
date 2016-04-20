@@ -1,0 +1,3 @@
+include ':epub3'
+include ':lib'
+
