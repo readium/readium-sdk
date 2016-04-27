@@ -35,12 +35,39 @@
 #import "RDPackage.h"
 
 
+#import <lcp/apple/lcp.h>
+#import <lcp/LcpContentModule.h>
+#import "RDLCPService.h"
+
+#import "RDLcpCredentialHandler.h"
+
+class LcpCredentialHandler : public lcp::ICredentialHandler
+{
+private:
+    id <RDContainerDelegate> _delegate;
+    RDContainer* _container;
+public:
+    LcpCredentialHandler(RDContainer* container, id <RDContainerDelegate> delegate) {
+        _container = container;
+        _delegate = delegate;
+    }
+    
+    void decrypt(lcp::ILicense *license) {
+        //if (![_delegate respondsToSelector:@selector(decrypt:)]) return;
+        
+        LCPLicense* lcpLicense = [[LCPLicense alloc] initWithLicense:license];
+        [_delegate decrypt:lcpLicense container:_container];
+    }
+};
+
 @interface RDContainer () {
 	@private std::shared_ptr<ePub3::Container> m_container;
 	@private __weak id <RDContainerDelegate> m_delegate;
 	@private NSMutableArray *m_packages;
 	@private ePub3::Container::PackageList m_packageList;
 	@private NSString *m_path;
+    @private bool m_executionFlowExceptionBypass;
+	//@private lcp::ICredentialHandler *m_credentialHandler;
 }
 
 @end
@@ -51,7 +78,8 @@
 
 @synthesize packages = m_packages;
 @synthesize path = m_path;
-
+@synthesize executionFlowExceptionBypass = m_executionFlowExceptionBypass;
+//@synthesize credentialHandler = m_credentialHandler;
 
 - (RDPackage *)firstPackage {
 	return m_packages.count == 0 ? nil : [m_packages objectAtIndex:0];
@@ -86,18 +114,44 @@
 		ePub3::InitializeSdk();
 		ePub3::PopulateFilterManager();
 		
-		if ([delegate respondsToSelector:@selector(containerRegisterContentFilters:)]) {
-			[delegate containerRegisterContentFilters:self];
-		}
+        //[[RDLCPService sharedService] registerContentFilter];
+//		if ([delegate respondsToSelector:@selector(containerRegisterContentFilters:)]) {
+//			[delegate containerRegisterContentFilters:self];
+//		}
         
-               //Content Modules for each DRM library, if any, should be registered in the function.
-               if ([delegate respondsToSelector:@selector(containerRegisterContentModules:)]) {
-                       [delegate containerRegisterContentModules:self];
-                }
-
-		m_path = path;
-		m_container = ePub3::Container::OpenContainer(path.UTF8String);
-
+		lcp::ICredentialHandler* credentialHandlerNative = new LcpCredentialHandler(self, delegate);
+        RDLcpCredentialHandler* credentialHandler = [[RDLcpCredentialHandler alloc] initWithNative:credentialHandlerNative];
+        
+        [[RDLCPService sharedService] registerContentModule:credentialHandler];
+//		if ([delegate respondsToSelector:@selector(containerRegisterContentModules:)]) {
+//			[delegate containerRegisterContentModules:self];
+//		}
+        
+        m_path = path;
+        
+        try {
+            m_container = ePub3::Container::OpenContainer(path.UTF8String);
+        }
+//        catch (NSException *e) {
+//            BOOL res = [m_delegate container:self handleSdkError:[e reason] isSevereEpubError:NO];
+//        }
+        catch (std::exception& e) {
+            
+            if (m_executionFlowExceptionBypass) {
+                m_executionFlowExceptionBypass = false;
+            }
+            else {
+                auto msg = e.what();
+                
+                std::cout << msg << std::endl;
+                
+                BOOL res = [m_delegate container:self handleSdkError:[NSString stringWithUTF8String:msg] isSevereEpubError:NO];
+            }
+        }
+        catch (...) {
+            BOOL res = [m_delegate container:self handleSdkError:@"unknown exception" isSevereEpubError:NO];
+        }
+        
 		if (m_container == nullptr) {
 			return nil;
 		}
