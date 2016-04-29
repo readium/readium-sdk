@@ -28,16 +28,23 @@
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #import "RDPackageResourceDataResponse.h"
+#import "NSDate+RDDateAsString.h"
+
+NSString * const kDataCacheControlHTTPHeader = @"no-transform,public,max-age=3000,s-maxage=9000";
 
 @implementation RDPackageResourceDataResponse
 
 - (NSDictionary *)httpHeaders {
+    // Add cache-control, expires and last-modified HTTP headers so the webview caches shared assets
+    NSDate *now = [NSDate date];
+    NSString *nowStr = [now dateAsString];
+    NSString *expStr = [[now dateByAddingTimeInterval:60*60*24*10] dateAsString];
 	if (self.contentType) {
-		return @{@"Content-Type": self.contentType};
+		return @{@"Content-Type": self.contentType, @"Cache-Control": kDataCacheControlHTTPHeader, @"Last-Modified": nowStr, @"Expires": expStr};
 	}
 	else {
-		return @{};
+		return @{@"Cache-Control": kDataCacheControlHTTPHeader, @"Last-Modified": nowStr, @"Expires": expStr};
 	}
 }
-
+ 
 @end
