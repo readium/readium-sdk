@@ -9,10 +9,6 @@ if (rootProject.hasProperty("readium_ndk_debug") && rootProject.readium_ndk_debu
 /**
  * Prebuild using ndk
  */
-task copyBoostIncludes(type: Copy) {
-    from '../../../ePub3/ThirdParty/boost/include/boost'
-    into './include/boost'
-}
 
 task copyLibxmlIncludes(type: Copy) {
     from '../../../ePub3/ThirdParty/libxml2-android/include/libxml'
@@ -78,7 +74,6 @@ task buildIncludes {
 }
 
 buildIncludes.dependsOn "copyEpub3Includes",
-//"copyBoostIncludes",
 "copyLibxmlIncludes",
 "copyOpensslIncludes",
 "copyUtf8Includes",
