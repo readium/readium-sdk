@@ -137,14 +137,14 @@ include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := epub3
-LOCAL_CPPFLAGS := -std=gnu++11 -fpermissive -DBUILDING_EPUB3
-LOCAL_CFLAGS := -DBUILDING_EPUB3
+LOCAL_CPPFLAGS := -std=c++11 -fpermissive -DBUILDING_EPUB3 -D_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49=_LIBCPP_INLINE_VISIBILITY
+LOCAL_CFLAGS := -DBUILDING_EPUB3 -D_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49=_LIBCPP_INLINE_VISIBILITY
 
 ifeq ($(TARGET_ARCH_ABI),x86)
     LOCAL_CFLAGS += -mtune=atom -mssse3 -mfpmath=sse
 endif
 
-LOCAL_CXXFLAGS := -std=gnu++11 -fpermissive -DBUILDING_EPUB3
+LOCAL_CXXFLAGS := -std=c++11 -fpermissive -DBUILDING_EPUB3 -D_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49=_LIBCPP_INLINE_VISIBILITY
 LOCAL_CPP_FEATURES += exceptions rtti
 LOCAL_STATIC_LIBRARIES := xml2 crypto
 LOCAL_LDLIBS := -lz -landroid -llog
@@ -252,6 +252,8 @@ LOCAL_SRC_FILES := \
     $(EPUB3_PATH)/utilities/ring_buffer.cpp \
     $(EPUB3_PATH)/utilities/run_loop_android.cpp \
     $(EPUB3_PATH)/utilities/utfstring.cpp \
+    $(wildcard $(LOCAL_PATH)/src/main/jni/*.cpp) \
+    $(wildcard $(LOCAL_PATH)/src/main/jni/jni/*.cpp)
 
 include $(BUILD_STATIC_LIBRARY)
 
