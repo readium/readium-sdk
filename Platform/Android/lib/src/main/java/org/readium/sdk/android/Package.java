@@ -82,6 +82,7 @@ public class Package {
 	private List<String> authorList;
 	private List<String> subjects;
 	private List<SpineItem> spineItems;
+    private ManifestItem coverManifestItem;
 	private NavigationTable tableOfContents;
 	private NavigationTable listOfFigures;
 	private NavigationTable listOfIllustrations;
@@ -163,6 +164,7 @@ public class Package {
 		authorList = nativeGetAuthorList(__nativePtr);
 		subjects = nativeGetSubjects(__nativePtr);
 		spineItems = nativeGetSpineItems(__nativePtr);
+        coverManifestItem = nativeGetCoverManifestItem(__nativePtr);
 		manifestTable = nativeGetManifestTable(__nativePtr);
 		smilDataJson = nativeGetSmilDataAsJson(__nativePtr);
 		rendition_layout = nativeGetProperty(__nativePtr, "layout", "rendition");
@@ -390,6 +392,13 @@ public class Package {
 		}
 		return null;
 	}
+    
+    /**
+     * Returns manifest item cover.
+     */
+    public ManifestItem getCoverManifestItem() {
+        return coverManifestItem;
+    }
 
     public PackageResource getResourceAtRelativePath(String relativePath) {
         return new PackageResource(this, relativePath);
@@ -514,7 +523,8 @@ public class Package {
 	private native List<String> nativeGetSubjects(long nativePtr);
 	private native List<SpineItem> nativeGetSpineItems(long nativePtr);
 	private native String nativeGetProperty(long nativePtr, String propertyName, String prefix);
-	
+	private native ManifestItem nativeGetCoverManifestItem(long nativePtr);
+
 	/*
 	 * Navigation tables
 	 */
