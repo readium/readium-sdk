@@ -41,6 +41,7 @@ static id m_resourceLock = nil;
 	@private RDPackage *m_package;
 	@private NSData *m_specialPayloadAnnotationsCSS;
 	@private NSData *m_specialPayloadMathJaxJS;
+    @private UInt16 m_serverPort;
 }
 
 @end
@@ -94,16 +95,10 @@ static id m_resourceLock = nil;
 		m_httpServer.documentRoot = @"";
 		[m_httpServer setConnectionClass:[RDPackageResourceConnection class]];
 
-		NSError *error = nil;
-		BOOL success = [m_httpServer start:&error];
-
-		if (!success || error != nil) {
-			if (error != nil) {
-				NSLog(@"Could not start the HTTP server! %@", error);
-			}
-
-			return nil;
-		}
+        BOOL success = [self startHTTPServer];
+        if (!success) {
+            return nil;
+        }
 
 		[RDPackageResourceConnection setPackageResourceServer:self];
 	}
@@ -121,5 +116,29 @@ static id m_resourceLock = nil;
 	return m_resourceLock;
 }
 
+- (BOOL)startHTTPServer {
+    if (m_serverPort > 0) {
+        [m_httpServer setPort:m_serverPort];
+    }
+    
+    NSError *error = nil;
+    BOOL success = [m_httpServer start:&error];
+    if (!success || error != nil) {
+        if (error != nil) {
+            NSLog(@"Could not start the HTTP server! %@", error);
+        }
+        return NO;
+    }
+    
+    if (m_serverPort == 0) {
+        m_serverPort = [m_httpServer listeningPort];
+    }
+    
+    return success;
+}
+
+- (void)stopHTTPServer {
+    [m_httpServer stop];
+}
 
 @end

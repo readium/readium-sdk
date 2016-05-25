@@ -69,6 +69,9 @@
 @property (nonatomic, readonly) NSData *specialPayloadAnnotationsCSS;
 @property (nonatomic, readonly) NSData *specialPayloadMathJaxJS;
 
+- (BOOL)startHTTPServer;
+- (void)stopHTTPServer;
+
 - (void)executeJavaScript:(NSString *)javaScript;
 
 - (instancetype)
