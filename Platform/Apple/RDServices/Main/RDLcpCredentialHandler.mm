@@ -29,9 +29,6 @@
 
 #import "RDLcpCredentialHandler.h"
 
-//#import <lcp/apple/lcp.h>
-//#import <lcp/LcpContentModule.h>
-
 @interface RDLcpCredentialHandler () {
     @private lcp::ICredentialHandler* m_native;
 }

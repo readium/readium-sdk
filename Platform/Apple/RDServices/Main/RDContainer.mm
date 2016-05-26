@@ -35,8 +35,8 @@
 #import "RDPackage.h"
 
 
-#import <lcp/apple/lcp.h>
-#import <lcp/LcpContentModule.h>
+#import <platform/apple/src/lcp.h>
+#import <LcpContentModule.h>
 #import "RDLCPService.h"
 
 #import "RDLcpCredentialHandler.h"
