@@ -147,7 +147,7 @@ endif
 
 LOCAL_CXXFLAGS := -std=gnu++11 -fpermissive -DBUILDING_EPUB3
 LOCAL_CPP_FEATURES += exceptions rtti
-LOCAL_STATIC_LIBRARIES := xml2 crypto boost_regex
+LOCAL_STATIC_LIBRARIES := xml2 crypto
 LOCAL_LDLIBS := -lz -landroid -llog
 LOCAL_C_INCLUDES += \
         $(LOCAL_PATH)/include \
