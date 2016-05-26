@@ -135,7 +135,7 @@ public:
 //        catch (NSException *e) {
 //            BOOL res = [m_delegate container:self handleSdkError:[e reason] isSevereEpubError:NO];
 //        }
-        catch (std::exception& e) {
+        catch (std::exception& e) { // includes ePub3::ContentModuleException
             
             if (m_executionFlowExceptionBypass) {
                 m_executionFlowExceptionBypass = false;
