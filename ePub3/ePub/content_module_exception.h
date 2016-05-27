@@ -66,4 +66,35 @@ protected:
 
 EPUB3_END_NAMESPACE
 
+
+EPUB3_BEGIN_NAMESPACE
+class ContentModuleExceptionDecryptFlow: public ContentModuleException
+{
+public:
+    /** Constructor (C strings).
+     *  @param message C-style string error message.
+     *                 The string contents are copied upon construction.
+     *                 Hence, responsibility for deleting the \c char* lies
+     *                 with the caller.
+     */
+    explicit ContentModuleExceptionDecryptFlow(const char* message):
+            ContentModuleException(message)
+    {
+    }
+
+    /** Constructor (C++ STL strings).
+     *  @param message The error message.
+     */
+    explicit ContentModuleExceptionDecryptFlow(const std::string& message):
+            ContentModuleException(message)
+    {}
+
+    /** Destructor.
+     * Virtual to allow for subclassing.
+     */
+    virtual ~ContentModuleExceptionDecryptFlow() throw (){}
+};
+
+EPUB3_END_NAMESPACE
+
 #endif //ePub3_content_module_exception_h

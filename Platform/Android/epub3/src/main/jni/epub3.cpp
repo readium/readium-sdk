@@ -472,11 +472,15 @@ Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring p
         _container = ePub3::Container::OpenContainer(spath);
     }
     catch (const std::invalid_argument& ex) {
-        LOGD("OpenContainer() EXCEPTION: %s\n", ex.what());
+        LOGD("OpenContainer() EXCEPTION 1: %s\n", ex.what());
+        return nullptr;
+    }
+    catch (const ePub3::ContentModuleExceptionDecryptFlow& ex) {
+        LOGD("OpenContainer() EXCEPTION 2: %s\n", ex.what());
         return nullptr;
     }
     catch (const ePub3::ContentModuleException& ex) {
-        LOGD("OpenContainer() EXCEPTION: %s\n", ex.what());
+        LOGD("OpenContainer() EXCEPTION 3: %s\n", ex.what());
         return nullptr;
     }
     

@@ -41,6 +41,8 @@
 
 #import "RDLcpCredentialHandler.h"
 
+#include <ePub3/content_module_exception.h>
+
 class LcpCredentialHandler : public lcp::ICredentialHandler
 {
 private:
@@ -66,7 +68,6 @@ public:
 	@private NSMutableArray *m_packages;
 	@private ePub3::Container::PackageList m_packageList;
 	@private NSString *m_path;
-    @private bool m_executionFlowExceptionBypass;
 	//@private lcp::ICredentialHandler *m_credentialHandler;
 }
 
@@ -78,7 +79,6 @@ public:
 
 @synthesize packages = m_packages;
 @synthesize path = m_path;
-@synthesize executionFlowExceptionBypass = m_executionFlowExceptionBypass;
 //@synthesize credentialHandler = m_credentialHandler;
 
 - (RDPackage *)firstPackage {
@@ -135,18 +135,16 @@ public:
 //        catch (NSException *e) {
 //            BOOL res = [m_delegate container:self handleSdkError:[e reason] isSevereEpubError:NO];
 //        }
+        catch (ePub3::ContentModuleExceptionDecryptFlow& e) {
+            // NoOP
+        }
         catch (std::exception& e) { // includes ePub3::ContentModuleException
+        
+            auto msg = e.what();
             
-            if (m_executionFlowExceptionBypass) {
-                m_executionFlowExceptionBypass = false;
-            }
-            else {
-                auto msg = e.what();
-                
-                std::cout << msg << std::endl;
-                
-                BOOL res = [m_delegate container:self handleSdkError:[NSString stringWithUTF8String:msg] isSevereEpubError:NO];
-            }
+            std::cout << msg << std::endl;
+            
+            BOOL res = [m_delegate container:self handleSdkError:[NSString stringWithUTF8String:msg] isSevereEpubError:NO];
         }
         catch (...) {
             BOOL res = [m_delegate container:self handleSdkError:@"unknown exception" isSevereEpubError:NO];
