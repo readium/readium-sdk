@@ -62,6 +62,16 @@ model {
                 ])
             }
         }
+        create ("arm64") {
+            ndk.with {
+                abiFilters.add("arm64-v8a")
+                ldFlags.addAll([
+                        "-L${file("./obj/local/arm64-v8a")}".toString(),
+                        "-L${file("../../../ePub3/ThirdParty/openssl-android/lib/arm64-v8a")}".toString(),
+                        "-L${file("../../../ePub3/ThirdParty/icu4c/lib/arm64-v8a")}".toString()
+                ])
+            }
+        }
         create("x86") {
             ndk.with {
                 abiFilters.add("x86")
