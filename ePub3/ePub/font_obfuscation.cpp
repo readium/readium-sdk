@@ -126,10 +126,18 @@ bool FontObfuscator::BuildKey(ConstContainerPtr container, ConstPackagePtr pkg)
     CryptographicBuffer::CopyToByteArray(keyBuf, &outArray);    // creates a new Array<byte>^ and returns it by reference
     memcpy_s(_key, KeySize, outArray->Data, outArray->Length);
 #elif EPUB_OS(ANDROID)
-    sha1_context ctx;
-    sha1_starts(&ctx);
-    sha1_update(&ctx, str.data(), str.length());
-    sha1_finish(&ctx, _key);
+
+    SHA1* sha1 = new SHA1();
+    sha1->addBytes(str.data(), str.length());
+	unsigned char* digest = sha1->getDigest();
+    std::memcpy(_key, digest, KeySize); //reinterpret_cast<uint8_t*>()
+	delete sha1;
+	free(digest);
+
+//    sha1_context ctx;
+//    sha1_starts(&ctx);
+//    sha1_update(&ctx, str.data(), str.length());
+//    sha1_finish(&ctx, _key);
 #else
 #error "OPEN-SSL STATIC LIBS DEPRECATED IN READIUM-SDK ANDROID"
 

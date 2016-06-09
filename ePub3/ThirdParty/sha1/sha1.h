@@ -1,28 +1,35 @@
-#ifndef _SHA1_H
-#define _SHA1_H
+/* sha1.h
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+Copyright (c) 2005 Michael D. Leonhard
 
-// The typedefs for 8-bit, 16-bit and 32-bit unsigned integers
-typedef unsigned char   uint8;
-typedef unsigned short  uint16;
-typedef unsigned int    uint32;
+http://tamale.net/
 
-struct sha1_context
+This file is licensed under the terms described in the
+accompanying LICENSE file.
+*/
+
+#ifndef SHA1_HEADER
+typedef unsigned int Uint32;
+
+class SHA1
 {
-    uint32 total[2];
-    uint32 state[5];
-    uint8 buffer[64];
+	private:
+		// fields
+		Uint32 H0, H1, H2, H3, H4;
+		unsigned char bytes[64];
+		int unprocessedBytes;
+		Uint32 size;
+		void process();
+	public:
+		SHA1();
+		~SHA1();
+		void addBytes( const char* data, int num );
+		unsigned char* getDigest();
+		// utility methods
+		static Uint32 SHA1::lrot( Uint32 x, int bits );
+		static void SHA1::storeBigEndianUint32( unsigned char* byte, Uint32 num );
+		static void SHA1::hexPrinter( unsigned char* c, int l );
 };
 
-void sha1_starts( struct sha1_context *ctx );
-void sha1_update( struct sha1_context *ctx, uint8 *input, uint32 length );
-void sha1_finish( struct sha1_context *ctx, uint8 digest[20] );
-
-#ifdef __cplusplus
-}
+#define SHA1_HEADER
 #endif
-
-#endif /* sha1.h */

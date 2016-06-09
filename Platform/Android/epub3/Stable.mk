@@ -132,7 +132,7 @@ LOCAL_C_INCLUDES += \
         $(LOCAL_PATH)/include/ePub3 \
         $(LOCAL_PATH)/include/ePub3/utilities
 LOCAL_SRC_FILES := \
-    $(THIRD_PARTY_PATH)/sha1/sha1.c \
+    $(THIRD_PARTY_PATH)/sha1/sha1.cpp \
     $(THIRD_PARTY_PATH)/libzip/mkstemp.c \
     $(THIRD_PARTY_PATH)/libzip/zip_add.c \
     $(THIRD_PARTY_PATH)/libzip/zip_add_dir.c \
@@ -218,10 +218,6 @@ LOCAL_SRC_FILES := \
     $(EPUB3_PATH)/xml/tree/xpath.cpp \
     $(EPUB3_PATH)/utilities/byte_buffer.cpp \
     $(EPUB3_PATH)/utilities/byte_stream.cpp \
-    $(EPUB3_PATH)/utilities/CPUCacheUtils_arm.S \
-    $(EPUB3_PATH)/utilities/CPUCacheUtils_i386.S \
-    $(EPUB3_PATH)/utilities/CPUCacheUtils_x64.S \
-    $(EPUB3_PATH)/utilities/CPUCacheUtils.c \
     $(EPUB3_PATH)/utilities/epub_locale.cpp \
     $(EPUB3_PATH)/utilities/error_handler.cpp \
     $(EPUB3_PATH)/utilities/executor.cpp \
