@@ -239,10 +239,6 @@ LOCAL_SRC_FILES := \
     $(EPUB3_PATH)/xml/tree/xpath.cpp \
     $(EPUB3_PATH)/utilities/byte_buffer.cpp \
     $(EPUB3_PATH)/utilities/byte_stream.cpp \
-    $(EPUB3_PATH)/utilities/CPUCacheUtils_arm.S \
-    $(EPUB3_PATH)/utilities/CPUCacheUtils_i386.S \
-    $(EPUB3_PATH)/utilities/CPUCacheUtils_x64.S \
-    $(EPUB3_PATH)/utilities/CPUCacheUtils.c \
     $(EPUB3_PATH)/utilities/epub_locale.cpp \
     $(EPUB3_PATH)/utilities/error_handler.cpp \
     $(EPUB3_PATH)/utilities/executor.cpp \
