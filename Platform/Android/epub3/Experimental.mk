@@ -57,28 +57,6 @@ LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
 include $(PREBUILT_STATIC_LIBRARY)
 
 ###########################################################
-# Prebuilt libraries for OpenSSL
-
-OPENSSL_LIB_PATH := $(THIRD_PARTY_PATH)/openssl-android/lib/$(TARGET_ARCH_ABI)
-OPENSSL_INCLUDE_PATH := $(THIRD_PARTY_PATH)/openssl-android/include
-
-# Crypto
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := crypto
-LOCAL_SRC_FILES := $(OPENSSL_LIB_PATH)/libcrypto.a
-LOCAL_EXPORT_C_INCLUDES := $(OPENSSL_INCLUDE_PATH)
-include $(PREBUILT_STATIC_LIBRARY)
-
-# SSL (unneeded right now)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := ssl
-LOCAL_SRC_FILES := $(OPENSSL_LIB_PATH)/libssl.a
-LOCAL_EXPORT_C_INCLUDES := $(OPENSSL_INCLUDE_PATH)
-include $(PREBUILT_STATIC_LIBRARY)
-
-###########################################################
 # libxml2
 
 include $(CLEAR_VARS)
@@ -146,13 +124,14 @@ endif
 
 LOCAL_CXXFLAGS := -std=gnu++11 -fpermissive -DBUILDING_EPUB3
 LOCAL_CPP_FEATURES += exceptions rtti
-LOCAL_STATIC_LIBRARIES := xml2 crypto
+LOCAL_STATIC_LIBRARIES := xml2
 LOCAL_LDLIBS := -lz -landroid -llog
 LOCAL_C_INCLUDES += \
         $(LOCAL_PATH)/include \
         $(LOCAL_PATH)/include/ePub3 \
         $(LOCAL_PATH)/include/ePub3/utilities
 LOCAL_SRC_FILES := \
+    $(THIRD_PARTY_PATH)/sha1/sha1.c \
     $(THIRD_PARTY_PATH)/libzip/mkstemp.c \
     $(THIRD_PARTY_PATH)/libzip/zip_add.c \
     $(THIRD_PARTY_PATH)/libzip/zip_add_dir.c \

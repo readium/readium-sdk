@@ -15,9 +15,10 @@ task copyLibxmlIncludes(type: Copy) {
     into './include/libxml'
 }
 
-task copyOpensslIncludes(type: Copy) {
-    from '../../../ePub3/ThirdParty/openssl-android/include/openssl'
-    into './include/openssl'
+task copySha1Includes(type: Copy) {
+    from '../../../ePub3/ThirdParty/sha1'
+    into './include/sha1'
+    include '**/*.h'
 }
 
 task copyUtf8Includes(type: Copy) {
@@ -75,7 +76,7 @@ task buildIncludes {
 
 buildIncludes.dependsOn "copyEpub3Includes",
 "copyLibxmlIncludes",
-"copyOpensslIncludes",
+"copySha1Includes",
 "copyUtf8Includes",
 "copyGoogleUrlIncludes",
 "copyLibzipBaseIncludes"

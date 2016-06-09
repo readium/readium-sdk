@@ -24,6 +24,8 @@
 #if EPUB_OS(DARWIN)
 #define COMMON_DIGEST_FOR_OPENSSL
 #include <CommonCrypto/CommonDigest.h>
+#elif EPUB_OS(ANDROID)
+#include <sha1/sha1.h>
 #elif EPUB_PLATFORM(WIN)
 #include <windows.h>
 #include <Wincrypt.h>
@@ -33,6 +35,7 @@ using namespace ::Windows::Security::Cryptography;
 using namespace ::Windows::Security::Cryptography::Core;
 //using namespace ::Windows::Storage::Streams;
 #else
+#error "OPEN-SSL STATIC LIBS DEPRECATED IN READIUM-SDK ANDROID"
 #include <openssl/sha.h>
 #endif
 
@@ -122,7 +125,14 @@ bool FontObfuscator::BuildKey(ConstContainerPtr container, ConstPackagePtr pkg)
     Array<byte>^ outArray = nullptr;
     CryptographicBuffer::CopyToByteArray(keyBuf, &outArray);    // creates a new Array<byte>^ and returns it by reference
     memcpy_s(_key, KeySize, outArray->Data, outArray->Length);
+#elif EPUB_OS(ANDROID)
+    sha1_context ctx;
+    sha1_starts(&ctx);
+    sha1_update(&ctx, str.data(), str.length());
+    sha1_finish(&ctx, _key);
 #else
+#error "OPEN-SSL STATIC LIBS DEPRECATED IN READIUM-SDK ANDROID"
+
     // hash the accumulated string (using OpenSSL syntax for portability)
     SHA_CTX ctx;
     SHA1_Init(&ctx);
