@@ -35,8 +35,12 @@
 #import "RDPackageResourceServer.h"
 
 
+static NSMutableArray *m_coreResourcePaths = nil;
+static NSMutableArray *m_coreResourcePrefixes = nil;
 static long m_epubReadingSystem_Counter = 0;
 static __weak RDPackageResourceServer *m_packageResourceServer = nil;
+static BOOL m_provideCoreResources = NO;
+static BOOL m_provideCoreResourcesIsKnown = NO;
 
 
 @implementation RDPackageResourceConnection
@@ -95,6 +99,7 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 	return html;
 }
 
+
 - (NSObject <HTTPResponse> *)httpResponseForMethod:(NSString *)method URI:(NSString *)path {
 	if (m_packageResourceServer == nil ||
 		method == nil ||
@@ -105,22 +110,72 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 		return nil;
 	}
 	
-	if (path != nil) {
-		if ([path hasPrefix:@"/"]) {
-			path = [path substringFromIndex:1];
-		}
+	if ([path hasPrefix:@"/"]) {
+		path = [path substringFromIndex:1];
+	}
 
-		NSRange rangeQ = [path rangeOfString:@"?"];
-		if (rangeQ.location != NSNotFound) {
-			path = [path substringToIndex:rangeQ.location];
-		}
-		NSRange rangeH = [path rangeOfString:@"#"];
-		if (rangeH.location != NSNotFound) {
-			path = [path substringToIndex:rangeH.location];
+	if (!m_provideCoreResourcesIsKnown) {
+		m_provideCoreResourcesIsKnown = YES;
+
+		// This is the first request since the web server started. The request should be for the
+		// main reader HTML file. Check to see if its query string lists any core resources that
+		// it would like for us to handle. UIWebView is able to serve core resources using file
+		// URLs that point to the app bundle, but WKWebView is restricted from doing this, so the
+		// web server must provide everything in that case.
+
+		NSRange range = [path rangeOfString:@"?"];
+
+		if (range.location != NSNotFound) {
+			NSString *query = [path substringFromIndex:range.location + 1];
+
+			// Add the main reader HTML file to the list of core resources.
+
+			NSString *filename = [path substringToIndex:range.location];
+			[m_coreResourcePaths addObject:filename];
+
+			// Add other paths and prefixes.
+
+			for (NSString *comp in [query componentsSeparatedByString:@"&"]) {
+				NSArray *pair = [comp componentsSeparatedByString:@"="];
+
+				if (pair.count == 2) {
+					NSString *key = pair[0];
+					NSString *val = pair[1];
+
+					key = [key stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+					val = [val stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
+					for (NSString *path in [val componentsSeparatedByString:@","]) {
+						NSString *s = [path stringByTrimmingCharactersInSet:
+							[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+						if ([key isEqualToString:@"corePaths"]) {
+							m_provideCoreResources = YES;
+							[m_coreResourcePaths addObject:s];
+						}
+						else if ([key isEqualToString:@"corePrefixes"]) {
+							m_provideCoreResources = YES;
+							[m_coreResourcePrefixes addObject:s];
+						}
+					}
+				}
+			}
 		}
 	}
-	
-	NSObject <HTTPResponse> *response = nil;
+
+	// Remove trailing query string and hash from the path.
+
+	NSRange rangeQ = [path rangeOfString:@"?"];
+	if (rangeQ.location != NSNotFound) {
+		path = [path substringToIndex:rangeQ.location];
+	}
+	NSRange rangeH = [path rangeOfString:@"#"];
+	if (rangeH.location != NSNotFound) {
+		path = [path substringToIndex:rangeH.location];
+	}
+
+	// Handle the special payload responses.
+
 	NSData *specialPayloadAnnotationsCSS = m_packageResourceServer.specialPayloadAnnotationsCSS;
 	NSData *specialPayloadMathJaxJS = m_packageResourceServer.specialPayloadMathJaxJS;
 	
@@ -131,9 +186,7 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 			RDPackageResourceDataResponse *dataResponse = [[RDPackageResourceDataResponse alloc]
 														   initWithData:specialPayloadMathJaxJS];
 			dataResponse.contentType = @"text/javascript";
-			
-			response = dataResponse;
-			return response;
+			return dataResponse;
 		}
 	}
 	
@@ -144,18 +197,16 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 			RDPackageResourceDataResponse *dataResponse = [[RDPackageResourceDataResponse alloc]
 														   initWithData:specialPayloadAnnotationsCSS];
 			dataResponse.contentType = @"text/css";
-			
-			response = dataResponse;
-			return response;
+			return dataResponse;
 		}
 	}
-	
+
 	// Fake script request, immediately invoked after epubReadingSystem hook is in place,
 	// => push the global window.navigator.epubReadingSystem into the iframe(s)
-	NSString * eprs = @"readium_epubReadingSystem_inject.js";
-	if ([path hasSuffix:eprs]) {
 
-		NSString* cmd = @"var epubRSInject = function(win) { if (win.frames) { for (var i = 0; i < win.frames.length; i++) { var iframe = win.frames[i]; if (iframe.readium_set_epubReadingSystem) { iframe.readium_set_epubReadingSystem(window.navigator.epubReadingSystem); } epubRSInject(iframe); } } }; epubRSInject(window);";
+	if ([path hasSuffix:@"readium_epubReadingSystem_inject.js"]) {
+
+		NSString* cmd = @"var epubRSInject = function(win, isTopIframe) { if (win.frames) { for (var i = 0; i < win.frames.length; i++) { var iframe = win.frames[i]; if (iframe.readium_set_epubReadingSystem) { iframe.readium_set_epubReadingSystem(window.navigator.epubReadingSystem, isTopIframe); } epubRSInject(iframe, false); } } }; epubRSInject(window, true);";
 		// Iterate top-level iframes, inject global window.navigator.epubReadingSystem if the expected hook function exists ( readium_set_epubReadingSystem() ).
 		[m_packageResourceServer executeJavaScript:cmd];
 		
@@ -165,10 +216,53 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 		dataResponse.contentType = @"text/javascript";
 		return dataResponse;
 	}
-	
-	// Synchronize using a process-level lock to guard against multiple threads accessing a
-	// resource byte stream, which may lead to instability.
-	
+
+	// Handle requests for core resources.
+
+	BOOL provideCoreResource = m_provideCoreResources && [m_coreResourcePaths containsObject:path];
+
+	if (!provideCoreResource && m_provideCoreResources) {
+		for (NSString *prefix in m_coreResourcePrefixes) {
+			if ([path hasPrefix:prefix]) {
+				provideCoreResource = YES;
+				break;
+			}
+		}
+	}
+
+	if (provideCoreResource) {
+		path = [[NSBundle mainBundle].resourcePath stringByAppendingPathComponent:path];
+		NSData *data = [[NSData alloc] initWithContentsOfFile:path];
+
+		if (data == nil) {
+			NSLog(@"The core resource is missing! (%@)", path);
+			return nil;
+		}
+
+		RDPackageResourceDataResponse *dataResponse = [[RDPackageResourceDataResponse alloc]
+			initWithData:data];
+
+		NSString *ext = path.lowercaseString.pathExtension;
+
+		if ([ext isEqualToString:@"html"]) {
+			dataResponse.contentType = @"text/html";
+		}
+		else if ([ext isEqualToString:@"css"]) {
+			dataResponse.contentType = @"text/css";
+		}
+		else if ([ext isEqualToString:@"js"]) {
+			dataResponse.contentType = @"text/javascript";
+		}
+		else {
+			NSLog(@"The core resource's extension is not recognized! (%@)", path);
+		}
+
+		return dataResponse;
+	}
+
+	// Handle requests for resources within the EPUB. Synchronize using a process-level lock to
+	// guard against multiple threads accessing a resource byte stream, which may cause instability.
+
 	@synchronized ([RDPackageResourceServer resourceLock]) {
 		RDPackageResource *resource = [m_packageResourceServer.package resourceAtRelativePath:path];
 		
@@ -189,28 +283,14 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 				data = [FALLBACK_HTML dataUsingEncoding:NSUTF8StringEncoding];
 			}
 
-			BOOL isXhtmlWellFormed = YES;
-			@try
-			{
-				NSXMLParser *xmlparser = [[NSXMLParser alloc] initWithData:data];
-				//[xmlparser setDelegate:self];
-				[xmlparser setShouldResolveExternalEntities:NO];
-				isXhtmlWellFormed = [xmlparser parse];
-
-				if (isXhtmlWellFormed == NO)
-				{
-					NSError * error = [xmlparser parserError];
-					NSLog(@"XHTML PARSE ERROR: %@", error);
-				}
-			}
-			@catch (NSException *ex)
-			{
-				NSLog(@"XHTML parse exception: %@", ex);
-				isXhtmlWellFormed = NO;
-			}
+			NSXMLParser *xmlparser = [[NSXMLParser alloc] initWithData:data];
+			[xmlparser setShouldResolveExternalEntities:NO];
+			BOOL isXhtmlWellFormed = [xmlparser parse];
 
 			if (isXhtmlWellFormed == NO)
 			{
+				NSLog(@"XHTML PARSE ERROR: %@", xmlparser.parserError);
+
 				// Can be used to check / debug encoding issues
 				NSString * dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
 				//NSLog(@"XHTML SOURCE: %@", dataStr);
@@ -234,13 +314,17 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 			} else {
 				// Installs "hook" function so that top-level window (application) can later inject the window.navigator.epubReadingSystem into this HTML document's iframe
 				NSString *inject_epubReadingSystem1 = [NSString stringWithFormat:@"<script id=\"readium_epubReadingSystem_inject1\" type=\"text/javascript\">\n//<![CDATA[\n%@\n//]]>\n</script>",
-													   @"window.readium_set_epubReadingSystem = function (obj) {\
+													   @"window.readium_set_epubReadingSystem = function (obj, isTopIframe) {\
 													   \nwindow.navigator.epubReadingSystem = obj;\
 													   \nwindow.readium_set_epubReadingSystem = undefined;\
 													   \nvar el1 = document.getElementById(\"readium_epubReadingSystem_inject1\");\
 													   \nif (el1 && el1.parentNode) { el1.parentNode.removeChild(el1); }\
 													   \nvar el2 = document.getElementById(\"readium_epubReadingSystem_inject2\");\
 													   \nif (el2 && el2.parentNode) { el2.parentNode.removeChild(el2); }\
+													   \nif (isTopIframe) {\
+													   \nwindow.parent = window;\
+													   \nwindow.top = window;\
+													   \n}\
 													   \n};"];
 
 				// Fake script, generates HTTP request => triggers the push of window.navigator.epubReadingSystem into this HTML document's iframe
@@ -263,23 +347,31 @@ static __weak RDPackageResourceServer *m_packageResourceServer = nil;
 							dataResponse.contentType = resource.mimeType;
 						}
 
-						response = dataResponse;
-						return response;
+						return dataResponse;
 					}
 				}
 			}
 		}
 
-		RDPackageResourceResponse *resourceResponse = [[RDPackageResourceResponse alloc] initWithResource:resource];
-		response = resourceResponse;
+		return [[RDPackageResourceResponse alloc] initWithResource:resource];
 	}
-	
-	return response;
+}
+
+
++ (void)initialize {
+	m_coreResourcePaths = [[NSMutableArray alloc] init];
+	m_coreResourcePrefixes = [[NSMutableArray alloc] init];
 }
 
 
 + (void)setPackageResourceServer:(RDPackageResourceServer *)packageResourceServer {
 	m_packageResourceServer = packageResourceServer;
+
+	[m_coreResourcePaths removeAllObjects];
+	[m_coreResourcePrefixes removeAllObjects];
+
+	m_provideCoreResources = NO;
+	m_provideCoreResourcesIsKnown = NO;
 }
 
 
