@@ -37,7 +37,7 @@ model {
                 "-I${file("./include/ePub3")}".toString(),
                 "-I${file("./include/ePub3/utilities")}".toString()
         ])
-        ldLibs.addAll(['z', 'android', 'log', 'epub3', 'xml2', 'crypto', 'icuuc', 'icui18n', 'icuio', 'icudata'])
+        ldLibs.addAll(['z', 'android', 'log', 'epub3', 'xml2', 'icuuc', 'icui18n', 'icuio', 'icudata'])
     }
 
     android.buildTypes {
@@ -57,7 +57,6 @@ model {
                 abiFilters.add("armeabi-v7a")
                 ldFlags.addAll([
                         "-L${file("./obj/local/armeabi-v7a")}".toString(),
-                        "-L${file("../../../ePub3/ThirdParty/openssl-android/lib/armeabi-v7a")}".toString(),
                         "-L${file("../../../ePub3/ThirdParty/icu4c/lib/armeabi-v7a")}".toString()
                 ])
             }
@@ -67,7 +66,6 @@ model {
                 abiFilters.add("x86")
                 ldFlags.addAll([
                         "-L${file("./obj/local/x86")}".toString(),
-                        "-L${file("../../../ePub3/ThirdParty/openssl-android/lib/x86")}".toString(),
                         "-L${file("../../../ePub3/ThirdParty/icu4c/lib/x86")}".toString()
                 ])
             }
