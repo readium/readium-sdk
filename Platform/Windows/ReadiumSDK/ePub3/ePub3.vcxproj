@@ -234,7 +234,6 @@ cscript MakeHeaders.js</Command>
     <ClInclude Include="..\..\..\..\ePub3\utilities\epub_locale.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\iri.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\owned_by.h" />
-    <ClInclude Include="..\..\..\..\ePub3\utilities\ref_counted.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\ring_buffer.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\run_loop.h" />
     <ClInclude Include="..\..\..\..\ePub3\utilities\utfstring.h" />
@@ -355,7 +354,6 @@ cscript MakeHeaders.js</Command>
     <ClCompile Include="..\..\..\..\ePub3\utilities\byte_stream.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\epub_locale.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\iri.cpp" />
-    <ClCompile Include="..\..\..\..\ePub3\utilities\ref_counted.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\ring_buffer.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\run_loop_windows.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\utfstring.cpp" />

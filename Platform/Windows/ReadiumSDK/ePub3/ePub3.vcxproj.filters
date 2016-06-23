@@ -90,9 +90,6 @@
     <ClInclude Include="..\..\..\..\ePub3\utilities\iri.h">
       <Filter>Source Files\utilities</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\ePub3\utilities\ref_counted.h">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\ePub3\utilities\ring_buffer.h">
       <Filter>Source Files\utilities</Filter>
     </ClInclude>
@@ -622,9 +619,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\google-url\src\url_util.cc">
       <Filter>Source Files\ThirdParty\google-url</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\ePub3\utilities\ref_counted.cpp">
-      <Filter>Source Files\utilities</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\ePub3\utilities\epub_locale.cpp">
       <Filter>Source Files\utilities</Filter>

@@ -40,6 +40,7 @@ using namespace ::Windows::Security::Cryptography::Core;
 #include "container.h"
 #include "package.h"
 #include "filter_manager.h"
+#include <ePub3/utilities/error_handler.h>
 
 EPUB3_BEGIN_NAMESPACE
 

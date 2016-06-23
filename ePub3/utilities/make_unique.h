@@ -30,7 +30,7 @@
 #include <type_traits>
 #include <utility>
 
-#if EPUB_PLATFORM(WINRT)
+#if EPUB_STDLIB_SUPPORTS(MAKE_UNIQUE)
 using std::make_unique;
 #else
 
