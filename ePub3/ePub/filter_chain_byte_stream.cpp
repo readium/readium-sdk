@@ -127,7 +127,7 @@ ByteStream::size_type FilterChainByteStream::FilterBytes(void* bytes, size_type 
     ByteBuffer buf(reinterpret_cast<uint8_t*>(bytes), len);
     buf.SetUsesSecureErasure();
 
-    for (int i = 0; i < m_filters.size(); i++)
+    for (std::vector<ContentFilterPtr>::size_type i = 0; i < m_filters.size(); i++)
     {
         ContentFilterPtr filter = m_filters.at(i);
         FilterContext * filterContext = m_filterContexts.at(i).get();

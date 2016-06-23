@@ -66,7 +66,26 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup>
+    <EPub3UseZlibSubmodule>true</EPub3UseZlibSubmodule>
+    <EPub3ThirdPartyZlibDir>$(MSBuildThisFileDirectory)..\..\..\..\ePub3\ThirdParty\zlib</EPub3ThirdPartyZlibDir>
+    <EPub3ThirdPartyZlibBuildDir>$(EPub3ThirdPartyZlibDir)\build-$(PlatformToolset)-$(Platform)</EPub3ThirdPartyZlibBuildDir>
+    <EPub3ThirdPartyZlibName>zlibstatic</EPub3ThirdPartyZlibName>
+    <EPub3ThirdPartyZlibName Condition="'$(Configuration)' == 'Debug'">$(EPub3ThirdPartyZlibName)d</EPub3ThirdPartyZlibName>
+    <EPub3ThirdPartyZlibName>$(EPub3ThirdPartyZlibName).lib</EPub3ThirdPartyZlibName>
+    <EPub3CmakeExe>C:\Program Files (x86)\CMake\bin\cmake</EPub3CmakeExe>
+    <EPub3CmakeGenCommand>"$(EPub3CmakeExe)" -T $(PlatformToolset) -A $(Platform) "$(EPub3ThirdPartyZlibDir)"</EPub3CmakeGenCommand>
+    <EPub3CmakeBuildCommand>"$(EPub3CmakeExe)" --build "$(EPub3ThirdPartyZlibBuildDir)" --config $(Configuration)</EPub3CmakeBuildCommand>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="$(EPub3UseZlibSubmodule)">
+    <ClCompile>
+      <PreprocessorDefinitions>ZIP_EXTERN=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(EPub3ThirdPartyZlibBuildDir)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(EPub3ThirdPartyZlibName);%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -87,7 +106,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Prebuilt\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libxml2_a.lib;zlib.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libxml2_a.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>cd $(MSBuildProjectDirectory)\..\..
@@ -117,7 +136,7 @@ cscript MakeHeaders.js</Command>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Prebuilt\Lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libxml2_a.lib;zlib.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libxml2_a.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -141,7 +160,7 @@ cscript MakeHeaders.js</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Prebuilt\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libxml2_a.lib;zlib.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libxml2_a.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>cd $(MSBuildProjectDirectory)\..\..
@@ -172,7 +191,7 @@ cscript MakeHeaders.js</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\Prebuilt\Lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libxml2_a.lib;zlib.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libxml2_a.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -260,11 +279,22 @@ cscript MakeHeaders.js</Command>
     <ClCompile Include="..\..\..\..\ePub3\ePub\cfi.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\container.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\content_handler.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\content_module_manager.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\credential_request.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\encryption.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\epub_collection.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_chain.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_chain_byte_stream.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_chain_byte_stream_range.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\filter_manager_impl.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\font_obfuscation.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\glossary.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\library.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\link.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\manifest.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media-overlays_smil_data.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\ePub\media-overlays_smil_model.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\media_support_info.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\nav_point.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\ePub\nav_table.cpp" />
@@ -322,6 +352,8 @@ cscript MakeHeaders.js</Command>
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fopen_index.c" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fread.c" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_free.c" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_fseek.c" />
+    <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_ftell.c" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_archive_comment.c" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_archive_flag.c" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_get_file_comment.c" />
@@ -351,9 +383,13 @@ cscript MakeHeaders.js</Command>
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange_all.c" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange_archive.c" />
     <ClCompile Include="..\..\..\..\ePub3\ThirdParty\libzip\zip_unchange_data.c" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\byte_buffer.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\byte_stream.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\epub_locale.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\error_handler.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\future.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\iri.cpp" />
+    <ClCompile Include="..\..\..\..\ePub3\utilities\path_help.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\ring_buffer.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\run_loop_windows.cpp" />
     <ClCompile Include="..\..\..\..\ePub3\utilities\utfstring.cpp" />
@@ -376,4 +412,9 @@ cscript MakeHeaders.js</Command>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <Target Name="BuildZlib" BeforeTargets="PreBuildEvent" Condition="$(EPub3UseZlibSubmodule)">
+    <MakeDir Directories="$(EPub3ThirdPartyZlibBuildDir)" />
+    <Exec WorkingDirectory="$(EPub3ThirdPartyZlibBuildDir)" Command="$(EPub3CmakeGenCommand)" />
+    <Exec WorkingDirectory="$(EPub3ThirdPartyZlibBuildDir)" Command="$(EPub3CmakeBuildCommand)" />
+  </Target>
 </Project>
