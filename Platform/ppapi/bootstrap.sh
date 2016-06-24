@@ -1,30 +1,47 @@
 #!/bin/bash
 CWD=$(pwd)
-VENDOR_GYP_PATH="$CWD/vendor/gyp"
-VENDOR_NINJA_PATH="$CWD/vendor/ninja"
+GYP_PATH="$CWD/vendor/gyp"
+NINJA_PATH="$CWD/vendor/ninja"
+NACL_SDK_PATH="$CWD/vendor/nacl-sdk"
 
 # GYP: Generate Your Projects
-mkdir -p $VENDOR_GYP_PATH
-cd $VENDOR_GYP_PATH
+mkdir -p $GYP_PATH
+cd $GYP_PATH
 
-if [ -e .git ]; then
-  # Repository already exists. Update
-  git pull
-else
+if [ ! -e .git ]; then
   # Clone repository
   git clone https://chromium.googlesource.com/external/gyp.git .
 fi
 
 # Ninja: Small build system
-mkdir -p $VENDOR_NINJA_PATH
-cd $VENDOR_NINJA_PATH
+mkdir -p $NINJA_PATH
+cd $NINJA_PATH
 
-if [ -e .git ]; then
-  # Repository already exists. Update
-  git pull
-else
+if [ ! -e .git ]; then
   # Clone repository
   git clone https://github.com/ninja-build/ninja.git .
+  
+  # Build binary
+  ./bootstrap.py
 fi
 
-./bootstrap.py
+
+# NACL SDK
+mkdir -p $NACL_SDK_PATH
+cd $NACL_SDK_PATH
+
+if [ ! -e naclsdk ]; then
+  # Download SDK
+  curl -O https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip
+
+  # Unzip
+  unzip nacl_sdk.zip
+  mv nacl_sdk/* .
+  
+  # Remove archive
+  rm -rf nacl_sdk
+  rm nacl_sdk.zip
+  
+  # Install pepper 49
+  ./naclsdk install pepper_49
+fi

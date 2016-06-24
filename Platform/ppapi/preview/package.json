@@ -1,0 +1,15 @@
+{
+  "name": "readium-electron",
+  "version": "1.0.0",
+  "author": "Cyrille Lebeaupin <clebeaupin@noop.fr>",
+  "main": "./app.js",
+  "dependencies": {
+    "electron-prebuilt": "^1.2.5"
+  },
+  "bin": {
+    "electron": "./node_modules/.bin/electron"
+  },
+  "scripts": {
+    "preview": "electron  ."
+  }
+}

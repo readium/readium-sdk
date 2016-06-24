@@ -1,0 +1,23 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test PPAPI readium plugin</title>
+       	<script>
+        function handlePluginMessage(messageEvent) {
+          console.log("Plugin reply", messageEvent.data);
+        }
+
+  			window.onload = function() {
+            var plugin = document.getElementById('plugin');
+            plugin.addEventListener("message", handlePluginMessage, false);
+            plugin.postMessage("/home/clebeaupin/projets/edrlab/epub-samples/accessible_epub_3.epub");
+            plugin.postMessage("/home/clebeaupin/projets/edrlab/epub-samples/haruko.epub");
+        }
+  		</script>
+    </head>
+    <body>
+    	Test readium plugin
+      <embed id="plugin" type="application/x-ppapi-readium">
+    </body>
+</html>
