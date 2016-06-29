@@ -12,7 +12,6 @@ if system == "linux":
     os.environ["CXX"] = "clang++"
     os.environ["GYP_DEFINES"] = "clang=1"
 
-
 # Directories variables
 PPAPI_PATH = os.getcwd()
 GYP_CMD = os.path.join(PPAPI_PATH, "vendor", "gyp", "gyp_main.py")
