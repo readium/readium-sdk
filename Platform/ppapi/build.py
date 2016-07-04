@@ -11,6 +11,10 @@ if system == "linux":
     os.environ["CC"] = "clang"
     os.environ["CXX"] = "clang++"
     os.environ["GYP_DEFINES"] = "clang=1"
+elif system == "windows":
+    # Use msvs version 2015
+    print "Use msvs version 2015"
+    os.environ["GYP_MSVS_VERSION"] = "2015"
 
 # Directories variables
 PPAPI_PATH = os.getcwd()
