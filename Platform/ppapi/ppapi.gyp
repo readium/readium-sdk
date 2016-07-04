@@ -15,18 +15,20 @@
       '-fPIC', 
       '-fvisibility=hidden',
       #'-m32',
-      '-DBUILDING_EPUB3',
       #'-D_GLIBCXX_USE_CXX11_ABI=0'
     ],
     'cflags_cc': [
       '-std=c++11',
       '-fpermissive'
+    ],
+    'defines': [
+      'BUILDING_EPUB3'
     ]
   },
   'targets': [
     {
       'target_name': 'readium',
-      'type': 'shared_library',
+      'type': 'executable',
       'include_dirs': [
         '<(ppapi_include_dir)'
       ],
@@ -34,15 +36,11 @@
       'ldflags': [
         # '-m32',
       ],
-      'libraries': [
-        '-lxml2',
-        '-lz',
-        '-lpthread',
-        '-lcrypto'
-      ],
+     
       'dependencies': [
         'epub3',
-        'ppapi'
+        'ppapi',
+        'libxml2'
       ],
       'sources': [
         'src/readium.cc'
@@ -56,6 +54,16 @@
       ],
       'sources': [
         '<@(ppapi_sources)'
+      ]
+    },
+    {
+      'target_name': 'libxml2',
+      'type': 'static_library',
+      'include_dirs': [
+        '<(libxml2_include_dir)'
+      ],
+      'sources': [
+        '<@(libxml2_sources)'
       ]
     },
     {
@@ -96,7 +104,61 @@
         'target_defaults': {
           'include_dirs': [
             '<(libxml2_include_dir)'
-          ]
+          ],
+          'link_settings': {
+            'libraries': [
+              '-lxml2',
+              '-lz',
+              '-lpthread',
+              '-lcrypto'
+            ]
+          }
+        }
+    }],
+    ['OS=="win"', {
+        'variables': {
+          'win_platform_dir': '../Windows/ReadiumSDK/Prebuilt',
+          'win_platform_include_dir': '<(win_platform_dir)/Include',
+          'win_platform_lib_dir': '<(win_platform_dir)/Lib/x86',
+          'libxml2_include_dir': './vendor/libxml2/include'
+        },
+        'target_defaults': {
+          'defines': [
+            'MSVS_VERSION_2015',
+            'NDEBUG',
+            'NOMINMAX',
+            'WIN32',
+            'XML_BUFFER_ALLOC_BOUNDED=6'
+          ],
+            'msvs_disabled_warnings': [
+              4530,
+              4577,
+              4028,
+              4090
+            ],
+            'msvs_settings': {
+              'VCCLCompilerTool': {
+                'WarnAsError': 'false',
+              },
+            },
+          'cflags': [
+            '/EHsc'
+          ],
+          'include_dirs': [
+            '<(win_platform_include_dir)'
+          ],
+          'link_settings': {
+            'library_dirs': [
+              '<(win_platform_lib_dir)'
+            ],
+            'libraries': [
+              '-lzlib.lib',
+              '-lws2_32.lib',
+              '-lmsvcrt.lib',
+              '-llegacy_stdio_definitions.lib',
+              '-ladvapi32.lib'
+            ]
+          }
         }
     }],
   ]
