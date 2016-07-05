@@ -2,15 +2,16 @@
 import os
 import subprocess
 import platform
+import utils
 
 system = platform.system().lower()
 
 if system == "linux":
     # Use clang on linux
-    print "Use clang compiler"
-    os.environ["CC"] = "clang"
-    os.environ["CXX"] = "clang++"
-    os.environ["GYP_DEFINES"] = "clang=1"
+    # print "Use clang compiler"
+    # os.environ["CC"] = "clang"
+    # os.environ["CXX"] = "clang++"
+    # os.environ["GYP_DEFINES"] = "clang=1"
 elif system == "windows":
     # Use msvs version 2015
     print "Use msvs version 2015"
