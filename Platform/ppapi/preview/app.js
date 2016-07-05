@@ -1,12 +1,27 @@
 // Requirements
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
+const { app, BrowserWindow } = require("electron");
+const path = require("path");
+const os = require("os");
+const fs = require('fs');
 
 // Initialize readium plugin
-let readiumPluginPath = path.join(__dirname, '..', 'out', 'Default', 'lib', 'libreadium.so');
-console.log(readiumPluginPath);
-app.commandLine.appendSwitch("register-pepper-plugins", readiumPluginPath + ";application/x-ppapi-readium");
+let readiumPluginPath = "";
 
+switch (os.platform()) {
+  case "linux":
+    readiumPluginPath = path.join(__dirname, "..", "out", "Default", "lib", "libreadium.so");
+    break;
+  case "win32":
+    readiumPluginPath = path.join(__dirname, "..", "out", "Default", "readium.dll");
+    break;
+}
+
+if (!fs.existsSync(readiumPluginPath)) {
+  console.log("Unable to find readium plugin");
+  app.quit();
+}
+
+app.commandLine.appendSwitch("register-pepper-plugins", readiumPluginPath + ";application/x-ppapi-readium");
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the javascript object is GCed.

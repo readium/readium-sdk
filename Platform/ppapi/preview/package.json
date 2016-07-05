@@ -6,10 +6,7 @@
   "dependencies": {
     "electron-prebuilt": "^1.2.5"
   },
-  "bin": {
-    "electron": "./node_modules/.bin/electron"
-  },
   "scripts": {
-    "preview": "electron  ."
+    "preview": "./node_modules/.bin/electron ."
   }
 }
