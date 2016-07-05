@@ -24,8 +24,8 @@ NINJA_CMD = os.path.join(PPAPI_PATH, "vendor", "ninja", "ninja")
 
 # Create ninja build file
 print "Create ninja project"
-subprocess.call(["python", GYP_CMD, "--depth=.", "-f", "ninja", "ppapi.gyp"])
+utils.execute_command(["python", GYP_CMD, "--depth=.", "-f", "ninja", "ppapi.gyp"])
 
 # Build ninja project
 print "Build ninja project"
-subprocess.call([NINJA_CMD, "-C", os.path.join("out", "Default"), "-f", "build.ninja"])
+utils.execute_command([NINJA_CMD, "-C", os.path.join("out", "Default"), "-f", "build.ninja"])
