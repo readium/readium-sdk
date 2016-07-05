@@ -62,6 +62,7 @@ def copy_header_files(src, dst):
 
 # Copy includes in a specific directory
 def install_includes():
+    print "Create includes"
     # Create include dirname
     if not os.path.exists(INCLUDE_PATH):
         os.mkdir(INCLUDE_PATH)
@@ -142,6 +143,9 @@ def install_libxml2():
         os.rmdir(tmp_libxml2_path)
 
     os.remove(libxml2_tar_path)
+
+    # Configure
+    utils.execute_command(["./configure"], libxml2_path)
 
 # Apply patches
 def apply_patches():
