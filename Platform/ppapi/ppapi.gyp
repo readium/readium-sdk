@@ -127,8 +127,7 @@
             'MSVS_VERSION_2015',
             'NDEBUG',
             'NOMINMAX',
-            'WIN32',
-            'XML_BUFFER_ALLOC_BOUNDED=6'
+            'WIN32'
           ],
             'msvs_disabled_warnings': [
               4530,
