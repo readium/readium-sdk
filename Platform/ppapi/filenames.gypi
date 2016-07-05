@@ -1,7 +1,7 @@
 {
   'variables': {
     'root_dir': '../../ePub3',
-    'ppapi_dir': './vendor/nacl-sdk/pepper_49/src/ppapi_cpp',
+    'ppapi_dir': './vendor/nacl_sdk/pepper_49/src/ppapi_cpp',
     'libxml2_dir': './vendor/libxml2',
     'third_party_dir': '<(root_dir)/ThirdParty',
     'libzip_dir': '<(third_party_dir)/libzip',
