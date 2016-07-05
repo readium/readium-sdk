@@ -1,0 +1,129 @@
+diff --git a/ePub3/ThirdParty/google-url/src/url_canon_cpp11.cc b/ePub3/ThirdParty/google-url/src/url_canon_cpp11.cc
+index 944ac03..8172d39 100644
+--- a/ePub3/ThirdParty/google-url/src/url_canon_cpp11.cc
++++ b/ePub3/ThirdParty/google-url/src/url_canon_cpp11.cc
+@@ -48,6 +48,85 @@
+ # define strlcpy(dst,src,sz) strcpy_s(dst,sz,src)
+ #endif
+ 
++
++#if EPUB_OS(LINUX)
++
++/*
++ * '_cups_strlcat()' - Safely concatenate two strings.
++ */
++
++size_t                  /* O - Length of string */
++strlcat(char       *dst,        /* O - Destination string */
++              const char *src,      /* I - Source string */
++          size_t     size)      /* I - Size of destination string buffer */
++{
++  size_t    srclen;         /* Length of source string */
++  size_t    dstlen;         /* Length of destination string */
++
++
++ /*
++  * Figure out how much room is left...
++  */
++
++  dstlen = strlen(dst);
++  size   -= dstlen + 1;
++
++  if (!size)
++    return (dstlen);        /* No room, return immediately... */
++
++ /*
++  * Figure out how much room is needed...
++  */
++
++  srclen = strlen(src);
++
++ /*
++  * Copy the appropriate amount...
++  */
++
++  if (srclen > size)
++    srclen = size;
++
++  memcpy(dst + dstlen, src, srclen);
++  dst[dstlen + srclen] = '\0';
++
++  return (dstlen + srclen);
++}
++
++/*
++ * '_cups_strlcpy()' - Safely copy two strings.
++ */
++
++size_t                  /* O - Length of string */
++strlcpy(char       *dst,        /* O - Destination string */
++              const char *src,      /* I - Source string */
++          size_t      size)     /* I - Size of destination string buffer */
++{
++  size_t    srclen;         /* Length of source string */
++
++
++ /*
++  * Figure out how much room is needed...
++  */
++
++  size --;
++
++  srclen = strlen(src);
++
++ /*
++  * Copy the appropriate amount...
++  */
++
++  if (srclen > size)
++    srclen = size;
++
++  memcpy(dst, src, srclen);
++  dst[srclen] = '\0';
++
++  return (srclen);
++}
++#endif
++
+ #if USING_ICU
+ // the only pieces of ICU that we still need
+ extern "C" int32_t
+diff --git a/ePub3/ThirdParty/google-url/src/url_canon_ip.cc b/ePub3/ThirdParty/google-url/src/url_canon_ip.cc
+index 20d1212..bbc86fc 100644
+--- a/ePub3/ThirdParty/google-url/src/url_canon_ip.cc
++++ b/ePub3/ThirdParty/google-url/src/url_canon_ip.cc
+@@ -35,7 +35,7 @@
+ #include <google-url/logging.h>
+ #include "url_canon_internal.h"
+ 
+-typedef unsigned long long uint64_t;
++//typedef unsigned long long uint64_t;
+ 
+ namespace url_canon {
+ 
+diff --git a/ePub3/utilities/byte_stream.cpp b/ePub3/utilities/byte_stream.cpp
+index ee238c2..dc13ecb 100644
+--- a/ePub3/utilities/byte_stream.cpp
++++ b/ePub3/utilities/byte_stream.cpp
+@@ -740,7 +740,7 @@ std::shared_ptr<SeekableByteStream> FileByteStream::Clone() const
+ #pragma mark -
+ #endif
+ 
+-ZipFileByteStream::ZipFileByteStream(struct zip* archive, const string& path, int flags) : SeekableByteStream(), _file(nullptr), _mode(0)
++ZipFileByteStream::ZipFileByteStream(struct zip* archive, const string& path, int flags) : SeekableByteStream(), _file(nullptr), _mode(std::ios::app)
+ {
+     Open(archive, path, flags);
+ }
+diff --git a/ePub3/utilities/string_view.h b/ePub3/utilities/string_view.h
+index d0a0451..ff95b73 100644
+--- a/ePub3/utilities/string_view.h
++++ b/ePub3/utilities/string_view.h
+@@ -254,7 +254,7 @@ public:
+     typedef std::reverse_iterator<const_iterator>   const_reverse_iterator;
+     typedef const_reverse_iterator                  reverse_iterator;
+     typedef size_t                                  size_type;
+-    typedef ptrdiff_t                               difference_type;
++    typedef std::ptrdiff_t                          difference_type;
+     
+     static CONSTEXPR const size_type npos = size_type(-1);
+     
