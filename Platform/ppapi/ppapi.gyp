@@ -16,8 +16,6 @@
       '-fPIC', 
       #'-fvisibility=hidden',
       '-g', # Debug mode
-      #'-m32',
-      #
     ],
     'cflags_cc': [
       '-std=c++11',
@@ -30,12 +28,9 @@
   'targets': [
     {
       'target_name': 'readium',
-      'type': 'executable',
+      'type': 'shared_library',
       'include_dirs': [
         '<(ppapi_include_dir)'
-      ],
-      'ldflags': [
-        # '-m32',
       ],
       'dependencies': [
         'epub3',
