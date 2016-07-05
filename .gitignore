@@ -156,3 +156,12 @@ Platform/Android/local.properties
 # Windows
 
 Thumbs.db
+
+################################################################################
+# Chrome ppapi
+
+Platform/chrome-ppapi/out
+Platform/chrome-ppapi/vendor
+Platform/chrome-ppapi/include
+Platform/chrome-ppapi/preview/node_modules
+Platform/chrome-ppapi/*.pyc
