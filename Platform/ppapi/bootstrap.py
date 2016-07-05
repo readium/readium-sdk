@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import os
 import shutil
-import subprocess
+import platform
 import utils
 import urllib
 import zipfile
@@ -16,6 +16,9 @@ ROOT_PATH = os.path.abspath(
   os.path.dirname(os.path.dirname(os.getcwd())));
 EPUB3_PATH = os.path.join(ROOT_PATH, 'ePub3')
 THIRD_PARTY_PATH = os.path.join(ROOT_PATH, 'ePub3', 'ThirdParty')  
+
+# Other variables
+SYSTEM = platform.system().lower()
 
 # path => include path
 INCLUDE_MAPPING = (
@@ -140,6 +143,12 @@ def install_libxml2():
 
     os.remove(libxml2_tar_path)
 
+# Apply patches
+def apply_patches():
+    print "Apply patches"
+    patch_file_path = os.path.abspath(os.path.join("patches", "%s.diff" % SYSTEM))
+    utils.execute_command(["git", "apply", patch_file_path], os.path.join("..", ".."))
+
 # Download and install vendors
 if not os.path.exists("vendor"):
     os.mkdir("vendor")
@@ -148,6 +157,9 @@ install_gyp()
 install_ninja()
 install_nacl_sdk()
 install_libxml2()
+
+# Apply patches
+apply_patches()
 
 # Build includes
 install_includes()
