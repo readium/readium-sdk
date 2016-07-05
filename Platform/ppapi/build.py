@@ -12,6 +12,7 @@ if system == "linux":
     # os.environ["CC"] = "clang"
     # os.environ["CXX"] = "clang++"
     # os.environ["GYP_DEFINES"] = "clang=1"
+    pass
 elif system == "windows":
     # Use msvs version 2015
     print "Use msvs version 2015"
