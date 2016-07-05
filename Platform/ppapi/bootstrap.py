@@ -95,9 +95,21 @@ def install_ninja():
         utils.execute_command(["git", "clone", "https://github.com/ninja-build/ninja.git", "vendor/ninja"])
 
     # Configure and build ninja
-    if not os.path.exists(os.path.join("vendor", "ninja", "ninja")):
+    if SYSTEM == "windows":
+        cmd_path = (os.path.join("vendor", "ninja", "ninja.exe"))
+    else:
+        cmd_path = (os.path.join("vendor", "ninja", "ninja"))
+
+    if not os.path.exists(cmd_path):
         print "Build and install ninja"
-        utils.execute_command(["python", "configure.py", "--bootstrap"], os.path.join("vendor", "ninja"))
+       
+        # Initialize visual studio environment variables
+        cmd = ["python", "configure.py", "--bootstrap"]
+
+        if SYSTEM == "windows":
+            cmd = ["vcvarsall.bat", "&&"] + cmd
+
+        utils.execute_command(cmd, os.path.join("vendor", "ninja"))
 
 # Install nacl sdk
 def install_nacl_sdk():
@@ -123,9 +135,17 @@ def install_nacl_sdk():
 
     if not os.path.exists(os.path.join(nacl_sdk_path, "pepper_49")):
         print "Install nacl_sdk"
-        os.chmod(os.path.join(nacl_sdk_path, "naclsdk"), 0755) 
-        utils.execute_command(["./naclsdk", "install", "pepper_49"], nacl_sdk_path)
 
+        if SYSTEM == "windows":
+            # Use absolute path to execute bat script
+            utils.execute_command([
+                    os.path.abspath(os.path.join(nacl_sdk_path, "naclsdk.bat")),
+                     "install", "pepper_49"
+                ], 
+                nacl_sdk_path)
+        else:
+            os.chmod(os.path.join(nacl_sdk_path, "naclsdk"), 0755) 
+            utils.execute_command(["./naclsdk", "install", "pepper_49"], nacl_sdk_path)
 
 # Install libxml2
 def install_libxml2():
@@ -152,7 +172,10 @@ def install_libxml2():
     os.remove(libxml2_tar_path)
 
     # Configure
-    utils.execute_command(["./configure"], libxml2_path)
+    if SYSTEM == "windows":
+        utils.execute_command(["cscript", "configure.js", "compiler=msvc", "iconv=no"], os.path.join(libxml2_path, "win32"))
+    else:
+        utils.execute_command(["./configure"], libxml2_path)
 
 # Apply patches
 def apply_patches():
