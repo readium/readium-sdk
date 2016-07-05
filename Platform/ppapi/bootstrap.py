@@ -7,6 +7,7 @@ import urllib
 import zipfile
 import tarfile
 import tempfile
+import subprocess
 
 # Directories variables
 PPAPI_PATH = os.getcwd()
@@ -48,11 +49,17 @@ INCLUDE_MAPPING = (
     ))
 )
 
+ALLOWED_HEADER_EXTENSIONS = [".h"]
+
+if SYSTEM == "windows":
+    ALLOWED_HEADER_EXTENSIONS += [".inl"]
+
 def copy_header_files(src, dst):
     if not os.path.exists(dst):
         os.mkdir(dst)
         
-    names = [x for x in os.listdir(src) if x.endswith('.h')]
+    names = [x for x in os.listdir(src) 
+        if os.path.splitext(x)[1] in ALLOWED_HEADER_EXTENSIONS]
       
     for name in names:
         shutil.copy(
