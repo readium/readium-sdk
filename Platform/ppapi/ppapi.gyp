@@ -3,19 +3,21 @@
     'filenames.gypi'
   ],
   'variables': {
-    'nacl_sdk_dir': './vendor/nacl-sdk/pepper_49',
+    'nacl_sdk_dir': './vendor/nacl_sdk/pepper_49',
     'ppapi_include_dir': '<(nacl_sdk_dir)/include'
   },
   'target_defaults': {
     'include_dirs': [
-      './include'
+      './include',
+      '<(libxml2_include_dir)'
     ],
     'cflags': [
       '-w',
       '-fPIC', 
-      '-fvisibility=hidden',
+      #'-fvisibility=hidden',
+      '-g', # Debug mode
       #'-m32',
-      #'-D_GLIBCXX_USE_CXX11_ABI=0'
+      #
     ],
     'cflags_cc': [
       '-std=c++11',
@@ -32,11 +34,9 @@
       'include_dirs': [
         '<(ppapi_include_dir)'
       ],
-
       'ldflags': [
         # '-m32',
       ],
-     
       'dependencies': [
         'epub3',
         'ppapi',
@@ -59,9 +59,6 @@
     {
       'target_name': 'libxml2',
       'type': 'static_library',
-      'include_dirs': [
-        '<(libxml2_include_dir)'
-      ],
       'sources': [
         '<@(libxml2_sources)'
       ]
@@ -99,16 +96,24 @@
   'conditions': [
     ['OS=="linux"', {
         'variables': {
-          'libxml2_include_dir': '/usr/include/libxml2',
+          'libxml2_include_dir': './vendor/libxml2/include'
         },
         'target_defaults': {
-          'include_dirs': [
-            '<(libxml2_include_dir)'
+          'defines': [
+            'LIBXML_THREAD_ENABLED',
+            #'_GLIBCXX_USE_CXX11_ABI=0' # to avoid std::locale issue
+          ],
+          'cflags': [
+            '-m64',
+            '-march=x86-64',
+          ],
+          'ldflags': [
+            '-m64',
           ],
           'link_settings': {
             'libraries': [
-              '-lxml2',
               '-lz',
+              '-licuuc',
               '-lpthread',
               '-lcrypto'
             ]
