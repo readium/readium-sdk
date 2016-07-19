@@ -14,6 +14,9 @@ switch (os.platform()) {
   case "win32":
     readiumPluginPath = path.join(__dirname, "..", "out", "Default", "readium.dll");
     break;
+  case "darwin":
+    readiumPluginPath = path.join(__dirname, "..", "out", "Default", "libreadium.dylib");
+    break;
 }
 
 if (!fs.existsSync(readiumPluginPath)) {

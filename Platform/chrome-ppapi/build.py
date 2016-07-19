@@ -12,11 +12,14 @@ if SYSTEM == "linux":
     # os.environ["CC"] = "clang"
     # os.environ["CXX"] = "clang++"
     # os.environ["GYP_DEFINES"] = "clang=1"
-    pass
+    GYP_OS = "linux"
 elif SYSTEM == "windows":
     # Use msvs version 2015
     print "Use msvs version 2015"
     os.environ["GYP_MSVS_VERSION"] = "2015"
+    GYP_OS = "win"
+elif SYSTEM == "darwin":
+    GYP_OS = "mac"
 
 # Directories variables
 PPAPI_PATH = os.path.abspath(os.getcwd())
@@ -30,7 +33,7 @@ else:
 
 # Create ninja build file
 print "Create ninja project"
-utils.execute_command(["python", GYP_CMD, "--depth=.", "-f", "ninja", "ppapi.gyp"])
+utils.execute_command(["python", GYP_CMD, "--depth=.", "-f", "ninja", "-DOS=%s" % GYP_OS, "ppapi.gyp"])
 
 # Build ninja project
 print "Build ninja project"

@@ -4,7 +4,8 @@
   ],
   'variables': {
     'nacl_sdk_dir': './vendor/nacl_sdk/pepper_49',
-    'ppapi_include_dir': '<(nacl_sdk_dir)/include'
+    'ppapi_include_dir': '<(nacl_sdk_dir)/include',
+    'libxml2_include_dir': './vendor/libxml2/include'
   },
   'target_defaults': {
     'include_dirs': [
@@ -16,10 +17,6 @@
       '-fPIC', 
       #'-fvisibility=hidden',
       '-g', # Debug mode
-    ],
-    'cflags_cc': [
-      '-std=c++11',
-      '-fpermissive'
     ],
     'defines': [
       'BUILDING_EPUB3'
@@ -89,10 +86,57 @@
     },
   ],
   'conditions': [
+    ['OS=="mac"', {
+        'target_defaults': {
+          'defines': [
+            'LIBXML_THREAD_ENABLED',
+          ],
+          'cflags_cc': [
+            #'-std=c++0x',
+            #'-stdlib=libc++',
+            #'-Wtautological-pointer-compare',
+            #'-Wc++11-extensions'
+          ],
+          'xcode_settings': {
+            'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO',
+            #'MACOSX_DEPLOYMENT_TARGET': '10.8',
+            'CLANG_CXX_LANGUAGE_STANDARD': 'gnu++0x',
+				    'CLANG_CXX_LIBRARY': 'libc++',
+            'WARNING_CFLAGS': [
+              '-Wno-unknown-warning-option',
+              '-Wno-parentheses-equality',
+              '-Wno-unused-function',
+              '-Wno-sometimes-uninitialized',
+              '-Wno-pointer-sign',
+              '-Wno-sign-compare',
+              '-Wno-string-plus-int',
+              '-Wno-unused-variable',
+              '-Wno-deprecated-declarations',
+              '-Wno-return-type',
+              '-Wno-gnu-folding-constant',
+              '-Wno-shift-negative-value',
+              '-Wno-tautological-pointer-compare',
+              '-Wno-inconsistent-missing-override',
+              '-Wno-empty-body',
+              '-Wno-uninitialized',
+              '-Wno-potentially-evaluated-expression'
+            ]
+          },
+          'ldflags': [
+       
+          ],
+          'link_settings': {
+            'libraries': [
+              '-lz',
+              #'-licuuc',
+              '-liconv',
+              '-lpthread',
+              '-lcrypto'
+            ]
+          }
+        }
+    }],
     ['OS=="linux"', {
-        'variables': {
-          'libxml2_include_dir': './vendor/libxml2/include'
-        },
         'target_defaults': {
           'defines': [
             'LIBXML_THREAD_ENABLED',
@@ -101,6 +145,10 @@
           'cflags': [
             '-m64',
             '-march=x86-64',
+          ],
+          'cflags_cc': [
+            '-std=c++11',
+            '-fpermissive'
           ],
           'ldflags': [
             '-m64',
@@ -119,8 +167,7 @@
         'variables': {
           'win_platform_dir': '../Windows/ReadiumSDK/Prebuilt',
           'win_platform_include_dir': '<(win_platform_dir)/Include',
-          'win_platform_lib_dir': '<(win_platform_dir)/Lib/x86',
-          'libxml2_include_dir': './vendor/libxml2/include'
+          'win_platform_lib_dir': '<(win_platform_dir)/Lib/x86'
         },
         'target_defaults': {
           'defines': [
@@ -142,6 +189,10 @@
             },
           'cflags': [
             '/EHsc'
+          ],
+          'cflags_cc': [
+            '-std=c++11',
+            '-fpermissive'
           ],
           'include_dirs': [
             '<(win_platform_include_dir)'

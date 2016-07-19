@@ -21,6 +21,9 @@ THIRD_PARTY_PATH = os.path.join(ROOT_PATH, 'ePub3', 'ThirdParty')
 # Other variables
 SYSTEM = platform.system().lower()
 
+if SYSTEM == "darwin":
+    SYSTEM = "mac"
+
 # path => include path
 INCLUDE_MAPPING = (
     ('utf8', (

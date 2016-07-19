@@ -14,6 +14,12 @@
 * npm (node 4.x **32bits**)
 * Visual Studio 2015 Community
 
+## Mac
+
+* python 2.7
+* npm (node 4.x **64bits**)
+* XCode 6+
+
 # Build
 
 Build system is very simple.

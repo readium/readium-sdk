@@ -1,0 +1,26 @@
+diff --git a/ePub3/ePub/font_obfuscation.cpp b/ePub3/ePub/font_obfuscation.cpp
+index 1926cf4..352b92b 100644
+--- a/ePub3/ePub/font_obfuscation.cpp
++++ b/ePub3/ePub/font_obfuscation.cpp
+@@ -139,7 +139,7 @@ bool FontObfuscator::BuildKey(ConstContainerPtr container, ConstPackagePtr pkg)
+ //    sha1_update(&ctx, str.data(), str.length());
+ //    sha1_finish(&ctx, _key);
+ #else
+-#error "OPEN-SSL STATIC LIBS DEPRECATED IN READIUM-SDK ANDROID"
++//#error "OPEN-SSL STATIC LIBS DEPRECATED IN READIUM-SDK ANDROID"
+ 
+     // hash the accumulated string (using OpenSSL syntax for portability)
+     SHA_CTX ctx;
+diff --git a/ePub3/xml/tree/node.cpp b/ePub3/xml/tree/node.cpp
+index a4a6254..766c333 100644
+--- a/ePub3/xml/tree/node.cpp
++++ b/ePub3/xml/tree/node.cpp
+@@ -30,7 +30,7 @@
+ #include <cstdlib>
+ 
+ #if EPUB_PLATFORM(MAC)
+-#include "xml_bridge_dtrace_probes.h"
++//#include "xml_bridge_dtrace_probes.h"
+ #endif
+ 
+ #ifndef NDEBUG
