@@ -16,7 +16,7 @@ INCLUDE_PATH = os.path.join(PPAPI_PATH, 'include')
 ROOT_PATH = os.path.abspath(
   os.path.dirname(os.path.dirname(os.getcwd())));
 EPUB3_PATH = os.path.join(ROOT_PATH, 'ePub3')
-THIRD_PARTY_PATH = os.path.join(ROOT_PATH, 'ePub3', 'ThirdParty')  
+THIRD_PARTY_PATH = os.path.join(ROOT_PATH, 'ePub3', 'ThirdParty')
 
 # Other variables
 SYSTEM = platform.system().lower()
@@ -60,13 +60,13 @@ if SYSTEM == "windows":
 def copy_header_files(src, dst):
     if not os.path.exists(dst):
         os.mkdir(dst)
-        
-    names = [x for x in os.listdir(src) 
+
+    names = [x for x in os.listdir(src)
         if os.path.splitext(x)[1] in ALLOWED_HEADER_EXTENSIONS]
-      
+
     for name in names:
         shutil.copy(
-            os.path.join(src, name), 
+            os.path.join(src, name),
             dst
         )
 
@@ -87,7 +87,7 @@ def install_includes():
 def install_gyp():
     if os.path.exists(os.path.join("vendor", "gyp")):
         return
-    
+
     print "Clone gyp"
     utils.execute_command(["git", "clone", "https://chromium.googlesource.com/external/gyp.git", "vendor/gyp"])
 
@@ -105,7 +105,7 @@ def install_ninja():
 
     if not os.path.exists(cmd_path):
         print "Build and install ninja"
-       
+
         # Initialize visual studio environment variables
         cmd = ["python", "configure.py", "--bootstrap"]
 
@@ -122,9 +122,9 @@ def install_nacl_sdk():
         print "Download nacl sdk"
         nacl_sdk_zip_path = os.path.join("vendor", "nacl_sdk.zip")
         urllib.urlretrieve(
-            "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip", 
+            "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip",
             nacl_sdk_zip_path)
-        
+
         print "Extract nacl sdk"
         with zipfile.ZipFile(nacl_sdk_zip_path, "r") as nacl_sdk_zip:
             tmp_nacl_sdk_path = tempfile.mkdtemp(prefix="nacl", dir="vendor")
@@ -144,10 +144,10 @@ def install_nacl_sdk():
             utils.execute_command([
                     os.path.abspath(os.path.join(nacl_sdk_path, "naclsdk.bat")),
                      "install", "pepper_49"
-                ], 
+                ],
                 nacl_sdk_path)
         else:
-            os.chmod(os.path.join(nacl_sdk_path, "naclsdk"), 0755) 
+            os.chmod(os.path.join(nacl_sdk_path, "naclsdk"), 0755)
             utils.execute_command(["./naclsdk", "install", "pepper_49"], nacl_sdk_path)
 
 # Install libxml2
@@ -156,11 +156,11 @@ def install_libxml2():
 
     if os.path.exists(libxml2_path):
         return
-    
+
     print "Download libxml2"
     libxml2_tar_path = os.path.join("vendor", "libxml2.tar.gz")
     urllib.urlretrieve(
-            "http://xmlsoft.org/sources/libxml2-2.9.4.tar.gz", 
+            "http://xmlsoft.org/sources/libxml2-2.9.4.tar.gz",
             libxml2_tar_path)
 
     print "Extract libxml2"
@@ -184,7 +184,15 @@ def install_libxml2():
 def apply_patches():
     print "Apply patches"
     patch_file_path = os.path.abspath(os.path.join("patches", "%s.diff" % SYSTEM))
-    utils.execute_command(["git", "apply", patch_file_path], os.path.join("..", ".."))
+    cmd = ["git", "apply"]
+
+    # Add options for windows to manage spaces
+    if SYSTEM == "windows":
+        cmd += ["--ignore-space-change", "--ignore-whitespace"]
+
+    cmd += [patch_file_path]
+
+    utils.execute_command(cmd, os.path.join("..", ".."))
 
 # Download and install vendors
 if not os.path.exists("vendor"):
