@@ -40,8 +40,8 @@ bool PassThroughFilter::SniffPassThroughContent(ConstManifestItemPtr item)
 	// you can use the following commented out code for doing that. The code below will make this filter
 	// apply when a media resource is being read.
 	//
-    auto mediaType = item->MediaType();
-    return (mediaType == "application/xhtml+xml" || mediaType == "text/html" || mediaType == "text/css");
+    // auto mediaType = item->MediaType();
+    // return (mediaType == "audio/mp4" || mediaType == "audio/mpeg" || mediaType == "video/mp4" || mediaType == "video/mpeg");
 
 	return false;
 }
