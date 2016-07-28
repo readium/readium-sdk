@@ -1,0 +1,109 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+if (rootProject.hasProperty("readium_ndk_debug") && rootProject.readium_ndk_debug) {
+    // Use gradle experimental receipt to debug C/C++ code
+    println "${project.name}: Use gradle experimental to build application"
+    apply from: 'build_experimental.gradle'
+}
+
+/**
+ * Prebuild using ndk
+ */
+
+task copyLibxmlIncludes(type: Copy) {
+    from '../../../ePub3/ThirdParty/libxml2-android/include/libxml'
+    into './include/libxml'
+}
+
+task copySha1Includes(type: Copy) {
+    from '../../../ePub3/ThirdParty/sha1'
+    into './include/sha1'
+    include '**/*.h'
+}
+
+task copyUtf8Includes(type: Copy) {
+    from '../../../ePub3/ThirdParty/utf8-cpp/include'
+    into './include/utf8'
+}
+
+task copyGoogleUrlBaseIncludes(type: Copy) {
+    from '../../../ePub3/ThirdParty/google-url/base'
+    into './include/google-url'
+    include '**/*.h'
+}
+
+task copyGoogleUrlIncludes(dependsOn: 'copyGoogleUrlBaseIncludes', type: Copy) {
+    from '../../../ePub3/ThirdParty/google-url/src'
+    into './include/google-url'
+    include '**/*.h'
+}
+
+task copyLibzipBaseIncludes(type: Copy) {
+    from '../../../ePub3/ThirdParty/libzip'
+    into './include/libzip'
+    include '**/*.h'
+}
+
+task copyEpub3XmlIncludes(type: Copy) {
+    from '../../../ePub3/xml/tree'
+    from '../../../ePub3/xml/utilities'
+    from '../../../ePub3/xml/validation'
+    into './include/ePub3/xml'
+    include '**/*.h'
+}
+
+task copyEpub3UtilitiesIncludes(dependsOn: 'copyEpub3XmlIncludes', type: Copy) {
+    from '../../../ePub3/utilities'
+    into './include/ePub3/utilities'
+    include '**/*.h'
+}
+
+task copyEpub3RootIncludes(dependsOn: 'copyEpub3UtilitiesIncludes', type: Copy) {
+    from '../../../ePub3'
+    into './include/ePub3'
+    include '*.h'
+}
+
+task copyEpub3Includes(dependsOn: 'copyEpub3RootIncludes', type: Copy) {
+    from '../../../ePub3/ePub'
+    into './include/ePub3'
+    include '**/*.h'
+}
+
+task buildIncludes {
+    println "Build includes"
+}
+
+buildIncludes.dependsOn "copyEpub3Includes",
+"copyLibxmlIncludes",
+"copySha1Includes",
+"copyUtf8Includes",
+"copyGoogleUrlIncludes",
+"copyLibzipBaseIncludes"
+
+task buildMk(dependsOn: "buildIncludes", type: Exec) {
+    // Retrieve ndk dir
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    def ndkDir = properties.getProperty('ndk.dir', null)
+
+    // Call ndk build
+    def ndkBuildExt = Os.isFamily(Os.FAMILY_WINDOWS) ? ".cmd" : ""
+    def projectPath = file('.').absolutePath
+    def buildScript = (rootProject.hasProperty("readium_ndk_debug") &&
+            rootProject.readium_ndk_debug) ? "Experimental.mk" : "Stable.mk"
+
+    commandLine "$ndkDir/ndk-build${ndkBuildExt}",
+            '-C', projectPath,
+            'NDK_APPLICATION_MK=Application.mk',
+            "APP_BUILD_SCRIPT=${buildScript}",
+            "NDK_PROJECT_PATH=${projectPath}"
+}
+
+tasks.whenTaskAdded { task ->
+    def taskName = task.name
+
+    if (taskName.startsWith("compile")) {
+        task.dependsOn "buildMk"
+    }
+}

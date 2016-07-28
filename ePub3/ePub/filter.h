@@ -333,7 +333,7 @@ public:
     /// modes of operation.
     virtual OperatingMode GetOperatingMode() const { return OperatingMode::Standard; }
 
-    virtual ByteStream::size_type BytesAvailable(SeekableByteStream *byteStream) const { return byteStream->BytesAvailable(); };
+    virtual ByteStream::size_type BytesAvailable(FilterContext *context, SeekableByteStream *byteStream) const { return byteStream->BytesAvailable(); };
 
     ///
     /// Obtains the type-sniffer for this filter.

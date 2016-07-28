@@ -1,0 +1,74 @@
+apply plugin: 'com.android.model.native'
+
+model {
+    android {
+        compileSdkVersion = 23
+    }
+
+    android.sources {
+        main {
+            jni {
+                source {
+                    srcDirs = [
+                            './src/main/jni',
+                            '../../../ePub3/ePub'
+                    ]
+                }
+                exportedHeaders {
+                    srcDir "./src/main/jni"
+                }
+            }
+        }
+    }
+
+    android.ndk {
+        moduleName = "epub3"
+
+        stl = "gnustl_shared"
+
+        cppFlags.addAll([
+                "-std=gnu++11",
+                "-fpermissive",
+                "-fexceptions",
+                "-frtti",
+                "-DBUILDING_EPUB3",
+                "-I../prefix.h",
+                "-I${file("./include")}".toString(),
+                "-I${file("./include/ePub3")}".toString(),
+                "-I${file("./include/ePub3/utilities")}".toString()
+        ])
+        ldLibs.addAll(['z', 'android', 'log', 'epub3', 'xml2', 'icuuc', 'icui18n', 'icuio', 'icudata'])
+    }
+
+    android.buildTypes {
+        release {
+
+        }
+        debug {
+            ndk.with {
+                debuggable = true
+            }
+        }
+    }
+
+    android.productFlavors {
+        create ("arm") {
+            ndk.with {
+                abiFilters.add("armeabi-v7a")
+                ldFlags.addAll([
+                        "-L${file("./obj/local/armeabi-v7a")}".toString(),
+                        "-L${file("../../../ePub3/ThirdParty/icu4c/lib/armeabi-v7a")}".toString()
+                ])
+            }
+        }
+        create("x86") {
+            ndk.with {
+                abiFilters.add("x86")
+                ldFlags.addAll([
+                        "-L${file("./obj/local/x86")}".toString(),
+                        "-L${file("../../../ePub3/ThirdParty/icu4c/lib/x86")}".toString()
+                ])
+            }
+        }
+    }
+}

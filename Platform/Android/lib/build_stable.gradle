@@ -1,0 +1,31 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion = 23
+    buildToolsVersion = "23.0.2"
+
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 23
+    }
+
+    sourceSets {
+        main {
+            java.srcDirs = [
+                    './src/main/java'
+            ]
+            jniLibs.srcDirs = [
+                    '../epub3/libs'
+            ]
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled = false
+        }
+        release {
+            minifyEnabled = true
+        }
+    }
+}

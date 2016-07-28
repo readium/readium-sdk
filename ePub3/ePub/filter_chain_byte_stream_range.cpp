@@ -48,7 +48,7 @@ ByteStream::size_type FilterChainByteStreamRange::BytesAvailable() _NOEXCEPT
 {
     if (m_filter)
     {
-        ByteStream::size_type size = m_filter->BytesAvailable(m_input.get());
+        ByteStream::size_type size = m_filter->BytesAvailable(m_filterContext.get(), m_input.get());
         return size;
     }
 

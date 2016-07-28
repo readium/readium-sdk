@@ -1,0 +1,45 @@
+apply plugin: 'com.android.model.library'
+
+model {
+    android {
+        compileSdkVersion = 23
+        buildToolsVersion = "23.0.2"
+
+        defaultConfig.with {
+            minSdkVersion.apiLevel   = 19
+            targetSdkVersion.apiLevel = 23
+        }
+    }
+
+    android.sources {
+        main {
+            jniLibs {
+                dependencies {
+                    project ":epub3"
+                }
+            }
+        }
+    }
+
+    android.buildTypes {
+        debug {
+            minifyEnabled = false
+        }
+        release {
+            minifyEnabled = true
+        }
+    }
+
+    android.productFlavors {
+        create ("arm") {
+            ndk.with {
+                abiFilters.add("armeabi-v7a")
+            }
+        }
+        create ("x86") {
+            ndk.with {
+                abiFilters.add("x86")
+            }
+        }
+    }
+}

@@ -23,21 +23,18 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-// Added by T.H. Kim on 2015-04-15
-#define ReadiumURI "http://readium.org/2015/01/lcp#extendedProperty"
+#define IDPFEncURI "http://www.idpf.org/2016/encryption#compression"
 
 bool EncryptionInfo::ParseXML(shared_ptr<xml::Node> node)
 {
-    // Modified by T.H. Kim on 2015-04-15
-    // To add ReadiumURI namespace to process the addition information
-
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-    XPathWrangler xpath(node->Document(), {{"enc", XMLENCNamespaceURI}, {"dsig", XMLDSigNamespaceURI} , { "ep", ReadiumURI }});
+    XPathWrangler xpath(node->Document(), {{"enc", XMLENCNamespaceURI}, {"dsig", XMLDSigNamespaceURI} , {"ds", XMLDSigNamespaceURI}, { "ep", IDPFEncURI }});
 #else
     XPathWrangler::NamespaceList nsList;
     nsList["enc"] = XMLENCNamespaceURI;
     nsList["dsig"] = XMLDSigNamespaceURI;
-    nsList["ep"] = ReadiumURI;
+    nsList["ds"] = XMLDSigNamespaceURI;
+    nsList["ep"] = IDPFEncURI;
     XPathWrangler xpath(node->doc, nsList);
 #endif
     
@@ -46,6 +43,11 @@ bool EncryptionInfo::ParseXML(shared_ptr<xml::Node> node)
         return false;
     
     _algorithm = strings[0];
+
+    strings = xpath.Strings("./ds:KeyInfo/ds:RetrievalMethod/@Type", node);
+    if ( !strings.empty() ) {
+        _keyRetrievalMethodType = strings[0];
+    }
     
     strings = xpath.Strings("./enc:CipherData/enc:CipherReference/@URI", node);
     if ( strings.empty() )
@@ -53,9 +55,7 @@ bool EncryptionInfo::ParseXML(shared_ptr<xml::Node> node)
     
     _path = strings[0];
     
-    // Added by DRM inside, T.H. Kim on 2015-04-15
-    // To get additional information for the compressed and encrypted contents
-    strings = xpath.Strings("./enc:EncryptionProperties/enc:EncryptionProperty/ep:compression/@method", node);
+    strings = xpath.Strings("./enc:EncryptionProperties/enc:EncryptionProperty/ep:Compression/@Method", node);
     if (!strings.empty())
     {
         if (strings[0] == "0" || strings[0] == "8")
@@ -67,7 +67,7 @@ bool EncryptionInfo::ParseXML(shared_ptr<xml::Node> node)
     else if  (strings.empty())
         _compression_method = "0";
     
-    strings = xpath.Strings("./enc:EncryptionProperties/enc:EncryptionProperty/ep:compression/@sourceSize", node);
+    strings = xpath.Strings("./enc:EncryptionProperties/enc:EncryptionProperty/ep:Compression/@OriginalLength", node);
     if (!strings.empty())
     {
         for ( int i = 0 ; i < strings[0].size() ; i++)
@@ -76,7 +76,6 @@ bool EncryptionInfo::ParseXML(shared_ptr<xml::Node> node)
         
         _uncompressed_size = strings[0];
     }
-    /////////////////////////////////////////////////////////////////////////////
 
     return true;
 }
