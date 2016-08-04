@@ -9,6 +9,20 @@
 
 namespace  {
 
+const char* const kMessageId = "id";
+const char* const kMessageType = "type";
+const char* const kMessageData = "data";
+
+const char* const kPath = "path";
+const char* const kContentPath = "contentPath";
+
+const char* const kMetadataTitle = "title";
+const char* const kMetadataAuthors = "authors";
+
+// Container  
+const char* const kMessageContainerReadStream = "container:readStream";
+const char* const kMessageContainerReadMetadata = "container:readMetadata";
+
 class ReadiumInstance : public pp::Instance {
 public:
     explicit ReadiumInstance(PP_Instance instance) : pp::Instance(instance) {}
@@ -17,7 +31,9 @@ public:
 
     virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
 
-    void HandleMessage(const pp::Var& var_message);
+    void HandleMessage(const pp::Var& var);
+    int ContainerReadStream(const pp::Var& input, pp::Var &output);
+    int ContainerReadMetadata(const pp::Var& input, pp::Var &output);
 
     // Alias method PostMessage to avoid conflict with win32 PostMessage
     void PPPostMessage(const pp::Var& var_message) {

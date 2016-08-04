@@ -11,7 +11,21 @@
   			window.onload = function() {
             var plugin = document.getElementById('plugin');
             plugin.addEventListener("message", handlePluginMessage, false);
-            plugin.postMessage("../../../TestData/widget-figure-gallery-20121022.epub");
+            plugin.postMessage({
+              id: 1,
+              type: "container:readMetadata",
+              data: {
+                path: "../../../TestData/widget-figure-gallery-20121022.epub"
+              }
+            });
+            plugin.postMessage({
+              id: 1,
+              type: "container:readStream",
+              data: {
+                path: "../../../TestData/widget-figure-gallery-20121022.epub",
+                contentPath: "EPUB/images/cover.jpg"
+              }
+            });
         }
   		</script>
     </head>
