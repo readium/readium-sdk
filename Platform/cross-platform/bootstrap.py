@@ -4,7 +4,6 @@ import shutil
 import platform
 import utils
 import urllib
-import zipfile
 import tarfile
 import tempfile
 import subprocess
@@ -114,42 +113,6 @@ def install_ninja():
 
         utils.execute_command(cmd, os.path.join("vendor", "ninja"))
 
-# Install nacl sdk
-def install_nacl_sdk():
-    nacl_sdk_path = os.path.join("vendor", "nacl_sdk")
-
-    if not os.path.exists(nacl_sdk_path):
-        print "Download nacl sdk"
-        nacl_sdk_zip_path = os.path.join("vendor", "nacl_sdk.zip")
-        urllib.urlretrieve(
-            "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip",
-            nacl_sdk_zip_path)
-
-        print "Extract nacl sdk"
-        with zipfile.ZipFile(nacl_sdk_zip_path, "r") as nacl_sdk_zip:
-            tmp_nacl_sdk_path = tempfile.mkdtemp(prefix="nacl", dir="vendor")
-    	    nacl_sdk_zip.extractall(tmp_nacl_sdk_path)
-            shutil.move(
-                os.path.join(tmp_nacl_sdk_path, "nacl_sdk"),
-                nacl_sdk_path)
-            os.rmdir(tmp_nacl_sdk_path)
-
-        os.remove(nacl_sdk_zip_path)
-
-    if not os.path.exists(os.path.join(nacl_sdk_path, "pepper_49")):
-        print "Install nacl_sdk"
-
-        if SYSTEM == "windows":
-            # Use absolute path to execute bat script
-            utils.execute_command([
-                    os.path.abspath(os.path.join(nacl_sdk_path, "naclsdk.bat")),
-                     "install", "pepper_49"
-                ],
-                nacl_sdk_path)
-        else:
-            os.chmod(os.path.join(nacl_sdk_path, "naclsdk"), 0755)
-            utils.execute_command(["./naclsdk", "install", "pepper_49"], nacl_sdk_path)
-
 # Install libxml2
 def install_libxml2():
     libxml2_path = os.path.join("vendor", "libxml2")
@@ -200,7 +163,6 @@ if not os.path.exists("vendor"):
 
 install_gyp()
 install_ninja()
-install_nacl_sdk()
 install_libxml2()
 
 # Apply patches

@@ -33,7 +33,7 @@ else:
 
 # Create ninja build file
 print "Create ninja project"
-utils.execute_command(["python", GYP_CMD, "--depth=.", "-f", "ninja", "-DOS=%s" % GYP_OS, "ppapi.gyp"])
+utils.execute_command(["python", GYP_CMD, "--depth=.", "-f", "ninja", "-DOS=%s" % GYP_OS, "readium.gyp"])
 
 # Build ninja project
 print "Build ninja project"

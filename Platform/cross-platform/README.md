@@ -5,7 +5,7 @@
 * python 2.7
 * npm (node 4.x)
 * gcc
-* libicu-dev 
+* libicu-dev
 * libssl-dev
 
 ## Windows
@@ -30,22 +30,6 @@ Then you can build it.
 python bootstrap.py
 python build.py
 ```
-
-# Electron
-
-An simple electron application is embedded with this project 
-to preview the new built shared library.
-
-The preview is built over npm. To launch it just type the following commands.
-
-```
-cd preview
-npm install
-npm run preview
-```
-
-The preview will display, in the javascript console, 
-the title of a sample epub. 
 
 # Testing
 

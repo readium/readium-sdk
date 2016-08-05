@@ -3,8 +3,6 @@
     'filenames.gypi'
   ],
   'variables': {
-    'nacl_sdk_dir': './vendor/nacl_sdk/pepper_49',
-    'ppapi_include_dir': '<(nacl_sdk_dir)/include',
     'libxml2_include_dir': './vendor/libxml2/include'
   },
   'target_defaults': {
@@ -14,8 +12,8 @@
     ],
     'cflags': [
       '-w',
-      '-fPIC', 
-      #'-fvisibility=hidden',
+      '-fPIC',
+      '-fvisibility=hidden',
       '-g', # Debug mode
     ],
     'defines': [
@@ -24,43 +22,12 @@
   },
   'targets': [
     {
-      'target_name': 'readium',
-      'type': 'shared_library',
-      'include_dirs': [
-        '<(ppapi_include_dir)'
-      ],
-      'dependencies': [
-        'epub3',
-        'ppapi',
-        'libxml2'
-      ],
-      'sources': [
-        'src/readium.cc'
-      ]
-    },
-    {
-      'target_name': 'ppapi',
-      'type': 'static_library',
-      'include_dirs': [
-        '<(ppapi_include_dir)'
-      ],
-      'sources': [
-        '<@(ppapi_sources)'
-      ]
-    },
-    {
-      'target_name': 'libxml2',
-      'type': 'static_library',
-      'sources': [
-        '<@(libxml2_sources)'
-      ]
-    },
-    {
       'target_name': 'epub3',
       'type': 'static_library',
       'dependencies': [
         'libzip',
         'google_url',
+        'libxml2'
       ],
       'include_dirs': [
         './include/ePub3',
@@ -68,6 +35,13 @@
       ],
       'sources': [
         '<@(epub3_sources)'
+      ]
+    },
+    {
+      'target_name': 'libxml2',
+      'type': 'static_library',
+      'sources': [
+        '<@(libxml2_sources)'
       ]
     },
     {
@@ -123,7 +97,7 @@
             ]
           },
           'ldflags': [
-       
+
           ],
           'link_settings': {
             'libraries': [
