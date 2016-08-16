@@ -24,6 +24,10 @@
 #if EPUB_OS(DARWIN)
 #define COMMON_DIGEST_FOR_OPENSSL
 #include <CommonCrypto/CommonDigest.h>
+#elif EPUB_OS(ANDROID)
+#include <sha1/sha1.h>
+//OPEN-SSL PRE-COMPILED STATIC LIBS DEPRECATED IN READIUM-SDK ANDROID
+//#include <openssl/sha.h>
 #elif EPUB_PLATFORM(WIN)
 #include <windows.h>
 #include <Wincrypt.h>
@@ -32,8 +36,6 @@ using namespace ::Platform;
 using namespace ::Windows::Security::Cryptography;
 using namespace ::Windows::Security::Cryptography::Core;
 //using namespace ::Windows::Storage::Streams;
-#else
-#include <openssl/sha.h>
 #endif
 
 #include "font_obfuscation.h"
@@ -122,6 +124,19 @@ bool FontObfuscator::BuildKey(ConstContainerPtr container, ConstPackagePtr pkg)
     Array<byte>^ outArray = nullptr;
     CryptographicBuffer::CopyToByteArray(keyBuf, &outArray);    // creates a new Array<byte>^ and returns it by reference
     memcpy_s(_key, KeySize, outArray->Data, outArray->Length);
+#elif EPUB_OS(ANDROID)
+
+    SHA1* sha1 = new SHA1();
+    sha1->addBytes(str.data(), str.length());
+	unsigned char* digest = sha1->getDigest();
+    std::memcpy(_key, digest, KeySize); //reinterpret_cast<uint8_t*>()
+	delete sha1;
+	free(digest);
+
+//    sha1_context ctx;
+//    sha1_starts(&ctx);
+//    sha1_update(&ctx, str.data(), str.length());
+//    sha1_finish(&ctx, _key);
 #else
     // hash the accumulated string (using OpenSSL syntax for portability)
     SHA_CTX ctx;

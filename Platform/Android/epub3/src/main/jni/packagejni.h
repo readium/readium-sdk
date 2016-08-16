@@ -171,6 +171,12 @@ JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetModifica
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetSubjects(JNIEnv* env, jobject thiz, jlong pckgPtr);
 /*
  * Class:     org_readium_sdk_android_Package
+ * Method:    nativeGetCoverManifestItem
+ * Signature: (J)Ljava/util/ManifestItem;
+ */
+JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetCoverManifestItem(JNIEnv* env, jobject thiz, jlong pckgPtr);
+/*
+ * Class:     org_readium_sdk_android_Package
  * Method:    nativeGetManifestTable
  * Signature: (J)Ljava/util/List;
  */

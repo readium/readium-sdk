@@ -654,6 +654,25 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetSpineIte
 
 	return spineItemList;
 }
+JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetCoverManifestItem
+        (JNIEnv* env, jobject thiz, jlong pckgPtr)
+{
+    std::shared_ptr<ePub3::ManifestItem> item = PCKG(pckgPtr)->CoverManifestItem();
+    if (item == nullptr)
+        return nullptr;
+
+    jni::StringUTF hr(env, (std::string&) item->Href().stl_str());
+    jstring href = (jstring) hr;
+    jni::StringUTF mt(env, (std::string&) item->MediaType().stl_str());
+    jstring mediaType = (jstring) mt;
+
+    jobject manifestItem = env->CallStaticObjectMethod(javaJavaObjectsFactoryClass, createManifestItem_ID,
+                                                       href, mediaType);
+
+    env->DeleteLocalRef(href);
+    env->DeleteLocalRef(mediaType);
+    return manifestItem;
+}
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetTableOfContents
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
