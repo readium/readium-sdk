@@ -5,7 +5,7 @@ index 944ac03..8172d39 100644
 @@ -48,6 +48,85 @@
  # define strlcpy(dst,src,sz) strcpy_s(dst,sz,src)
  #endif
- 
+
 +
 +#if EPUB_OS(LINUX)
 +
@@ -95,47 +95,26 @@ index 20d1212..bbc86fc 100644
 @@ -35,7 +35,7 @@
  #include <google-url/logging.h>
  #include "url_canon_internal.h"
- 
+
 -typedef unsigned long long uint64_t;
 +//typedef unsigned long long uint64_t;
- 
+
  namespace url_canon {
- 
+
+
 diff --git a/ePub3/ePub/font_obfuscation.cpp b/ePub3/ePub/font_obfuscation.cpp
-index 1926cf4..9f590c9 100644
+index 937524e..84dd0d6 100644
 --- a/ePub3/ePub/font_obfuscation.cpp
 +++ b/ePub3/ePub/font_obfuscation.cpp
-@@ -35,7 +35,7 @@ using namespace ::Windows::Security::Cryptography;
+@@ -36,6 +36,8 @@ using namespace ::Platform;
+ using namespace ::Windows::Security::Cryptography;
  using namespace ::Windows::Security::Cryptography::Core;
  //using namespace ::Windows::Storage::Streams;
- #else
--#error "OPEN-SSL STATIC LIBS DEPRECATED IN READIUM-SDK ANDROID"
-+//#error "OPEN-SSL STATIC LIBS DEPRECATED IN READIUM-SDK ANDROID"
- #include <openssl/sha.h>
++#elif EPUB_OS(LINUX)
++#include <openssl/sha.h>
  #endif
  
-@@ -139,7 +139,7 @@ bool FontObfuscator::BuildKey(ConstContainerPtr container, ConstPackagePtr pkg)
- //    sha1_update(&ctx, str.data(), str.length());
- //    sha1_finish(&ctx, _key);
- #else
--#error "OPEN-SSL STATIC LIBS DEPRECATED IN READIUM-SDK ANDROID"
-+//#error "OPEN-SSL STATIC LIBS DEPRECATED IN READIUM-SDK ANDROID"
- 
-     // hash the accumulated string (using OpenSSL syntax for portability)
-     SHA_CTX ctx;
-diff --git a/ePub3/utilities/byte_stream.cpp b/ePub3/utilities/byte_stream.cpp
-index ee238c2..dc13ecb 100644
---- a/ePub3/utilities/byte_stream.cpp
-+++ b/ePub3/utilities/byte_stream.cpp
-@@ -740,7 +740,7 @@ std::shared_ptr<SeekableByteStream> FileByteStream::Clone() const
- #pragma mark -
- #endif
- 
--ZipFileByteStream::ZipFileByteStream(struct zip* archive, const string& path, int flags) : SeekableByteStream(), _file(nullptr), _mode(0)
-+ZipFileByteStream::ZipFileByteStream(struct zip* archive, const string& path, int flags) : SeekableByteStream(), _file(nullptr), _mode(std::ios::app)
- {
-     Open(archive, path, flags);
- }
+ #include "font_obfuscation.h"
 diff --git a/ePub3/utilities/string_view.h b/ePub3/utilities/string_view.h
 index d0a0451..ff95b73 100644
 --- a/ePub3/utilities/string_view.h
@@ -149,3 +128,16 @@ index d0a0451..ff95b73 100644
      
      static CONSTEXPR const size_type npos = size_type(-1);
      
+diff --git a/ePub3/utilities/byte_stream.cpp b/ePub3/utilities/byte_stream.cpp
+index ee238c2..dc13ecb 100644
+--- a/ePub3/utilities/byte_stream.cpp
++++ b/ePub3/utilities/byte_stream.cpp
+@@ -740,7 +740,7 @@ std::shared_ptr<SeekableByteStream> FileByteStream::Clone() const
+ #pragma mark -
+ #endif
+
+-ZipFileByteStream::ZipFileByteStream(struct zip* archive, const string& path, int flags) : SeekableByteStream(), _file(nullptr), _mode(0)
++ZipFileByteStream::ZipFileByteStream(struct zip* archive, const string& path, int flags) : SeekableByteStream(), _file(nullptr), _mode(std::ios::app)
+ {
+     Open(archive, path, flags);
+ }
