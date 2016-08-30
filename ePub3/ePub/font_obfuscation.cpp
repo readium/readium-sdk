@@ -26,6 +26,8 @@
 #include <CommonCrypto/CommonDigest.h>
 #elif EPUB_OS(ANDROID)
 #include <sha1/sha1.h>
+//OPEN-SSL PRE-COMPILED STATIC LIBS DEPRECATED IN READIUM-SDK ANDROID
+//#include <openssl/sha.h>
 #elif EPUB_PLATFORM(WIN)
 #include <windows.h>
 #include <Wincrypt.h>
@@ -34,9 +36,6 @@ using namespace ::Platform;
 using namespace ::Windows::Security::Cryptography;
 using namespace ::Windows::Security::Cryptography::Core;
 //using namespace ::Windows::Storage::Streams;
-#else
-#error "OPEN-SSL STATIC LIBS DEPRECATED IN READIUM-SDK ANDROID"
-#include <openssl/sha.h>
 #endif
 
 #include "font_obfuscation.h"
@@ -139,8 +138,6 @@ bool FontObfuscator::BuildKey(ConstContainerPtr container, ConstPackagePtr pkg)
 //    sha1_update(&ctx, str.data(), str.length());
 //    sha1_finish(&ctx, _key);
 #else
-#error "OPEN-SSL STATIC LIBS DEPRECATED IN READIUM-SDK ANDROID"
-
     // hash the accumulated string (using OpenSSL syntax for portability)
     SHA_CTX ctx;
     SHA1_Init(&ctx);

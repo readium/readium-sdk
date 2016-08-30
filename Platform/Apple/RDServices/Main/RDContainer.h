@@ -30,24 +30,27 @@
 #import <Foundation/Foundation.h>
 
 @class RDContainer;
+@class LCPLicense;
 
 @protocol RDContainerDelegate <NSObject>
 
 - (BOOL)container:(RDContainer *)container handleSdkError:(NSString *)message isSevereEpubError:(BOOL)isSevereEpubError;
 
-@optional
+- (void)decrypt:(LCPLicense*)licence container:(RDContainer*)container;
 
-/**
- * Called just after the container populated the default filters into
- * the filter manager.
- * You can implement this to register custom filters.
- */
-- (void)containerRegisterContentFilters:(RDContainer *)container;
-
-/**
- * You can implement this to register content modules.
- */
-- (void)containerRegisterContentModules:(RDContainer *)container;
+//@optional
+//
+///**
+// * Called just after the container populated the default filters into
+// * the filter manager.
+// * You can implement this to register custom filters.
+// */
+//- (void)containerRegisterContentFilters:(RDContainer *)container;
+//
+///**
+// * You can implement this to register content modules.
+// */
+//- (void)containerRegisterContentModules:(RDContainer *)container;
 
 @end
 
@@ -58,6 +61,7 @@
 @property (nonatomic, readonly) RDPackage *firstPackage;
 @property (nonatomic, readonly) NSArray *packages;
 @property (nonatomic, readonly) NSString *path;
+@property (nonatomic) bool executionFlowExceptionBypass;
 
 - (instancetype)initWithDelegate:(id <RDContainerDelegate>)delegate path:(NSString *)path;
 
