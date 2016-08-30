@@ -19,7 +19,7 @@ Doxygen/
 
 ####
 # Xcode temporary files that should never be committed
-# 
+#
 # NB: NIB/XIB files still exist even on Storyboard projects, so we want this...
 
 *~.nib
@@ -160,8 +160,7 @@ Thumbs.db
 ################################################################################
 # Chrome ppapi
 
-Platform/chrome-ppapi/out
-Platform/chrome-ppapi/vendor
-Platform/chrome-ppapi/include
-Platform/chrome-ppapi/preview/node_modules
-Platform/chrome-ppapi/*.pyc
+Platform/cross-platform/out
+Platform/cross-platform/vendor
+Platform/cross-platform/include
+Platform/cross-platform/*.pyc
