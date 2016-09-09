@@ -35,32 +35,7 @@
 #import "RDPackage.h"
 
 
-#import <platform/apple/src/lcp.h>
-#import <LcpContentModule.h>
-#import "RDLCPService.h"
-
-#import "RDLcpCredentialHandler.h"
-
 #include <ePub3/content_module_exception.h>
-
-class LcpCredentialHandler : public lcp::ICredentialHandler
-{
-private:
-    id <RDContainerDelegate> _delegate;
-    RDContainer* _container;
-public:
-    LcpCredentialHandler(RDContainer* container, id <RDContainerDelegate> delegate) {
-        _container = container;
-        _delegate = delegate;
-    }
-    
-    void decrypt(lcp::ILicense *license) {
-        //if (![_delegate respondsToSelector:@selector(decrypt:)]) return;
-        
-        LCPLicense* lcpLicense = [[LCPLicense alloc] initWithLicense:license];
-        [_delegate decrypt:lcpLicense container:_container];
-    }
-};
 
 @interface RDContainer () {
 	@private std::shared_ptr<ePub3::Container> m_container;
@@ -68,7 +43,6 @@ public:
 	@private NSMutableArray *m_packages;
 	@private ePub3::Container::PackageList m_packageList;
 	@private NSString *m_path;
-	//@private lcp::ICredentialHandler *m_credentialHandler;
 }
 
 @end
@@ -79,14 +53,14 @@ public:
 
 @synthesize packages = m_packages;
 @synthesize path = m_path;
-//@synthesize credentialHandler = m_credentialHandler;
 
 - (RDPackage *)firstPackage {
 	return m_packages.count == 0 ? nil : [m_packages objectAtIndex:0];
 }
 
 
-- (instancetype)initWithDelegate:(id <RDContainerDelegate>)delegate path:(NSString *)path {
+- (instancetype)initWithDelegate:(id <RDContainerDelegate>)delegate
+                            path:(NSString *)path {
 	if (path == nil || ![[NSFileManager defaultManager] fileExistsAtPath:path]) {
 		return nil;
 	}
@@ -119,13 +93,9 @@ public:
 //			[delegate containerRegisterContentFilters:self];
 //		}
         
-		lcp::ICredentialHandler* credentialHandlerNative = new LcpCredentialHandler(self, delegate);
-        RDLcpCredentialHandler* credentialHandler = [[RDLcpCredentialHandler alloc] initWithNative:credentialHandlerNative];
-        
-        [[RDLCPService sharedService] registerContentModule:credentialHandler];
-//		if ([delegate respondsToSelector:@selector(containerRegisterContentModules:)]) {
-//			[delegate containerRegisterContentModules:self];
-//		}
+		if ([delegate respondsToSelector:@selector(containerRegisterContentModules:)]) {
+			[delegate containerRegisterContentModules:self];
+		}
         
         m_path = path;
         

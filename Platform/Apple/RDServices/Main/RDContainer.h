@@ -30,27 +30,24 @@
 #import <Foundation/Foundation.h>
 
 @class RDContainer;
-@class LCPLicense;
 
 @protocol RDContainerDelegate <NSObject>
 
 - (BOOL)container:(RDContainer *)container handleSdkError:(NSString *)message isSevereEpubError:(BOOL)isSevereEpubError;
 
-- (void)decrypt:(LCPLicense*)licence container:(RDContainer*)container;
+@optional
 
-//@optional
-//
 ///**
 // * Called just after the container populated the default filters into
 // * the filter manager.
 // * You can implement this to register custom filters.
 // */
 //- (void)containerRegisterContentFilters:(RDContainer *)container;
-//
-///**
-// * You can implement this to register content modules.
-// */
-//- (void)containerRegisterContentModules:(RDContainer *)container;
+
+/**
+ * You can implement this to register content modules.
+ */
+- (void)containerRegisterContentModules:(RDContainer *)container;
 
 @end
 
@@ -62,7 +59,8 @@
 @property (nonatomic, readonly) NSArray *packages;
 @property (nonatomic, readonly) NSString *path;
 
-- (instancetype)initWithDelegate:(id <RDContainerDelegate>)delegate path:(NSString *)path;
+- (instancetype)initWithDelegate:(id <RDContainerDelegate>)delegate
+                            path:(NSString *)path;
 
 /**
  * Returns whether the given file exists in the container's archive.
