@@ -61,7 +61,6 @@
 @property (nonatomic, readonly) RDPackage *firstPackage;
 @property (nonatomic, readonly) NSArray *packages;
 @property (nonatomic, readonly) NSString *path;
-@property (nonatomic) bool executionFlowExceptionBypass;
 
 - (instancetype)initWithDelegate:(id <RDContainerDelegate>)delegate path:(NSString *)path;
 
