@@ -193,6 +193,10 @@
 	return [NSString stringWithUTF8String:s.c_str()];
 }
 
+- (NSString *)publisher {
+    const ePub3::string s = m_package->Publisher();
+	return [NSString stringWithUTF8String:s.c_str()];
+}
 
 - (NSString *)language {
 	const ePub3::string s = m_package->Language();
