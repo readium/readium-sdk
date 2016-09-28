@@ -68,6 +68,7 @@ public class Package {
 	private String type;
 	private String version;
 	private String isbn;
+	private String publisher;
 	private String language;
 	private String copyrightOwner;
 	private String source;
@@ -155,6 +156,7 @@ public class Package {
 		type = nativeGetType(__nativePtr);
 		version = nativeGetVersion(__nativePtr);
 		isbn = nativeGetISBN(__nativePtr);
+		publisher = nativeGetPublisher(__nativePtr);
 		language = nativeGetLanguage(__nativePtr);
 		copyrightOwner = nativeGetCopyrightOwner(__nativePtr);
 		source = nativeGetSource(__nativePtr);
@@ -186,6 +188,7 @@ public class Package {
 		Log.i(TAG, "type: "+type);
 		Log.i(TAG, "version: "+version);
 		Log.i(TAG, "isbn: "+isbn);
+		Log.i(TAG, "publisher:" +publisher);
 		Log.i(TAG, "language: "+language);
 		Log.i(TAG, "copyrightOwner: "+copyrightOwner);
 		Log.i(TAG, "source: "+source);
@@ -261,6 +264,10 @@ public class Package {
 
 	public String getIsbn() {
 		return isbn;
+	}
+
+	public String getPublisher() {
+		return publisher;
 	}
 
 	public String getLanguage() {
@@ -513,6 +520,7 @@ public class Package {
 	private native String nativeGetType(long nativePtr);
 	private native String nativeGetVersion(long nativePtr);
 	private native String nativeGetISBN(long nativePtr);
+	private native String nativeGetPublisher(long nativePtr);
 	private native String nativeGetLanguage(long nativePtr);
 	private native String nativeGetCopyrightOwner(long nativePtr);
 	private native String nativeGetSource(long nativePtr);

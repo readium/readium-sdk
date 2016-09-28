@@ -524,6 +524,12 @@ JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetISBN
 	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->ISBN().stl_str());
 	return (jstring) str;
 }
+JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetPublisher
+		(JNIEnv* env, jobject thiz, jlong pckgPtr)
+{
+	jni::StringUTF str(env, (std::string&) PCKG(pckgPtr)->Publisher().stl_str());
+	return (jstring) str;
+}
 JNIEXPORT jstring JNICALL Java_org_readium_sdk_android_Package_nativeGetLanguage
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
