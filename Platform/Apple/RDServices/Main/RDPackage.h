@@ -41,6 +41,7 @@
 @property (nonatomic, readonly) NSDictionary *dictionary;
 @property (nonatomic, readonly) NSString *fullTitle;
 @property (nonatomic, readonly) NSString *isbn;
+@property (nonatomic, readonly) NSString *publisher;
 @property (nonatomic, readonly) NSString *language;
 @property (nonatomic, readonly) RDNavigationElement *listOfFigures;
 @property (nonatomic, readonly) RDNavigationElement *listOfIllustrations;
