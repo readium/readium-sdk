@@ -113,21 +113,14 @@ bool Container::Open(const string& path)
 ContainerPtr Container::OpenContainer(const string &path) {
     auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, launch::any);
 
-    // Added by DRM inside H.S. Lee on 2015-03-15
-    // Without following code part, program crash happens on some situations
-    if (future.__future_ == nullptr) {
-        // There are registered modules, but
-        //1-1 no proper content module
-        //1-2 canceled by users
-        //1-3 Signature error (currently, throwing error)
-        //1-4 Password error (currently, throwing error)
-
-        //2, plain content
+    if (!future.valid()) { // future.__future_ == nullptr
+        // There is no content module that handles this publication, so we attempt opening plain content (no encryption)
+        // Possibly also: the content module returned an errored Future.
         return OpenContainerForContentModule(path);
     }
 
     // There is a proper registered content module to handle the encrypted EPUB
-    // Wait for result
+    // Wait for result (this is blocking unless the Future is "ready")
     ContainerPtr result = future.get();
 
     if (result == nullptr) {

@@ -86,10 +86,15 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
         future_status status = result.wait_for(std::chrono::system_clock::duration(0));
 
         if (status == future_status::ready) {
+
+            // WARNING! after .get(), the Future<> is empty! (future.__future_ == nullptr / !future.valid()) see Container.cpp OpenContainer()
             ContainerPtr container = result.get();
-            
+
             if (bool(container)) {
                 modulePtr->RegisterContentFilters();
+
+                // ensures the Future is valid()
+                result = make_ready_future<ContainerPtr>(ContainerPtr(container));
                 break;
             } else {
                 continue;
