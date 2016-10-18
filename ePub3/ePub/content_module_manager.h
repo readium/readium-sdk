@@ -63,11 +63,12 @@ public:
     void
     DisplayMessage(const string& title,
                    const string& message) _NOEXCEPT;
-    
+#if FUTURE_ENABLED
     static
     async_result<Credentials>
     RequestCredentialInput(const CredentialRequest& request);
-    
+#endif //FUTURE_ENABLED
+
 private:
     static std::unique_ptr<ContentModuleManager>        s_instance;
     
@@ -75,10 +76,12 @@ private:
     std::map<string, std::shared_ptr<ContentModule>>    _known_modules;
     
     friend class Container;
-    
-    // for the use of Container::OpenContainer(path)
+
+#if FUTURE_ENABLED
     async_result<ContainerPtr> LoadContentAtPath(const string& path, launch policy);
-    
+#else
+    ContainerPtr LoadContentAtPath(const string& path, launch policy);
+#endif //FUTURE_ENABLED
 };
 
 EPUB3_END_NAMESPACE

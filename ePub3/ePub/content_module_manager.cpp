@@ -53,6 +53,8 @@ void ContentModuleManager::DisplayMessage(const string& title, const string& mes
 {
     // nothing at the moment...
 }
+
+#if FUTURE_ENABLED
 future<Credentials>
 ContentModuleManager::RequestCredentialInput(const CredentialRequest &request)
 {
@@ -63,7 +65,9 @@ ContentModuleManager::RequestCredentialInput(const CredentialRequest &request)
     Credentials none;
     return make_ready_future(none);
 }
+#endif //FUTURE_ENABLED
 
+#if FUTURE_ENABLED
 future<ContainerPtr>
 ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
 {
@@ -107,5 +111,30 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
 
     return result;
 }
+#else
+    ContainerPtr
+    ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
+    {
+        std::unique_lock<std::mutex>(_mutex);
+
+        if (_known_modules.empty())
+        {
+            return nullptr;
+        }
+
+        for (auto& item : _known_modules)
+        {
+            auto modulePtr = item.second;
+            ContainerPtr container = modulePtr->ProcessFile(path, policy);
+
+            if (bool(container)) {
+                modulePtr->RegisterContentFilters();
+                return container;
+            }
+        }
+
+        return nullptr;
+    }
+#endif //FUTURE_ENABLED
 
 EPUB3_END_NAMESPACE

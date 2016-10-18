@@ -115,6 +115,8 @@ bool Container::Open(const string& path)
 
 	return true;
 }
+
+#if FUTURE_ENABLED
 ContainerPtr Container::OpenContainer(const string &path) {
     auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, launch::any);
 
@@ -134,6 +136,20 @@ ContainerPtr Container::OpenContainer(const string &path) {
 
     return result;
 }
+#else
+    ContainerPtr Container::OpenContainer(const string &path) {
+        ContainerPtr container = ContentModuleManager::Instance()->LoadContentAtPath(path, launch::any);
+
+        // 1: everything went well, we've got an encrypted EPUB handled by a ContentModule
+        if (bool(container)) {
+            return container;
+        }
+        // 2: no ContentModule was suitable, let's try non-encrypted loading
+        return OpenContainerForContentModule(path);
+
+        // 3: there's always the option of a raised exception, which the caller captures to degrade gracefully
+    }
+#endif //FUTURE_ENABLED
 
 #ifdef SUPPORT_ASYNC
 future<ContainerPtr> Container::OpenContainerAsync(const string& path, launch policy)
