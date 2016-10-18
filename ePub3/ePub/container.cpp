@@ -65,9 +65,14 @@ bool Container::Open(const string& path)
 
 	// TODO: Initialize lazily? Doing so would make initialization faster, but require
 	// PackageLocations() to become non-const, like Packages().
-	ArchiveXmlReader reader(_archive->ReaderAtPath(gContainerFilePath));
+
+    unique_ptr<ArchiveReader> r = _archive->ReaderAtPath(gContainerFilePath);
+    if (!bool(r.get())) {
+        throw std::invalid_argument(_Str("ZIP Path not recognised: '", gContainerFilePath, "'"));
+    }
+	ArchiveXmlReader reader(r.get());
 	if (!reader) {
-		throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
+        throw std::invalid_argument(_Str("ZIP Path not recognised: '", gContainerFilePath, "'"));
 	}
     
 #if EPUB_USE(LIBXML2)
