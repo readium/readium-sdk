@@ -18,6 +18,8 @@
 //  the License, or (at your option) any later version. You should have received a copy of the GNU 
 //  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#if FUTURE_ENABLED
+
 #include <ePub3/epub3.h>
 #include <system_error>
 #include "future.h"
@@ -177,3 +179,5 @@ std::error_condition std::make_error_condition(EPUB3_NAMESPACE::future_errc e) _
 {
     return std::error_condition(static_cast<int>(e), EPUB3_NAMESPACE::future_category());
 }
+
+#endif //FUTURE_ENABLED
