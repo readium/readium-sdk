@@ -139,7 +139,7 @@ std::shared_ptr<void> getNativePtr(JNIEnv *env, jobject thiz) {
  * Optionally it may free the native string if the freeNative argument
  * is true.
  */
-jstring toJstring(JNIEnv *env, const char* str, bool freeNative = false) {
+jstring toJstring(JNIEnv *env, const char* str, bool freeNative) {
     if (str == NULL) {
         return NULL;
     }

@@ -109,7 +109,7 @@ typedef signed long ssize_t;
 
 #if EPUB_OS(ANDROID)
 //# define UTF_USE_ICU 1
-# define CXX11_STRING_UNAVAILABLE 1
+//# define CXX11_STRING_UNAVAILABLE 1
 # if EPUB_COMPILER(CLANG)
 #  define nan(x) __builtin_nan(x)
 # endif
