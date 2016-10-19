@@ -29,7 +29,7 @@
 #include "filter_manager.h"
 #include "byte_stream.h"
 
-#include <cmath>
+//#include <cmath>
 
 EPUB3_BEGIN_NAMESPACE
 

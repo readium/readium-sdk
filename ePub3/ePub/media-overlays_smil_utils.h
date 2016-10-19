@@ -25,7 +25,8 @@
 
 #include <ePub3/base.h>
 
-#include <cmath>
+//#include <cmath>
+#include <math.h>
 
 #include <sstream>
 
