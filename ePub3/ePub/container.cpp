@@ -138,7 +138,7 @@ ContainerPtr Container::OpenContainer(const string &path) {
 }
 #else
     ContainerPtr Container::OpenContainer(const string &path) {
-        ContainerPtr container = ContentModuleManager::Instance()->LoadContentAtPath(path, launch::any);
+        ContainerPtr container = ContentModuleManager::Instance()->LoadContentAtPath(path);
 
         // 1: everything went well, we've got an encrypted EPUB handled by a ContentModule
         if (bool(container)) {
