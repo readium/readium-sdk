@@ -23,14 +23,17 @@
 
 #include <ePub3/epub3.h>
 #include <ePub3/utilities/byte_stream.h>
-#include <ePub3/utilities/run_loop.h>
-#include <ePub3/utilities/executor.h>
 #include <ePub3/utilities/byte_buffer.h>
 #include <memory>
-#include <thread>
-#include <condition_variable>
 #include <algorithm>
 #include <utility>
+
+#if FUTURE_ENABLED
+#include <thread>
+#include <condition_variable>
+#include <ePub3/utilities/run_loop.h>
+#include <ePub3/utilities/executor.h>
+#endif //FUTURE_ENABLED
 
 #include <ePub3/filter.h>
 //#include <ePub3/filter_chain_byte_stream.h>

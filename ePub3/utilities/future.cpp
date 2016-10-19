@@ -24,6 +24,7 @@
 #include <system_error>
 #include "future.h"
 
+/*
 #if EPUB_PLATFORM(ANDROID)
 namespace std
 {
@@ -80,6 +81,21 @@ namespace std
     }
     
 }
+#endif
+*/
+
+#if EPUB_COMPILER(CLANG) && defined(ANDROID)
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int __cxa_thread_atexit(void (*func)(), void *obj,
+                                   void *dso_symbol) {
+  return 0;
+}
+#ifdef __cplusplus
+}
+#endif
 #endif
 
 EPUB3_BEGIN_NAMESPACE
