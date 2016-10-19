@@ -24,8 +24,10 @@
 #include <ePub3/epub3.h>
 #include <ePub3/content_module.h>
 #include <ePub3/credential_request.h>
+#include <ePub3/utilities/utfstring.h>
 #include <map>
 #include <memory>
+#include <mutex>
 
 #if FUTURE_ENABLED
 #include <future>
@@ -56,17 +58,17 @@ public:
     // Registering Content Module implementations
     
     void
-    RegisterContentModule(std::shared_ptr<ContentModule> module,
-                          const string& name) _NOEXCEPT;
-    
+    RegisterContentModule(ContentModule* module,
+                          const ePub3::string& name) _NOEXCEPT;
+
     ////////////////////////////////////////////////////
     // Services for DRM implementations
-    
+#if FUTURE_ENABLED
     static
     void
     DisplayMessage(const string& title,
                    const string& message) _NOEXCEPT;
-#if FUTURE_ENABLED
+
     static
     async_result<Credentials>
     RequestCredentialInput(const CredentialRequest& request);

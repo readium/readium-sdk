@@ -27,8 +27,6 @@
 //#include <thread>
 #endif //FUTURE_ENABLED
 
-#include <mutex>
-
 EPUB3_BEGIN_NAMESPACE
 
 std::unique_ptr<ContentModuleManager> ContentModuleManager::s_instance;
@@ -47,19 +45,21 @@ ContentModuleManager* ContentModuleManager::Instance() _NOEXCEPT
     }, &s_instance);
     return s_instance.get();
 }
-void ContentModuleManager::RegisterContentModule(std::shared_ptr<ContentModule> module,
-                                                 const string& name) _NOEXCEPT
+
+void ContentModuleManager::RegisterContentModule(ContentModule* module,
+                                                 const ePub3::string& name) _NOEXCEPT
 {
     std::unique_lock<std::mutex>(_mutex);
-    _known_modules[name] = module;
+    _known_modules[name] = std::shared_ptr<ContentModule>(module);
 }
+
+#if FUTURE_ENABLED
 
 void ContentModuleManager::DisplayMessage(const string& title, const string& message) _NOEXCEPT
 {
     // nothing at the moment...
 }
 
-#if FUTURE_ENABLED
 future<Credentials>
 ContentModuleManager::RequestCredentialInput(const CredentialRequest &request)
 {
