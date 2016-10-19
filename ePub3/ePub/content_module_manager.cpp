@@ -113,7 +113,7 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
 }
 #else
     ContainerPtr
-    ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
+    ContentModuleManager::LoadContentAtPath(const string& path)
     {
         std::unique_lock<std::mutex>(_mutex);
 
@@ -125,7 +125,7 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
         for (auto& item : _known_modules)
         {
             auto modulePtr = item.second;
-            ContainerPtr container = modulePtr->ProcessFile(path, policy);
+            ContainerPtr container = modulePtr->ProcessFile(path);
 
             if (bool(container)) {
                 modulePtr->RegisterContentFilters();

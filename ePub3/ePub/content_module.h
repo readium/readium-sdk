@@ -68,8 +68,7 @@ public:
 #else
     virtual
     ContainerPtr
-    ProcessFile(const string& path,
-                launch policy=launch::any)                  = 0;
+    ProcessFile(const string& path)                  = 0;
 #endif //FUTURE_ENABLED
     //////////////////////////////////////////////
     // Content Filters

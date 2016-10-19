@@ -25,8 +25,11 @@
 #include <ePub3/content_module.h>
 #include <ePub3/credential_request.h>
 #include <map>
-#include <future>
 #include <memory>
+
+#if FUTURE_ENABLED
+#include <future>
+#endif //FUTURE_ENABLED
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -80,7 +83,7 @@ private:
 #if FUTURE_ENABLED
     async_result<ContainerPtr> LoadContentAtPath(const string& path, launch policy);
 #else
-    ContainerPtr LoadContentAtPath(const string& path, launch policy);
+    ContainerPtr LoadContentAtPath(const string& path);
 #endif //FUTURE_ENABLED
 };
 
