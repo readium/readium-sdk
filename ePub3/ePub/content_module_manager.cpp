@@ -20,9 +20,14 @@
 
 #include "content_module_manager.h"
 #include "content_module.h"
+
+#if FUTURE_ENABLED
 #include "user_action.h"
 #include "credential_request.h"
-#include <thread>
+//#include <thread>
+#endif //FUTURE_ENABLED
+
+#include <mutex>
 
 EPUB3_BEGIN_NAMESPACE
 
