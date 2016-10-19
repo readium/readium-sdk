@@ -24,16 +24,19 @@ model {
     android.ndk {
         moduleName = "epub3"
 
-        toolchain "clang"
-        stl = "c++_shared"
+        // toolchain "clang"
+        // stl = "c++_shared"
+        stl = "gnustl_shared"
 
         cppFlags.addAll([
-                "-std=c++11",
+                //"-std=c++11",
+                "-std=gnu++11",
+
                 "-fpermissive",
                 "-fexceptions",
                 "-frtti",
                 "-DBUILDING_EPUB3",
-                "-D_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49=_LIBCPP_INLINE_VISIBILITY",
+                //"-D_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49=_LIBCPP_INLINE_VISIBILITY",
                 "-I../prefix.h",
                 "-I${file("./include")}".toString(),
                 "-I${file("./include/ePub3")}".toString(),
