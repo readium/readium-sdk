@@ -86,6 +86,7 @@ public class Package {
     private ManifestItem coverManifestItem;
 	private NavigationTable tableOfContents;
 	private NavigationTable listOfFigures;
+	private NavigationTable listOfLandmarks;
 	private NavigationTable listOfIllustrations;
 	private NavigationTable listOfTables;
 	private NavigationTable pageList;
@@ -347,6 +348,15 @@ public class Package {
 		return listOfFigures;
 	}
 
+
+	public NavigationTable getListOfLandmarks() {
+		if (listOfLandmarks == null) {
+			listOfLandmarks = nativeGetListOfLandmarks(__nativePtr);
+			Log.i(TAG, "listOfLandmarks: "+listOfLandmarks);
+		}
+		return listOfLandmarks;
+	}
+
 	public NavigationTable getListOfIllustrations() {
 		if (listOfIllustrations == null) {
 			listOfIllustrations = nativeGetListOfIllustrations(__nativePtr);
@@ -538,6 +548,7 @@ public class Package {
 	 */
 	private native NavigationTable nativeGetTableOfContents(long nativePtr);
 	private native NavigationTable nativeGetListOfFigures(long nativePtr);
+	private native NavigationTable nativeGetListOfLandmarks(long nativePtr);
 	private native NavigationTable nativeGetListOfIllustrations(long nativePtr);
 	private native NavigationTable nativeGetListOfTables(long nativePtr);
 	private native NavigationTable nativeGetPageList(long nativePtr);
