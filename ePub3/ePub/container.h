@@ -115,9 +115,7 @@ public:
 	///
 	/// Synchronously creates a new container. Available for the use of ContentModule implementations only.
 	static ContainerPtr
-		OpenContainerForContentModule(const string& path, bool skipLoadingNavigationTables = false);
-
-    void SkipLoadingNavigationTables(bool skipLoadingNavigationTables); 
+		OpenContainerForContentModule(const string& path, bool skipLoadingNavigationTables = false); 
     
     virtual         ~Container();
     
