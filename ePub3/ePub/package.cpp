@@ -98,7 +98,8 @@ PackageBase::~PackageBase()
 {
     // our Container owns the archive
 }
-bool PackageBase::Open(const string& path)
+
+bool PackageBase::Open(const string& path, bool skipLoadingNavigationTables)
 {
     ArchiveXmlReader reader(_archive->ReaderAtPath(path.stl_str()));
 #if EPUB_USE(LIBXML2)
@@ -388,7 +389,8 @@ NavigationList PackageBase::_LoadNCXNavTablesFromManifestItem(PackagePtr sharedP
 Package::Package(const shared_ptr<Container>& owner, const string& type) : PropertyHolder(), OwnedBy(owner), PackageBase(owner, type)
 {
 }
-bool Package::Open(const string& path)
+
+bool Package::Open(const string& path, bool skipLoadingNavigationTables)
 {
 #if _XML_OVERRIDE_SWITCHES
     __setupLibXML();
@@ -404,7 +406,7 @@ bool Package::Open(const string& path)
 		auto fc = fm->BuildFilterChainForPackage(shared_from_this());
 		SetFilterChain(fc);
 		
-		status = Unpack();
+		status = Unpack(skipLoadingNavigationTables);
 	}
 
     if (status)
@@ -473,7 +475,135 @@ unique_ptr<ArchiveReader> Package::ReaderForRelativePath(const string& path)    
     return _archive->ReaderAtPath((_pathBase + path).stl_str());
 }
 
-bool Package::Unpack()
+void Package::LoadNavigationTables(bool resetContentFilterChain)
+{
+    if (!_navigation.empty()) // && !_navigation["toc"]->Children().empty()
+    {
+        return;
+    }
+
+    if (resetContentFilterChain) {
+        auto fm = FilterManager::Instance();
+        auto fc = fm->BuildFilterChainForPackage(shared_from_this());
+        SetFilterChain(fc);
+    }
+
+    auto root = _opf->Root();
+    string rootName(root->Name());
+    rootName.tolower();
+    bool isEPUB3 = true;
+    string versionStr;
+    int version = 0;
+
+    if ( rootName != "package" )
+    {
+        HandleError(EPUBError::OPFInvalidPackageDocument);
+        return;
+    }
+    versionStr = _getProp(root, "version");
+    if ( versionStr.empty() )
+    {
+        HandleError(EPUBError::OPFPackageHasNoVersion);
+    }
+    else
+    {
+        // GNU libstdc++ seems to not want to let us use these C++11 routines...
+#ifndef _LIBCPP_VERSION
+        version = (int)strtol(versionStr.c_str(), nullptr, 10);
+#else
+        version = std::stoi(versionStr.stl_str());
+#endif
+
+        if (version < 3)
+            isEPUB3 = false;
+    }
+
+    PackagePtr sharedMe = shared_from_this();
+
+    // now the navigation tables
+    if (isEPUB3)
+    {
+        // look for EPUB3 navigation document(s)
+        for ( auto item : _manifestByID )
+        {
+            if ( !item.second->HasProperty(ItemProperties::Navigation) )
+                continue;
+
+            NavigationList tables = NavTablesFromManifestItem(sharedMe, item.second);
+            for ( auto& table : tables )
+            {
+                // have to dynamic_cast these guys to get the right pointer type
+                NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+                _navigation.emplace(navTable->Type(), navTable);
+#else
+                _navigation[navTable->Type()] = navTable;
+#endif
+            }
+        }
+    }
+
+    if (_navigation.empty() || _navigation["toc"]->Children().empty())
+    {
+        // look for EPUB2 NCX file
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+        XPathWrangler xpath(_opf, { { "opf", OPFNamespace } });
+#else
+        XPathWrangler::NamespaceList __m;
+		__m["opf"] = OPFNamespace;
+		XPathWrangler xpath(_opf, __m);
+#endif
+        auto tocNames = xpath.Strings("/opf:package/opf:spine/@toc");
+
+        if (tocNames.empty() && _navigation.empty())
+        {
+            // no NCX, and no other nav document
+            // otherwise, we had a valid EPUB3 nav with empty (one-level) TOC
+            HandleError(EPUBError::OPFNoNavDocument);
+        }
+        else
+        {
+            if (!tocNames.empty()) {
+                try
+                {
+                    ManifestItemPtr tocItem = ManifestItemWithID(tocNames[0]);
+                    if (!bool(tocItem))
+                        throw EPUBError::OPFNoNavDocument;
+
+                    NavigationList tables = NavTablesFromManifestItem(sharedMe, tocItem);
+                    for (auto& table : tables)
+                    {
+                        // have to dynamic_cast these guys to get the right pointer type
+                        NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+                        _navigation.emplace(navTable->Type(), navTable);
+#else
+                        _navigation[navTable->Type()] = navTable;
+#endif
+                    }
+                }
+                catch (std::exception& exc)
+                {
+                    std::cerr << "Exception locating or processing NCX navigation document: " << exc.what() << std::endl;
+                    throw;
+                }
+                catch (EPUBError errCode)
+                {
+                    // a 'break'-style mechanism here
+                    // the error handler will determine if it's safe to continue
+                    HandleError(errCode);
+                }
+                catch (...)
+                {
+                    HandleError(EPUBError::OPFNoNavDocument);
+                }
+            }
+        }
+    }
+}
+
+
+bool Package::Unpack(bool skipLoadingNavigationTables)
 {
     PackagePtr sharedMe = shared_from_this();
     
@@ -999,87 +1129,11 @@ bool Package::Unpack()
     {
 		return false;
     }
-    
-    // now the navigation tables
-	if (isEPUB3)
-	{
-		// look for EPUB3 navigation document(s)
-		for ( auto item : _manifestByID )
-		{
-			if ( !item.second->HasProperty(ItemProperties::Navigation) )
-	            continue;
-			
-			NavigationList tables = NavTablesFromManifestItem(sharedMe, item.second);
-			for ( auto& table : tables )
-			{
-				// have to dynamic_cast these guys to get the right pointer type
-				NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
-#if EPUB_HAVE(CXX_MAP_EMPLACE)
-				_navigation.emplace(navTable->Type(), navTable);
-#else
-				_navigation[navTable->Type()] = navTable;
-#endif
-			}
-		}
-	}
 
-	if (_navigation.empty() || _navigation["toc"]->Children().empty())
-	{
-		// look for EPUB2 NCX file
-#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-		XPathWrangler xpath(_opf, { { "opf", OPFNamespace } });
-#else
-		XPathWrangler::NamespaceList __m;
-		__m["opf"] = OPFNamespace;
-		XPathWrangler xpath(_opf, __m);
-#endif
-		auto tocNames = xpath.Strings("/opf:package/opf:spine/@toc");
-
-		if (tocNames.empty() && _navigation.empty())
-		{
-            // no NCX, and no other nav document
-            // otherwise, we had a valid EPUB3 nav with empty (one-level) TOC
-			HandleError(EPUBError::OPFNoNavDocument);
-		}
-		else
-		{
-            if (!tocNames.empty()) {
-                try
-                {
-                    ManifestItemPtr tocItem = ManifestItemWithID(tocNames[0]);
-                    if (!bool(tocItem))
-                        throw EPUBError::OPFNoNavDocument;
-                    
-                    NavigationList tables = NavTablesFromManifestItem(sharedMe, tocItem);
-                    for (auto& table : tables)
-                    {
-                        // have to dynamic_cast these guys to get the right pointer type
-                        NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
-#if EPUB_HAVE(CXX_MAP_EMPLACE)
-                        _navigation.emplace(navTable->Type(), navTable);
-#else
-                        _navigation[navTable->Type()] = navTable;
-#endif
-                    }
-                }
-                catch (std::exception& exc)
-                {
-                    std::cerr << "Exception locating or processing NCX navigation document: " << exc.what() << std::endl;
-                    throw;
-                }
-                catch (EPUBError errCode)
-                {
-                    // a 'break'-style mechanism here
-                    // the error handler will determine if it's safe to continue
-                    HandleError(errCode);
-                }
-                catch (...)
-                {
-                    HandleError(EPUBError::OPFNoNavDocument);
-                }
-            }
-		}
-	}
+    if (!skipLoadingNavigationTables)
+    {
+        LoadNavigationTables(false);
+    }
 
 	// go through the TOC and copy titles to the relevant spine items for easy access
 	CompileSpineItemTitles();

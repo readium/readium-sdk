@@ -18,6 +18,7 @@
 //  the License, or (at your option) any later version. You should have received a copy of the GNU 
 //  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <ePub3/container.h>
 #include "content_module_manager.h"
 #include "content_module.h"
 
@@ -133,7 +134,23 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
             ContainerPtr container = modulePtr->ProcessFile(path);
 
             if (bool(container)) {
+
+                // Singleton FilterManagerImpl::RegisterFilter() uses .emplace() with unique keys,
+                // so ContentFilters with the same name => only the first inserted one is preserved (subsequent insertions ignored).
                 modulePtr->RegisterContentFilters();
+
+                // Problem: container was loaded okay, but if Navigation Document was encrypted,
+                // then because the ContentFilters were not registered yet:
+                // the NavDoc XHTML silently failed to load (populate the internal ReadiumSDK data structures)
+                // as the byte buffers were scrambled. So, we need to either reload the entire EPUB, or reload only the navdoc.
+                std::shared_ptr<Package> package = container->DefaultPackage();
+                package->LoadNavigationTables(true);
+
+//                ContainerPtr container_ = Container::OpenContainerForContentModule(path);
+//                if (bool(container_)) {
+//                    return container_;
+//                }
+
                 return container;
             }
         }

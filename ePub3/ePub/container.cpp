@@ -56,7 +56,8 @@ _archive(std::move(o._archive)), _ocf(o._ocf), _packages(std::move(o._packages))
 Container::~Container()
 {
 }
-bool Container::Open(const string& path)
+
+bool Container::Open(const string& path, bool skipLoadingNavigationTables)
 {
 	_archive = Archive::Open(path.stl_str());
 	if (_archive == nullptr)
@@ -109,7 +110,7 @@ bool Container::Open(const string& path)
 			continue;
 
 		auto pkg = Package::New(Ptr(), type);
-		if (pkg->Open(path))
+		if (pkg->Open(path, skipLoadingNavigationTables))
 			_packages.push_back(pkg);
 	}
 
@@ -189,10 +190,11 @@ ContainerPtr Container::OpenSynchronouslyForWinRT(const string& path)
 	return future.get();
 }
 #endif
-ContainerPtr Container::OpenContainerForContentModule(const string& path)
+
+ContainerPtr Container::OpenContainerForContentModule(const string& path, bool skipLoadingNavigationTables)
 {
 	ContainerPtr container = Container::New();
-	if (container->Open(path) == false)
+	if (container->Open(path, skipLoadingNavigationTables) == false)
 		return nullptr;
 	return container;
 }
