@@ -17,11 +17,11 @@ model {
                     includes.add('ePub/**/*.cpp')
                     includes.add('ePub/**/*.c')
 
-                    excludes = ['ThirdParty/**/*.*', 'utilities/*.*', 'xml/**/*.*']
-//                    getFilter().exclude('...')
-//                    excludes.add('...')
+                    excludes = ['ThirdParty/**/*.*']
+                    excludes.add('utilities/*.*')
+                    excludes.add('xml/**/*.*')
 
-                    includes.add('xml/utilities/base.cpp')
+//                    getFilter().exclude('...')
                 }
                 exportedHeaders {
                     srcDir "./src/main/jni"
@@ -33,9 +33,9 @@ model {
     android.ndk {
         moduleName = "epub3"
 
-        // toolchain "clang"
-        // stl = "c++_shared"
-        stl = "gnustl_shared"
+        toolchain "clang"
+        stl = "c++_shared"
+        //stl = "gnustl_shared"
 
         cppFlags.addAll([
                 //"-std=c++11",
