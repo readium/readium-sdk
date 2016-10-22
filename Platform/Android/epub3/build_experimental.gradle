@@ -11,8 +11,17 @@ model {
                 source {
                     srcDirs = [
                             './src/main/jni',
-                            '../../../ePub3/ePub'
+                            '../../../ePub3'
                     ]
+
+                    includes.add('ePub/**/*.cpp')
+                    includes.add('ePub/**/*.c')
+
+                    excludes = ['ThirdParty/**/*.*', 'utilities/*.*', 'xml/**/*.*']
+//                    getFilter().exclude('...')
+//                    excludes.add('...')
+
+                    includes.add('xml/utilities/base.cpp')
                 }
                 exportedHeaders {
                     srcDir "./src/main/jni"
@@ -40,7 +49,8 @@ model {
                 "-I../prefix.h",
                 "-I${file("./include")}".toString(),
                 "-I${file("./include/ePub3")}".toString(),
-                "-I${file("./include/ePub3/utilities")}".toString()
+                "-I${file("./include/ePub3/utilities")}".toString(),
+                "-I${file("./include/ePub3/xml")}".toString()
         ])
         ldLibs.addAll(['z', 'android', 'log', 'epub3', 'xml2', 'icuuc', 'icui18n', 'icuio', 'icudata'])
     }
