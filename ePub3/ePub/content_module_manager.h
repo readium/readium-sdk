@@ -27,9 +27,9 @@
 #include <ePub3/utilities/utfstring.h>
 #include <map>
 #include <memory>
-#include <mutex>
 
 #if FUTURE_ENABLED
+#include <mutex>
 #include <future>
 #endif //FUTURE_ENABLED
 
@@ -76,8 +76,11 @@ public:
 
 private:
     static std::unique_ptr<ContentModuleManager>        s_instance;
-    
-    std::mutex                                          _mutex;
+
+#if FUTURE_ENABLED
+std::mutex                                          _mutex;
+#endif //FUTURE_ENABLED
+
     std::map<string, std::shared_ptr<ContentModule>>    _known_modules;
     
     friend class Container;

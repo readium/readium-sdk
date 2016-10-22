@@ -22,6 +22,8 @@
 #include "content_module_manager.h"
 #include "content_module.h"
 
+#include <mutex>
+
 #if FUTURE_ENABLED
 #include "user_action.h"
 #include "credential_request.h"
@@ -32,7 +34,11 @@ EPUB3_BEGIN_NAMESPACE
 
 std::unique_ptr<ContentModuleManager> ContentModuleManager::s_instance;
 
-ContentModuleManager::ContentModuleManager() : _mutex(), _known_modules()
+ContentModuleManager::ContentModuleManager() :
+#if FUTURE_ENABLED
+        _mutex(),
+#endif //FUTURE_ENABLED
+        _known_modules()
 {
 }
 ContentModuleManager::~ContentModuleManager()
@@ -50,7 +56,9 @@ ContentModuleManager* ContentModuleManager::Instance() _NOEXCEPT
 void ContentModuleManager::RegisterContentModule(ContentModule* module,
                                                  const ePub3::string& name) _NOEXCEPT
 {
-    std::unique_lock<std::mutex>(_mutex);
+#if FUTURE_ENABLED
+    std::unique_lock<std::mutex> locker(_mutex);
+#endif //FUTURE_ENABLED
     _known_modules[name] = std::shared_ptr<ContentModule>(module);
 }
 
@@ -77,8 +85,10 @@ ContentModuleManager::RequestCredentialInput(const CredentialRequest &request)
 future<ContainerPtr>
 ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
 {
-    std::unique_lock<std::mutex>(_mutex);
-    
+#if FUTURE_ENABLED
+    std::unique_lock<std::mutex> locker(_mutex);
+#endif //FUTURE_ENABLED
+
     if (_known_modules.empty())
     {
         // special case for when we don't have any Content Modules to rely on for an initialized result
@@ -121,7 +131,9 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
     ContainerPtr
     ContentModuleManager::LoadContentAtPath(const string& path)
     {
-        std::unique_lock<std::mutex>(_mutex);
+#if FUTURE_ENABLED
+        std::unique_lock<std::mutex> locker(_mutex);
+#endif //FUTURE_ENABLED
 
         if (_known_modules.empty())
         {

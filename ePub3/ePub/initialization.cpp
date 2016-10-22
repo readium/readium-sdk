@@ -19,7 +19,9 @@
 //  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "initialization.h"
+#if FUTURE_ENABLED
 #include <mutex>
+#endif //FUTURE_ENABLED
 #include <ePub3/archive.h>
 #include <ePub3/filter_manager_impl.h>
 #include <ePub3/font_obfuscation.h>
