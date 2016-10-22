@@ -29,6 +29,22 @@
 #include <ePub3/xml/io.h>
 #include <ePub3/content_module_manager.h>
 
+/*
+#if EPUB_COMPILER(CLANG) && defined(ANDROID)
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int __cxa_thread_atexit(void (*func)(), void *obj,
+                                   void *dso_symbol) {
+  return 0;
+}
+#ifdef __cplusplus
+}
+#endif
+#endif
+*/
+
 EPUB3_BEGIN_NAMESPACE
 
 static const char * gContainerFilePath = "META-INF/container.xml";
