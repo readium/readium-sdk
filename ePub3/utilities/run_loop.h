@@ -21,6 +21,8 @@
 #ifndef __ePub3__run_loop__
 #define __ePub3__run_loop__
 
+#if FUTURE_ENABLED
+
 //#undef EPUB_USE_CF
 //#define EPUB_OS_ANDROID 1
 
@@ -610,5 +612,7 @@ private:
 };
 
 EPUB3_END_NAMESPACE
+
+#endif //FUTURE_ENABLED
 
 #endif /* defined(__ePub3__run_loop__) */

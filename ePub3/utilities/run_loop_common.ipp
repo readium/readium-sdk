@@ -18,6 +18,8 @@
 //  the License, or (at your option) any later version. You should have received a copy of the GNU 
 //  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#if FUTURE_ENABLED
+
 #include "run_loop.h"
 
 #if EPUB_COMPILER_SUPPORTS(CXX_THREAD_LOCAL)
@@ -113,3 +115,6 @@ RunLoopPtr RunLoop::CurrentRunLoop()
 EPUB3_END_NAMESPACE
 
 #endif      // !EPUB_COMPILER_SUPPORTS(CXX_THREAD_LOCAL)
+
+#endif //FUTURE_ENABLED
+
