@@ -18,6 +18,7 @@
 //  the License, or (at your option) any later version. You should have received a copy of the GNU 
 //  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#ifdef ENABLE_SYS_CACHE_FLUSH
 #include "CPUCacheUtils.h"
 
 int epub_sys_cache_control(int operation, void* start, long len)
@@ -35,3 +36,4 @@ int epub_sys_cache_control(int operation, void* start, long len)
     }
     return -1;
 }
+#endif //ENABLE_SYS_CACHE_FLUSH
