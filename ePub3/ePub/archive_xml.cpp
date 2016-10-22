@@ -62,12 +62,12 @@ bool ArchiveXmlReader::close()
 
 std::shared_ptr<xml::Document> ArchiveXmlReader::xmlReadDocument(const char * url, const char * encoding)
 {
-	return InputBuffer::xmlReadDocument(url, encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
+	return xml::InputBuffer::xmlReadDocument(url, encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
 }
 
 std::shared_ptr<xml::Document> ArchiveXmlReader::htmlReadDocument(const char * url, const char * encoding)
 {
-	return InputBuffer::htmlReadDocument(url, encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
+	return xml::InputBuffer::htmlReadDocument(url, encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
 }
 
 ArchiveXmlWriter::ArchiveXmlWriter(ArchiveWriter* w) : _writer(w)
