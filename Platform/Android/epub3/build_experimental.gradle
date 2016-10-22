@@ -39,7 +39,7 @@ model {
     android.ndk {
         moduleName = "epub3"
 
-        toolchain = ndk_clang ? "clang" : "4.9"
+        toolchain = ndk_clang ? "clang" : "gcc"
         stl = ndk_clang ? "c++_shared" : "gnustl_shared"
 
         cppFlags.addAll([
