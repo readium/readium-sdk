@@ -18,7 +18,7 @@ task copyLibxmlIncludes(type: Copy) {
 task copySha1Includes(type: Copy) {
     from '../../../ePub3/ThirdParty/sha1'
     into './include/sha1'
-    include '**/*.h'
+    include '*.h'
 }
 
 task copyUtf8Includes(type: Copy) {
@@ -41,21 +41,37 @@ task copyGoogleUrlIncludes(dependsOn: 'copyGoogleUrlBaseIncludes', type: Copy) {
 task copyLibzipBaseIncludes(type: Copy) {
     from '../../../ePub3/ThirdParty/libzip'
     into './include/libzip'
-    include '**/*.h'
+    include '*.h'
 }
 
-task copyEpub3XmlIncludes(type: Copy) {
+task copyEpub3XmlIncludesTREE(type: Copy) {
     from '../../../ePub3/xml/tree'
+    into './include/ePub3/xml'
+    include '*.h'
+}
+
+task copyEpub3XmlIncludesUTILS(type: Copy) {
     from '../../../ePub3/xml/utilities'
+    into './include/ePub3/xml'
+    include '*.h'
+}
+
+task copyEpub3XmlIncludesVALIDATION(type: Copy) {
     from '../../../ePub3/xml/validation'
     into './include/ePub3/xml'
-    include '**/*.h'
+    include '*.h'
 }
+
+task copyEpub3XmlIncludes() {
+    println "Copy XML includes"
+}
+
+copyEpub3XmlIncludes.dependsOn "copyEpub3XmlIncludesVALIDATION", "copyEpub3XmlIncludesUTILS", "copyEpub3XmlIncludesTREE"
 
 task copyEpub3UtilitiesIncludes(dependsOn: 'copyEpub3XmlIncludes', type: Copy) {
     from '../../../ePub3/utilities'
     into './include/ePub3/utilities'
-    include '**/*.h'
+    include '*.h'
 }
 
 task copyEpub3RootIncludes(dependsOn: 'copyEpub3UtilitiesIncludes', type: Copy) {
@@ -67,7 +83,7 @@ task copyEpub3RootIncludes(dependsOn: 'copyEpub3UtilitiesIncludes', type: Copy) 
 task copyEpub3Includes(dependsOn: 'copyEpub3RootIncludes', type: Copy) {
     from '../../../ePub3/ePub'
     into './include/ePub3'
-    include '**/*.h'
+    include '*.h'
 }
 
 task buildIncludes {
