@@ -148,7 +148,7 @@ ContainerPtr Container::OpenContainer(const string &path) {
     ContainerPtr result = future.get();
 
     if (result == nullptr) {
-        throw std::invalid_argument("Unable to open container");
+        return OpenContainerForContentModule(path);
     }
 
     return result;
