@@ -489,7 +489,12 @@ Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring p
         RELEASE_UTF8(path, nativePath);
         return nullptr;
     }
-    
+
+    if (_container == nullptr) {
+        LOGD("OpenContainer() NULL\n");
+        return nullptr;
+    }
+
     LOGD("EPub3.openBook(): _container OK, version: %s\n", _container->Version().c_str());
 
     // Save container before sending it to Java
