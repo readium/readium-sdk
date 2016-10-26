@@ -23,9 +23,44 @@ model {
 //                    includes.add('ePub/**/*.cpp')
 //                    includes.add('ePub/**/*.c')
 
-                    excludes = ['ThirdParty/**/*.*']
-                    excludes.add('utilities/*.*')
-                    excludes.add('xml/**/*.*')
+//                    excludes = ['ThirdParty/**/*.*']
+
+//                    excludes.add('ThirdParty/google-url/**/*.*')
+                    excludes.add('ThirdParty/google-url/base/logging.*')
+                    excludes.add('ThirdParty/google-url/base/ios_get_progname.*')
+                    excludes.add('ThirdParty/google-url/src/gurl_test_main.*')
+                    excludes.add('ThirdParty/google-url/src/gurl_unittest.*')
+                    excludes.add('ThirdParty/google-url/src/url_canon_icu.*')
+                    excludes.add('ThirdParty/google-url/src/url_canon_unittest.*')
+                    excludes.add('ThirdParty/google-url/src/url_parse_unittest.*')
+                    excludes.add('ThirdParty/google-url/src/url_util_unittest.*')
+
+//                    excludes.add('ThirdParty/icu4c/**/*.*')
+                    excludes.add('ThirdParty/libxml2-android/*.*')
+
+//                    excludes.add('ThirdParty/libzip/**/*.*')
+
+//                    excludes.add('ThirdParty/sha1/**/*.*')
+
+                    excludes.add('ThirdParty/utf8-cpp/**/*.*')
+
+//                    excludes.add('utilities/*.*')
+                    excludes.add('utilities/CPUCacheUtils*.*')
+                    excludes.add('utilities/error_lookup_table.*')
+                    excludes.add('utilities/Library.*')
+                    excludes.add('utilities/ref_counted.*')
+                    excludes.add('utilities/run_loop_cf.*')
+                    excludes.add('utilities/run_loop_common.*')
+                    excludes.add('utilities/run_loop_generic.*')
+                    excludes.add('utilities/run_loop_windows.*')
+
+//                    excludes.add('xml/**/*.*')
+                    excludes.add('xml/utilities/io_win.*')
+                    excludes.add('xml/utilities/xml_bridge_dtrace_probes.*')
+                    excludes.add('xml/tree/document_win.*')
+                    excludes.add('xml/tree/element_win.*')
+                    excludes.add('xml/tree/node_win.*')
+                    excludes.add('xml/tree/xpath_win.*')
 
 //                    getFilter().exclude('...')
                 }
@@ -56,7 +91,31 @@ model {
                 "-I${file("./include/ePub3/utilities")}".toString(),
                 "-I${file("./include/ePub3/xml")}".toString()
         ])
-        ldLibs.addAll(['z', 'android', 'log', 'epub3', 'xml2', 'icuuc', 'icui18n', 'icuio', 'icudata'])
+
+        CFlags.addAll([
+                ndk_clang ? "-std=c++11" : "-std=gnu++11",
+
+                "-fpermissive",
+                "-fexceptions",
+                "-frtti",
+                "-DBUILDING_EPUB3",
+                ndk_clang ? "-D_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49=_LIBCPP_INLINE_VISIBILITY" : "-DREADIUM_GCC",
+                "-I../prefix.h",
+                "-I${file("./include")}".toString(),
+                "-I${file("./include/ePub3")}".toString(),
+                "-I${file("./include/ePub3/utilities")}".toString(),
+                "-I${file("./include/ePub3/xml")}".toString()
+        ])
+
+        ldLibs.addAll(['z',
+                       'android',
+                       'log',
+                       //'epub3Mk',
+                       'xml2',
+                       'icuuc',
+                       'icui18n',
+                       'icuio',
+                       'icudata'])
     }
 
     android.buildTypes {

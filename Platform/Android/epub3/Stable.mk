@@ -242,7 +242,7 @@ LOCAL_SRC_FILES := \
     $(wildcard $(EPUB3_PATH)/ePub/*.cpp) \
     $(wildcard $(LOCAL_PATH)/src/main/jni/*.cpp) \
     $(wildcard $(LOCAL_PATH)/src/main/jni/jni/*.cpp)
-    #$(wildcard $(LOCAL_PATH)/src/main/jni/android/*.cpp)
+#    $(wildcard $(LOCAL_PATH)/src/main/jni/android/*.cpp)
 
 include $(BUILD_SHARED_LIBRARY)
 
