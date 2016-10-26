@@ -80,7 +80,7 @@ model {
         toolchain = ndk_clang ? "clang" : "gcc"
         stl = ndk_clang ? "c++_shared" : "gnustl_shared"
 
-        arrayFlags = [
+        def arrayFlags = [
                 "-fpermissive",
                 "-fexceptions",
                 "-frtti",
