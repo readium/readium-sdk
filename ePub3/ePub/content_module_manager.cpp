@@ -113,6 +113,9 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
             if (bool(container)) {
                 modulePtr->RegisterContentFilters();
 
+                std::shared_ptr<Package> package = container->DefaultPackage();
+                package->LoadNavigationTables(true);
+
                 // ensures the Future is valid()
                 result = make_ready_future<ContainerPtr>(ContainerPtr(container));
                 break;
