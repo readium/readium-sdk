@@ -26,6 +26,12 @@ task copySha1Includes(type: Copy) {
     include '*.h'
 }
 
+task copyICUIncludes(type: Copy) {
+    from '../../../ePub3/ThirdParty/icu4c/include'
+    into './include/icu4c'
+    include '**/*.h'
+}
+
 task copyUtf8Includes(type: Copy) {
     from '../../../ePub3/ThirdParty/utf8-cpp/include'
     into './include/utf8'
@@ -100,9 +106,11 @@ buildIncludes.dependsOn "copyEpub3Includes",
 "copySha1Includes",
 "copyUtf8Includes",
 "copyGoogleUrlIncludes",
+"copyICUIncludes",
 "copyLibzipBaseIncludes"
 
 task buildMk(dependsOn: "buildIncludes", type: Exec) {
+
     // Retrieve ndk dir
     Properties properties = new Properties()
     properties.load(project.rootProject.file('local.properties').newDataInputStream())
@@ -129,6 +137,10 @@ tasks.whenTaskAdded { task ->
     def taskName = task.name
 
     if (taskName.startsWith("compile")) {
-        task.dependsOn "buildMk"
+        if (ndk_debug) {
+            println "${project.name} - ${taskName}: Use gradle experimental, no need to invoke NDK build"
+        } else {
+            task.dependsOn "buildMk"
+        }
     }
 }

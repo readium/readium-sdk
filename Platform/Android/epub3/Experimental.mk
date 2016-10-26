@@ -14,101 +14,101 @@
 #  received a copy of the GNU Affero General Public License along with this program.  If not,
 #  see <http://www.gnu.org/licenses/>.
 
-LOCAL_PATH := $(call my-dir)
-EPUB3_PATH := $(LOCAL_PATH)/../../../ePub3
-THIRD_PARTY_PATH := $(EPUB3_PATH)/ThirdParty
-
+#LOCAL_PATH := $(call my-dir)
+#EPUB3_PATH := $(LOCAL_PATH)/../../../ePub3
+#THIRD_PARTY_PATH := $(EPUB3_PATH)/ThirdParty
+#
 ###########################################################
 # Prebuilt libraries for ICU
-
-ICU_LIB_PATH := $(THIRD_PARTY_PATH)/icu4c/lib/$(TARGET_ARCH_ABI)
-ICU_INCLUDE_PATH := $(THIRD_PARTY_PATH)/icu4c/include
-
+#
+#ICU_LIB_PATH := $(THIRD_PARTY_PATH)/icu4c/lib/$(TARGET_ARCH_ABI)
+#ICU_INCLUDE_PATH := $(THIRD_PARTY_PATH)/icu4c/include
+#
 # Unicode
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := icuuc
-LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicuuc.a
-LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
-include $(PREBUILT_STATIC_LIBRARY)
-
+#
+#include $(CLEAR_VARS)
+#LOCAL_MODULE := icuuc
+#LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicuuc.a
+#LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
+#include $(PREBUILT_STATIC_LIBRARY)
+#
 # Internationalization
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := icui18n
-LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicui18n.a
-LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
-include $(PREBUILT_STATIC_LIBRARY)
-
+#
+#include $(CLEAR_VARS)
+#LOCAL_MODULE := icui18n
+#LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicui18n.a
+#LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
+#include $(PREBUILT_STATIC_LIBRARY)
+#
 # Input/Output
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := icuio
-LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicuio.a
-LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
-include $(PREBUILT_STATIC_LIBRARY)
-
+#
+#include $(CLEAR_VARS)
+#LOCAL_MODULE := icuio
+#LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicuio.a
+#LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
+#include $(PREBUILT_STATIC_LIBRARY)
+#
 # Data
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := icudata
-LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicudata.a
-LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
-include $(PREBUILT_STATIC_LIBRARY)
-
+#
+#include $(CLEAR_VARS)
+#LOCAL_MODULE := icudata
+#LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicudata.a
+#LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
+#include $(PREBUILT_STATIC_LIBRARY)
+#
 ###########################################################
 # libxml2
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := xml2
-LOCAL_SRC_FILES := \
-        $(THIRD_PARTY_PATH)/libxml2-android/SAX.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/entities.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/encoding.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/error.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/parserInternals.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/parser.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/tree.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/hash.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/list.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/xmlIO.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/xmlmemory.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/uri.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/valid.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/xlink.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/HTMLparser.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/HTMLtree.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/debugXML.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/xpath.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/xpointer.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/xinclude.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/nanohttp.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/nanoftp.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/DOCBparser.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/catalog.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/globals.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/threads.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/c14n.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/xmlstring.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/xmlregexp.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/xmlschemas.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/xmlschemastypes.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/xmlunicode.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/xmlreader.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/relaxng.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/dict.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/SAX2.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/legacy.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/chvalid.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/pattern.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/xmlsave.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/xmlmodule.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/xmlwriter.c \
-        $(THIRD_PARTY_PATH)/libxml2-android/schematron.c
-LOCAL_C_INCLUDES += \
-        $(LOCAL_PATH)/include
-
-include $(BUILD_STATIC_LIBRARY)
+#
+#include $(CLEAR_VARS)
+#LOCAL_MODULE := xml2
+#LOCAL_SRC_FILES := \
+#        $(THIRD_PARTY_PATH)/libxml2-android/SAX.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/entities.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/encoding.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/error.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/parserInternals.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/parser.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/tree.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/hash.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/list.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/xmlIO.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/xmlmemory.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/uri.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/valid.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/xlink.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/HTMLparser.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/HTMLtree.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/debugXML.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/xpath.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/xpointer.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/xinclude.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/nanohttp.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/nanoftp.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/DOCBparser.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/catalog.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/globals.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/threads.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/c14n.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/xmlstring.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/xmlregexp.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/xmlschemas.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/xmlschemastypes.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/xmlunicode.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/xmlreader.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/relaxng.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/dict.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/SAX2.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/legacy.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/chvalid.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/pattern.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/xmlsave.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/xmlmodule.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/xmlwriter.c \
+#        $(THIRD_PARTY_PATH)/libxml2-android/schematron.c
+#LOCAL_C_INCLUDES += \
+#        $(LOCAL_PATH)/include
+#
+#include $(BUILD_STATIC_LIBRARY)
 
 ###########################################################
 # epub3

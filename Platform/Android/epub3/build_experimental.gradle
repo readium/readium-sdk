@@ -36,7 +36,10 @@ model {
                     excludes.add('ThirdParty/google-url/src/url_util_unittest.*')
 
 //                    excludes.add('ThirdParty/icu4c/**/*.*')
-                    excludes.add('ThirdParty/libxml2-android/*.*')
+//                    excludes.add('ThirdParty/libxml2-android/*.*')
+                    excludes.add('ThirdParty/libxml2-android/xmllint.*')
+                    excludes.add('ThirdParty/libxml2-android/trionan.*')
+                    excludes.add('ThirdParty/libxml2-android/xmlcatalog.*')
 
 //                    excludes.add('ThirdParty/libzip/**/*.*')
 
@@ -89,7 +92,8 @@ model {
                 "-I${file("./include")}".toString(),
                 "-I${file("./include/ePub3")}".toString(),
                 "-I${file("./include/ePub3/utilities")}".toString(),
-                "-I${file("./include/ePub3/xml")}".toString()
+                "-I${file("./include/ePub3/xml")}".toString(),
+                "-I${file("./include/icu4c")}".toString()
         ])
 
         CFlags.addAll([
@@ -104,14 +108,15 @@ model {
                 "-I${file("./include")}".toString(),
                 "-I${file("./include/ePub3")}".toString(),
                 "-I${file("./include/ePub3/utilities")}".toString(),
-                "-I${file("./include/ePub3/xml")}".toString()
+                "-I${file("./include/ePub3/xml")}".toString(),
+                "-I${file("./include/icu4c")}".toString()
         ])
 
         ldLibs.addAll(['z',
                        'android',
                        'log',
                        //'epub3Mk',
-                       'xml2',
+                       //'xml2',
                        'icuuc',
                        'icui18n',
                        'icuio',
