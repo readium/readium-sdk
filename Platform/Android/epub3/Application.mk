@@ -1,3 +1,5 @@
+APP_PLATFORM := android-24
+
 ifneq ($(READIUM_SKIPARM),true)
 
 APP_ABI := armeabi-v7a
@@ -12,14 +14,12 @@ APP_ABI := x86
 
 endif
 
-
-
-APP_PLATFORM := android-24
-
 ifeq ($(READIUM_CLANG),true)
-NDK_TOOLCHAIN_VERSION := clang
-APP_STL := c++_static
+#NDK_TOOLCHAIN := clang
+NDK_TOOLCHAIN_VERSION := 3.5
+APP_STL := c++_shared
 else
+#NDK_TOOLCHAIN := gcc
 NDK_TOOLCHAIN_VERSION := 4.9
-APP_STL := gnustl_static
+APP_STL := gnustl_shared
 endif

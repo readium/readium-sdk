@@ -3,87 +3,75 @@ apply plugin: 'com.android.model.native'
 def ndk_skipX86 = (rootProject.hasProperty("readium_ndk_skipX86") && rootProject.readium_ndk_skipX86)
 def ndk_skipARM = (rootProject.hasProperty("readium_ndk_skipARM") && rootProject.readium_ndk_skipARM)
 def ndk_clang = (rootProject.hasProperty("readium_ndk_clang") && rootProject.readium_ndk_clang)
-def ndk_debug = (rootProject.hasProperty("readium_ndk_debug") && rootProject.readium_ndk_debug)
+def ndk_experimental = (rootProject.hasProperty("readium_ndk_experimental") && rootProject.readium_ndk_experimental)
 
 model {
     android {
         compileSdkVersion = 24
-    }
 
-    android.sources {
-        main {
-            jni {
-                source {
-                    srcDirs = [
-                            './src/main/jni',
-                            './src/main/jni/jni',
-                            '../../../ePub3'
-                    ]
+        sources {
+            main {
+                jni {
+                    source {
+                        srcDirs = [
+                                './src/main/jni',
+                                './src/main/jni/jni',
+                                '../../../ePub3'
+                        ]
 
-//                    includes.add('ePub/**/*.cpp')
-//                    includes.add('ePub/**/*.c')
+                        excludes.add('ThirdParty/google-url/base/logging.*')
+                        excludes.add('ThirdParty/google-url/base/ios_get_progname.*')
+                        excludes.add('ThirdParty/google-url/src/gurl_test_main.*')
+                        excludes.add('ThirdParty/google-url/src/gurl_unittest.*')
+                        excludes.add('ThirdParty/google-url/src/url_canon_icu.*')
+                        excludes.add('ThirdParty/google-url/src/url_canon_unittest.*')
+                        excludes.add('ThirdParty/google-url/src/url_parse_unittest.*')
+                        excludes.add('ThirdParty/google-url/src/url_util_unittest.*')
 
-//                    excludes = ['ThirdParty/**/*.*']
+                        excludes.add('ThirdParty/libxml2-android/xmllint.*')
+                        excludes.add('ThirdParty/libxml2-android/trionan.*')
+                        excludes.add('ThirdParty/libxml2-android/xmlcatalog.*')
 
-//                    excludes.add('ThirdParty/google-url/**/*.*')
-                    excludes.add('ThirdParty/google-url/base/logging.*')
-                    excludes.add('ThirdParty/google-url/base/ios_get_progname.*')
-                    excludes.add('ThirdParty/google-url/src/gurl_test_main.*')
-                    excludes.add('ThirdParty/google-url/src/gurl_unittest.*')
-                    excludes.add('ThirdParty/google-url/src/url_canon_icu.*')
-                    excludes.add('ThirdParty/google-url/src/url_canon_unittest.*')
-                    excludes.add('ThirdParty/google-url/src/url_parse_unittest.*')
-                    excludes.add('ThirdParty/google-url/src/url_util_unittest.*')
+                        excludes.add('ThirdParty/utf8-cpp/**/*.*')
 
-//                    excludes.add('ThirdParty/icu4c/**/*.*')
-//                    excludes.add('ThirdParty/libxml2-android/*.*')
-                    excludes.add('ThirdParty/libxml2-android/xmllint.*')
-                    excludes.add('ThirdParty/libxml2-android/trionan.*')
-                    excludes.add('ThirdParty/libxml2-android/xmlcatalog.*')
+                        excludes.add('utilities/CPUCacheUtils*.*')
+                        excludes.add('utilities/error_lookup_table.*')
+                        excludes.add('utilities/Library.*')
+                        excludes.add('utilities/ref_counted.*')
+                        excludes.add('utilities/run_loop_cf.*')
+                        excludes.add('utilities/run_loop_common.*')
+                        excludes.add('utilities/run_loop_generic.*')
+                        excludes.add('utilities/run_loop_windows.*')
 
-//                    excludes.add('ThirdParty/libzip/**/*.*')
+                        excludes.add('xml/utilities/io_win.*')
+                        excludes.add('xml/utilities/xml_bridge_dtrace_probes.*')
+                        excludes.add('xml/tree/document_win.*')
+                        excludes.add('xml/tree/element_win.*')
+                        excludes.add('xml/tree/node_win.*')
+                        excludes.add('xml/tree/xpath_win.*')
 
-//                    excludes.add('ThirdParty/sha1/**/*.*')
+                    } //source
 
-                    excludes.add('ThirdParty/utf8-cpp/**/*.*')
+                    exportedHeaders {
+                        srcDir "./src/main/jni"
+                        srcDir "./include"
+                    }
+                } //jni
+            } //main
+        } //sources
 
-//                    excludes.add('utilities/*.*')
-                    excludes.add('utilities/CPUCacheUtils*.*')
-                    excludes.add('utilities/error_lookup_table.*')
-                    excludes.add('utilities/Library.*')
-                    excludes.add('utilities/ref_counted.*')
-                    excludes.add('utilities/run_loop_cf.*')
-                    excludes.add('utilities/run_loop_common.*')
-                    excludes.add('utilities/run_loop_generic.*')
-                    excludes.add('utilities/run_loop_windows.*')
+        ndk {
+            moduleName = "epub3"
 
-//                    excludes.add('xml/**/*.*')
-                    excludes.add('xml/utilities/io_win.*')
-                    excludes.add('xml/utilities/xml_bridge_dtrace_probes.*')
-                    excludes.add('xml/tree/document_win.*')
-                    excludes.add('xml/tree/element_win.*')
-                    excludes.add('xml/tree/node_win.*')
-                    excludes.add('xml/tree/xpath_win.*')
+            //arguments "-j 4"
 
-//                    getFilter().exclude('...')
-                }
-                exportedHeaders {
-                    srcDir "./src/main/jni"
-                }
-            }
-        }
-    }
+            toolchain = ndk_clang ? "clang" : "gcc"
+            toolchainVersion = ndk_clang ? "3.5" : "4.9"
 
-    android.ndk {
-        moduleName = "epub3"
+            stl = ndk_clang ? "c++_shared" : "gnustl_shared"
 
-        toolchain = ndk_clang ? "clang" : "gcc"
-        stl = ndk_clang ? "c++_shared" : "gnustl_shared"
-
-        def arrayFlags = [
-                "-fpermissive",
+            def arrayFlags = [
                 "-fexceptions",
-                "-frtti",
                 "-DBUILDING_EPUB3",
                 ndk_clang ? "-D_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49=_LIBCPP_INLINE_VISIBILITY" : "-DREADIUM_GCC",
                 "-I../prefix.h",
@@ -92,57 +80,56 @@ model {
                 "-I${file("./include/ePub3/utilities")}".toString(),
                 "-I${file("./include/ePub3/xml")}".toString(),
                 "-I${file("./include/icu4c")}".toString()
-        ]
+            ]
 
-        cppFlags.addAll(arrayFlags)
-        cppFlags.add(ndk_clang ? "-std=c++11" : "-std=gnu++11")
+            def arrayFlagsCPP = [
+                "-fpermissive",
+                "-frtti"
+            ]
 
-        CFlags.addAll(arrayFlags)
-        CFlags.add(ndk_clang ? "-std=c11" : "-std=gnu11")
+            cppFlags.addAll(arrayFlags)
+            cppFlags.addAll(arrayFlagsCPP)
+            cppFlags.add(ndk_clang ? "-std=c++11" : "-std=gnu++11")
 
-        ldLibs.addAll(['z',
-                       'android',
-                       'log',
-                       //'epub3Mk',
-                       //'xml2',
-                       'icuuc',
-                       'icui18n',
-                       'icuio',
-                       'icudata'])
-    }
+            CFlags.addAll(arrayFlags)
+            CFlags.add(ndk_clang ? "-std=c11" : "-std=gnu11")
 
-    android.buildTypes {
-        release {
+            ldLibs.addAll(['z', 'android', 'log', 'icuuc', 'icui18n', 'icuio', 'icudata'])
+        } //ndk
 
-        }
-        debug {
-            ndk.with {
-                debuggable = true
+        buildTypes {
+            release {
+
             }
-        }
-    }
-
-    android.productFlavors {
-        if (!ndk_skipARM)
-        create ("arm") {
-            ndk.with {
-                abiFilters.add("armeabi-v7a")
-                ldFlags.addAll([
-                        "-L${file("./obj/local/armeabi-v7a")}".toString(),
-                        "-L${file("../../../ePub3/ThirdParty/icu4c/lib/armeabi-v7a")}".toString()
-                ])
+            debug {
+                ndk.with {
+                    debuggable = true
+                }
             }
-        }
+        } //buildTypes
 
-        if (!ndk_skipX86)
-        create("x86") {
-            ndk.with {
-                abiFilters.add("x86")
-                ldFlags.addAll([
-                        "-L${file("./obj/local/x86")}".toString(),
-                        "-L${file("../../../ePub3/ThirdParty/icu4c/lib/x86")}".toString()
-                ])
-            }
-        }
-    }
-}
+        productFlavors {
+            if (!ndk_skipARM)
+                create("arm") {
+                    ndk.with {
+                        abiFilters.add("armeabi-v7a")
+                        ldFlags.addAll([
+                                "-L${file("./obj/local/armeabi-v7a")}".toString(),
+                                "-L${file("../../../ePub3/ThirdParty/icu4c/lib/armeabi-v7a")}".toString()
+                        ])
+                    }
+                }
+
+            if (!ndk_skipX86)
+                create("x86") {
+                    ndk.with {
+                        abiFilters.add("x86")
+                        ldFlags.addAll([
+                                "-L${file("./obj/local/x86")}".toString(),
+                                "-L${file("../../../ePub3/ThirdParty/icu4c/lib/x86")}".toString()
+                        ])
+                    }
+                }
+        } //productFlavors
+    } //android
+} //model
