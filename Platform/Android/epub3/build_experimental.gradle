@@ -66,7 +66,7 @@ model {
             //arguments "-j 4"
 
             toolchain = ndk_clang ? "clang" : "gcc"
-            toolchainVersion = ndk_clang ? "3.5" : "4.9"
+            toolchainVersion = ndk_clang ? "" : "4.9"
 
             stl = ndk_clang ? "c++_shared" : "gnustl_shared"
 

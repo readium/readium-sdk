@@ -195,23 +195,23 @@ __constexpr_addressof(_Tp& __t)
 {
     return ((_Tp*)&reinterpret_cast<const volatile char&>(__t));
 }
-
-#ifdef NDEBUG
-# define ASSERTED_EXPRESSION(chk, expr) (expr)
-#else
-# define ASSERTED_EXPRESSION(chk, expr) ((chk) ? (expr) : (fail(#chk, __FILE__, __LINE__), (expr)))
-static inline
-void fail(const char* expr, const char* file, unsigned line)
-{
-# if defined(__clang__) || defined(__GNU_LIBRARY__)
-    __assert(expr, file, line);
-# elif defined(__GNUC__) || EPUB_PLATFORM(ANDROID)
-    __assert(file, line, expr);
-# else
-#  warning I dont know how to fire assertion internals on this compiler.
-# endif
-}
-#endif
+//
+//#ifdef NDEBUG
+//# define ASSERTED_EXPRESSION(chk, expr) (expr)
+//#else
+//# define ASSERTED_EXPRESSION(chk, expr) ((chk) ? (expr) : (fail(#chk, __FILE__, __LINE__), (expr)))
+//static inline
+//void fail(const char* expr, const char* file, unsigned line)
+//{
+//# if defined(__clang__) || defined(__GNU_LIBRARY__)
+//    __assert(expr, file, line);
+//# elif defined(__GNUC__) || EPUB_PLATFORM(ANDROID)
+//    __assert(file, line, expr);
+//# else
+//#  warning I dont know how to fire assertion internals on this compiler.
+//# endif
+//}
+//#endif
 
 template <typename _Tp>
 struct __has_overloaded_addressof
