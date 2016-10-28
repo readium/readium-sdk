@@ -111,6 +111,10 @@ typedef signed long ssize_t;
 //# define UTF_USE_ICU 1
 # if !EPUB_COMPILER(CLANG)
 # define CXX11_STRING_UNAVAILABLE 1
+# else
+# ifdef CLANG_WITH_GNUSTL
+# define CXX11_STRING_UNAVAILABLE 1
+# endif
 # endif
 # if EPUB_COMPILER(CLANG)
 #  define nan(x) __builtin_nan(x)

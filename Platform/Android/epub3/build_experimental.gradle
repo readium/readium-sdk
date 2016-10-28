@@ -109,11 +109,17 @@ model {
             toolchain = ndk_clang ? "clang" : "gcc"
             toolchainVersion = ndk_clang ? "" : "4.9" //https://github.com/android-ndk/ndk/issues/229
 
-            stl = ndk_clang ? "c++_shared" : "gnustl_shared"
+            def clangWithGnuStl = false
+
+            if (!ndk_clang || clangWithGnuStl)
+                stl = "gnustl_shared"
+            else
+                stl = "c++_shared"
 
             def arrayFlags = [
                 "-fexceptions",
                 "-DBUILDING_EPUB3",
+                (ndk_clang && clangWithGnuStl) ? "-DCLANG_WITH_GNUSTL" : "-DREADIUM_GCC",
                 ndk_clang ? "-D_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49=_LIBCPP_INLINE_VISIBILITY" : "-DREADIUM_GCC",
                 "-I../prefix.h",
                 "-I${file("./include")}".toString(),
@@ -130,14 +136,15 @@ model {
 
             cppFlags.addAll(arrayFlags)
             cppFlags.addAll(arrayFlagsCPP)
-            cppFlags.add(ndk_clang ? "-std=c++11" : "-std=gnu++11")
+            cppFlags.add((!ndk_clang || clangWithGnuStl) ? "-std=gnu++11" : "-std=c++11")
 
             CFlags.addAll(arrayFlags)
-            CFlags.add(ndk_clang ? "-std=c11" : "-std=gnu11")
+            CFlags.add((!ndk_clang || clangWithGnuStl) ? "-std=gnu11" : "-std=c11")
 
             ldLibs.addAll(['z', 'android', 'log',
             //               'icuuc', 'icui18n', 'icuio', 'icudata'
             ])
+            if (ndk_clang) ldLibs.addAll(['atomic'])
         } //ndk
 
         buildTypes {
