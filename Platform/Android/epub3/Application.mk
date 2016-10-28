@@ -19,7 +19,7 @@ ifeq ($(READIUM_CLANG),true)
 NDK_TOOLCHAIN_VERSION := clang
 APP_STL := c++_shared
 else
-NDK_TOOLCHAIN := gcc
+#NDK_TOOLCHAIN := gcc
 NDK_TOOLCHAIN_VERSION := 4.9
 APP_STL := gnustl_shared
 endif
