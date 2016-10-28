@@ -63,10 +63,10 @@ model {
         ndk {
             moduleName = "epub3"
 
-            //arguments "-j 4"
+            //arguments "-j 4" //Runtime.runtime.availableProcessors()
 
             toolchain = ndk_clang ? "clang" : "gcc"
-            toolchainVersion = ndk_clang ? "" : "4.9"
+            toolchainVersion = ndk_clang ? "" : "4.9" //https://github.com/android-ndk/ndk/issues/229
 
             stl = ndk_clang ? "c++_shared" : "gnustl_shared"
 
@@ -103,7 +103,7 @@ model {
             }
             debug {
                 ndk.with {
-                    debuggable = true
+                    debuggable = true //"NDK_DEBUG=1"
                 }
             }
         } //buildTypes
