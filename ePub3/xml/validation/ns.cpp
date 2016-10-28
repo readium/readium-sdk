@@ -27,6 +27,7 @@ Namespace::Namespace(std::shared_ptr<Document> doc, const string &prefix, const 
 {
     xmlDocPtr d = doc->xml();
     _xml = xmlNewNs(reinterpret_cast<xmlNodePtr>(d), uri.utf8(), prefix.utf8());
+    bShouldxmlFreeNs = true;
     if (_xml->_private != nullptr)
         Node::Unwrap((xmlNodePtr)_xml);
     
@@ -43,8 +44,9 @@ Namespace::~Namespace()
         delete priv;
         _xml->_private = nullptr;
     }
-    
-    xmlFreeNs(_xml);
+
+    if (bShouldxmlFreeNs)
+        xmlFreeNs(_xml);
 }
 
 EPUB3_XML_END_NAMESPACE

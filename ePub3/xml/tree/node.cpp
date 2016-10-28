@@ -213,7 +213,10 @@ string Node::Content() const
     const xmlChar* ch = xmlNodeGetContent(_xml);
     if (ch == nullptr)
         return string::EmptyString;
-    return ch;
+
+    string result(ch);
+    xmlFree((void*)ch);
+    return result;
 }
 void Node::SetContent(const string &content)
 {
@@ -251,7 +254,10 @@ string Node::Language() const
     const xmlChar * ch = xmlNodeGetLang(_xml);
     if ( ch == nullptr )
         return string();
-    return ch;
+
+    string result(ch);
+    xmlFree((void*)ch);
+    return result;
 }
 void Node::SetLanguage(const string &language)
 {
@@ -270,7 +276,10 @@ string Node::BaseURL() const
     const xmlChar * ch = xmlNodeGetBase(_xml->doc, _xml);
     if ( ch == nullptr )
         return string();
-    return ch;
+
+    string result(ch);
+    xmlFree((void*)ch);
+    return result;
 }
 void Node::SetBaseURL(const string &baseURL)
 {
@@ -349,10 +358,13 @@ string Node::XMLString() const
 }
 string Node::StringValue() const
 {
-    const xmlChar * content = xmlNodeGetContent(_xml);
-    if ( content == nullptr )
+    const xmlChar * ch = xmlNodeGetContent(_xml);
+    if ( ch == nullptr )
         return string();
-    return content;
+
+    string result(ch);
+    xmlFree((void*)ch);
+    return result;
 }
 int Node::IntValue() const
 {
