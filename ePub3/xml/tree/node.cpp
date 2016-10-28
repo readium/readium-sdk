@@ -170,7 +170,13 @@ Node::Node(const string & name, NodeType type, const string & content, const cla
 Node::Node(Node && o) : _xml(o._xml) {
     typedef LibXML2Private<Node> _Private;
     _Private* priv = reinterpret_cast<_Private*>(_xml->_private);
+
+#if ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+    priv->__ptr = std::shared_ptr<Node>(this);
+#else
     priv->__ptr.reset(this);
+#endif //ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+
     o._xml = NULL;
 }
 Node::~Node()
@@ -181,14 +187,31 @@ Node::~Node()
         return;
     
     _Private* priv = reinterpret_cast<_Private*>(_xml->_private);
-    if ( priv->__sig != _READIUM_XML_SIGNATURE || priv->__ptr.get() != this )
+    if ( priv->__sig != _READIUM_XML_SIGNATURE ||
+#if ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+        (priv->__ptr.lock() != nullptr && priv->__ptr.lock().get() != this)
+#else
+        priv->__ptr.get() != this
+#endif //ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+        ) {
         return;
-    
-    // free the underlying node if *and only if* it is detached
-    if ( _xml->parent == nullptr && _xml->prev == nullptr && _xml->next == nullptr )
+    }
+
+#if ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+    if (!bool(priv->__ptr.lock()))
     {
         _xml->_private = nullptr;
         delete priv;
+    }
+#endif //ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+
+    // free the underlying node if *and only if* it is detached
+    if ( _xml->parent == nullptr && _xml->prev == nullptr && _xml->next == nullptr )
+    {
+#if !ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+        _xml->_private = nullptr;
+        delete priv;
+#endif //!ENABLE_WEAK_PTR_XML_NODE_WRAPPER
         xmlFreeNode(_xml);
     }
 }
@@ -646,7 +669,9 @@ void Node::Unwrap(_xmlNode *aNode)
             NsPrivate* ptr = reinterpret_cast<NsPrivate*>(__ns->_private);
             if (ptr->__sig == _READIUM_XML_SIGNATURE)
             {
+#if !ENABLE_WEAK_PTR_XML_NODE_WRAPPER
                 ptr->__ptr->release();
+#endif //!ENABLE_WEAK_PTR_XML_NODE_WRAPPER
                 delete ptr;
             }
             __ns->_private = nullptr;
