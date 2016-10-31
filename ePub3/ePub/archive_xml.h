@@ -31,7 +31,10 @@ EPUB3_BEGIN_NAMESPACE
 /**
  @ingroup archives
  */
-class ArchiveXmlReader : public xml::InputBuffer
+class ArchiveXmlReader
+#if !ENABLE_XML_READ_DOC_MEMORY
+		: public xml::InputBuffer
+#endif //!ENABLE_XML_READ_DOC_MEMORY
 {
 public:
 	/**
@@ -49,25 +52,34 @@ public:
     EPUB3_EXPORT ArchiveXmlReader(unique_ptr<ArchiveReader>&& r);
     EPUB3_EXPORT ArchiveXmlReader(ArchiveXmlReader&& o);
     virtual ~ArchiveXmlReader();
-    
-    operator ArchiveReader* () { return _reader.get(); }
+
+	operator ArchiveReader* () { return _reader.get(); }
 	operator const ArchiveReader* () const { return _reader.get(); }
 
 	virtual size_t size() const { return _reader->total_size(); }
 	virtual size_t offset() const { return _reader->position(); }
     
     bool operator !() const { return !bool(_reader); }
-	
-	using InputBuffer::xmlReadDocument;
-	using InputBuffer::htmlReadDocument;
-	
+
+#if ENABLE_XML_READ_DOC_MEMORY
+
+//#error "ENABLE_XML_READ_DOC_MEMORY = 1"
+std::shared_ptr<ePub3::xml::Document> readXml(const ePub3::string& path);
+
+#else
+
+//	using InputBuffer::xmlReadDocument;
+//	using InputBuffer::htmlReadDocument;
+
 	/**
 	 * Will read the given XML documents using the default options
 	 * from ArchiveXmlReader::DEFAULT_OPTIONS.
 	 */
 	std::shared_ptr<xml::Document> xmlReadDocument(const char * url, const char * encoding);
-    std::shared_ptr<xml::Document> htmlReadDocument(const char * url, const char * encoding);
-    
+//    std::shared_ptr<xml::Document> htmlReadDocument(const char * url, const char * encoding);
+
+#endif //ENABLE_XML_READ_DOC_MEMORY
+
 protected:
     std::unique_ptr<ArchiveReader>  _reader;
     
@@ -77,10 +89,15 @@ protected:
     ArchiveXmlReader(const ArchiveXmlReader&) _DELETED_;
 };
 
+#if ENABLE_ZIP_ARCHIVE_WRITER
+
 /**
  @ingroup archives
  */
-class ArchiveXmlWriter : public xml::OutputBuffer
+class ArchiveXmlWriter
+#if !ENABLE_XML_READ_DOC_MEMORY
+		: public xml::OutputBuffer
+#endif //!ENABLE_XML_READ_DOC_MEMORY
 {
 public:
     EPUB3_EXPORT ArchiveXmlWriter(ArchiveWriter * r);
@@ -102,6 +119,8 @@ protected:
     
     ArchiveXmlWriter(const ArchiveXmlWriter&&) _DELETED_;
 };
+
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
 
 EPUB3_END_NAMESPACE
 

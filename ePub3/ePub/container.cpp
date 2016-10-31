@@ -87,17 +87,27 @@ bool Container::Open(const string& path, bool skipLoadingNavigationTables)
     if (!bool(r.get())) {
         throw std::invalid_argument(_Str("ZIP Path not recognised: '", gContainerFilePath, "'"));
     }
-	ArchiveXmlReader reader(r.get());
-	if (!reader) {
+
+    ArchiveXmlReader reader(std::move(r));
+    if (!reader) {
         throw std::invalid_argument(_Str("ZIP Path not recognised: '", gContainerFilePath, "'"));
-	}
-    
-#if EPUB_USE(LIBXML2)
-	_ocf = reader.xmlReadDocument(gContainerFilePath, nullptr);
+    }
+
+#if ENABLE_XML_READ_DOC_MEMORY
+
+    _ocf = reader.readXml(ePub3::string(gContainerFilePath));
+
 #else
-	decltype(_ocf) __tmp(reader.ReadDocument(gContainerFilePath, nullptr, /*RESOLVE_EXTERNALS*/ 1));
-	_ocf = __tmp;
+
+#if EPUB_USE(LIBXML2)
+    _ocf = reader.xmlReadDocument(gContainerFilePath, nullptr);
+#else
+    decltype(_ocf) __tmp(reader.ReadDocument(gContainerFilePath, nullptr, /*RESOLVE_EXTERNALS*/ 1));
+    _ocf = __tmp;
 #endif
+
+#endif //ENABLE_XML_READ_DOC_MEMORY
+
 	if (!((bool)_ocf))
 		return false;
 
@@ -125,7 +135,9 @@ bool Container::Open(const string& path, bool skipLoadingNavigationTables)
 		if (path.empty())
 			continue;
 
-		auto pkg = Package::New(Ptr(), type);
+		auto pkg = std::make_shared<Package>(shared_from_this(), type);
+        //Package::New(Ptr(), type);
+
 		if (pkg->Open(path, skipLoadingNavigationTables))
 			_packages.push_back(pkg);
 	}
@@ -155,14 +167,21 @@ ContainerPtr Container::OpenContainer(const string &path) {
 }
 #else
     ContainerPtr Container::OpenContainer(const string &path) {
+
         ContainerPtr container = ContentModuleManager::Instance()->LoadContentAtPath(path);
 
         // 1: everything went well, we've got an encrypted EPUB handled by a ContentModule
         if (bool(container)) {
-            return container;
+            return std::move(container);
         }
+
         // 2: no ContentModule was suitable, let's try non-encrypted loading
-        return OpenContainerForContentModule(path);
+        container = OpenContainerForContentModule(path);
+        if (bool(container)) {
+            return std::move(container);
+        } else {
+            return nullptr;
+        }
 
         // 3: there's always the option of a raised exception, which the caller captures to degrade gracefully
     }
@@ -209,10 +228,10 @@ ContainerPtr Container::OpenSynchronouslyForWinRT(const string& path)
 
 ContainerPtr Container::OpenContainerForContentModule(const string& path, bool skipLoadingNavigationTables)
 {
-	ContainerPtr container = Container::New();
+	ContainerPtr container = std::make_shared<Container>(); //Container::New();
 	if (container->Open(path, skipLoadingNavigationTables) == false)
 		return nullptr;
-	return container;
+	return std::move(container);
 }
 Container::PathList Container::PackageLocations() const
 {
@@ -257,16 +276,28 @@ string Container::Version() const
 
 void Container::ParseVendorMetadata()
 {
+
     unique_ptr<ArchiveReader> pZipReader = _archive->ReaderAtPath(gAppleiBooksDisplayOptionsFilePath);
     if ( !pZipReader )
         return;
 
     ArchiveXmlReader reader(std::move(pZipReader));
+
+#if ENABLE_XML_READ_DOC_MEMORY
+
+    shared_ptr<xml::Document> docXml = reader.readXml(ePub3::string(gAppleiBooksDisplayOptionsFilePath));
+
+#else
+
 #if EPUB_USE(LIBXML2)
     shared_ptr<xml::Document> docXml = reader.xmlReadDocument(gAppleiBooksDisplayOptionsFilePath, nullptr);
 #elif EPUB_USE(WIN_XML)
-	auto docXml = reader.ReadDocument(gAppleiBooksDisplayOptionsFilePath, nullptr, 0);
+    auto docXml = reader.ReadDocument(gAppleiBooksDisplayOptionsFilePath, nullptr, 0);
 #endif
+
+#endif //ENABLE_XML_READ_DOC_MEMORY
+
+
     if ( !bool(docXml) )
         return;
 
@@ -304,16 +335,27 @@ void Container::ParseVendorMetadata()
 
 void Container::LoadEncryption()
 {
+
     unique_ptr<ArchiveReader> pZipReader = _archive->ReaderAtPath(gEncryptionFilePath);
     if ( !pZipReader )
         return;
-    
+
     ArchiveXmlReader reader(std::move(pZipReader));
+
+#if ENABLE_XML_READ_DOC_MEMORY
+
+    shared_ptr<xml::Document> enc = reader.readXml(ePub3::string(gEncryptionFilePath));
+
+#else
+
 #if EPUB_USE(LIBXML2)
     shared_ptr<xml::Document> enc = reader.xmlReadDocument(gEncryptionFilePath, nullptr);
 #elif EPUB_USE(WIN_XML)
-	auto enc = reader.ReadDocument(gEncryptionFilePath, nullptr, 0);
+    auto enc = reader.ReadDocument(gEncryptionFilePath, nullptr, 0);
 #endif
+
+#endif //ENABLE_XML_READ_DOC_MEMORY
+
     if ( !bool(enc) )
         return;
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
@@ -334,7 +376,7 @@ void Container::LoadEncryption()
     
     for ( auto node : nodes )
     {
-        auto encPtr = EncryptionInfo::New(Ptr());
+        auto encPtr = std::make_shared<EncryptionInfo>(shared_from_this()); //EncryptionInfo::New(Ptr());
         if ( encPtr->ParseXML(node) )
             _encryption.push_back(encPtr);
     }

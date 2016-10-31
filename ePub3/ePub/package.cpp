@@ -102,11 +102,21 @@ PackageBase::~PackageBase()
 bool PackageBase::Open(const string& path, bool skipLoadingNavigationTables)
 {
     ArchiveXmlReader reader(_archive->ReaderAtPath(path.stl_str()));
+#if ENABLE_XML_READ_DOC_MEMORY
+
+        _opf = reader.readXml(path);
+
+#else
+
 #if EPUB_USE(LIBXML2)
     _opf = reader.xmlReadDocument(path.c_str(), nullptr);
 #elif EPUB_USE(WIN_XML)
-	_opf = reader.ReadDocument(path.c_str(), nullptr, 0);
+    _opf = reader.ReadDocument(path.c_str(), nullptr, 0);
 #endif
+
+#endif //ENABLE_XML_READ_DOC_MEMORY
+
+
     if ( !bool(_opf) )
     {
         HandleError(EPUBError::OCFInvalidRootfileURL, _Str(__PRETTY_FUNCTION__, ": No OPF file at ", path.stl_str()));
@@ -319,7 +329,7 @@ NavigationList PackageBase::_LoadEPUB3NavTablesFromManifestItem(PackagePtr share
 	NavigationList tables;
 	for (auto navNode : nodes)
 	{
-		auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
+		auto navTablePtr = std::make_shared<ePub3::NavigationTable>(sharedPkg, pItem->Href()); //NavigationTable::New(sharedPkg, pItem->Href());
 		if (navTablePtr->ParseXML(navNode))
 			tables.push_back(navTablePtr);
 	}
@@ -328,7 +338,7 @@ NavigationList PackageBase::_LoadEPUB3NavTablesFromManifestItem(PackagePtr share
 	nodes = xpath.Nodes("//html:dl[epub:type='glossary']");
 	for (auto node : nodes)
 	{
-		auto glosPtr = Glossary::New(node, sharedPkg);
+		auto glosPtr = std::make_shared<Glossary>(node, sharedPkg); //Glossary::New(node, sharedPkg);
 		tables.push_back(glosPtr);
 	}
 
@@ -356,7 +366,7 @@ NavigationList PackageBase::_LoadNCXNavTablesFromManifestItem(PackagePtr sharedP
 	NavigationList tables;
 	if (!nodes.empty())
 	{
-		auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
+		auto navTablePtr = std::make_shared<ePub3::NavigationTable>(sharedPkg, pItem->Href()); //NavigationTable::New(sharedPkg, pItem->Href());
 		if (navTablePtr->ParseNCXNavMap(nodes[0], title))
 			tables.push_back(navTablePtr);
 	}
@@ -365,7 +375,7 @@ NavigationList PackageBase::_LoadNCXNavTablesFromManifestItem(PackagePtr sharedP
 	nodes = xpath.Nodes("/ncx:ncx/ncx:pageList");
 	if (!nodes.empty())
 	{
-		auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
+		auto navTablePtr = std::make_shared<ePub3::NavigationTable>(sharedPkg, pItem->Href()); //NavigationTable::New(sharedPkg, pItem->Href());
 		if (navTablePtr->ParseNCXPageList(nodes[0]))
 			tables.push_back(navTablePtr);
 	}
@@ -374,7 +384,7 @@ NavigationList PackageBase::_LoadNCXNavTablesFromManifestItem(PackagePtr sharedP
 	nodes = xpath.Nodes("/ncx:ncx/ncx:navList");
 	for (auto node : nodes)
 	{
-		auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
+		auto navTablePtr = std::make_shared<ePub3::NavigationTable>(sharedPkg, pItem->Href()); //NavigationTable::New(sharedPkg, pItem->Href());
 		if (navTablePtr->ParseNCXNavList(node))
 			tables.push_back(navTablePtr);
 	}
@@ -426,7 +436,7 @@ bool Package::Open(const string& path, bool skipLoadingNavigationTables)
             this->RemoveProperty("layout", "rendition");
 
             PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
-            PropertyPtr prop = Property::New(holderPtr);
+            PropertyPtr prop = std::make_shared<Property>(holderPtr); //Property::New(holderPtr);
             prop->SetPropertyIdentifier(MakePropertyIRI("layout", "rendition"));
             prop->SetValue("pre-paginated");
             AddProperty(prop);
@@ -443,7 +453,7 @@ bool Package::Open(const string& path, bool skipLoadingNavigationTables)
             this->RemoveProperty("orientation", "rendition");
 
             PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
-            PropertyPtr prop = Property::New(holderPtr);
+            PropertyPtr prop = std::make_shared<Property>(holderPtr); //Property::New(holderPtr);
             prop->SetPropertyIdentifier(MakePropertyIRI("orientation", "rendition"));
             string val = landscape?"landscape":(portrait?"portrait":"auto");
             prop->SetValue(val);
@@ -707,7 +717,7 @@ bool Package::Unpack(bool skipLoadingNavigationTables)
         
         for ( auto node : manifestNodes )
         {
-            auto p = ManifestItem::New(sharedMe);
+            auto p = std::make_shared<ManifestItem>(sharedMe); //ManifestItem::New(sharedMe);
             if ( p->ParseXML(node) )
             {
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
@@ -752,7 +762,7 @@ bool Package::Unpack(bool skipLoadingNavigationTables)
         SpineItemPtr cur;
         for ( auto node : spineNodes )
         {
-            auto next = SpineItem::New(sharedMe);
+            auto next = std::make_shared<SpineItem>(sharedMe); //SpineItem::New(sharedMe);
             if ( next->ParseXML(node) == false )
             {
                 // TODO: need an error code here
@@ -823,7 +833,7 @@ bool Package::Unpack(bool skipLoadingNavigationTables)
         
         for (auto& node : collectionNodes)
         {
-            CollectionPtr collection = Collection::New(Ptr(), nullptr);
+            CollectionPtr collection = std::make_shared<Collection>(shared_from_this(), nullptr); //Collection::New(Ptr(), nullptr);
             if (collection->ParseXML(node))
             {
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
@@ -871,7 +881,7 @@ bool Package::Unpack(bool skipLoadingNavigationTables)
             if ( bool(ns) && ns->URI() == xml::string(DCNamespace) )
             {
                 // definitely a main node
-                p = Property::New(holderPtr);
+                p = std::make_shared<Property>(holderPtr); //Property::New(holderPtr);
             }
             else if ( _getProp(node, "name").size() > 0 )
             {
@@ -890,7 +900,7 @@ bool Package::Unpack(bool skipLoadingNavigationTables)
             else if ( _getProp(node, "refines").empty() )
             {
                 // not refining anything, so it's a main node
-                p = Property::New(holderPtr);
+                p = std::make_shared<Property>(holderPtr); //Property::New(holderPtr);
             }
             else
             {
@@ -1000,7 +1010,7 @@ bool Package::Unpack(bool skipLoadingNavigationTables)
             if ( prop )
             {
                 // it's a property, so this is an extension
-                PropertyExtensionPtr extPtr = PropertyExtension::New(prop);
+                PropertyExtensionPtr extPtr = std::make_shared<PropertyExtension>(prop); //PropertyExtension::New(prop);
                 if ( extPtr->ParseMetaElement(node) )
                     prop->AddExtension(extPtr);
             }
@@ -1010,7 +1020,7 @@ bool Package::Unpack(bool skipLoadingNavigationTables)
                 PropertyHolderPtr ptr = std::dynamic_pointer_cast<PropertyHolder>(found->second);
                 if ( ptr )
                 {
-                    prop = Property::New(ptr);
+                    prop = std::make_shared<Property>(ptr); //Property::New(ptr);
                     if ( prop->ParseMetaElement(node) )
                         ptr->AddProperty(prop);
                 }
@@ -1025,7 +1035,7 @@ bool Package::Unpack(bool skipLoadingNavigationTables)
         string value = _getProp(spineNode, "page-progression-direction");
         if ( !value.empty() )
         {
-            PropertyPtr prop = Property::New(holderPtr);
+            PropertyPtr prop = std::make_shared<Property>(holderPtr); //Property::New(holderPtr);
             prop->SetPropertyIdentifier(MakePropertyIRI("page-progression-direction"));
             prop->SetValue(value);
             AddProperty(prop);
@@ -1116,7 +1126,9 @@ bool Package::Unpack(bool skipLoadingNavigationTables)
                 }
                 
                 // all good-- install it now
-                _contentHandlers[mediaType].push_back(MediaHandler::New<MediaHandler>(sharedMe, mediaType, handlerItem->AbsolutePath()));
+                _contentHandlers[mediaType].push_back(
+                        std::make_shared<MediaHandler>(sharedMe, mediaType, handlerItem->AbsolutePath()) //MediaHandler::New<MediaHandler>(sharedMe, mediaType, handlerItem->AbsolutePath())
+                );
             }
         }
     }
@@ -1889,9 +1901,13 @@ void Package::InitMediaSupport()
         {
             // support for core types is required
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
-			_mediaSupport.emplace(mediaType, MediaSupportInfo::New(Ptr(), mediaType));
+			_mediaSupport.emplace(mediaType,
+			std::make_shared<MediaSupportInfo>(shared_from_this(), mediaType) //MediaSupportInfo::New(Ptr(), mediaType)
+			);
 #else
-            _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo::New(Ptr(), mediaType)));
+            _mediaSupport.insert(std::make_pair(mediaType,
+                                                std::make_shared<MediaSupportInfo>(shared_from_this(), mediaType)) //MediaSupportInfo::New(Ptr(), mediaType))
+            );
 #endif
         }
         else
@@ -1901,18 +1917,28 @@ void Package::InitMediaSupport()
             {
                 // supported through a handler
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
-				_mediaSupport.emplace(mediaType, MediaSupportInfo::New(Ptr(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler));
+				_mediaSupport.emplace(mediaType,
+				    std::make_shared<MediaSupportInfo>(shared_from_this(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler) //MediaSupportInfo::New(Ptr(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler)
+				);
 #else
-                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo::New(Ptr(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler)));
+                _mediaSupport.insert(std::make_pair(mediaType,
+                                                    std::make_shared<MediaSupportInfo>(shared_from_this(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler) //MediaSupportInfo::New(Ptr(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler)
+                ));
 #endif
             }
             else
             {
                 // unsupported
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
-				_mediaSupport.emplace(mediaType, MediaSupportInfo::New(Ptr(), mediaType, false));
+				_mediaSupport.emplace(mediaType,
+				std::make_shared<MediaSupportInfo>(shared_from_this(), mediaType, false) //MediaSupportInfo::New(Ptr(), mediaType, false)
+				)
+				;
 #else
-                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo::New(Ptr(), mediaType, false)));
+                _mediaSupport.insert(std::make_pair(mediaType,
+                                                    std::make_shared<MediaSupportInfo>(shared_from_this(), mediaType, false) //MediaSupportInfo::New(Ptr(), mediaType, false)
+                )
+                );
 #endif
             }
         }

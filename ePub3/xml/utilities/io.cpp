@@ -23,6 +23,8 @@
 
 EPUB3_XML_BEGIN_NAMESPACE
 
+#if !ENABLE_XML_READ_DOC_MEMORY
+
 InputBuffer::InputBuffer()
 {
     _buf = xmlParserInputBufferCreateIO(InputBuffer::read_cb, InputBuffer::close_cb, this, XML_CHAR_ENCODING_NONE);
@@ -34,6 +36,7 @@ InputBuffer::~InputBuffer()
     xmlFreeParserInputBuffer(_buf);
     _buf = nullptr;
 }
+
 int InputBuffer::read_cb(void *context, char *buffer, int len)
 {
     InputBuffer * p = reinterpret_cast<InputBuffer*>(context);
@@ -74,14 +77,50 @@ int InputBuffer::close_cb(void *context)
 std::shared_ptr<Document> InputBuffer::xmlReadDocument(const char * url, const char * encoding, int options)
 {
     _encodingCheck = encoding;
+    //xmlDocPtr raw = xmlReadIO(_buf->readcallback, _buf->closecallback, _buf->context, url, encoding, options);
     xmlDocPtr raw = xmlReadIO(_buf->readcallback, _buf->closecallback, _buf->context, url, encoding, options);
+    if (!bool(raw) || (raw->type != XML_HTML_DOCUMENT_NODE && raw->type != XML_DOCUMENT_NODE) || !bool(raw->children)) {
+        if (bool(raw)) {
+            xmlFreeDoc(raw);
+        }
+        return nullptr;
+    }
     return Wrapped<Document>(raw);
 }
-std::shared_ptr<Document> InputBuffer::htmlReadDocument(const char *url, const char *encoding, int options)
+//std::shared_ptr<Document> InputBuffer::htmlReadDocument(const char *url, const char *encoding, int options)
+//{
+//    _encodingCheck = encoding;
+//    // is in fact an xmlDocPtr
+//    htmlDocPtr raw = htmlReadIO(_buf->readcallback, _buf->closecallback, _buf->context, url, encoding, options);
+//    if (!bool(raw) || (raw->type != XML_HTML_DOCUMENT_NODE && raw->type != XML_DOCUMENT_NODE) || !bool(raw->children)) {
+//        if (bool(raw)) {
+//            xmlFreeDoc(raw);
+//        }
+//        return nullptr;
+//    }
+//    return Wrapped<Document>(raw);
+//}
+
+
+size_t StreamInputBuffer::read(uint8_t *buf, size_t len)
 {
-    _encodingCheck = encoding;
-    return Wrapped<Document>(htmlReadIO(_buf->readcallback, _buf->closecallback, _buf->context, url, encoding, options));
+    size_t num = 0;
+    if ( _input.good() )
+        num = static_cast<size_t>(_input.readsome(reinterpret_cast<std::istream::char_type*>(buf), len));
+    return num;
 }
+bool StreamInputBuffer::close()
+{
+    return true;
+}
+size_t StreamInputBuffer::size() const
+{
+    std::istream::pos_type pos = _input.tellg();
+    size_t result = (size_t)_input.seekg(0, std::ios::end).tellg();
+    _input.seekg(pos);
+    return result;
+}
+#endif //!ENABLE_XML_READ_DOC_MEMORY
 
 OutputBuffer::OutputBuffer(const std::string & encoding)
 {
@@ -96,7 +135,7 @@ OutputBuffer::OutputBuffer(const std::string & encoding)
                 throw InternalError("Unsupported output encoding: " + encoding);
         }
     }
-    
+
     _buf = xmlOutputBufferCreateIO(OutputBuffer::write_cb, OutputBuffer::close_cb, this, encoder);
     if ( _buf == nullptr )
         throw InternalError("Failed to create xml output buffer");
@@ -119,25 +158,6 @@ int OutputBuffer::close_cb(void *context)
 int OutputBuffer::writeDocument(xmlDocPtr doc)
 {
     return xmlSaveFileTo(*this, doc, "utf-8");
-}
-
-size_t StreamInputBuffer::read(uint8_t *buf, size_t len)
-{
-    size_t num = 0;
-    if ( _input.good() )
-        num = static_cast<size_t>(_input.readsome(reinterpret_cast<std::istream::char_type*>(buf), len));
-    return num;
-}
-bool StreamInputBuffer::close()
-{
-    return true;
-}
-size_t StreamInputBuffer::size() const
-{
-    std::istream::pos_type pos = _input.tellg();
-    size_t result = (size_t)_input.seekg(0, std::ios::end).tellg();
-    _input.seekg(pos);
-    return result;
 }
 
 bool StreamOutputBuffer::write(const uint8_t *buffer, size_t len)
