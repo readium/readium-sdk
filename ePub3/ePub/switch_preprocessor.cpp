@@ -49,7 +49,7 @@ ContentFilterPtr SwitchPreprocessor::SwitchFilterFactory(ConstPackagePtr package
     for ( auto& item : package->Manifest() )
     {
         if ( item.second->HasProperty(ItemProperties::ContainsSwitch) )
-            return New();
+            return std::make_shared<SwitchPreprocessor>(); //New();
     }
     return nullptr;
 }
