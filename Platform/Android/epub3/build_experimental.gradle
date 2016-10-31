@@ -6,39 +6,39 @@ def ndk_clang = (rootProject.hasProperty("readium_ndk_clang") && rootProject.rea
 def ndk_experimental = (rootProject.hasProperty("readium_ndk_experimental") && rootProject.readium_ndk_experimental)
 
 model {
-    repositories {
-        libs(PrebuiltLibraries) {
-            //${buildType.name}
-            //def os = targetPlatform.operatingSystem
-            def baseDir = "../../../ePub3/ThirdParty/icu4c/lib/"
-            def headersDir = "${file("./include/icu4c")}".toString()
-
-            libicuuc {
-                headers.srcDir "${headersDir}"
-                binaries.withType(StaticLibraryBinary) {
-                    staticLibraryFile = file("${baseDir}${targetPlatform.getName()}/libicuuc.a")
-                }
-            }
-            libicui18n {
-                headers.srcDir "${headersDir}"
-                binaries.withType(StaticLibraryBinary) {
-                    staticLibraryFile = file("${baseDir}${targetPlatform.getName()}/libicui18n.a")
-                }
-            }
-            libicuio {
-                headers.srcDir "${headersDir}"
-                binaries.withType(StaticLibraryBinary) {
-                    staticLibraryFile = file("${baseDir}${targetPlatform.getName()}/libicuio.a")
-                }
-            }
-            libicudata {
-                headers.srcDir "${headersDir}"
-                binaries.withType(StaticLibraryBinary) {
-                    staticLibraryFile = file("${baseDir}${targetPlatform.getName()}/libicudata.a")
-                }
-            }
-        }
-    }
+//    repositories {
+//        libs(PrebuiltLibraries) {
+//            //${buildType.name}
+//            //def os = targetPlatform.operatingSystem
+//            def baseDir = "../../../ePub3/ThirdParty/icu4c/lib/"
+//            def headersDir = "${file("./include/icu4c")}".toString()
+//
+//            libicuuc {
+//                headers.srcDir "${headersDir}"
+//                binaries.withType(StaticLibraryBinary) {
+//                    staticLibraryFile = file("${baseDir}${targetPlatform.getName()}/libicuuc.a")
+//                }
+//            }
+//            libicui18n {
+//                headers.srcDir "${headersDir}"
+//                binaries.withType(StaticLibraryBinary) {
+//                    staticLibraryFile = file("${baseDir}${targetPlatform.getName()}/libicui18n.a")
+//                }
+//            }
+//            libicuio {
+//                headers.srcDir "${headersDir}"
+//                binaries.withType(StaticLibraryBinary) {
+//                    staticLibraryFile = file("${baseDir}${targetPlatform.getName()}/libicuio.a")
+//                }
+//            }
+//            libicudata {
+//                headers.srcDir "${headersDir}"
+//                binaries.withType(StaticLibraryBinary) {
+//                    staticLibraryFile = file("${baseDir}${targetPlatform.getName()}/libicudata.a")
+//                }
+//            }
+//        }
+//    }
 
     android {
         compileSdkVersion = 24
@@ -91,12 +91,12 @@ model {
                         srcDir "./include"
                     }
 
-                    dependencies {
-                        library "libicuuc" linkage "static"
-                        library "libicui18n" linkage "static"
-                        library "libicuio" linkage "static"
-                        library "libicudata" linkage "static"
-                    }
+//                    dependencies {
+//                        library "libicuuc" linkage "static"
+//                        library "libicui18n" linkage "static"
+//                        library "libicuio" linkage "static"
+//                        library "libicudata" linkage "static"
+//                    }
                 } //jni
             } //main
         } //sources
@@ -119,14 +119,15 @@ model {
             def arrayFlags = [
                 "-fexceptions",
                 "-DBUILDING_EPUB3",
+//                "-DLIBXML_ICU_ENABLED",
                 (ndk_clang && clangWithGnuStl) ? "-DCLANG_WITH_GNUSTL" : "-DREADIUM_GCC",
                 ndk_clang ? "-D_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49=_LIBCPP_INLINE_VISIBILITY" : "-DREADIUM_GCC",
                 "-I../prefix.h",
                 "-I${file("./include")}".toString(),
                 "-I${file("./include/ePub3")}".toString(),
                 "-I${file("./include/ePub3/utilities")}".toString(),
-                "-I${file("./include/ePub3/xml")}".toString(),
-                "-I${file("./include/icu4c")}".toString()
+                "-I${file("./include/ePub3/xml")}".toString()
+//                "-I${file("./include/icu4c")}".toString()
             ]
 
             def arrayFlagsCPP = [
