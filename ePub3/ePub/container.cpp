@@ -87,7 +87,7 @@ bool Container::Open(const string& path, bool skipLoadingNavigationTables)
     if (!bool(r.get())) {
         throw std::invalid_argument(_Str("ZIP Path not recognised: '", gContainerFilePath, "'"));
     }
-
+    
     ArchiveXmlReader reader(std::move(r));
     if (!reader) {
         throw std::invalid_argument(_Str("ZIP Path not recognised: '", gContainerFilePath, "'"));
