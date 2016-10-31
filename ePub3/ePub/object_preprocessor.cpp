@@ -39,7 +39,7 @@ ContentFilterPtr ObjectPreprocessor::ObjectFilterFactory(ConstPackagePtr package
 {
     if ( package->MediaTypesWithDHTMLHandlers().empty() )
         return nullptr;
-    return New(package, "Open");
+    return std::make_shared<ObjectPreprocessor>(package, "Open"); //New(package, "Open");
 }
 void ObjectPreprocessor::Register()
 {
