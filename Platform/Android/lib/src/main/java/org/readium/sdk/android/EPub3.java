@@ -118,7 +118,8 @@ public class EPub3 {
 	 * @param cachePath The cache path obtained from the
 	 * application context.
 	 */
-	public static native void setCachePath(String cachePath);
+//#if ENABLE_ZIP_ARCHIVE_WRITER
+//	public static native void setCachePath(String cachePath);
 	
 	/**
 	 * Sets a handler that will be called after the filter chain
@@ -139,7 +140,7 @@ public class EPub3 {
 	 * @param path Path to the book.
 	 * @return True if the book is EPUB3.
 	 */
-	public static native boolean isEpub3Book(final String path);
+//	public static native boolean isEpub3Book(final String path);
 
 	/**
 	 * Open an ePub3 book.
@@ -148,7 +149,10 @@ public class EPub3 {
 	 * ePub3 book.
 	 */
 	public static native Container openBook(final String path);
-	
+
+	public static native Container openBookPlain(final String path);
+
+
 	/**
 	 * Releases a native pointer from the PointerPool.
 	 * @param nativePtr The native pointer.

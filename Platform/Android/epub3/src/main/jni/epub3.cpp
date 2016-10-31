@@ -76,12 +76,16 @@ static const char *javaEPub3_handleSdkErrorSignature = "(Ljava/lang/String;Z)Z";
  * Exported variables
  **************************************************/
 
+#if ENABLE_ZIP_ARCHIVE_WRITER
+
 /**
  * Global variable to share the Android Cache directory with the
  * Core SDK. It is used in /ePub3/ePub/zip_archive.cpp to store
  * temporary files.
  */
 char gAndroidCacheDir[PATH_MAX] = {0};
+
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
 
 //TODO: Remove when all these when passed to respective classes
 jclass javaJavaObjectsFactoryClass = NULL;
@@ -349,6 +353,8 @@ JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved) {
     //TODO: Fill when needed
 }
 
+#if ENABLE_ZIP_ARCHIVE_WRITER
+
 /*
  * Class:     org_readium_sdk_android_EPub3
  * Method:    setCachePath
@@ -364,6 +370,8 @@ Java_org_readium_sdk_android_EPub3_setCachePath(JNIEnv* env, jobject thiz, jstri
     // Release the c string
     RELEASE_UTF8(cachePath, str);
 }
+
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
 
 /*
  * Class:     org_readium_sdk_android_EPub3
@@ -395,61 +403,61 @@ Java_org_readium_sdk_android_EPub3_setContentFiltersRegistrationHandler(JNIEnv* 
         contentFiltersRegistrationHandler_Run_ID = m;
     }
 }
-
-/*
- * Class:     org_readium_sdk_android_EPub3
- * Method:    isEpub3Book
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_org_readium_sdk_android_EPub3_isEpub3Book(JNIEnv* env, jobject thiz, jstring path) {
-    // Initialize core ePub3 SDK
-    initializeReadiumSDK(env);
-
-    std::string _path = jni::StringUTF(env, path);
-    LOGD("EPub3.isEpub3Book(): path received is '%s'", _path.c_str());
-
-    shared_ptr<ePub3::Container> _container = nullptr;
-    try {
-        _container = ePub3::Container::OpenContainer(_path);
-
-        shared_ptr<ePub3::Package> _package = nullptr;
-        try {
-            _package = _container->DefaultPackage();
-
-            if(_package != nullptr) {
-                ePub3::string versionStr;
-                int version = 0;
-
-                versionStr = _package->Version();
-                if(versionStr.empty()) {
-                    LOGE("EPub3.isEpub3Book(): couldn't get package version");
-                } else {
-                    // GNU libstdc++ seems to not want to let us use these C++11 routines...
-#ifndef _LIBCPP_VERSION
-                    version = (int)strtol(versionStr.c_str(), nullptr, 10);
-#else
-                    version = std::stoi(versionStr.stl_str());
-#endif
-
-                    if(version >= 3) {
-                        LOGD("EPub3.isEpub3Book(): returning true");
-                        return JNI_TRUE;
-                    }
-                }
-
-            }
-        }
-        catch(const std::invalid_argument& ex) {
-            LOGE("EPub3.isEpub3Book(): failed to open package: %s\n", ex.what());
-        }
-    }
-    catch (const std::invalid_argument& ex) {
-        LOGE("EPub3.isEpub3Book(): failed to open container: %s\n", ex.what());
-    }
-
-    LOGD("EPub3.isEpub3Book(): returning false");
-    return JNI_FALSE;
-}
+//
+///*
+// * Class:     org_readium_sdk_android_EPub3
+// * Method:    isEpub3Book
+// * Signature: (Ljava/lang/String;)Z
+// */
+//JNIEXPORT jboolean JNICALL Java_org_readium_sdk_android_EPub3_isEpub3Book(JNIEnv* env, jobject thiz, jstring path) {
+//    // Initialize core ePub3 SDK
+//    initializeReadiumSDK(env);
+//
+//    std::string _path = jni::StringUTF(env, path);
+//    LOGD("EPub3.isEpub3Book(): path received is '%s'", _path.c_str());
+//
+//    shared_ptr<ePub3::Container> _container = nullptr;
+//    try {
+//        _container = ePub3::Container::OpenContainer(_path);
+//
+//        shared_ptr<ePub3::Package> _package = nullptr;
+//        try {
+//            _package = _container->DefaultPackage();
+//
+//            if(_package != nullptr) {
+//                ePub3::string versionStr;
+//                int version = 0;
+//
+//                versionStr = _package->Version();
+//                if(versionStr.empty()) {
+//                    LOGE("EPub3.isEpub3Book(): couldn't get package version");
+//                } else {
+//                    // GNU libstdc++ seems to not want to let us use these C++11 routines...
+//#ifndef _LIBCPP_VERSION
+//                    version = (int)strtol(versionStr.c_str(), nullptr, 10);
+//#else
+//                    version = std::stoi(versionStr.stl_str());
+//#endif
+//
+//                    if(version >= 3) {
+//                        LOGD("EPub3.isEpub3Book(): returning true");
+//                        return JNI_TRUE;
+//                    }
+//                }
+//
+//            }
+//        }
+//        catch(const std::invalid_argument& ex) {
+//            LOGE("EPub3.isEpub3Book(): failed to open package: %s\n", ex.what());
+//        }
+//    }
+//    catch (const std::invalid_argument& ex) {
+//        LOGE("EPub3.isEpub3Book(): failed to open container: %s\n", ex.what());
+//    }
+//
+//    LOGD("EPub3.isEpub3Book(): returning false");
+//    return JNI_FALSE;
+//}
 
 /*
  * Class:     org_readium_sdk_android_EPub3
@@ -458,6 +466,7 @@ JNIEXPORT jboolean JNICALL Java_org_readium_sdk_android_EPub3_isEpub3Book(JNIEnv
  */
 JNIEXPORT jobject JNICALL
 Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring path) {
+
     // Initialize core ePub3 SDK
     initializeReadiumSDK(env);
 
@@ -471,20 +480,20 @@ Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring p
     try {
         _container = ePub3::Container::OpenContainer(spath);
     }
-    catch (const std::invalid_argument& ex) {
-        LOGD("OpenContainer() EXCEPTION 1: %s\n", ex.what());
-
-        RELEASE_UTF8(path, nativePath);
-        return nullptr;
-    }
     catch (const ePub3::ContentModuleExceptionDecryptFlow& ex) {
-        LOGD("OpenContainer() EXCEPTION 2: %s\n", ex.what());
+        LOGD("OpenContainer() ContentModuleExceptionDecryptFlow: %s\n", ex.what());
 
         RELEASE_UTF8(path, nativePath);
         return nullptr;
     }
     catch (const ePub3::ContentModuleException& ex) {
-        LOGD("OpenContainer() EXCEPTION 3: %s\n", ex.what());
+        LOGD("OpenContainer() ContentModuleException: %s\n", ex.what());
+
+        RELEASE_UTF8(path, nativePath);
+        return nullptr;
+    }
+    catch (const std::exception& ex) {
+        LOGD("OpenContainer() EXCEPTION: %s\n", ex.what());
 
         RELEASE_UTF8(path, nativePath);
         return nullptr;
@@ -492,6 +501,8 @@ Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring p
 
     if (_container == nullptr) {
         LOGD("OpenContainer() NULL\n");
+
+        RELEASE_UTF8(path, nativePath);
         return nullptr;
     }
 
@@ -513,6 +524,66 @@ Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring p
 
         javaContainer_addPackageToContainer(env, jContainer, package.getId());
         LOGD("EPub3.openBook(): package added");
+    }
+
+    //TODO: Just for testing dump
+    //std::string dump = jni::PointerPool::dump();
+    //LOGD("openBook(): pointer pool dump: %s", dump.c_str());
+
+    RELEASE_UTF8(path, nativePath);
+
+    return jContainer;
+}
+
+
+JNIEXPORT jobject JNICALL
+Java_org_readium_sdk_android_EPub3_openBookPlain(JNIEnv* env, jobject thiz, jstring path) {
+
+    // Initialize core ePub3 SDK
+    initializeReadiumSDK(env);
+
+    char *nativePath;
+    GET_UTF8_RETVAL(nativePath, path, NULL);
+    LOGD("EPub3.openBookPlain(): path received is '%s'", nativePath);
+
+    std::string spath = std::string(nativePath);
+
+    shared_ptr<ePub3::Container> _container = nullptr;
+    try {
+        _container = ePub3::Container::OpenContainerForContentModule(spath);
+    }
+    catch (const std::exception& ex) {
+        LOGD("OpenContainerForContentModule() EXCEPTION: %s\n", ex.what());
+
+        RELEASE_UTF8(path, nativePath);
+        return nullptr;
+    }
+
+    if (_container == nullptr) {
+        LOGD("OpenContainerForContentModule() NULL\n");
+
+        RELEASE_UTF8(path, nativePath);
+        return nullptr;
+    }
+
+    LOGD("EPub3.openBookPlain(): _container OK, version: %s\n", _container->Version().c_str());
+
+    // Save container before sending it to Java
+    jni::Pointer container(_container, POINTER_GPS("container"));
+
+    jobject jContainer = javaContainer_createContainer(env, container.getId(), path);
+
+    auto packages = _container->Packages();
+
+    for (auto packageIt = packages.begin(); packageIt != packages.end(); ++packageIt) {
+        auto _package = &*(&*packageIt);
+        LOGD("EPub3.openBookPlain(): package type: %p %s\n", _package, typeid(_package).name());
+
+        // Save package before sending it to Java
+        jni::Pointer package(*_package, POINTER_GPS("package"));
+
+        javaContainer_addPackageToContainer(env, jContainer, package.getId());
+        LOGD("EPub3.openBookPlain(): package added");
     }
 
     //TODO: Just for testing dump
