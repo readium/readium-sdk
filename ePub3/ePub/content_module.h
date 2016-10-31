@@ -45,40 +45,42 @@ public:
     ContentModule() {}
     ContentModule(ContentModule&&) {}
     virtual ~ContentModule() {}
-    
+
     virtual
     ContentModule& operator=(ContentModule&&) { return *this; }
-    
+
 private:
     ContentModule(const ContentModule&)                     _DELETED_;
     ContentModule& operator=(const ContentModule&)          _DELETED_;
-    
+
 public:
     //////////////////////////////////////////////
     // Token files
-    
+
     virtual
     async_result<ContainerPtr>
     ProcessFile(const string& path,
                 launch policy=launch::any)                  = 0;
-    
+
     //////////////////////////////////////////////
     // Content Filters
-    
+
     virtual
     void
     RegisterContentFilters()                                = 0;
-    
+
     //////////////////////////////////////////////
     // User actions
-    
+
     virtual
     async_result<bool>
     ApproveUserAction(const UserAction& action)             = 0;
-    
+
     virtual string GetModuleName()                          = 0;
 
 };
+
+typedef std::shared_ptr<ContentModule> ContentModulePtr;
 
 EPUB3_END_NAMESPACE
 

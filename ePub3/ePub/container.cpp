@@ -65,9 +65,14 @@ bool Container::Open(const string& path)
 
 	// TODO: Initialize lazily? Doing so would make initialization faster, but require
 	// PackageLocations() to become non-const, like Packages().
-	ArchiveXmlReader reader(_archive->ReaderAtPath(gContainerFilePath));
+
+    unique_ptr<ArchiveReader> r = _archive->ReaderAtPath(gContainerFilePath);
+    if (!bool(r.get())) {
+        throw std::invalid_argument(_Str("ZIP Path not recognised: '", gContainerFilePath, "'"));
+    }
+	ArchiveXmlReader reader(std::move(r));
 	if (!reader) {
-		throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
+        throw std::invalid_argument(_Str("ZIP Path not recognised: '", gContainerFilePath, "'"));
 	}
     
 #if EPUB_USE(LIBXML2)
@@ -110,39 +115,24 @@ bool Container::Open(const string& path)
 
 	return true;
 }
-ContainerPtr Container::OpenContainer(const string &path)
-{
-	auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, launch::any);
-	ContainerPtr result;
+ContainerPtr Container::OpenContainer(const string &path) {
+    auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, launch::any);
 
-    // Added by DRM inside H.S. Lee on 2015-03-15
-    // Without following code part, program crash happens on some situations
-    if (future.__future_ == nullptr)
-    {
-        // There are registered modules, but
-        //1-1 no proper content module
-        //1-2 canceled by users
-        //1-3 Signature error (currently, throwing error)
-        //1-4 Password error (currently, throwing error)
-        
-        //2, plain content
+    if (!future.valid()) { // future.__future_ == nullptr
+        // There is no content module that handles this publication, so we attempt opening plain content (no encryption)
+        // Possibly also: the content module returned an errored Future.
         return OpenContainerForContentModule(path);
     }
-    
-	// see if it's complete with a nil value
-	if (future.wait_for(std::chrono::system_clock::duration(0)) == future_status::ready)
-	{
-        result = future.get();
-		if (!bool(result))
-            //No registered content module
-			return OpenContainerForContentModule(path);
-	}
 
-	if (!bool(result))
-        //There is a proper registered content module to handle the encrypted EPUB
-		result = future.get();
+    // There is a proper registered content module to handle the encrypted EPUB
+    // Wait for result (this is blocking unless the Future is "ready")
+    ContainerPtr result = future.get();
 
-	return result;
+    if (result == nullptr) {
+        return OpenContainerForContentModule(path);
+    }
+
+    return result;
 }
 
 #ifdef SUPPORT_ASYNC
@@ -153,10 +143,10 @@ future<ContainerPtr> Container::OpenContainerAsync(const string& path, launch po
     // see if it's complete with a nil value
     if (result.wait_for(std::chrono::system_clock::duration(0)) == future_status::ready)
     {
-		ContainerPtr container = result.get();
-		if (container)
-			result = make_ready_future<ContainerPtr>(std::move(container));
-		else
+        ContainerPtr container = result.get();
+        if (container)
+            result = make_ready_future<ContainerPtr>(std::move(container));
+        else
             result = async(policy, &Container::OpenContainerForContentModule, path);
     }
     
