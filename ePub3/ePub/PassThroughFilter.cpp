@@ -59,7 +59,7 @@ ContentFilterPtr PassThroughFilter::PassThroughFactory(ConstPackagePtr package)
     // HOWEVER, a cleaner (more permanent) method is to edit the PopulateFilterManager() function in initialization.cpp,
     // and comment the call to PassThroughFilter::Register()
 
-    return New();
+    return std::make_shared<PassThroughFilter>(); //New();
     //return nullptr;
 }
 
