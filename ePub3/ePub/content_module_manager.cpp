@@ -44,6 +44,7 @@ ContentModuleManager::ContentModuleManager() :
 ContentModuleManager::~ContentModuleManager()
 {
 }
+
 ContentModuleManager* ContentModuleManager::Instance() _NOEXCEPT
 {
     static std::once_flag __once;
@@ -51,6 +52,12 @@ ContentModuleManager* ContentModuleManager::Instance() _NOEXCEPT
         ptr->reset(new ContentModuleManager);
     }, &s_instance);
     return s_instance.get();
+//
+//    if (ContentModuleManager::s_instance == nullptr || ContentModuleManager::s_instance.get() == nullptr) {
+//        ContentModuleManager::s_instance = std::unique_ptr<ContentModuleManager>(new ContentModuleManager());
+//    }
+//    ContentModuleManager* ptr = ContentModuleManager::s_instance.get();
+//    return ptr;
 }
 
 void ContentModuleManager::RegisterContentModule(ContentModule* module,
@@ -145,7 +152,8 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
 
         for (auto& item : _known_modules)
         {
-            auto modulePtr = item.second;
+            std::shared_ptr<ContentModule> modulePtr = item.second;
+
             ContainerPtr container = modulePtr->ProcessFile(path);
 
             if (bool(container)) {
@@ -161,12 +169,7 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
                 std::shared_ptr<Package> package = container->DefaultPackage();
                 package->LoadNavigationTables(true);
 
-//                ContainerPtr container_ = Container::OpenContainerForContentModule(path);
-//                if (bool(container_)) {
-//                    return container_;
-//                }
-
-                return container;
+                return std::move(container);
             }
         }
 
