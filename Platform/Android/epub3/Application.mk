@@ -1,4 +1,4 @@
-APP_PLATFORM := android-24
+APP_PLATFORM := android-25
 
 ifneq ($(READIUM_SKIPARM),true)
 
