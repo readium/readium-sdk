@@ -70,7 +70,7 @@ bool Container::Open(const string& path)
     if (!bool(r.get())) {
         throw std::invalid_argument(_Str("ZIP Path not recognised: '", gContainerFilePath, "'"));
     }
-	ArchiveXmlReader reader(r.get());
+	ArchiveXmlReader reader(std::move(r));
 	if (!reader) {
         throw std::invalid_argument(_Str("ZIP Path not recognised: '", gContainerFilePath, "'"));
 	}
