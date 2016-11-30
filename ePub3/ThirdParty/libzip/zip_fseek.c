@@ -110,26 +110,11 @@ int _zip_fseek_bytes(struct zip_file* zf, off_t abspos, off_t flen)
     else if (abspos >= flen) {
         zf->flags |= ZIP_ZF_EOF;
         zf->bytes_left = 0;
-        
-        /* added by DRM inside, C.H. Yu on 2015-04-13 */
-        // Without following added codes, uncompressed EPUB media content would not be properly random accessed,
-        // such as bad index access error
-        zf->fpos = _zip_file_get_offset_safe(zf->za, zf->file_index);
-        zf->fpos += flen;
-        zf->cbytes_left = 0;
-        /* adding end */
     }
     /* not at or past EOF? ensure EOF is unset and update bytes_left */
     else {
         zf->flags &= ~ZIP_ZF_EOF;
         zf->bytes_left = flen - abspos;
-        
-        /* added by DRM inside, C.H. Yu on 2015-04-13 */
-        // Without following added codes, uncompressed EPUB media content would not be properly random accessed,
-        // such as bad index access error
-        zf->fpos += (abspos - zf->file_fpos);
-        zf->cbytes_left = zf->bytes_left;
-        /* adding end */
     }
     zf->file_fpos = abspos;
     return 0;

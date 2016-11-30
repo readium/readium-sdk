@@ -752,7 +752,7 @@ ByteStream::size_type ZipFileByteStream::BytesAvailable() _NOEXCEPT
 {
     if ( _file == nullptr )
         return 0;
-    return _file->bytes_left;
+    return _bytes_left;
 }
 ByteStream::size_type ZipFileByteStream::SpaceAvailable() const _NOEXCEPT
 {
@@ -770,6 +770,15 @@ bool ZipFileByteStream::Open(struct zip *archive, const string &path, int flags)
         Close();
     
     _file = zip_fopen(archive, Sanitized(path).c_str(), flags);
+    _filename = Sanitized(path);
+    //printf("file %s\n",Sanitized(path).c_str());
+        
+    zip_stat_t st;
+    if ((_file != nullptr) && (zip_source_stat(_file->src, &st) >= 0)) {
+        _total_size = st.size;
+        _bytes_left = _total_size;
+    }
+    
     return ( _file != nullptr );
 }
 void ZipFileByteStream::Close()
@@ -794,8 +803,10 @@ ByteStream::size_type ZipFileByteStream::ReadBytes(void *buf, size_type len)
         return 0;
     }
 
-	_eof = (_file->bytes_left == 0);
+    _bytes_left -= numRead;
+	_eof = (_bytes_left == 0);
     
+    //printf("file %s: bytes %zd of %zd\n",_filename.c_str(),Position(),_total_size);
     return numRead;
 }
 ByteStream::size_type ZipFileByteStream::WriteBytes(const void *buf, size_type len)
@@ -805,39 +816,56 @@ ByteStream::size_type ZipFileByteStream::WriteBytes(const void *buf, size_type l
 }
 ByteStream::size_type ZipFileByteStream::Seek(size_type by, std::ios::seekdir dir)
 {
-    int whence = ZIP_SEEK_SET;
+    int whence = SEEK_SET;
     switch (dir)
     {
         case std::ios::beg:
             break;
         case std::ios::cur:
-            whence = ZIP_SEEK_CUR;
+            whence = SEEK_CUR;
             break;
         case std::ios::end:
-            whence = ZIP_SEEK_END;
+            whence = SEEK_END;
             break;
         default:
             return Position();
     }
     
-    zip_fseek(_file, long(by), whence);
-	_eof = (_file->bytes_left == 0);
+//    if (long(by) > Position()) {
+//        ssize_t diff = long(by) - Position();
+//        ReadBytes(nullptr, diff);
+//    }
+
+    zip_int64_t supported = _file->src->supports;
+    if ((supported & ZIP_SOURCE_SUPPORTS_SEEKABLE) != ZIP_SOURCE_SUPPORTS_SEEKABLE) {
+
+        supported = 1;
+    }
+    //printf("file %s: seek to %zd (at %zd)\n",_filename.c_str(),by,Position());
+
+    zip_source_seek(_file->src, long(by), whence);
+    //zip_int64_t pos = zip_source_tell(_file->src);
+    _eof = (Position() >= _total_size);
     return Position();
 }
 ByteStream::size_type ZipFileByteStream::Position() const
 {
-    return size_type(zip_ftell(_file));
+    return size_type(_total_size - _bytes_left);
 }
 std::shared_ptr<SeekableByteStream> ZipFileByteStream::Clone() const
 {
 	if (_file == nullptr)
 		return nullptr;
 
-	struct zip_file* newFile = zip_fopen_index(_file->za, _file->file_index, _file->flags);
-	if (newFile == nullptr)
+    zip_stat_t st;
+    if (zip_source_stat(_file->src, &st) < 0)
+        return nullptr;
+
+    struct zip_file* newFile = zip_fopen_index(_file->za, st.index, st.flags);
+    if (newFile == nullptr)
 		return nullptr;
     
-    zip_fseek(newFile, Position(), ZIP_SEEK_SET);
+    zip_source_seek(newFile->src, Position(), SEEK_SET);
 
 	auto result = std::make_shared<ZipFileByteStream>();
 	if (bool(result))

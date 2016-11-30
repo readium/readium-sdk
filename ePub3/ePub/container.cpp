@@ -56,9 +56,9 @@ _archive(std::move(o._archive)), _ocf(o._ocf), _packages(std::move(o._packages))
 Container::~Container()
 {
 }
-bool Container::Open(const string& path)
+bool Container::Open(const string& path, const string& password)
 {
-	_archive = Archive::Open(path.stl_str());
+    _archive = Archive::Open(path.stl_str(), password.stl_str());
 	if (_archive == nullptr)
 		throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
 	_path = path;
@@ -69,9 +69,8 @@ bool Container::Open(const string& path)
 	if (!reader) {
 		throw std::invalid_argument(_Str("Path does not point to a recognised archive file: '", path, "'"));
 	}
-    
 #if EPUB_USE(LIBXML2)
-	_ocf = reader.xmlReadDocument(gContainerFilePath, nullptr);
+	_ocf = reader.xmlReadDocument(gContainerFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
 #else
 	decltype(_ocf) __tmp(reader.ReadDocument(gContainerFilePath, nullptr, /*RESOLVE_EXTERNALS*/ 1));
 	_ocf = __tmp;
@@ -108,38 +107,29 @@ bool Container::Open(const string& path)
 			_packages.push_back(pkg);
 	}
 
+    auto fm = FilterManager::Instance();
+	for (auto& pkg : _packages)
+	{
+        auto fc = fm->BuildFilterChainForPackage(pkg);
+		pkg->SetFilterChain(fc);
+	}
+
 	return true;
 }
-ContainerPtr Container::OpenContainer(const string &path)
+ContainerPtr Container::OpenContainer(const string &path, const string &password)
 {
 	auto future = ContentModuleManager::Instance()->LoadContentAtPath(path, launch::any);
 	ContainerPtr result;
 
-    // Added by DRM inside H.S. Lee on 2015-03-15
-    // Without following code part, program crash happens on some situations
-    if (future.__future_ == nullptr)
-    {
-        // There are registered modules, but
-        //1-1 no proper content module
-        //1-2 canceled by users
-        //1-3 Signature error (currently, throwing error)
-        //1-4 Password error (currently, throwing error)
-        
-        //2, plain content
-        return OpenContainerForContentModule(path);
-    }
-    
 	// see if it's complete with a nil value
 	if (future.wait_for(std::chrono::system_clock::duration(0)) == future_status::ready)
 	{
         result = future.get();
 		if (!bool(result))
-            //No registered content module
-			return OpenContainerForContentModule(path);
+            return OpenContainerForContentModule(path, password);
 	}
 
 	if (!bool(result))
-        //There is a proper registered content module to handle the encrypted EPUB
 		result = future.get();
 
 	return result;
@@ -183,10 +173,10 @@ ContainerPtr Container::OpenSynchronouslyForWinRT(const string& path)
 	return future.get();
 }
 #endif
-ContainerPtr Container::OpenContainerForContentModule(const string& path)
+ContainerPtr Container::OpenContainerForContentModule(const string& path, const string& password)
 {
 	ContainerPtr container = Container::New();
-	if (container->Open(path) == false)
+	if (container->Open(path, password) == false)
 		return nullptr;
 	return container;
 }
@@ -231,6 +221,23 @@ string Container::Version() const
     return std::move(strings[0]);
 }
 
+std::vector<char> Container::ExtractFileAtPath(const string& path) const
+{
+    unique_ptr<ArchiveReader> pZipReader = _archive->ReaderAtPath(path);
+    if ( !pZipReader ) {
+        return std::vector<char>(0);
+    }
+    
+    size_t total_size = pZipReader->total_size();
+    std::vector<char> buffer(total_size);
+    size_t total_read = pZipReader->read(buffer.data(), total_size);
+    if (total_read != total_size) {
+        return std::vector<char>(0);
+    }
+
+    return buffer;
+}
+
 void Container::ParseVendorMetadata()
 {
     unique_ptr<ArchiveReader> pZipReader = _archive->ReaderAtPath(gAppleiBooksDisplayOptionsFilePath);
@@ -239,7 +246,7 @@ void Container::ParseVendorMetadata()
 
     ArchiveXmlReader reader(std::move(pZipReader));
 #if EPUB_USE(LIBXML2)
-    shared_ptr<xml::Document> docXml = reader.xmlReadDocument(gAppleiBooksDisplayOptionsFilePath, nullptr);
+    shared_ptr<xml::Document> docXml = reader.xmlReadDocument(gAppleiBooksDisplayOptionsFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
 #elif EPUB_USE(WIN_XML)
 	auto docXml = reader.ReadDocument(gAppleiBooksDisplayOptionsFilePath, nullptr, 0);
 #endif
@@ -286,7 +293,7 @@ void Container::LoadEncryption()
     
     ArchiveXmlReader reader(std::move(pZipReader));
 #if EPUB_USE(LIBXML2)
-    shared_ptr<xml::Document> enc = reader.xmlReadDocument(gEncryptionFilePath, nullptr);
+    shared_ptr<xml::Document> enc = reader.xmlReadDocument(gEncryptionFilePath, nullptr, XML_PARSE_RECOVER|XML_PARSE_NOENT|XML_PARSE_DTDATTR);
 #elif EPUB_USE(WIN_XML)
 	auto enc = reader.ReadDocument(gEncryptionFilePath, nullptr, 0);
 #endif

@@ -30,7 +30,6 @@
 #import "RDContainer.h"
 #import <ePub3/container.h>
 #import <ePub3/initialization.h>
-#import <ePub3/utilities/byte_stream.h>
 #import <ePub3/utilities/error_handler.h>
 #import "RDPackage.h"
 
@@ -59,6 +58,10 @@
 
 
 - (instancetype)initWithDelegate:(id <RDContainerDelegate>)delegate path:(NSString *)path {
+    return [self initWithDelegate:delegate path:path password:nil];
+}
+
+- (instancetype)initWithDelegate:(id <RDContainerDelegate>)delegate path:(NSString *)path password:(NSString *)password {
 	if (path == nil || ![[NSFileManager defaultManager] fileExistsAtPath:path]) {
 		return nil;
 	}
@@ -85,18 +88,9 @@
 
 		ePub3::InitializeSdk();
 		ePub3::PopulateFilterManager();
-		
-		if ([delegate respondsToSelector:@selector(containerRegisterContentFilters:)]) {
-			[delegate containerRegisterContentFilters:self];
-		}
-        
-               //Content Modules for each DRM library, if any, should be registered in the function.
-               if ([delegate respondsToSelector:@selector(containerRegisterContentModules:)]) {
-                       [delegate containerRegisterContentModules:self];
-                }
 
 		m_path = path;
-		m_container = ePub3::Container::OpenContainer(path.UTF8String);
+        m_container = ePub3::Container::OpenContainer(path.UTF8String, password ? password.UTF8String : "");
 
 		if (m_container == nullptr) {
 			return nil;
@@ -114,24 +108,13 @@
 	return self;
 }
 
-- (BOOL)fileExistsAtPath:(NSString *)relativePath {
-    return m_container->FileExistsAtPath([relativePath UTF8String]);
+- (BOOL)fileExistsAtPath:(NSString *)path {
+    return m_container->FileExistsAtPath(path.UTF8String);
 }
 
-- (NSString *)contentsOfFileAtPath:(NSString *)relativePath encoding:(NSStringEncoding)encoding {
-    if (![self fileExistsAtPath:relativePath])
-    	return nil;
-
-    std::unique_ptr<ePub3::ByteStream> stream = m_container->ReadStreamAtPath([relativePath UTF8String]);
-    if (stream == nullptr)
-    	return nil;
-
-    void *buffer = nullptr;
-    size_t length = stream->ReadAllBytes(&buffer);
-    std::string nativeContent((char *)buffer, length);
-    free (buffer);
-
-    return [NSString stringWithCString:nativeContent.c_str() encoding:encoding];
+- (NSData *)dataForFileAtPath:(NSString *)path {
+    std::vector<char> data = m_container->ExtractFileAtPath(path.UTF8String);
+    return [NSData dataWithBytes:data.data() length:data.size()];
 }
 
 @end

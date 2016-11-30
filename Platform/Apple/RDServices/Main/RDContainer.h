@@ -60,6 +60,10 @@
 @property (nonatomic, readonly) NSString *path;
 
 - (instancetype)initWithDelegate:(id <RDContainerDelegate>)delegate path:(NSString *)path;
+- (instancetype)initWithDelegate:(id <RDContainerDelegate>)delegate path:(NSString *)path password:(NSString *)password;
+
+- (BOOL)fileExistsAtPath:(NSString *)path;
+- (NSData *)dataForFileAtPath:(NSString *)path;
 
 /**
  * Returns whether the given file exists in the container's archive.

@@ -324,6 +324,15 @@ public class Package {
 		return null;
 	}
 
+	public SpineItem getSpineItemByTitle(String title) {
+        for (SpineItem si : spineItems) {
+            if (si.getTitle().equals(title)) {
+                return si;
+            }
+        }
+        return null;
+    }
+
 	public NavigationTable getTableOfContents() {
 		if (tableOfContents == null) {
 			tableOfContents = nativeGetTableOfContents(__nativePtr);
