@@ -98,12 +98,12 @@ public:
     
     ///
     /// Opens the archive at a given path.
-    bool            Open(const string& path);
+    bool            Open(const string& path, const string& password = "");
     
     ///
     /// Creates and returns a new Container instance by calling OpenContainerAsync() and blocking.
     static ContainerPtr
-        OpenContainer(const string& path);
+        OpenContainer(const string& path, const string& password = "");
 
 #ifdef SUPPORT_ASYNC
     ///
@@ -115,7 +115,7 @@ public:
 	///
 	/// Synchronously creates a new container. Available for the use of ContentModule implementations only.
 	static ContainerPtr
-		OpenContainerForContentModule(const string& path);
+        OpenContainerForContentModule(const string& path, const string& password = "");
     
     virtual         ~Container();
     
@@ -167,6 +167,7 @@ public:
      */
     virtual unique_ptr<ByteStream>  ReadStreamAtPath(const string& path)        const;
     
+    virtual std::vector<char>       ExtractFileAtPath(const string& path)      const;
     ///
     /// The underlying archive.
     ArchivePtr                      GetArchive()            const   { return _archive; }

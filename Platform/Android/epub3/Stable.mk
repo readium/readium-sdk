@@ -139,8 +139,6 @@ LOCAL_SRC_FILES := \
     $(THIRD_PARTY_PATH)/libzip/zip_close.c \
     $(THIRD_PARTY_PATH)/libzip/zip_delete.c \
     $(THIRD_PARTY_PATH)/libzip/zip_dirent.c \
-    $(THIRD_PARTY_PATH)/libzip/zip_entry_free.c \
-    $(THIRD_PARTY_PATH)/libzip/zip_entry_new.c \
     $(THIRD_PARTY_PATH)/libzip/zip_err_str.c \
     $(THIRD_PARTY_PATH)/libzip/zip_error.c \
     $(THIRD_PARTY_PATH)/libzip/zip_error_clear.c \
@@ -157,9 +155,6 @@ LOCAL_SRC_FILES := \
     $(THIRD_PARTY_PATH)/libzip/zip_fopen.c \
     $(THIRD_PARTY_PATH)/libzip/zip_fopen_index.c \
     $(THIRD_PARTY_PATH)/libzip/zip_fread.c \
-    $(THIRD_PARTY_PATH)/libzip/zip_free.c \
-    $(THIRD_PARTY_PATH)/libzip/zip_fseek.c \
-    $(THIRD_PARTY_PATH)/libzip/zip_ftell.c \
     $(THIRD_PARTY_PATH)/libzip/zip_get_archive_comment.c \
     $(THIRD_PARTY_PATH)/libzip/zip_get_archive_flag.c \
     $(THIRD_PARTY_PATH)/libzip/zip_get_file_comment.c \
@@ -189,6 +184,59 @@ LOCAL_SRC_FILES := \
     $(THIRD_PARTY_PATH)/libzip/zip_unchange_all.c \
     $(THIRD_PARTY_PATH)/libzip/zip_unchange_archive.c \
     $(THIRD_PARTY_PATH)/libzip/zip_unchange_data.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_add_entry.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_buffer.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_dir_add.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_discard.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_entry.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_extra_field.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_extra_field_api.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_fdopen.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_file_add.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_file_get_comment.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_file_get_external_attributes.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_file_rename.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_file_replace.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_file_set_comment.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_file_set_external_attributes.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_file_set_mtime.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_fopen_encrypted.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_fopen_index_encrypted.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_get_compression_implementation.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_get_encryption_implementation.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_get_num_entries.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_io_util.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_set_default_password.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_set_file_compression.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_begin_write.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_call.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_close.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_commit_write.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_crc.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_deflate.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_error.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_is_deleted.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_layered.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_open.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_pkware.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_pop.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_read.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_remove.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_rollback_write.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_seek.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_seek_write.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_stat.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_supports.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_tell.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_tell_write.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_window.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_write.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_source_zip_new.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_string.c \
+    $(THIRD_PARTY_PATH)/libzip/zip_utf-8.c \
+    $(THIRD_PARTY_PATH)/libzip/zip.h \
+    $(THIRD_PARTY_PATH)/libzip/zipconf.h \
+    $(THIRD_PARTY_PATH)/libzip/zipint.h \
     $(THIRD_PARTY_PATH)/google-url/base/string16.cc \
     $(THIRD_PARTY_PATH)/google-url/src/gurl.cc \
     $(THIRD_PARTY_PATH)/google-url/src/url_canon_etc.cc \

@@ -52,7 +52,7 @@ public:
     ///
     /// Opens the ZipArchive at a given filesystem path.
     EPUB3_EXPORT
-    ZipArchive(const string & path="");
+    ZipArchive(const string & path="", const string & password="");
     ///
     /// move constructos.
     ZipArchive(ZipArchive &&o) : _zip(o._zip) { o._zip = nullptr; }

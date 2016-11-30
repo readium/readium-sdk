@@ -147,7 +147,15 @@ public class EPub3 {
 	 * @return A Container object corresponding to the opened
 	 * ePub3 book.
 	 */
-	public static native Container openBook(final String path);
+	public static native Container openBook(final String path, final String password);
+
+	  /**
+     * Read the contents of a file within the ePub book
+     * @param bookFilePath Path to the ePub book
+     * @param filePath Path to the file inside the ePub book
+     * @return A String containing the contents of the file
+     */
+    public static native byte[] readFileAtPath(final String bookFilePath, final String password, final String filePath);
 	
 	/**
 	 * Releases a native pointer from the PointerPool.

@@ -50,10 +50,10 @@ public:
         Reset();
     }
     
-    uint32_t Location() const { return m_location; }
-    void Location(uint32_t location) { m_isFullRange = false; m_location = location; }
-    uint32_t Length() const { return m_length; }
-    void Length(uint32_t length) { m_isFullRange = false; m_length = length; }
+    uint64_t Location() const { return m_location; }
+    void Location(uint64_t location) { m_isFullRange = false; m_location = location; }
+    uint64_t Length() const { return m_length; }
+    void Length(uint64_t length) { m_isFullRange = false; m_length = length; }
     bool IsFullRange() const { return m_isFullRange; }
     void Reset() { m_location = 0; m_length = 0; m_isFullRange = true; }
     
@@ -77,8 +77,8 @@ private:
     ByteRange(ByteRange &&b) _DELETED_; // Delete move constructor
     ByteRange &operator=(ByteRange &&b) _DELETED_; // Delete move assignment operator
     
-    uint32_t m_location;
-    uint32_t m_length;
+    uint64_t m_location;
+    uint64_t m_length;
     bool m_isFullRange;
 };
 

@@ -673,7 +673,9 @@ public:
 protected:
     struct zip_file*        _file;      ///< The underlying Zip file stream.
 	std::ios::openmode		_mode;		///< The mode used to open the file (used by Clone()).
-
+    ssize_t                 _total_size;
+    ssize_t                 _bytes_left;
+	string					_filename;
 };
 
 #ifdef SUPPORT_ASYNC

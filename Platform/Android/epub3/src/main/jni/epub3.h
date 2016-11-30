@@ -156,7 +156,7 @@ JNIEXPORT jboolean JNICALL Java_org_readium_sdk_android_EPub3_isEpub3Book(JNIEnv
  * Method:    openBook
  * Signature: (Ljava/lang/String;)Lorg/readium/sdk/android/Container
  */
-JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring path);
+JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring path, jstring password);
 
 /*
  * Class:     org_readium_sdk_android_EPub3

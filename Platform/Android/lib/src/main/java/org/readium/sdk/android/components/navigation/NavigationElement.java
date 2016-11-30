@@ -20,7 +20,7 @@ import java.util.List;
 
 public class NavigationElement {
 
-    private final String title;
+    private String title;
 
     protected final List<NavigationElement> children;
 
@@ -31,6 +31,10 @@ public class NavigationElement {
 
 	public String getTitle() {
         return title;
+    }
+
+    public void setTitle(String aTitle) {
+        title = aTitle;
     }
 
     public List<NavigationElement> getChildren() {

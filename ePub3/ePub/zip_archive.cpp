@@ -19,7 +19,7 @@
 //  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "zip_archive.h"
-#include <libzip/zipint.h>
+#include "zipint.h"
 #include "byte_stream.h"
 #include "make_unique.h"
 #include <sstream>
@@ -97,19 +97,33 @@ static string GetTempFilePath(const string& ext)
 class ZipReader : public ArchiveReader
 {
 public:
-    ZipReader(struct zip_file* file) : _file(file), _total_size(_file->bytes_left) {}
+    ZipReader(struct zip_file* file) : _file(file) {
+        zip_stat_t st;
+        if ((_file != nullptr) && (zip_source_stat(_file->src, &st) >= 0)) {
+            _total_size = st.size;
+            _bytes_left = _total_size;
+        }
+    }
     ZipReader(ZipReader&& o) : _file(o._file) { o._file = nullptr; }
     virtual ~ZipReader() { if (_file != nullptr) zip_fclose(_file); }
     
-    virtual bool operator !() const { return _file == nullptr || _file->bytes_left == 0; }
-	virtual ssize_t read(void* p, size_t len) const { return zip_fread(_file, p, len); }
+    virtual bool operator !() const {
+        return _file == nullptr || _file->eof;
+    }
+	virtual ssize_t read(void* p, size_t len) {
+        zip_int64_t n = 0;
+        n = zip_fread(_file, p, len);
+        if (n > 0) _bytes_left -= n;
+        return n;
+    }
 
 	virtual size_t total_size() const { return _total_size; }
-	virtual size_t position() const { return _total_size - _file->bytes_left; }
+	virtual size_t position() const { return _total_size - _bytes_left; }
     
 private:
     struct zip_file * _file;
-	size_t _total_size;
+    size_t _total_size;
+    size_t _bytes_left;
 };
 
 class ZipWriter : public ArchiveWriter
@@ -162,7 +176,7 @@ protected:
     DataBlob            _data;
     struct zip_source*  _zsrc;
     
-    static ssize_t _source_callback(void *state, void *data, size_t len, enum zip_source_cmd cmd);
+    static zip_int64_t _source_callback(void *state, void *data, zip_uint64_t len, enum zip_source_cmd cmd);
     
 };
 
@@ -178,13 +192,16 @@ string ZipArchive::TempFilePath()
 {
     return GetTempFilePath("zip");
 }
-ZipArchive::ZipArchive(const string & path)
+ZipArchive::ZipArchive(const string & path, const string & password)
 {
     int zerr = 0;
     _zip = zip_open(path.c_str(), ZIP_CREATE, &zerr);
     if ( _zip == nullptr )
         throw std::runtime_error(std::string("zip_open() failed: ") + zError(zerr));
     _path = path;
+
+    if (password.length() > 0)
+        zip_set_default_password(_zip, password.c_str());
 }
 ZipArchive::~ZipArchive()
 {
@@ -218,7 +235,7 @@ bool ZipArchive::ContainsItem(const string & path) const
 }
 bool ZipArchive::DeleteItem(const string & path)
 {
-    int idx = zip_name_locate(_zip, Sanitized(path).c_str(), 0);
+    zip_int64_t idx = zip_name_locate(_zip, Sanitized(path).c_str(), 0);
     if ( idx >= 0 )
         return (zip_delete(_zip, idx) >= 0);
     return false;
@@ -243,7 +260,7 @@ unique_ptr<ArchiveReader> ZipArchive::ReaderAtPath(const string & path) const
 {
     if (_zip == nullptr)
         return nullptr;
-    
+
     struct zip_file* file = zip_fopen(_zip, Sanitized(path).c_str(), 0);
 
     if (file == nullptr)
@@ -256,7 +273,7 @@ unique_ptr<ArchiveWriter> ZipArchive::WriterAtPath(const string & path, bool com
     if (_zip == nullptr)
         return nullptr;
     
-    int idx = zip_name_locate(_zip, Sanitized(path).c_str(), (create ? ZIP_CREATE : 0));
+    zip_uint64_t idx = zip_name_locate(_zip, Sanitized(path).c_str(), (create ? ZIP_CREATE : 0));
     if (idx == -1)
         return nullptr;
     
@@ -298,9 +315,9 @@ ZipWriter::ZipWriter(ZipWriter&& o) : _compressed(o._compressed), _data(std::mov
     o._zsrc = nullptr;
     _zsrc->ud = reinterpret_cast<void*>(this);
 }
-ssize_t ZipWriter::_source_callback(void *state, void *data, size_t len, enum zip_source_cmd cmd)
+zip_int64_t ZipWriter::_source_callback(void *state, void *data, zip_uint64_t len, zip_source_cmd_t cmd)
 {
-    ssize_t r = 0;
+    zip_int64_t r = 0;
     ZipWriter * writer = reinterpret_cast<ZipWriter*>(state);
     switch ( cmd )
     {

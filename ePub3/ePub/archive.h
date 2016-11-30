@@ -75,8 +75,8 @@ public:
     
 protected:
     ///
-    /// Type of a function which creates an Archive from a file.
-    typedef std::function<std::unique_ptr<Archive>(const string&)>     CreatorFn;
+    /// Type of a function which creates an Archive from a file and possibly a password.
+    typedef std::function<std::unique_ptr<Archive>(const string&, const string&)>     CreatorFn;
     ///
     /// Type of a function which determines whether a file is a certain type of archive.
     typedef std::function<bool(const string&)>         SnifferFn;
@@ -97,7 +97,7 @@ private:
         ~ArchiveFactory() {}
         
         bool                        CanInit(const string& path)    const   { return _typeSniffer(path); }
-        std::unique_ptr<Archive>    operator()(const string& path) const   { return _creator(path); }
+        std::unique_ptr<Archive>    operator()(const string& path, const string& password) const   { return _creator(path, password); }
         
     private:
         CreatorFn       _creator;
@@ -133,7 +133,7 @@ public:
      @result An opened instance of an Archive subclass or `nullptr`.
      */
     EPUB3_EXPORT
-    static std::unique_ptr<Archive> Open(const string& path);
+    static std::unique_ptr<Archive> Open(const string& path, const string& password = "");
     
 public:
     virtual ~Archive() {}
@@ -379,7 +379,7 @@ public:
      be read from the archive during this call.
      @result Returns the number of bytes read, or `-1` in case of error.
      */
-	virtual ssize_t read(void *p, size_t len) const { return 0; }
+	virtual ssize_t read(void *p, size_t len) { return 0; }
 
 	virtual size_t total_size() const { return 0; }
 	virtual size_t position() const { return 0; }
