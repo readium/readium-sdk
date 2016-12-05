@@ -2433,6 +2433,7 @@
 					"-Wno-inconsistent-missing-override",
 				);
 				SDKROOT = macosx;
+				STRIP_INSTALLED_PRODUCT = NO;
 			};
 			name = Debug;
 		};
@@ -2473,6 +2474,7 @@
 					"-Wno-inconsistent-missing-override",
 				);
 				SDKROOT = macosx;
+				STRIP_INSTALLED_PRODUCT = NO;
 			};
 			name = Release;
 		};
