@@ -484,18 +484,32 @@ Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring p
         LOGD("OpenContainer() ContentModuleExceptionDecryptFlow: %s\n", ex.what());
 
         RELEASE_UTF8(path, nativePath);
+
         return nullptr;
     }
     catch (const ePub3::ContentModuleException& ex) {
         LOGD("OpenContainer() ContentModuleException: %s\n", ex.what());
 
         RELEASE_UTF8(path, nativePath);
+
+
+        jstring jmessage = m_env->NewStringUTF(ex.what());
+        jboolean b = javaEPub3_handleSdkError(m_env, jmessage, (jboolean)true);
+        m_env->DeleteLocalRef(jmessage);
+
         return nullptr;
     }
     catch (const std::exception& ex) {
         LOGD("OpenContainer() EXCEPTION: %s\n", ex.what());
 
         RELEASE_UTF8(path, nativePath);
+
+
+
+        jstring jmessage = m_env->NewStringUTF(ex.what());
+        jboolean b = javaEPub3_handleSdkError(m_env, jmessage, (jboolean)true);
+        m_env->DeleteLocalRef(jmessage);
+
         return nullptr;
     }
 
