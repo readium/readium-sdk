@@ -25,7 +25,7 @@
 
 EPUB3_BEGIN_NAMESPACE
 
-const int ArchiveXmlReader::DEFAULT_OPTIONS = XML_PARSE_RECOVER | XML_PARSE_NOENT | XML_PARSE_DTDATTR | XML_PARSE_NONET;
+const int ArchiveXmlReader::DEFAULT_OPTIONS = XML_PARSE_RECOVER | XML_PARSE_DTDATTR | XML_PARSE_NONET;
 
 ArchiveXmlReader::ArchiveXmlReader(ArchiveReader * r) : _reader(r)
 {
