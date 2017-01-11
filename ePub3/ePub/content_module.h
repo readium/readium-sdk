@@ -28,6 +28,8 @@
 
 EPUB3_BEGIN_NAMESPACE
 
+#if FUTURE_ENABLED
+
 #if EPUB_COMPILER_SUPPORTS(CXX_ALIAS_TEMPLATES)
 template <typename _Tp>
 using async_result = future<_Tp>;
@@ -39,46 +41,56 @@ using promised_result = promise<_Tp>;
 # define promised_result std::promise
 #endif
 
+#endif //FUTURE_ENABLED
+
 class ContentModule : public std::enable_shared_from_this<ContentModule>
 {
 public:
     ContentModule() {}
     ContentModule(ContentModule&&) {}
     virtual ~ContentModule() {}
-    
+
     virtual
     ContentModule& operator=(ContentModule&&) { return *this; }
-    
+
 private:
     ContentModule(const ContentModule&)                     _DELETED_;
     ContentModule& operator=(const ContentModule&)          _DELETED_;
-    
+
 public:
     //////////////////////////////////////////////
     // Token files
-    
+#if FUTURE_ENABLED
     virtual
     async_result<ContainerPtr>
     ProcessFile(const string& path,
                 launch policy=launch::any)                  = 0;
-    
+#else
+    virtual
+    ContainerPtr
+    ProcessFile(const string& path)                  = 0;
+#endif //FUTURE_ENABLED
     //////////////////////////////////////////////
     // Content Filters
-    
+
     virtual
     void
     RegisterContentFilters()                                = 0;
-    
+
+#if FUTURE_ENABLED
     //////////////////////////////////////////////
     // User actions
-    
+
     virtual
     async_result<bool>
     ApproveUserAction(const UserAction& action)             = 0;
-    
+#endif //FUTURE_ENABLED
+
     virtual string GetModuleName()                          = 0;
 
 };
+
+typedef std::shared_ptr<ContentModule> ContentModulePtr;
 
 EPUB3_END_NAMESPACE
 

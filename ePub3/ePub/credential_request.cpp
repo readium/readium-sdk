@@ -20,6 +20,8 @@
 
 #include "credential_request.h"
 
+#if FUTURE_ENABLED
+
 EPUB3_BEGIN_NAMESPACE
 
 CredentialRequest::CredentialRequest(const string& title, const string& message)
@@ -85,3 +87,5 @@ CredentialRequest::GetButtonHandler(std::size_t idx)
 
 
 EPUB3_END_NAMESPACE
+
+#endif //FUTURE_ENABLED

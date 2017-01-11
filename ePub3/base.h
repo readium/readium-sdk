@@ -31,9 +31,29 @@
 #include <stdlib.h>
 
 #ifdef __cplusplus
+
+#if EPUB_COMPILER(CLANG)
+#define READIUM_CLANG_PRAGMAS_BEGIN \
+    _Pragma("clang diagnostic push"); \
+    _Pragma("clang diagnostic ignored \"-Winconsistent-missing-override\""); \
+    _Pragma("clang diagnostic ignored \"-Wunused-function\"");
+#define READIUM_CLANG_PRAGMAS_END \
+    _Pragma("clang diagnostic pop");
+#else
+#define READIUM_CLANG_PRAGMAS_BEGIN 
+#define READIUM_CLANG_PRAGMAS_END 
+#endif //EPUB_COMPILER(CLANG)
+
 #define EPUB3_NAMESPACE ePub3
-#define EPUB3_BEGIN_NAMESPACE namespace EPUB3_NAMESPACE {
-#define EPUB3_END_NAMESPACE };
+
+#define EPUB3_BEGIN_NAMESPACE \
+ READIUM_CLANG_PRAGMAS_BEGIN \
+ namespace EPUB3_NAMESPACE {
+
+#define EPUB3_END_NAMESPACE \
+ }; \
+ READIUM_CLANG_PRAGMAS_END
+
 #endif
 
 #ifndef __BEGIN_DECLS

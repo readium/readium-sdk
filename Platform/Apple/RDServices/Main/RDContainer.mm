@@ -35,6 +35,8 @@
 #import "RDPackage.h"
 
 
+#include <ePub3/content_module_exception.h>
+
 @interface RDContainer () {
 	@private std::shared_ptr<ePub3::Container> m_container;
 	@private __weak id <RDContainerDelegate> m_delegate;
@@ -52,13 +54,13 @@
 @synthesize packages = m_packages;
 @synthesize path = m_path;
 
-
 - (RDPackage *)firstPackage {
 	return m_packages.count == 0 ? nil : [m_packages objectAtIndex:0];
 }
 
 
-- (instancetype)initWithDelegate:(id <RDContainerDelegate>)delegate path:(NSString *)path {
+- (instancetype)initWithDelegate:(id <RDContainerDelegate>)delegate
+                            path:(NSString *)path {
 	if (path == nil || ![[NSFileManager defaultManager] fileExistsAtPath:path]) {
 		return nil;
 	}
@@ -86,18 +88,38 @@
 		ePub3::InitializeSdk();
 		ePub3::PopulateFilterManager();
 		
-		if ([delegate respondsToSelector:@selector(containerRegisterContentFilters:)]) {
-			[delegate containerRegisterContentFilters:self];
+        //[[RDLCPService sharedService] registerContentFilter];
+//		if ([delegate respondsToSelector:@selector(containerRegisterContentFilters:)]) {
+//			[delegate containerRegisterContentFilters:self];
+//		}
+        
+		if ([delegate respondsToSelector:@selector(containerRegisterContentModules:)]) {
+			[delegate containerRegisterContentModules:self];
 		}
         
-               //Content Modules for each DRM library, if any, should be registered in the function.
-               if ([delegate respondsToSelector:@selector(containerRegisterContentModules:)]) {
-                       [delegate containerRegisterContentModules:self];
-                }
-
-		m_path = path;
-		m_container = ePub3::Container::OpenContainer(path.UTF8String);
-
+        m_path = path;
+        
+        try {
+            m_container = ePub3::Container::OpenContainer(path.UTF8String);
+        }
+//        catch (NSException *e) {
+//            BOOL res = [m_delegate container:self handleSdkError:[e reason] isSevereEpubError:NO];
+//        }
+        catch (ePub3::ContentModuleExceptionDecryptFlow& e) {
+            // NoOP
+        }
+        catch (std::exception& e) { // includes ePub3::ContentModuleException
+        
+            auto msg = e.what();
+            
+            std::cout << msg << std::endl;
+            
+            BOOL res = [m_delegate container:self handleSdkError:[NSString stringWithUTF8String:msg] isSevereEpubError:NO];
+        }
+        catch (...) {
+            BOOL res = [m_delegate container:self handleSdkError:@"unknown exception" isSevereEpubError:NO];
+        }
+        
 		if (m_container == nullptr) {
 			return nil;
 		}

@@ -33,11 +33,18 @@
 #include <windows.h>
 #endif
 
+#if ENABLE_ZIP_ARCHIVE_WRITER
+
 #if EPUB_OS(ANDROID)
 extern "C" char* gAndroidCacheDir;
 #endif
 
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
+
+
 EPUB3_BEGIN_NAMESPACE
+
+#if ENABLE_ZIP_ARCHIVE_WRITER
 
 static string GetTempFilePath(const string& ext)
 {
@@ -94,6 +101,8 @@ static string GetTempFilePath(const string& ext)
 #endif
 }
 
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
+
 class ZipReader : public ArchiveReader
 {
 public:
@@ -111,6 +120,8 @@ private:
     struct zip_file * _file;
 	size_t _total_size;
 };
+
+#if ENABLE_ZIP_ARCHIVE_WRITER
 
 class ZipWriter : public ArchiveWriter
 {
@@ -165,6 +176,7 @@ protected:
     static ssize_t _source_callback(void *state, void *data, size_t len, enum zip_source_cmd cmd);
     
 };
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
 
 ZipArchive::ZipItemInfo::ZipItemInfo(struct zip_stat & info) : ArchiveItemInfo()
 {
@@ -173,11 +185,12 @@ ZipArchive::ZipItemInfo::ZipItemInfo(struct zip_stat & info) : ArchiveItemInfo()
     SetCompressedSize(static_cast<size_t>(info.comp_size));
     SetUncompressedSize(static_cast<size_t>(info.size));
 }
-
+#if ENABLE_ZIP_ARCHIVE_WRITER
 string ZipArchive::TempFilePath()
 {
     return GetTempFilePath("zip");
 }
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
 ZipArchive::ZipArchive(const string & path)
 {
     int zerr = 0;
@@ -251,6 +264,7 @@ unique_ptr<ArchiveReader> ZipArchive::ReaderAtPath(const string & path) const
     
     return unique_ptr<ZipReader>(new ZipReader(file));
 }
+#if ENABLE_ZIP_ARCHIVE_WRITER
 unique_ptr<ArchiveWriter> ZipArchive::WriterAtPath(const string & path, bool compressed, bool create)
 {
     if (_zip == nullptr)
@@ -269,6 +283,7 @@ unique_ptr<ArchiveWriter> ZipArchive::WriterAtPath(const string & path, bool com
     
     return unique_ptr<ZipWriter>(writer);
 }
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
 ArchiveItemInfo ZipArchive::InfoAtPath(const string & path) const
 {
     struct zip_stat sbuf;
@@ -276,6 +291,8 @@ ArchiveItemInfo ZipArchive::InfoAtPath(const string & path) const
         throw std::runtime_error(std::string("zip_stat("+path.stl_str()+") - " + zip_strerror(_zip)));
     return ZipItemInfo(sbuf);
 }
+
+#if ENABLE_ZIP_ARCHIVE_WRITER
 
 void ZipWriter::DataBlob::Append(const void *data, size_t len)
 {
@@ -353,5 +370,7 @@ ssize_t ZipWriter::_source_callback(void *state, void *data, size_t len, enum zi
     }
     return r;
 }
+
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
 
 EPUB3_END_NAMESPACE

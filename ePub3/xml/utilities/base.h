@@ -123,7 +123,13 @@ struct LibXML2Private
         : __sig(_READIUM_XML_SIGNATURE), __ptr(nullptr)
         {}
     LibXML2Private(_Tp* __p)
-        : __sig(_READIUM_XML_SIGNATURE), __ptr(__p)
+        : __sig(_READIUM_XML_SIGNATURE), __ptr(
+#if ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+        std::shared_ptr<_Tp>(__p)
+#else
+        __p
+#endif //ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+        )
         {}
     LibXML2Private(std::shared_ptr<_Tp>& __p)
         : __sig(_READIUM_XML_SIGNATURE), __ptr(__p)
@@ -133,7 +139,12 @@ struct LibXML2Private
     
     // data member-- used to determine if this is a Readium-made pointer
     unsigned int __sig;
-    std::shared_ptr<_Tp> __ptr;
+#if ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+        std::weak_ptr<_Tp> __ptr;
+#else
+        std::shared_ptr<_Tp> __ptr;
+#endif //ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+
 };
 #endif
 
@@ -162,7 +173,26 @@ static inline std::shared_ptr<_Tp> Wrapped(_Nm * __n)
             _PrivatePtr __p = reinterpret_cast<_PrivatePtr>(__n->_private);
             if (__p->__sig == _READIUM_XML_SIGNATURE)
             {
+#if ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+				std::shared_ptr<_Tp> toRet = __p->__ptr.lock();
+				if (!bool(toRet))// if there is no live reference to the readium wrapper, but
+				{
+					delete __p;	// release unreferenced memory, if any
+					__n->_private = nullptr;
+
+					std::shared_ptr<_Tp> toRet = std::shared_ptr<_Tp>(new _Tp(__n));
+
+					//_PrivatePtr __p = new LibXML2Private<_Tp>(new _Tp(__n));
+					_PrivatePtr __p = new LibXML2Private<_Tp>(toRet);
+					__n->_private = __p;
+					//return __p->__ptr;
+					return toRet;
+				}
+
+				return toRet;
+#else
                 return __p->__ptr;
+#endif //ENABLE_WEAK_PTR_XML_NODE_WRAPPER
             }
             else
             {
@@ -175,11 +205,25 @@ static inline std::shared_ptr<_Tp> Wrapped(_Nm * __n)
         if (__n->_private != nullptr)
             throw std::logic_error("XML _private already carries a value!");
     }
-    
-    
-    _PrivatePtr __p = new LibXML2Private<_Tp>(new _Tp(__n));
+
+#if ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+    std::shared_ptr<_Tp> toRet = std::shared_ptr<_Tp>(new _Tp(__n));
+#endif //ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+
+    _PrivatePtr __p = new LibXML2Private<_Tp>(
+#if ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+    toRet
+#else
+    new _Tp(__n)
+#endif //ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+    );
     __n->_private = __p;
-    return __p->__ptr;
+    return
+#if ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+    toRet;
+#else
+    __p->__ptr;
+#endif //ENABLE_WEAK_PTR_XML_NODE_WRAPPER
 }
 
 /**
@@ -198,7 +242,13 @@ static inline void Rewrap(_Nm* __n, std::shared_ptr<_Tp> __t)
         if (IS_READIUM_WRAPPED_XML(__n))
         {
             _Private* __p = reinterpret_cast<_Private*>(__n->_private);
-            if (__p->__ptr == __t)
+            if (
+#if ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+            __p->__ptr.lock() && __p->__ptr.lock() == __t
+#else
+            __p->__ptr == __t
+#endif //ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+            )
                 return;
             
             delete __p;

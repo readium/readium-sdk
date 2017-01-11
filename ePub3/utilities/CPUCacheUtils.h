@@ -23,6 +23,8 @@
 #ifndef ePub3_CPUCacheUtils_h
 #define ePub3_CPUCacheUtils_h
 
+#ifdef ENABLE_SYS_CACHE_FLUSH
+
 #include <ePub3/base.h>
 
 // operation codes for epub_sys_cache_control()
@@ -43,5 +45,7 @@ void epub_sys_cache_invalidate(void* start, long len);
 void epub_sys_cache_flush(void* start, long len);
 
 __END_DECLS
+
+#endif //ENABLE_SYS_CACHE_FLUSH
 
 #endif

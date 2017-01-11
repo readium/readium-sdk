@@ -18,10 +18,13 @@
 //  the License, or (at your option) any later version. You should have received a copy of the GNU 
 //  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#if FUTURE_ENABLED
+
 #include <ePub3/epub3.h>
 #include <system_error>
 #include "future.h"
 
+/*
 #if EPUB_PLATFORM(ANDROID)
 namespace std
 {
@@ -78,6 +81,21 @@ namespace std
     }
     
 }
+#endif
+*/
+
+#if EPUB_COMPILER(CLANG) && defined(ANDROID)
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int __cxa_thread_atexit(void (*func)(), void *obj,
+                                   void *dso_symbol) {
+  return 0;
+}
+#ifdef __cplusplus
+}
+#endif
 #endif
 
 EPUB3_BEGIN_NAMESPACE
@@ -177,3 +195,5 @@ std::error_condition std::make_error_condition(EPUB3_NAMESPACE::future_errc e) _
 {
     return std::error_condition(static_cast<int>(e), EPUB3_NAMESPACE::future_category());
 }
+
+#endif //FUTURE_ENABLED

@@ -154,7 +154,7 @@ ContentFilterPtr FontObfuscator::FontObfuscatorFactory(ConstPackagePtr package)
     {
         if ( encInfo->Algorithm() == FontObfuscationAlgorithmID )
         {
-            return New(container, package);
+            return std::make_shared<FontObfuscator>(container, package); //New(container, package);
         }
     }
     

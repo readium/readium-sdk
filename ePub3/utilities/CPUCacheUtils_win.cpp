@@ -18,7 +18,10 @@
 //  the License, or (at your option) any later version. You should have received a copy of the GNU 
 //  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
+#ifdef ENABLE_SYS_CACHE_FLUSH
 #include "CPUCacheUtils.h"
+
 #if EPUB_CPU(X86) || EPUB_CPU(X64)
 #include <emmintrin.h>
 #endif
@@ -73,3 +76,5 @@
 		// no idea...
 #endif
 	}
+
+#endif //ENABLE_SYS_CACHE_FLUSH

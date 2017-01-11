@@ -52,12 +52,16 @@ extern "C" {
  * Exported variables
  **************************************************/
 
+#if ENABLE_ZIP_ARCHIVE_WRITER
+
 /**
  * Global variable to share the Android Cache directory with the
  * Core SDK. It is used in /ePub3/ePub/zip_archive.cpp to store
  * temporary files.
  */
 extern char gAndroidCacheDir[];
+
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
 
 //TODO: Remove when all these when passed to respective classes
 extern jclass javaJavaObjectsFactoryClass;
@@ -130,12 +134,16 @@ JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved);
  * Class: EPub3
  */
 
+#if ENABLE_ZIP_ARCHIVE_WRITER
+
 /*
  * Class:     org_readium_sdk_android_EPub3
  * Method:    setCachePath
  * Signature: (Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_org_readium_sdk_android_EPub3_setCachePath(JNIEnv* env, jobject thiz, jstring cachePath);
+
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
 
 /*
  * Class:     org_readium_sdk_android_EPub3
@@ -149,7 +157,7 @@ JNIEXPORT void JNICALL Java_org_readium_sdk_android_EPub3_setContentFiltersRegis
  * Method:    isEpub3Book
  * Signature: (Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean JNICALL Java_org_readium_sdk_android_EPub3_isEpub3Book(JNIEnv* env, jobject thiz, jstring Path);
+//JNIEXPORT jboolean JNICALL Java_org_readium_sdk_android_EPub3_isEpub3Book(JNIEnv* env, jobject thiz, jstring Path);
 
 /*
  * Class:     org_readium_sdk_android_EPub3
@@ -157,6 +165,8 @@ JNIEXPORT jboolean JNICALL Java_org_readium_sdk_android_EPub3_isEpub3Book(JNIEnv
  * Signature: (Ljava/lang/String;)Lorg/readium/sdk/android/Container
  */
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_EPub3_openBook(JNIEnv* env, jobject thiz, jstring path);
+
+JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_EPub3_openBookPlain(JNIEnv* env, jobject thiz, jstring path);
 
 /*
  * Class:     org_readium_sdk_android_EPub3

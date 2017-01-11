@@ -21,6 +21,8 @@
 #ifndef ePub3_credential_request_h
 #define ePub3_credential_request_h
 
+#if FUTURE_ENABLED
+
 #include <ePub3/epub3.h>
 #include <ePub3/content_module.h>
 #include <map>
@@ -162,5 +164,7 @@ public:
 };
 
 EPUB3_END_NAMESPACE
+
+#endif //FUTURE_ENABLED
 
 #endif

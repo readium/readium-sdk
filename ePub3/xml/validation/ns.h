@@ -47,8 +47,8 @@ typedef std::vector<std::shared_ptr<Namespace>> NamespaceList;
 class Namespace : public WrapperBase<Namespace>
 {
 public:
-    explicit Namespace(_xmlNs * ns) : _xml(ns) {}
-    Namespace() : _xml(nullptr) {}
+    explicit Namespace(_xmlNs * ns) : _xml(ns), bShouldxmlFreeNs(false) {}
+    Namespace() : _xml(nullptr), bShouldxmlFreeNs(false) {}
     Namespace(std::shared_ptr<Document> doc, const string & prefix, const string & uri);
     virtual ~Namespace();
     
@@ -67,6 +67,7 @@ public:
         { _xml = nullptr; }
     
 protected:
+    bool bShouldxmlFreeNs;
     _xmlNs *    _xml;
     
 };

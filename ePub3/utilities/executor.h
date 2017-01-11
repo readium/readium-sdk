@@ -21,6 +21,8 @@
 #ifndef __ePub3__executor__
 #define __ePub3__executor__
 
+#if FUTURE_ENABLED
+
 #include <ePub3/epub3.h>
 #include <functional>
 #include <chrono>
@@ -708,5 +710,7 @@ public:
 std::shared_ptr<executor> main_thread_executor();
 
 EPUB3_END_NAMESPACE
+
+#endif //FUTURE_ENABLED
 
 #endif /* defined(__ePub3__executor__) */
