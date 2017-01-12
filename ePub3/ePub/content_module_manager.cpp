@@ -121,7 +121,7 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
                 modulePtr->RegisterContentFilters();
 
                 std::shared_ptr<Package> package = container->DefaultPackage();
-                package->LoadNavigationTables(true);
+                package->Unpack_Finally(true);
 
                 // ensures the Future is valid()
                 result = make_ready_future<ContainerPtr>(ContainerPtr(container));
@@ -167,7 +167,7 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
                 // the NavDoc XHTML silently failed to load (populate the internal ReadiumSDK data structures)
                 // as the byte buffers were scrambled. So, we need to either reload the entire EPUB, or reload only the navdoc.
                 std::shared_ptr<Package> package = container->DefaultPackage();
-                package->LoadNavigationTables(true);
+                package->Unpack_Finally(true);
 
                 return std::move(container);
             }

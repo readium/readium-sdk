@@ -98,7 +98,7 @@ public:
     
     ///
     /// Opens the archive at a given path.
-    bool            Open(const string& path, bool skipLoadingNavigationTables = false);
+    bool            Open(const string& path, bool skipLoadingPotentiallyEncryptedContent = false);
     
     ///
     /// Creates and returns a new Container instance by calling OpenContainerAsync() and blocking.
@@ -115,7 +115,7 @@ public:
 	///
 	/// Synchronously creates a new container. Available for the use of ContentModule implementations only.
 	static ContainerPtr
-		OpenContainerForContentModule(const string& path, bool skipLoadingNavigationTables = false); 
+		OpenContainerForContentModule(const string& path, bool skipLoadingPotentiallyEncryptedContent = false); 
     
     virtual         ~Container();
     

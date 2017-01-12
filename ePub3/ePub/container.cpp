@@ -73,7 +73,7 @@ Container::~Container()
 {
 }
 
-bool Container::Open(const string& path, bool skipLoadingNavigationTables)
+bool Container::Open(const string& path, bool skipLoadingPotentiallyEncryptedContent)
 {
 	_archive = Archive::Open(path.stl_str());
 	if (_archive == nullptr)
@@ -138,7 +138,7 @@ bool Container::Open(const string& path, bool skipLoadingNavigationTables)
 		auto pkg = std::make_shared<Package>(shared_from_this(), type);
         //Package::New(Ptr(), type);
 
-		if (pkg->Open(path, skipLoadingNavigationTables))
+		if (pkg->Open(path, skipLoadingPotentiallyEncryptedContent))
 			_packages.push_back(pkg);
 	}
 
@@ -226,10 +226,10 @@ ContainerPtr Container::OpenSynchronouslyForWinRT(const string& path)
 }
 #endif
 
-ContainerPtr Container::OpenContainerForContentModule(const string& path, bool skipLoadingNavigationTables)
+ContainerPtr Container::OpenContainerForContentModule(const string& path, bool skipLoadingPotentiallyEncryptedContent)
 {
 	ContainerPtr container = std::make_shared<Container>(); //Container::New();
-	if (container->Open(path, skipLoadingNavigationTables) == false)
+	if (container->Open(path, skipLoadingPotentiallyEncryptedContent) == false)
 		return nullptr;
 	return std::move(container);
 }

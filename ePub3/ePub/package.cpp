@@ -99,7 +99,7 @@ PackageBase::~PackageBase()
     // our Container owns the archive
 }
 
-bool PackageBase::Open(const string& path, bool skipLoadingNavigationTables)
+bool PackageBase::Open(const string& path, bool skipLoadingPotentiallyEncryptedContent)
 {
     ArchiveXmlReader reader(_archive->ReaderAtPath(path.stl_str()));
 #if ENABLE_XML_READ_DOC_MEMORY
@@ -400,7 +400,7 @@ Package::Package(const shared_ptr<Container>& owner, const string& type) : Prope
 {
 }
 
-bool Package::Open(const string& path, bool skipLoadingNavigationTables)
+bool Package::Open(const string& path, bool skipLoadingPotentiallyEncryptedContent)
 {
 #if _XML_OVERRIDE_SWITCHES
     __setupLibXML();
@@ -416,7 +416,7 @@ bool Package::Open(const string& path, bool skipLoadingNavigationTables)
 		auto fc = fm->BuildFilterChainForPackage(shared_from_this());
 		SetFilterChain(fc);
 		
-		status = Unpack(skipLoadingNavigationTables);
+		status = Unpack(skipLoadingPotentiallyEncryptedContent);
 	}
 
     if (status)
@@ -485,17 +485,36 @@ unique_ptr<ArchiveReader> Package::ReaderForRelativePath(const string& path)    
     return _archive->ReaderAtPath((_pathBase + path).stl_str());
 }
 
-void Package::LoadNavigationTables(bool resetContentFilterChain)
+void Package::Unpack_Finally(bool resetContentFilterChain)
 {
-    if (!_navigation.empty()) // && !_navigation["toc"]->Children().empty()
-    {
-        return;
-    }
-
     if (resetContentFilterChain) {
         auto fm = FilterManager::Instance();
         auto fc = fm->BuildFilterChainForPackage(shared_from_this());
         SetFilterChain(fc);
+    }
+
+    this->LoadNavigationTables();
+
+    // go through the TOC and copy titles to the relevant spine items for easy access
+    this->CompileSpineItemTitles();
+
+    this->LoadMediaOverlays();
+}
+
+void Package::LoadMediaOverlays() {
+
+    PackagePtr sharedMe = shared_from_this();
+
+     //std::weak_ptr<Package> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy() which maintains its own weak pointer
+     _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
+    _mediaOverlays->Initialize();
+}
+
+void Package::LoadNavigationTables()
+{
+    if (!_navigation.empty()) // && !_navigation["toc"]->Children().empty()
+    {
+        return;
     }
 
     auto root = _opf->Root();
@@ -613,7 +632,7 @@ void Package::LoadNavigationTables(bool resetContentFilterChain)
 }
 
 
-bool Package::Unpack(bool skipLoadingNavigationTables)
+bool Package::Unpack(bool skipLoadingPotentiallyEncryptedContent)
 {
     PackagePtr sharedMe = shared_from_this();
     
@@ -1142,20 +1161,13 @@ bool Package::Unpack(bool skipLoadingNavigationTables)
 		return false;
     }
 
-    if (!skipLoadingNavigationTables)
-    {
-        LoadNavigationTables(false);
-    }
-
-	// go through the TOC and copy titles to the relevant spine items for easy access
-	CompileSpineItemTitles();
-    
     // lastly, let's set the media support information
     InitMediaSupport();
 
-    //std::weak_ptr<Package> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy() which maintains its own weak pointer
-    _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
-    _mediaOverlays->Initialize();
+    if (!skipLoadingPotentiallyEncryptedContent)
+    {
+        Unpack_Finally(false);
+    }
 
     return true;
 }
