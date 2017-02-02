@@ -1587,6 +1587,13 @@ const string Package::Contributors(bool localized) const
     ss << "and " << *last;
     return string(ss.str());
 }
+const string& Package::Publisher() const
+{
+    auto items = PropertiesMatching(DCType::Publisher);
+    if ( items.empty() )
+        return string::EmptyString;
+    return items[0]->Value();
+}
 const string& Package::Language() const
 {
     auto items = PropertiesMatching(DCType::Language);

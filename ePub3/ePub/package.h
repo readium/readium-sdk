@@ -718,6 +718,13 @@ public:
     const string            Contributors(bool localized=true)       const;
     
     /**
+     Retrieves the publisher of the publication, if available.
+     @result The publication's publisher.
+     */
+    EPUB3_EXPORT
+    const string&           Publisher()                             const;
+    
+    /**
      Retrieves the language of the publication, if available.
      @result The publication's original language.
      */

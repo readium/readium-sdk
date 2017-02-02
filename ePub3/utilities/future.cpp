@@ -127,7 +127,7 @@ std::vector<__shared_state_base::_ContinuationPtrType>&
 __shared_state_base::__at_thread_exit()
 {
     typedef std::vector<_ContinuationPtrType> _VecType;
-#if EPUB_COMPILER_SUPPORTS(CXX_THREAD_LOCAL)
+#if EPUB_COMPILER_SUPPORTS(CXX_THREAD_LOCAL) && !EPUB_OS(IOS)
     static thread_local _VecType __vec;
     return __vec;
 #elif EPUB_COMPILER(MSVC)
