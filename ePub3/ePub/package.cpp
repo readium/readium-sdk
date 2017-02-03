@@ -115,7 +115,7 @@ bool PackageBase::Open(const string& path)
     size_t loc = path.rfind("/");
     if ( loc == std::string::npos )
     {
-        _pathBase = '/';
+        _pathBase = "";
     }
     else
     {
@@ -1041,7 +1041,7 @@ bool Package::Unpack()
             // otherwise, we had a valid EPUB3 nav with empty (one-level) TOC
 			HandleError(EPUBError::OPFNoNavDocument);
 		}
-		else
+		else if (!tocNames.empty())
 		{
             if (!tocNames.empty()) {
                 try
