@@ -2,7 +2,7 @@ apply plugin: 'com.android.model.native'
 
 model {
     android {
-        compileSdkVersion = 23
+        compileSdkVersion = 25
     }
 
     android.sources {
