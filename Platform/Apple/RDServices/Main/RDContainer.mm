@@ -114,10 +114,10 @@
             
             std::cout << msg << std::endl;
             
-            BOOL res = [m_delegate container:self handleSdkError:[NSString stringWithUTF8String:msg] isSevereEpubError:NO];
+            BOOL res = [m_delegate container:self handleSdkError:[NSString stringWithUTF8String:msg] isSevereEpubError:YES];
         }
         catch (...) {
-            BOOL res = [m_delegate container:self handleSdkError:@"unknown exception" isSevereEpubError:NO];
+            BOOL res = [m_delegate container:self handleSdkError:@"unknown exception" isSevereEpubError:YES];
         }
         
 		if (m_container == nullptr) {
