@@ -35,6 +35,7 @@
 #import "RDMediaOverlaysSmilModel.h"
 #import "RDNavigationElement.h"
 #import "RDPackageResource.h"
+#import "RDPackageResourceServer.h"
 #import "RDSpineItem.h"
 
 
@@ -379,6 +380,30 @@
 - (NSString *)title {
 	const ePub3::string s = m_package->Title();
 	return [NSString stringWithUTF8String:s.c_str()];
+}
+
+
+- (NSData *)getCoverImageData {
+	NSData *data = nil;
+	RDPackageResource *resource = nil;
+	ePub3::ManifestTable manifestTable = m_package->Manifest();
+
+	for (auto manifest = manifestTable.begin(); manifest != manifestTable.end(); manifest++) {
+		std::shared_ptr<ePub3::ManifestItem> item = manifest->second;
+		if (item->HasProperty(ePub3::ItemProperties::CoverImage)) {
+			NSString *baseHref = [[NSString alloc] initWithUTF8String:item->BaseHref().c_str()];
+			resource = [self resourceAtRelativePath:baseHref];
+			break;
+		}
+	}
+
+	if (resource != nil) {
+		@synchronized ([RDPackageResourceServer resourceLock]) {
+			data = [resource readDataFull];
+		}
+	}
+
+	return data;
 }
 
 
