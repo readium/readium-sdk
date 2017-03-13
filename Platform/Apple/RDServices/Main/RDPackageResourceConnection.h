@@ -33,6 +33,7 @@
 
 @interface RDPackageResourceConnection : HTTPConnection
 
++ (void)setCoreResourceBundle:(NSBundle *)bundle;
 + (void)setPackageResourceServer:(RDPackageResourceServer *)packageResourceServer;
 
 @end

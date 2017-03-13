@@ -36,6 +36,7 @@ static id m_resourceLock = nil;
 
 
 @interface RDPackageResourceServer () {
+	@private NSBundle *m_coreResourceBundle;
 	@private __weak id <RDPackageResourceServerDelegate> m_delegate;
 	@private HTTPServer *m_httpServer;
 	@private RDPackage *m_package;
@@ -53,6 +54,11 @@ static id m_resourceLock = nil;
 @synthesize package = m_package;
 @synthesize specialPayloadAnnotationsCSS = m_specialPayloadAnnotationsCSS;
 @synthesize specialPayloadMathJaxJS = m_specialPayloadMathJaxJS;
+
+
+- (NSBundle *)coreResourceBundle {
+	return m_coreResourceBundle;
+}
 
 
 - (void)dealloc {
@@ -81,6 +87,7 @@ static id m_resourceLock = nil;
 	}
 
 	if (self = [super init]) {
+		m_coreResourceBundle = [NSBundle mainBundle];
 		m_delegate = delegate;
 		m_httpServer = [[HTTPServer alloc] init];
 		m_package = package;
@@ -100,6 +107,7 @@ static id m_resourceLock = nil;
             return nil;
         }
 
+		[RDPackageResourceConnection setCoreResourceBundle:m_coreResourceBundle];
 		[RDPackageResourceConnection setPackageResourceServer:self];
 	}
 
@@ -115,6 +123,15 @@ static id m_resourceLock = nil;
 + (id)resourceLock {
 	return m_resourceLock;
 }
+
+
+- (void)setCoreResourceBundle:(NSBundle *)bundle {
+	if (bundle != nil) {
+		m_coreResourceBundle = bundle;
+		[RDPackageResourceConnection setCoreResourceBundle:bundle];
+	}
+}
+
 
 - (BOOL)startHTTPServer {
     if (m_serverPort > 0) {
