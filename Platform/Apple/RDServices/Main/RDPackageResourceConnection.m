@@ -35,6 +35,7 @@
 #import "RDPackageResourceServer.h"
 
 
+static NSBundle *m_coreResourceBundle = nil;
 static NSMutableArray *m_coreResourcePaths = nil;
 static NSMutableArray *m_coreResourcePrefixes = nil;
 static long m_epubReadingSystem_Counter = 0;
@@ -231,7 +232,7 @@ static BOOL m_provideCoreResourcesIsKnown = NO;
 	}
 
 	if (provideCoreResource) {
-		path = [[NSBundle mainBundle].resourcePath stringByAppendingPathComponent:path];
+		path = [m_coreResourceBundle.resourcePath stringByAppendingPathComponent:path];
 		NSData *data = [[NSData alloc] initWithContentsOfFile:path];
 
 		if (data == nil) {
@@ -359,8 +360,16 @@ static BOOL m_provideCoreResourcesIsKnown = NO;
 
 
 + (void)initialize {
+	m_coreResourceBundle = [NSBundle mainBundle];
 	m_coreResourcePaths = [[NSMutableArray alloc] init];
 	m_coreResourcePrefixes = [[NSMutableArray alloc] init];
+}
+
+
++ (void)setCoreResourceBundle:(NSBundle *)bundle {
+	if (bundle != nil) {
+		m_coreResourceBundle = bundle;
+	}
 }
 
 
