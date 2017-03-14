@@ -67,8 +67,8 @@
 
 - (instancetype)initWithPackage:(void *)package;
 
-// Returns the resource at the given relative path or nil if it doesn't exist.
-- (RDPackageResource *)resourceAtRelativePath:(NSString *)relativePath;
+// Returns the cover image data or nil if not available.
+- (NSData *)getCoverImageData;
 
 // Gets the current Byte Stream and returns the proper Byte Stream for the case.
 // There can be three possible byte streams:
@@ -76,5 +76,8 @@
 // - A FilterChainByteStreamRange when a Byte Range request has been made, and only one ContentFilter object applies.
 // - A FilterChainByteStream when it is not a Byte Range request or more than one ContentFilter applies.
 - (void *)getProperByteStream:(NSString *)relativePath currentByteStream:(void *)currentByteStream isRangeRequest:(BOOL)isRangeRequest;
+
+// Returns the resource at the given relative path or nil if it doesn't exist.
+- (RDPackageResource *)resourceAtRelativePath:(NSString *)relativePath;
 
 @end
