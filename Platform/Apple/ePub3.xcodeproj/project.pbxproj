@@ -19,6 +19,9 @@
 		588D24201A02EF8F006A92BB /* PassThroughFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 588D241E1A02EF8F006A92BB /* PassThroughFilter.cpp */; };
 		588D24211A02EF8F006A92BB /* PassThroughFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 588D241E1A02EF8F006A92BB /* PassThroughFilter.cpp */; };
 		588D24221A02EF8F006A92BB /* PassThroughFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 588D241F1A02EF8F006A92BB /* PassThroughFilter.h */; };
+		59753FDB1C88972600EE7908 /* css_preprocessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 59753FD91C88972600EE7908 /* css_preprocessor.cpp */; };
+		59753FDC1C88972600EE7908 /* css_preprocessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 59753FDA1C88972600EE7908 /* css_preprocessor.h */; };
+		59D714EA1C8E1FCD00F6CBDA /* css_preprocessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 59753FD91C88972600EE7908 /* css_preprocessor.cpp */; };
 		834B09011A0BD015006AEB12 /* filter_chain_byte_stream_range.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250D33BAFB8E8EAEF5FE5B5 /* filter_chain_byte_stream_range.cpp */; };
 		834B09021A0BD018006AEB12 /* filter_chain_byte_stream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A250DFDBD90C7E9C632B1E00 /* filter_chain_byte_stream.cpp */; };
 		850B1AE916A75AC600619C3C /* TestData in CopyFiles */ = {isa = PBXBuildFile; fileRef = 850B1AE816A75AB000619C3C /* TestData */; };
@@ -447,6 +450,8 @@
 		1EFA3ACA17AB0BEF003A4BC2 /* filter_manager_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filter_manager_impl.cpp; sourceTree = "<group>"; };
 		588D241E1A02EF8F006A92BB /* PassThroughFilter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PassThroughFilter.cpp; sourceTree = "<group>"; };
 		588D241F1A02EF8F006A92BB /* PassThroughFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PassThroughFilter.h; sourceTree = "<group>"; };
+		59753FD91C88972600EE7908 /* css_preprocessor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = css_preprocessor.cpp; sourceTree = "<group>"; };
+		59753FDA1C88972600EE7908 /* css_preprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = css_preprocessor.h; sourceTree = "<group>"; };
 		850B1AE816A75AB000619C3C /* TestData */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TestData; path = ../../TestData; sourceTree = "<group>"; };
 		A250D0D74FF2AD1AB643D2FA /* media-overlays_smil_data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "media-overlays_smil_data.h"; sourceTree = "<group>"; };
 		A250D119DCB804938466E3D6 /* media-overlays_smil_model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "media-overlays_smil_model.cpp"; sourceTree = "<group>"; };
@@ -1131,6 +1136,8 @@
 				AB95448216BAD32000EFD2FD /* switch_preprocessor.h */,
 				AB95448616BAF11000EFD2FD /* object_preprocessor.cpp */,
 				AB95448716BAF11000EFD2FD /* object_preprocessor.h */,
+				59753FD91C88972600EE7908 /* css_preprocessor.cpp */,
+				59753FDA1C88972600EE7908 /* css_preprocessor.h */,
 			);
 			name = "Content Preprocessing";
 			sourceTree = "<group>";
@@ -1837,6 +1844,7 @@
 				ABA4BA5D16A7414000161B77 /* logging.h in Headers */,
 				ABA4BA5F16A7414000161B77 /* scoped_ptr.h in Headers */,
 				ABA4BA6316A7414000161B77 /* string16.h in Headers */,
+				59753FDC1C88972600EE7908 /* css_preprocessor.h in Headers */,
 				ABA4BA6716A7414000161B77 /* gurl.h in Headers */,
 				ABA4BA6D16A7414000161B77 /* url_canon.h in Headers */,
 				ABA4BA7916A7414000161B77 /* url_canon_icu.h in Headers */,
@@ -2029,6 +2037,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				59D714EA1C8E1FCD00F6CBDA /* css_preprocessor.cpp in Sources */,
 				ABA4BAEF16ADF64400161B77 /* string16.cc in Sources */,
 				ABA4BAF016ADF64400161B77 /* gurl.cc in Sources */,
 				AB5284D417CBC395003D7BBF /* CPUCacheUtils.c in Sources */,
@@ -2305,6 +2314,7 @@
 				1ED0083B17A9B7F800819EBD /* byte_buffer.cpp in Sources */,
 				1ED0084417A9D6E800819EBD /* filter_manager.cpp in Sources */,
 				A250D0731D530005B0FFF5D5 /* media-overlays_smil_model.cpp in Sources */,
+				59753FDB1C88972600EE7908 /* css_preprocessor.cpp in Sources */,
 				A250DCD0523C05493141CE3B /* media-overlays_smil_data.cpp in Sources */,
 				1ED0084817A9DC6F00819EBD /* initialization.cpp in Sources */,
 				1EFA3ACB17AB0BEF003A4BC2 /* filter_manager_impl.cpp in Sources */,
