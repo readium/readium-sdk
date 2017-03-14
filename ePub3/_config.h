@@ -106,14 +106,14 @@ typedef signed long ssize_t;
 #else
 # define EPUB3_EXPORT
 #endif
-
+/*
 #if EPUB_OS(ANDROID)
 //# define UTF_USE_ICU 1
 # define CXX11_STRING_UNAVAILABLE 1
 # if EPUB_COMPILER(CLANG)
 #  define nan(x) __builtin_nan(x)
 # endif
-#endif
+#endif*/
 
 #if EPUB_COMPILER(GCC) && !EPUB_COMPILER(CLANG)
 # if GCC_VERSION_AT_LEAST(4, 7, 0)
