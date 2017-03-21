@@ -44,7 +44,7 @@ namespace jni {
  * POINTER_GPS(name) to have a complete dump of the leaks at
  * the end of your program execution.
  */
-Pointer::Pointer(sptr ptr, std::string name = "") : _id((jlong) ptr.get()), _ptr(ptr), _name(name) {
+Pointer::Pointer(sptr ptr, std::string name) : _id((jlong) ptr.get()), _ptr(ptr), _name(name) {
 	// Prevent from adding nullptr to pointer pool
 	if(ptr != nullptr) {
 		PointerPool::add((Pointer)*this);
