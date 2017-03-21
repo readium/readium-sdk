@@ -459,6 +459,7 @@ Java_org_readium_sdk_android_EPub3_setContentFiltersRegistrationHandler(JNIEnv* 
 //    return JNI_FALSE;
 //}
 
+
 /*
  * Class:     org_readium_sdk_android_EPub3
  * Method:    openBook
