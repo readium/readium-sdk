@@ -170,7 +170,13 @@ Node::Node(const string & name, NodeType type, const string & content, const cla
 Node::Node(Node && o) : _xml(o._xml) {
     typedef LibXML2Private<Node> _Private;
     _Private* priv = reinterpret_cast<_Private*>(_xml->_private);
+
+#if ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+    priv->__ptr = std::shared_ptr<Node>(this);
+#else
     priv->__ptr.reset(this);
+#endif //ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+
     o._xml = NULL;
 }
 Node::~Node()
@@ -181,14 +187,31 @@ Node::~Node()
         return;
     
     _Private* priv = reinterpret_cast<_Private*>(_xml->_private);
-    if ( priv->__sig != _READIUM_XML_SIGNATURE || priv->__ptr.get() != this )
+    if ( priv->__sig != _READIUM_XML_SIGNATURE ||
+#if ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+        (priv->__ptr.lock() != nullptr && priv->__ptr.lock().get() != this)
+#else
+        priv->__ptr.get() != this
+#endif //ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+        ) {
         return;
-    
-    // free the underlying node if *and only if* it is detached
-    if ( _xml->parent == nullptr && _xml->prev == nullptr && _xml->next == nullptr )
+    }
+
+#if ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+    if (!bool(priv->__ptr.lock()))
     {
         _xml->_private = nullptr;
         delete priv;
+    }
+#endif //ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+
+    // free the underlying node if *and only if* it is detached
+    if ( _xml->parent == nullptr && _xml->prev == nullptr && _xml->next == nullptr )
+    {
+#if !ENABLE_WEAK_PTR_XML_NODE_WRAPPER
+        _xml->_private = nullptr;
+        delete priv;
+#endif //!ENABLE_WEAK_PTR_XML_NODE_WRAPPER
         xmlFreeNode(_xml);
     }
 }
@@ -213,7 +236,10 @@ string Node::Content() const
     const xmlChar* ch = xmlNodeGetContent(_xml);
     if (ch == nullptr)
         return string::EmptyString;
-    return ch;
+
+    string result(ch);
+    xmlFree((void*)ch);
+    return result;
 }
 void Node::SetContent(const string &content)
 {
@@ -251,7 +277,10 @@ string Node::Language() const
     const xmlChar * ch = xmlNodeGetLang(_xml);
     if ( ch == nullptr )
         return string();
-    return ch;
+
+    string result(ch);
+    xmlFree((void*)ch);
+    return result;
 }
 void Node::SetLanguage(const string &language)
 {
@@ -270,7 +299,10 @@ string Node::BaseURL() const
     const xmlChar * ch = xmlNodeGetBase(_xml->doc, _xml);
     if ( ch == nullptr )
         return string();
-    return ch;
+
+    string result(ch);
+    xmlFree((void*)ch);
+    return result;
 }
 void Node::SetBaseURL(const string &baseURL)
 {
@@ -349,10 +381,13 @@ string Node::XMLString() const
 }
 string Node::StringValue() const
 {
-    const xmlChar * content = xmlNodeGetContent(_xml);
-    if ( content == nullptr )
+    const xmlChar * ch = xmlNodeGetContent(_xml);
+    if ( ch == nullptr )
         return string();
-    return content;
+
+    string result(ch);
+    xmlFree((void*)ch);
+    return result;
 }
 int Node::IntValue() const
 {
@@ -634,7 +669,9 @@ void Node::Unwrap(_xmlNode *aNode)
             NsPrivate* ptr = reinterpret_cast<NsPrivate*>(__ns->_private);
             if (ptr->__sig == _READIUM_XML_SIGNATURE)
             {
+#if !ENABLE_WEAK_PTR_XML_NODE_WRAPPER
                 ptr->__ptr->release();
+#endif //!ENABLE_WEAK_PTR_XML_NODE_WRAPPER
                 delete ptr;
             }
             __ns->_private = nullptr;
