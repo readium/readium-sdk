@@ -208,7 +208,7 @@ void fail(const char* expr, const char* file, unsigned line)
 # elif defined(__GNUC__) || EPUB_PLATFORM(ANDROID)
     __assert(file, line, expr);
 # else
-#  warning I dont know how to fire assertion internals on this compiler.
+//# warning I dont know how to fire assertion internals on this compiler.
 # endif
 }
 #endif

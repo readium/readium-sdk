@@ -31,6 +31,7 @@
 #elif EPUB_PLATFORM(WIN)
 #include <windows.h>
 #include <Wincrypt.h>
+#include "error_handler.h"
 #elif EPUB_PLATFORM(WINRT)
 using namespace ::Platform;
 using namespace ::Windows::Security::Cryptography;

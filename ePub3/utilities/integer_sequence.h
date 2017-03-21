@@ -1,3 +1,4 @@
+#if 1
 //
 //  integer_sequence.h
 //  ePub3
@@ -79,4 +80,5 @@ using make_index_sequence = make_integer_sequence<std::size_t, _Ep, _Sp>;
 
 EPUB3_END_NAMESPACE
 
+#endif
 #endif
