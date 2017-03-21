@@ -554,6 +554,9 @@ public:
     /// Returns the table of contents for this package.
     shared_ptr<class NavigationTable>   TableOfContents()       const       { return NavigationTable("toc"); }
     ///
+    /// Return the list of landmarks, if any exists.
+    shared_ptr<class NavigationTable>   ListOfLandmarks()       const       { return NavigationTable("landmarks"); }
+    ///
     /// Return the list of figures, if any exists.
     shared_ptr<class NavigationTable>   ListOfFigures()         const       { return NavigationTable("lof"); }
     ///
