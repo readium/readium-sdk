@@ -19,13 +19,72 @@
 //  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "archive_xml.h"
-
+#include <ePub3/xml/document.h>
 #include <ePub3/utilities/error_handler.h>
 #include <sstream>
 
 EPUB3_BEGIN_NAMESPACE
 
 const int ArchiveXmlReader::DEFAULT_OPTIONS = XML_PARSE_RECOVER | XML_PARSE_DTDATTR | XML_PARSE_NONET;
+
+#if ENABLE_XML_READ_DOC_MEMORY
+
+std::shared_ptr<ePub3::xml::Document> ArchiveXmlReader::readXml(const ePub3::string& path)
+{
+    //size_t pos = _reader->position();
+
+    size_t len = _reader->total_size();
+    if (len <= 0)
+        return nullptr;
+
+    uint8_t *docBuf = (uint8_t*)malloc(len);
+    if (!bool(docBuf))
+        return nullptr;
+
+    ssize_t resbuflen = _reader->read(docBuf, len);
+    if (resbuflen <= 0)
+    {
+        free(docBuf);
+        return nullptr;
+    }
+
+    // In some EPUBs, UTF-8 XML/HTML files have a superfluous (erroneous?) BOM, so we either:
+    // pass "utf-8" and expect InputBuffer::read_cb (in io.cpp) to skip the 3 erroneous bytes
+    // (otherwise the XML parser fails),
+    // or we pass NULL (in which case the parser auto-detects encoding)
+    const char * encoding = nullptr;
+    //const char * encoding = "utf-8";
+
+//    std::string fileContents ((char*)docBuf, resbuflen);
+
+    xmlDocPtr raw = xmlReadMemory((const char*)docBuf, resbuflen, path.c_str(), encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
+
+    free(docBuf);
+
+    if (!bool(raw) || (raw->type != XML_HTML_DOCUMENT_NODE && raw->type != XML_DOCUMENT_NODE) || !bool(raw->children)) {
+        if (bool(raw)) {
+            xmlFreeDoc(raw);
+        }
+        return nullptr;
+    }
+
+    std::shared_ptr<ePub3::xml::Document> doc = xml::Wrapped<ePub3::xml::Document>(raw);
+    return doc;
+}
+
+#else
+
+std::shared_ptr<xml::Document> ArchiveXmlReader::xmlReadDocument(const char * url, const char * encoding)
+{
+    return xml::InputBuffer::xmlReadDocument(url, encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
+}
+//
+//std::shared_ptr<xml::Document> ArchiveXmlReader::htmlReadDocument(const char * url, const char * encoding)
+//{
+//	return xml::InputBuffer::htmlReadDocument(url, encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
+//}
+
+#endif //ENABLE_XML_READ_DOC_MEMORY
 
 ArchiveXmlReader::ArchiveXmlReader(ArchiveReader * r) : _reader(r)
 {
@@ -60,15 +119,7 @@ bool ArchiveXmlReader::close()
     return true;
 }
 
-std::shared_ptr<xml::Document> ArchiveXmlReader::xmlReadDocument(const char * url, const char * encoding)
-{
-	return InputBuffer::xmlReadDocument(url, encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
-}
-
-std::shared_ptr<xml::Document> ArchiveXmlReader::htmlReadDocument(const char * url, const char * encoding)
-{
-	return InputBuffer::htmlReadDocument(url, encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
-}
+#if ENABLE_ZIP_ARCHIVE_WRITER
 
 ArchiveXmlWriter::ArchiveXmlWriter(ArchiveWriter* w) : _writer(w)
 {
@@ -98,6 +149,8 @@ bool ArchiveXmlWriter::close()
 {
     return true;
 }
+
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
 
 EPUB3_END_NAMESPACE
 

@@ -18,22 +18,33 @@
 //  the License, or (at your option) any later version. You should have received a copy of the GNU 
 //  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <ePub3/container.h>
 #include "content_module_manager.h"
 #include "content_module.h"
+
+#include <mutex>
+
+#if FUTURE_ENABLED
 #include "user_action.h"
 #include "credential_request.h"
-#include <thread>
+//#include <thread>
+#endif //FUTURE_ENABLED
 
 EPUB3_BEGIN_NAMESPACE
 
 std::unique_ptr<ContentModuleManager> ContentModuleManager::s_instance;
 
-ContentModuleManager::ContentModuleManager() : _mutex(), _known_modules()
+ContentModuleManager::ContentModuleManager() :
+#if FUTURE_ENABLED
+        _mutex(),
+#endif //FUTURE_ENABLED
+        _known_modules()
 {
 }
 ContentModuleManager::~ContentModuleManager()
 {
 }
+
 ContentModuleManager* ContentModuleManager::Instance() _NOEXCEPT
 {
     static std::once_flag __once;
@@ -41,18 +52,30 @@ ContentModuleManager* ContentModuleManager::Instance() _NOEXCEPT
         ptr->reset(new ContentModuleManager);
     }, &s_instance);
     return s_instance.get();
+//
+//    if (ContentModuleManager::s_instance == nullptr || ContentModuleManager::s_instance.get() == nullptr) {
+//        ContentModuleManager::s_instance = std::unique_ptr<ContentModuleManager>(new ContentModuleManager());
+//    }
+//    ContentModuleManager* ptr = ContentModuleManager::s_instance.get();
+//    return ptr;
 }
-void ContentModuleManager::RegisterContentModule(std::shared_ptr<ContentModule> module,
-                                                 const string& name) _NOEXCEPT
+
+void ContentModuleManager::RegisterContentModule(ContentModule* module,
+                                                 const ePub3::string& name) _NOEXCEPT
 {
-    std::unique_lock<std::mutex>(_mutex);
-    _known_modules[name] = module;
+#if FUTURE_ENABLED
+    std::unique_lock<std::mutex> locker(_mutex);
+#endif //FUTURE_ENABLED
+    _known_modules[name] = std::shared_ptr<ContentModule>(module);
 }
+
+#if FUTURE_ENABLED
 
 void ContentModuleManager::DisplayMessage(const string& title, const string& message) _NOEXCEPT
 {
     // nothing at the moment...
 }
+
 future<Credentials>
 ContentModuleManager::RequestCredentialInput(const CredentialRequest &request)
 {
@@ -63,12 +86,16 @@ ContentModuleManager::RequestCredentialInput(const CredentialRequest &request)
     Credentials none;
     return make_ready_future(none);
 }
+#endif //FUTURE_ENABLED
 
+#if FUTURE_ENABLED
 future<ContainerPtr>
 ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
 {
-    std::unique_lock<std::mutex>(_mutex);
-    
+#if FUTURE_ENABLED
+    std::unique_lock<std::mutex> locker(_mutex);
+#endif //FUTURE_ENABLED
+
     if (_known_modules.empty())
     {
         // special case for when we don't have any Content Modules to rely on for an initialized result
@@ -76,7 +103,7 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
     }
     
     future<ContainerPtr> result;
-    bool found = false;
+
     for (auto& item : _known_modules)
     {
         auto modulePtr = item.second;
@@ -84,67 +111,70 @@ ContentModuleManager::LoadContentAtPath(const string& path, launch policy)
         
         // check the state of the future -- has it already been set?
         future_status status = result.wait_for(std::chrono::system_clock::duration(0));
-        
-        /*
-         Following 'if-else' clauses which have 'result.then' make a malfunction
-         while Content Module processing for DRM implementation.
-         But there is no problem to handle both plain and encrypted resources 
-         with next clauses which are detouring result.then
-         */
-        
-        /*
-        // if it's ready, the call to get() will never block
+
         if (status == future_status::ready) {
-			// unpack the future
-			ContainerPtr container = result.get();
+
+            // WARNING! after .get(), the Future<> is empty! (future.__future_ == nullptr / !future.valid()) see Container.cpp OpenContainer()
+            ContainerPtr container = result.get();
 
             if (bool(container)) {
-                // we have a valid container already
-				result = make_ready_future(container);
-                result = result.then([modulePtr](future<ContainerPtr> fut) {
-                    ContainerPtr ptr = fut.get();
-                    modulePtr->RegisterContentFilters();
-                    return ptr;
-                });
-                break;
-            } else {
-                continue;       // no container, so try the next module
-            }
-        } else {
-            // it must be 'timeout' or 'deferred', which means the module is attempting to process the file
-            // we take this to mean that we stop looking and return the result
-            result = result.then([modulePtr](future<ContainerPtr> fut) {
-                ContainerPtr ptr = fut.get();
                 modulePtr->RegisterContentFilters();
-                return ptr;
-            });
-            break;
-        }
-        */
-        
-        if (status == future_status::ready) {
-            ContainerPtr container = result.get();
-            
-            if (bool(container)) {
-                modulePtr->RegisterContentFilters();
-                found = true;
+
+                std::shared_ptr<Package> package = container->DefaultPackage();
+                package->Unpack_Finally(true);
+
+                // ensures the Future is valid()
+                result = make_ready_future<ContainerPtr>(ContainerPtr(container));
                 break;
             } else {
                 continue;
             }
         } else {
             modulePtr->RegisterContentFilters();
-            found = true;
             break;
         }
     }
-    
-    if ( !found && result.__future_ == nullptr )
-    {
-        throw std::invalid_argument("Unsupported DRM EPUB");
-    }
-    
+
     return result;
 }
+#else
+    ContainerPtr
+    ContentModuleManager::LoadContentAtPath(const string& path)
+    {
+#if FUTURE_ENABLED
+        std::unique_lock<std::mutex> locker(_mutex);
+#endif //FUTURE_ENABLED
+
+        if (_known_modules.empty())
+        {
+            return nullptr;
+        }
+
+        for (auto& item : _known_modules)
+        {
+            std::shared_ptr<ContentModule> modulePtr = item.second;
+
+            ContainerPtr container = modulePtr->ProcessFile(path);
+
+            if (bool(container)) {
+
+                // Singleton FilterManagerImpl::RegisterFilter() uses .emplace() with unique keys,
+                // so ContentFilters with the same name => only the first inserted one is preserved (subsequent insertions ignored).
+                modulePtr->RegisterContentFilters();
+
+                // Problem: container was loaded okay, but if Navigation Document was encrypted,
+                // then because the ContentFilters were not registered yet:
+                // the NavDoc XHTML silently failed to load (populate the internal ReadiumSDK data structures)
+                // as the byte buffers were scrambled. So, we need to either reload the entire EPUB, or reload only the navdoc.
+                std::shared_ptr<Package> package = container->DefaultPackage();
+                package->Unpack_Finally(true);
+
+                return std::move(container);
+            }
+        }
+
+        return nullptr;
+    }
+#endif //FUTURE_ENABLED
 
 EPUB3_END_NAMESPACE

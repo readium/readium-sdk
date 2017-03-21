@@ -37,12 +37,12 @@
 
 @optional
 
-/**
- * Called just after the container populated the default filters into
- * the filter manager.
- * You can implement this to register custom filters.
- */
-- (void)containerRegisterContentFilters:(RDContainer *)container;
+///**
+// * Called just after the container populated the default filters into
+// * the filter manager.
+// * You can implement this to register custom filters.
+// */
+//- (void)containerRegisterContentFilters:(RDContainer *)container;
 
 /**
  * You can implement this to register content modules.
@@ -59,7 +59,8 @@
 @property (nonatomic, readonly) NSArray *packages;
 @property (nonatomic, readonly) NSString *path;
 
-- (instancetype)initWithDelegate:(id <RDContainerDelegate>)delegate path:(NSString *)path;
+- (instancetype)initWithDelegate:(id <RDContainerDelegate>)delegate
+                            path:(NSString *)path;
 
 /**
  * Returns whether the given file exists in the container's archive.

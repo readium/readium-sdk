@@ -21,6 +21,8 @@
 #ifndef ePub3_future_h
 #define ePub3_future_h
 
+#if FUTURE_ENABLED
+
 #include <ePub3/base.h>
 #include <list>
 #include <string>
@@ -4070,5 +4072,7 @@ shared_future<_Rp>::then(executor& __exec, _Fp&& __func)
 }
 
 EPUB3_END_NAMESPACE
+
+#endif //FUTURE_ENABLED
 
 #endif

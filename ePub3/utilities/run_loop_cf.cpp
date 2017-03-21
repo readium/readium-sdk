@@ -18,6 +18,8 @@
 //  the License, or (at your option) any later version. You should have received a copy of the GNU 
 //  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#if FUTURE_ENABLED
+
 // Common pieces used by all platforms
 #include "run_loop_common.ipp"
 
@@ -307,3 +309,5 @@ void RunLoop::EventSource::_CancelCF(void* info, CFRunLoopRef rl, CFStringRef mo
 }
 
 EPUB3_END_NAMESPACE
+
+#endif //FUTURE_ENABLED

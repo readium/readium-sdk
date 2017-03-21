@@ -269,18 +269,28 @@ shared_ptr<xml::Document> ManifestItem::ReferencedDocument() const
     const char * encoding = nullptr;
     //const char * encoding = "utf-8";
 
+//    std::string fileContents ((char*)docBuf, resbuflen);
+
 	xmlDocPtr raw;
     if ( _mediaType == "text/html" ) {
         raw = htmlReadMemory((const char*)docBuf, resbuflen, path.c_str(), encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
     } else {
         raw = xmlReadMemory((const char*)docBuf, resbuflen, path.c_str(), encoding, ArchiveXmlReader::DEFAULT_OPTIONS);
     }
-	
-	result = xml::Wrapped<xml::Document>(raw);
-	
+
     if (docBuf)
         free(docBuf);
-	
+
+    if (!bool(raw) || (raw->type != XML_HTML_DOCUMENT_NODE && raw->type != XML_DOCUMENT_NODE) || !bool(raw->children)) {
+        if (bool(raw)) {
+            xmlFreeDoc(raw);
+        }
+        return nullptr;
+    }
+
+    result = xml::Wrapped<xml::Document>(raw);
+
+
 #elif EPUB_USE(WIN_XML)
 	// TODO: filtering referenced document through Content Filters
 	// is not yet supported on Windows

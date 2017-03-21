@@ -20,6 +20,8 @@
 
 #include "optional.h"
 
+#if FUTURE_ENABLED
+
 #if !EPUB_COMPILER_SUPPORTS(CXX_CONSTEXPR)
 // well hello there Microsoft!
 
@@ -32,3 +34,5 @@ nullopt_t nullopt = nullopt_t(nullopt_t::init{});
 EPUB3_END_NAMESPACE
 
 #endif
+
+#endif //FUTURE_ENABLED

@@ -25,8 +25,12 @@
 #include <ePub3/utilities/ring_buffer.h>
 #include <functional>
 #include <ios>
+
+#if FUTURE_ENABLED
 #include <thread>
 #include <ePub3/utilities/run_loop.h>
+#endif //FUTURE_ENABLED
+
 #include <ePub3/utilities/make_unique.h>
 
 struct zip;

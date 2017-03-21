@@ -98,14 +98,25 @@ PackageBase::~PackageBase()
 {
     // our Container owns the archive
 }
-bool PackageBase::Open(const string& path)
+
+bool PackageBase::Open(const string& path, bool skipLoadingPotentiallyEncryptedContent)
 {
     ArchiveXmlReader reader(_archive->ReaderAtPath(path.stl_str()));
+#if ENABLE_XML_READ_DOC_MEMORY
+
+        _opf = reader.readXml(path);
+
+#else
+
 #if EPUB_USE(LIBXML2)
     _opf = reader.xmlReadDocument(path.c_str(), nullptr);
 #elif EPUB_USE(WIN_XML)
-	_opf = reader.ReadDocument(path.c_str(), nullptr, 0);
+    _opf = reader.ReadDocument(path.c_str(), nullptr, 0);
 #endif
+
+#endif //ENABLE_XML_READ_DOC_MEMORY
+
+
     if ( !bool(_opf) )
     {
         HandleError(EPUBError::OCFInvalidRootfileURL, _Str(__PRETTY_FUNCTION__, ": No OPF file at ", path.stl_str()));
@@ -318,7 +329,7 @@ NavigationList PackageBase::_LoadEPUB3NavTablesFromManifestItem(PackagePtr share
 	NavigationList tables;
 	for (auto navNode : nodes)
 	{
-		auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
+		auto navTablePtr = std::make_shared<ePub3::NavigationTable>(sharedPkg, pItem->Href()); //NavigationTable::New(sharedPkg, pItem->Href());
 		if (navTablePtr->ParseXML(navNode))
 			tables.push_back(navTablePtr);
 	}
@@ -327,7 +338,7 @@ NavigationList PackageBase::_LoadEPUB3NavTablesFromManifestItem(PackagePtr share
 	nodes = xpath.Nodes("//html:dl[epub:type='glossary']");
 	for (auto node : nodes)
 	{
-		auto glosPtr = Glossary::New(node, sharedPkg);
+		auto glosPtr = std::make_shared<Glossary>(node, sharedPkg); //Glossary::New(node, sharedPkg);
 		tables.push_back(glosPtr);
 	}
 
@@ -355,7 +366,7 @@ NavigationList PackageBase::_LoadNCXNavTablesFromManifestItem(PackagePtr sharedP
 	NavigationList tables;
 	if (!nodes.empty())
 	{
-		auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
+		auto navTablePtr = std::make_shared<ePub3::NavigationTable>(sharedPkg, pItem->Href()); //NavigationTable::New(sharedPkg, pItem->Href());
 		if (navTablePtr->ParseNCXNavMap(nodes[0], title))
 			tables.push_back(navTablePtr);
 	}
@@ -364,7 +375,7 @@ NavigationList PackageBase::_LoadNCXNavTablesFromManifestItem(PackagePtr sharedP
 	nodes = xpath.Nodes("/ncx:ncx/ncx:pageList");
 	if (!nodes.empty())
 	{
-		auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
+		auto navTablePtr = std::make_shared<ePub3::NavigationTable>(sharedPkg, pItem->Href()); //NavigationTable::New(sharedPkg, pItem->Href());
 		if (navTablePtr->ParseNCXPageList(nodes[0]))
 			tables.push_back(navTablePtr);
 	}
@@ -373,7 +384,7 @@ NavigationList PackageBase::_LoadNCXNavTablesFromManifestItem(PackagePtr sharedP
 	nodes = xpath.Nodes("/ncx:ncx/ncx:navList");
 	for (auto node : nodes)
 	{
-		auto navTablePtr = NavigationTable::New(sharedPkg, pItem->Href());
+		auto navTablePtr = std::make_shared<ePub3::NavigationTable>(sharedPkg, pItem->Href()); //NavigationTable::New(sharedPkg, pItem->Href());
 		if (navTablePtr->ParseNCXNavList(node))
 			tables.push_back(navTablePtr);
 	}
@@ -388,7 +399,8 @@ NavigationList PackageBase::_LoadNCXNavTablesFromManifestItem(PackagePtr sharedP
 Package::Package(const shared_ptr<Container>& owner, const string& type) : PropertyHolder(), OwnedBy(owner), PackageBase(owner, type)
 {
 }
-bool Package::Open(const string& path)
+
+bool Package::Open(const string& path, bool skipLoadingPotentiallyEncryptedContent)
 {
 #if _XML_OVERRIDE_SWITCHES
     __setupLibXML();
@@ -404,7 +416,7 @@ bool Package::Open(const string& path)
 		auto fc = fm->BuildFilterChainForPackage(shared_from_this());
 		SetFilterChain(fc);
 		
-		status = Unpack();
+		status = Unpack(skipLoadingPotentiallyEncryptedContent);
 	}
 
     if (status)
@@ -424,7 +436,7 @@ bool Package::Open(const string& path)
             this->RemoveProperty("layout", "rendition");
 
             PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
-            PropertyPtr prop = Property::New(holderPtr);
+            PropertyPtr prop = std::make_shared<Property>(holderPtr); //Property::New(holderPtr);
             prop->SetPropertyIdentifier(MakePropertyIRI("layout", "rendition"));
             prop->SetValue("pre-paginated");
             AddProperty(prop);
@@ -441,7 +453,7 @@ bool Package::Open(const string& path)
             this->RemoveProperty("orientation", "rendition");
 
             PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
-            PropertyPtr prop = Property::New(holderPtr);
+            PropertyPtr prop = std::make_shared<Property>(holderPtr); //Property::New(holderPtr);
             prop->SetPropertyIdentifier(MakePropertyIRI("orientation", "rendition"));
             string val = landscape?"landscape":(portrait?"portrait":"auto");
             prop->SetValue(val);
@@ -473,7 +485,154 @@ unique_ptr<ArchiveReader> Package::ReaderForRelativePath(const string& path)    
     return _archive->ReaderAtPath((_pathBase + path).stl_str());
 }
 
-bool Package::Unpack()
+void Package::Unpack_Finally(bool resetContentFilterChain)
+{
+    if (resetContentFilterChain) {
+        auto fm = FilterManager::Instance();
+        auto fc = fm->BuildFilterChainForPackage(shared_from_this());
+        SetFilterChain(fc);
+    }
+
+    this->LoadNavigationTables();
+
+    // go through the TOC and copy titles to the relevant spine items for easy access
+    this->CompileSpineItemTitles();
+
+    this->LoadMediaOverlays();
+}
+
+void Package::LoadMediaOverlays() {
+
+    PackagePtr sharedMe = shared_from_this();
+
+     //std::weak_ptr<Package> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy() which maintains its own weak pointer
+     _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
+    _mediaOverlays->Initialize();
+}
+
+void Package::LoadNavigationTables()
+{
+    if (!_navigation.empty()) // && !_navigation["toc"]->Children().empty()
+    {
+        return;
+    }
+
+    auto root = _opf->Root();
+    string rootName(root->Name());
+    rootName.tolower();
+    bool isEPUB3 = true;
+    string versionStr;
+    int version = 0;
+
+    if ( rootName != "package" )
+    {
+        HandleError(EPUBError::OPFInvalidPackageDocument);
+        return;
+    }
+    versionStr = _getProp(root, "version");
+    if ( versionStr.empty() )
+    {
+        HandleError(EPUBError::OPFPackageHasNoVersion);
+    }
+    else
+    {
+        // GNU libstdc++ seems to not want to let us use these C++11 routines...
+#ifndef _LIBCPP_VERSION
+        version = (int)strtol(versionStr.c_str(), nullptr, 10);
+#else
+        version = std::stoi(versionStr.stl_str());
+#endif
+
+        if (version < 3)
+            isEPUB3 = false;
+    }
+
+    PackagePtr sharedMe = shared_from_this();
+
+    // now the navigation tables
+    if (isEPUB3)
+    {
+        // look for EPUB3 navigation document(s)
+        for ( auto item : _manifestByID )
+        {
+            if ( !item.second->HasProperty(ItemProperties::Navigation) )
+                continue;
+
+            NavigationList tables = NavTablesFromManifestItem(sharedMe, item.second);
+            for ( auto& table : tables )
+            {
+                // have to dynamic_cast these guys to get the right pointer type
+                NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+                _navigation.emplace(navTable->Type(), navTable);
+#else
+                _navigation[navTable->Type()] = navTable;
+#endif
+            }
+        }
+    }
+
+    if (_navigation.empty() || _navigation["toc"]->Children().empty())
+    {
+        // look for EPUB2 NCX file
+#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+        XPathWrangler xpath(_opf, { { "opf", OPFNamespace } });
+#else
+        XPathWrangler::NamespaceList __m;
+		__m["opf"] = OPFNamespace;
+		XPathWrangler xpath(_opf, __m);
+#endif
+        auto tocNames = xpath.Strings("/opf:package/opf:spine/@toc");
+
+        if (tocNames.empty() && _navigation.empty())
+        {
+            // no NCX, and no other nav document
+            // otherwise, we had a valid EPUB3 nav with empty (one-level) TOC
+            HandleError(EPUBError::OPFNoNavDocument);
+        }
+        else
+        {
+            if (!tocNames.empty()) {
+                try
+                {
+                    ManifestItemPtr tocItem = ManifestItemWithID(tocNames[0]);
+                    if (!bool(tocItem))
+                        throw EPUBError::OPFNoNavDocument;
+
+                    NavigationList tables = NavTablesFromManifestItem(sharedMe, tocItem);
+                    for (auto& table : tables)
+                    {
+                        // have to dynamic_cast these guys to get the right pointer type
+                        NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
+#if EPUB_HAVE(CXX_MAP_EMPLACE)
+                        _navigation.emplace(navTable->Type(), navTable);
+#else
+                        _navigation[navTable->Type()] = navTable;
+#endif
+                    }
+                }
+                catch (std::exception& exc)
+                {
+                    std::cerr << "Exception locating or processing NCX navigation document: " << exc.what() << std::endl;
+                    throw;
+                }
+                catch (EPUBError errCode)
+                {
+                    // a 'break'-style mechanism here
+                    // the error handler will determine if it's safe to continue
+                    HandleError(errCode);
+                }
+                catch (...)
+                {
+                    HandleError(EPUBError::OPFNoNavDocument);
+                }
+            }
+        }
+    }
+}
+
+
+bool Package::Unpack(bool skipLoadingPotentiallyEncryptedContent)
 {
     PackagePtr sharedMe = shared_from_this();
     
@@ -577,7 +736,7 @@ bool Package::Unpack()
         
         for ( auto node : manifestNodes )
         {
-            auto p = ManifestItem::New(sharedMe);
+            auto p = std::make_shared<ManifestItem>(sharedMe); //ManifestItem::New(sharedMe);
             if ( p->ParseXML(node) )
             {
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
@@ -622,7 +781,7 @@ bool Package::Unpack()
         SpineItemPtr cur;
         for ( auto node : spineNodes )
         {
-            auto next = SpineItem::New(sharedMe);
+            auto next = std::make_shared<SpineItem>(sharedMe); //SpineItem::New(sharedMe);
             if ( next->ParseXML(node) == false )
             {
                 // TODO: need an error code here
@@ -693,7 +852,7 @@ bool Package::Unpack()
         
         for (auto& node : collectionNodes)
         {
-            CollectionPtr collection = Collection::New(Ptr(), nullptr);
+            CollectionPtr collection = std::make_shared<Collection>(shared_from_this(), nullptr); //Collection::New(Ptr(), nullptr);
             if (collection->ParseXML(node))
             {
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
@@ -741,7 +900,7 @@ bool Package::Unpack()
             if ( bool(ns) && ns->URI() == xml::string(DCNamespace) )
             {
                 // definitely a main node
-                p = Property::New(holderPtr);
+                p = std::make_shared<Property>(holderPtr); //Property::New(holderPtr);
             }
             else if ( _getProp(node, "name").size() > 0 )
             {
@@ -760,7 +919,7 @@ bool Package::Unpack()
             else if ( _getProp(node, "refines").empty() )
             {
                 // not refining anything, so it's a main node
-                p = Property::New(holderPtr);
+                p = std::make_shared<Property>(holderPtr); //Property::New(holderPtr);
             }
             else
             {
@@ -870,7 +1029,7 @@ bool Package::Unpack()
             if ( prop )
             {
                 // it's a property, so this is an extension
-                PropertyExtensionPtr extPtr = PropertyExtension::New(prop);
+                PropertyExtensionPtr extPtr = std::make_shared<PropertyExtension>(prop); //PropertyExtension::New(prop);
                 if ( extPtr->ParseMetaElement(node) )
                     prop->AddExtension(extPtr);
             }
@@ -880,7 +1039,7 @@ bool Package::Unpack()
                 PropertyHolderPtr ptr = std::dynamic_pointer_cast<PropertyHolder>(found->second);
                 if ( ptr )
                 {
-                    prop = Property::New(ptr);
+                    prop = std::make_shared<Property>(ptr); //Property::New(ptr);
                     if ( prop->ParseMetaElement(node) )
                         ptr->AddProperty(prop);
                 }
@@ -895,7 +1054,7 @@ bool Package::Unpack()
         string value = _getProp(spineNode, "page-progression-direction");
         if ( !value.empty() )
         {
-            PropertyPtr prop = Property::New(holderPtr);
+            PropertyPtr prop = std::make_shared<Property>(holderPtr); //Property::New(holderPtr);
             prop->SetPropertyIdentifier(MakePropertyIRI("page-progression-direction"));
             prop->SetValue(value);
             AddProperty(prop);
@@ -986,7 +1145,9 @@ bool Package::Unpack()
                 }
                 
                 // all good-- install it now
-                _contentHandlers[mediaType].push_back(MediaHandler::New<MediaHandler>(sharedMe, mediaType, handlerItem->AbsolutePath()));
+                _contentHandlers[mediaType].push_back(
+                        std::make_shared<MediaHandler>(sharedMe, mediaType, handlerItem->AbsolutePath()) //MediaHandler::New<MediaHandler>(sharedMe, mediaType, handlerItem->AbsolutePath())
+                );
             }
         }
     }
@@ -999,97 +1160,14 @@ bool Package::Unpack()
     {
 		return false;
     }
-    
-    // now the navigation tables
-	if (isEPUB3)
-	{
-		// look for EPUB3 navigation document(s)
-		for ( auto item : _manifestByID )
-		{
-			if ( !item.second->HasProperty(ItemProperties::Navigation) )
-	            continue;
-			
-			NavigationList tables = NavTablesFromManifestItem(sharedMe, item.second);
-			for ( auto& table : tables )
-			{
-				// have to dynamic_cast these guys to get the right pointer type
-				NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
-#if EPUB_HAVE(CXX_MAP_EMPLACE)
-				_navigation.emplace(navTable->Type(), navTable);
-#else
-				_navigation[navTable->Type()] = navTable;
-#endif
-			}
-		}
-	}
 
-	if (_navigation.empty() || _navigation["toc"]->Children().empty())
-	{
-		// look for EPUB2 NCX file
-#if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
-		XPathWrangler xpath(_opf, { { "opf", OPFNamespace } });
-#else
-		XPathWrangler::NamespaceList __m;
-		__m["opf"] = OPFNamespace;
-		XPathWrangler xpath(_opf, __m);
-#endif
-		auto tocNames = xpath.Strings("/opf:package/opf:spine/@toc");
-
-		if (tocNames.empty() && _navigation.empty())
-		{
-            // no NCX, and no other nav document
-            // otherwise, we had a valid EPUB3 nav with empty (one-level) TOC
-			HandleError(EPUBError::OPFNoNavDocument);
-		}
-		else
-		{
-            if (!tocNames.empty()) {
-                try
-                {
-                    ManifestItemPtr tocItem = ManifestItemWithID(tocNames[0]);
-                    if (!bool(tocItem))
-                        throw EPUBError::OPFNoNavDocument;
-                    
-                    NavigationList tables = NavTablesFromManifestItem(sharedMe, tocItem);
-                    for (auto& table : tables)
-                    {
-                        // have to dynamic_cast these guys to get the right pointer type
-                        NavigationTablePtr navTable = NavigationTable::CastFrom<NavigationElement>(table);
-#if EPUB_HAVE(CXX_MAP_EMPLACE)
-                        _navigation.emplace(navTable->Type(), navTable);
-#else
-                        _navigation[navTable->Type()] = navTable;
-#endif
-                    }
-                }
-                catch (std::exception& exc)
-                {
-                    std::cerr << "Exception locating or processing NCX navigation document: " << exc.what() << std::endl;
-                    throw;
-                }
-                catch (EPUBError errCode)
-                {
-                    // a 'break'-style mechanism here
-                    // the error handler will determine if it's safe to continue
-                    HandleError(errCode);
-                }
-                catch (...)
-                {
-                    HandleError(EPUBError::OPFNoNavDocument);
-                }
-            }
-		}
-	}
-
-	// go through the TOC and copy titles to the relevant spine items for easy access
-	CompileSpineItemTitles();
-    
     // lastly, let's set the media support information
     InitMediaSupport();
 
-    //std::weak_ptr<Package> weakSharedMe = sharedMe; // Not needed: smart shared pointer passed as reference, then onto OwnedBy() which maintains its own weak pointer
-    _mediaOverlays = std::make_shared<class MediaOverlaysSmilModel>(sharedMe);
-    _mediaOverlays->Initialize();
+    if (!skipLoadingPotentiallyEncryptedContent)
+    {
+        Unpack_Finally(false);
+    }
 
     return true;
 }
@@ -1835,9 +1913,13 @@ void Package::InitMediaSupport()
         {
             // support for core types is required
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
-			_mediaSupport.emplace(mediaType, MediaSupportInfo::New(Ptr(), mediaType));
+			_mediaSupport.emplace(mediaType,
+			std::make_shared<MediaSupportInfo>(shared_from_this(), mediaType) //MediaSupportInfo::New(Ptr(), mediaType)
+			);
 #else
-            _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo::New(Ptr(), mediaType)));
+            _mediaSupport.insert(std::make_pair(mediaType,
+                                                std::make_shared<MediaSupportInfo>(shared_from_this(), mediaType)) //MediaSupportInfo::New(Ptr(), mediaType))
+            );
 #endif
         }
         else
@@ -1847,18 +1929,28 @@ void Package::InitMediaSupport()
             {
                 // supported through a handler
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
-				_mediaSupport.emplace(mediaType, MediaSupportInfo::New(Ptr(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler));
+				_mediaSupport.emplace(mediaType,
+				    std::make_shared<MediaSupportInfo>(shared_from_this(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler) //MediaSupportInfo::New(Ptr(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler)
+				);
 #else
-                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo::New(Ptr(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler)));
+                _mediaSupport.insert(std::make_pair(mediaType,
+                                                    std::make_shared<MediaSupportInfo>(shared_from_this(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler) //MediaSupportInfo::New(Ptr(), mediaType, MediaSupportInfo::SupportType::SupportedWithHandler)
+                ));
 #endif
             }
             else
             {
                 // unsupported
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
-				_mediaSupport.emplace(mediaType, MediaSupportInfo::New(Ptr(), mediaType, false));
+				_mediaSupport.emplace(mediaType,
+				std::make_shared<MediaSupportInfo>(shared_from_this(), mediaType, false) //MediaSupportInfo::New(Ptr(), mediaType, false)
+				)
+				;
 #else
-                _mediaSupport.insert(std::make_pair(mediaType, MediaSupportInfo::New(Ptr(), mediaType, false)));
+                _mediaSupport.insert(std::make_pair(mediaType,
+                                                    std::make_shared<MediaSupportInfo>(shared_from_this(), mediaType, false) //MediaSupportInfo::New(Ptr(), mediaType, false)
+                )
+                );
 #endif
             }
         }

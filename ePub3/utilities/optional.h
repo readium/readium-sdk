@@ -21,6 +21,8 @@
 #ifndef ePub3_optional_h
 #define ePub3_optional_h
 
+#if FUTURE_ENABLED
+
 #include <ePub3/epub3.h>
 
 /*
@@ -1044,5 +1046,7 @@ struct hash<EPUB3_NAMESPACE::optional<_Tp>>
 };
 
 }   // namespace std
+
+#endif //FUTURE_ENABLED
 
 #endif
