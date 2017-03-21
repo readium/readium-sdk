@@ -1,9 +1,17 @@
 import org.apache.tools.ant.taskdefs.condition.Os
+//import org.gradle.internal.os.OperatingSystem;
 
-if (rootProject.hasProperty("readium_ndk_debug") && rootProject.readium_ndk_debug) {
-    // Use gradle experimental receipt to debug C/C++ code
-    println "${project.name}: Use gradle experimental to build application"
+
+def ndk_skipX86 = (rootProject.hasProperty("readium_ndk_skipX86") && rootProject.readium_ndk_skipX86)
+def ndk_skipARM = (rootProject.hasProperty("readium_ndk_skipARM") && rootProject.readium_ndk_skipARM)
+def ndk_clang = (rootProject.hasProperty("readium_ndk_clang") && rootProject.readium_ndk_clang)
+def ndk_experimental = (rootProject.hasProperty("readium_ndk_experimental") && rootProject.readium_ndk_experimental)
+
+if (ndk_experimental) {
+    println "${project.name}: Using Gradle EXPERIMENTAL to build EPUB3 lib"
     apply from: 'build_experimental.gradle'
+} else {
+    println "${project.name}: Using Gradle STABLE to build EPUB3 lib"
 }
 
 /**
@@ -18,6 +26,12 @@ task copyLibxmlIncludes(type: Copy) {
 task copySha1Includes(type: Copy) {
     from '../../../ePub3/ThirdParty/sha1'
     into './include/sha1'
+    include '*.h'
+}
+
+task copyICUIncludes(type: Copy) {
+    from '../../../ePub3/ThirdParty/icu4c/include'
+    into './include/icu4c'
     include '**/*.h'
 }
 
@@ -41,21 +55,37 @@ task copyGoogleUrlIncludes(dependsOn: 'copyGoogleUrlBaseIncludes', type: Copy) {
 task copyLibzipBaseIncludes(type: Copy) {
     from '../../../ePub3/ThirdParty/libzip'
     into './include/libzip'
-    include '**/*.h'
+    include '*.h'
 }
 
-task copyEpub3XmlIncludes(type: Copy) {
+task copyEpub3XmlIncludesTREE(type: Copy) {
     from '../../../ePub3/xml/tree'
+    into './include/ePub3/xml'
+    include '*.h'
+}
+
+task copyEpub3XmlIncludesUTILS(type: Copy) {
     from '../../../ePub3/xml/utilities'
+    into './include/ePub3/xml'
+    include '*.h'
+}
+
+task copyEpub3XmlIncludesVALIDATION(type: Copy) {
     from '../../../ePub3/xml/validation'
     into './include/ePub3/xml'
-    include '**/*.h'
+    include '*.h'
 }
+
+task copyEpub3XmlIncludes() {
+    println "Copy XML includes"
+}
+
+copyEpub3XmlIncludes.dependsOn "copyEpub3XmlIncludesVALIDATION", "copyEpub3XmlIncludesUTILS", "copyEpub3XmlIncludesTREE"
 
 task copyEpub3UtilitiesIncludes(dependsOn: 'copyEpub3XmlIncludes', type: Copy) {
     from '../../../ePub3/utilities'
     into './include/ePub3/utilities'
-    include '**/*.h'
+    include '*.h'
 }
 
 task copyEpub3RootIncludes(dependsOn: 'copyEpub3UtilitiesIncludes', type: Copy) {
@@ -67,7 +97,7 @@ task copyEpub3RootIncludes(dependsOn: 'copyEpub3UtilitiesIncludes', type: Copy) 
 task copyEpub3Includes(dependsOn: 'copyEpub3RootIncludes', type: Copy) {
     from '../../../ePub3/ePub'
     into './include/ePub3'
-    include '**/*.h'
+    include '*.h'
 }
 
 task buildIncludes {
@@ -79,31 +109,48 @@ buildIncludes.dependsOn "copyEpub3Includes",
 "copySha1Includes",
 "copyUtf8Includes",
 "copyGoogleUrlIncludes",
+"copyICUIncludes",
 "copyLibzipBaseIncludes"
 
 task buildMk(dependsOn: "buildIncludes", type: Exec) {
+
     // Retrieve ndk dir
     Properties properties = new Properties()
     properties.load(project.rootProject.file('local.properties').newDataInputStream())
     def ndkDir = properties.getProperty('ndk.dir', null)
 
     // Call ndk build
-    def ndkBuildExt = Os.isFamily(Os.FAMILY_WINDOWS) ? ".cmd" : ""
+
+    //def isWindows = OperatingSystem.current().isLinux();
+    def isWindows = Os.isFamily(Os.FAMILY_WINDOWS)
+
+    def ndkBuildExt = isWindows ? ".cmd" : ""
     def projectPath = file('.').absolutePath
-    def buildScript = (rootProject.hasProperty("readium_ndk_debug") &&
-            rootProject.readium_ndk_debug) ? "Experimental.mk" : "Stable.mk"
+    def buildScript = (ndk_experimental) ? "Experimental.mk" : "Stable.mk"
+
+    if (ndk_skipX86) environment 'READIUM_SKIPX86', 'true'
+    if (ndk_skipARM) environment 'READIUM_SKIPARM', 'true'
+    if (ndk_clang) environment 'READIUM_CLANG', 'true'
+    if (ndk_experimental) environment 'READIUM_EXPERIMENTAL', 'true'
 
     commandLine "$ndkDir/ndk-build${ndkBuildExt}",
+            "-j", "4", //Runtime.runtime.availableProcessors()
             '-C', projectPath,
             'NDK_APPLICATION_MK=Application.mk',
             "APP_BUILD_SCRIPT=${buildScript}",
-            "NDK_PROJECT_PATH=${projectPath}"
+            "NDK_PROJECT_PATH=${projectPath}",
+            "NDK_DEBUG=1"
 }
 
 tasks.whenTaskAdded { task ->
     def taskName = task.name
 
     if (taskName.startsWith("compile")) {
-        task.dependsOn "buildMk"
+        if (ndk_experimental) {
+            println "${project.name} - ${taskName}: Using Gradle EXPERIMENTAL, no need to invoke external NDK / Makefile to build EPUB3 lib"
+            task.dependsOn "buildIncludes"
+        } else {
+            task.dependsOn "buildMk"
+        }
     }
 }
