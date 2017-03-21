@@ -150,7 +150,7 @@ ifeq ($(TARGET_ARCH_ABI),x86)
     LOCAL_CFLAGS += -mtune=atom -mssse3 -mfpmath=sse
 endif
 
-LOCAL_STATIC_LIBRARIES := xml2 crypto
+LOCAL_STATIC_LIBRARIES := xml2
 LOCAL_LDLIBS := -lz -landroid -llog
 LOCAL_C_INCLUDES += \
         $(LOCAL_PATH)/include \
