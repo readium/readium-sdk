@@ -1,4 +1,6 @@
 import org.apache.tools.ant.taskdefs.condition.Os
+//import org.gradle.internal.os.OperatingSystem;
+
 
 def ndk_skipX86 = (rootProject.hasProperty("readium_ndk_skipX86") && rootProject.readium_ndk_skipX86)
 def ndk_skipARM = (rootProject.hasProperty("readium_ndk_skipARM") && rootProject.readium_ndk_skipARM)
@@ -118,7 +120,11 @@ task buildMk(dependsOn: "buildIncludes", type: Exec) {
     def ndkDir = properties.getProperty('ndk.dir', null)
 
     // Call ndk build
-    def ndkBuildExt = Os.isFamily(Os.FAMILY_WINDOWS) ? ".cmd" : ""
+
+    //def isWindows = OperatingSystem.current().isLinux();
+    def isWindows = Os.isFamily(Os.FAMILY_WINDOWS)
+
+    def ndkBuildExt = isWindows ? ".cmd" : ""
     def projectPath = file('.').absolutePath
     def buildScript = (ndk_experimental) ? "Experimental.mk" : "Stable.mk"
 

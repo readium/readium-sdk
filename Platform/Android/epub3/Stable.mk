@@ -21,40 +21,40 @@ THIRD_PARTY_PATH := $(EPUB3_PATH)/ThirdParty
 ###########################################################
 # Prebuilt libraries for ICU
 
-ICU_LIB_PATH := $(THIRD_PARTY_PATH)/icu4c/lib/$(TARGET_ARCH_ABI)
-ICU_INCLUDE_PATH := $(THIRD_PARTY_PATH)/icu4c/include
+#ICU_LIB_PATH := $(THIRD_PARTY_PATH)/icu4c/lib/$(TARGET_ARCH_ABI)
+#ICU_INCLUDE_PATH := $(THIRD_PARTY_PATH)/icu4c/include
 
 # Unicode
 
-include $(CLEAR_VARS)
-LOCAL_MODULE := icuuc
-LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicuuc.a
-LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
-include $(PREBUILT_STATIC_LIBRARY)
+#include $(CLEAR_VARS)
+#LOCAL_MODULE := icuuc
+#LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicuuc.a
+#LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
+#include $(PREBUILT_STATIC_LIBRARY)
 
 # Internationalization
 
-include $(CLEAR_VARS)
-LOCAL_MODULE := icui18n
-LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicui18n.a
-LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
-include $(PREBUILT_STATIC_LIBRARY)
+#include $(CLEAR_VARS)
+#LOCAL_MODULE := icui18n
+#LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicui18n.a
+#LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
+#include $(PREBUILT_STATIC_LIBRARY)
 
 # Input/Output
 
-include $(CLEAR_VARS)
-LOCAL_MODULE := icuio
-LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicuio.a
-LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
-include $(PREBUILT_STATIC_LIBRARY)
+#include $(CLEAR_VARS)
+#LOCAL_MODULE := icuio
+#LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicuio.a
+#LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
+#include $(PREBUILT_STATIC_LIBRARY)
 
 # Data
 
-include $(CLEAR_VARS)
-LOCAL_MODULE := icudata
-LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicudata.a
-LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
-include $(PREBUILT_STATIC_LIBRARY)
+#include $(CLEAR_VARS)
+#LOCAL_MODULE := icudata
+#LOCAL_SRC_FILES := $(ICU_LIB_PATH)/libicudata.a
+#LOCAL_EXPORT_C_INCLUDES := $(ICU_INCLUDE_PATH)
+#include $(PREBUILT_STATIC_LIBRARY)
 
 ###########################################################
 # libxml2
@@ -150,7 +150,7 @@ ifeq ($(TARGET_ARCH_ABI),x86)
     LOCAL_CFLAGS += -mtune=atom -mssse3 -mfpmath=sse
 endif
 
-LOCAL_STATIC_LIBRARIES := xml2 crypto
+LOCAL_STATIC_LIBRARIES := xml2
 LOCAL_LDLIBS := -lz -landroid -llog
 LOCAL_C_INCLUDES += \
         $(LOCAL_PATH)/include \
@@ -259,4 +259,3 @@ LOCAL_SRC_FILES := \
 #    $(wildcard $(LOCAL_PATH)/src/main/jni/android/*.cpp)
 
 include $(BUILD_SHARED_LIBRARY)
-
