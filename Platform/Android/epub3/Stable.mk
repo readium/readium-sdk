@@ -61,6 +61,23 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := xml2
+
+ifeq ($(READIUM_CLANG),true)
+LOCAL_CPPFLAGS := -std=c++11 -fpermissive -DBUILDING_EPUB3 -D_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49=_LIBCPP_INLINE_VISIBILITY
+LOCAL_CXXFLAGS := -std=c++11 -fpermissive -DBUILDING_EPUB3 -D_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49=_LIBCPP_INLINE_VISIBILITY
+LOCAL_CFLAGS := -std=c11 -DBUILDING_EPUB3 -D_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49=_LIBCPP_INLINE_VISIBILITY
+else
+LOCAL_CPPFLAGS := -std=gnu++11 -fpermissive -DBUILDING_EPUB3
+LOCAL_CXXFLAGS := -std=gnu++11 -fpermissive -DBUILDING_EPUB3
+LOCAL_CFLAGS := -std=gnu11 -DBUILDING_EPUB3
+endif
+
+LOCAL_CPP_FEATURES += exceptions rtti
+
+ifeq ($(TARGET_ARCH_ABI),x86)
+    LOCAL_CFLAGS += -mtune=atom -mssse3 -mfpmath=sse
+endif
+
 LOCAL_SRC_FILES := \
         $(THIRD_PARTY_PATH)/libxml2-android/SAX.c \
         $(THIRD_PARTY_PATH)/libxml2-android/entities.c \
@@ -116,15 +133,23 @@ include $(BUILD_STATIC_LIBRARY)
 include $(CLEAR_VARS)
 LOCAL_DISABLE_FATAL_LINKER_WARNINGS := true
 LOCAL_MODULE := epub3
+
+ifeq ($(READIUM_CLANG),true)
+LOCAL_CPPFLAGS := -std=c++11 -fpermissive -DBUILDING_EPUB3 -D_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49=_LIBCPP_INLINE_VISIBILITY
+LOCAL_CXXFLAGS := -std=c++11 -fpermissive -DBUILDING_EPUB3 -D_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49=_LIBCPP_INLINE_VISIBILITY
+LOCAL_CFLAGS := -std=c11 -DBUILDING_EPUB3 -D_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49=_LIBCPP_INLINE_VISIBILITY
+else
 LOCAL_CPPFLAGS := -std=gnu++11 -fpermissive -DBUILDING_EPUB3
-LOCAL_CFLAGS := -DBUILDING_EPUB3
+LOCAL_CXXFLAGS := -std=gnu++11 -fpermissive -DBUILDING_EPUB3
+LOCAL_CFLAGS := -std=gnu11 -DBUILDING_EPUB3
+endif
+
+LOCAL_CPP_FEATURES += exceptions rtti
 
 ifeq ($(TARGET_ARCH_ABI),x86)
     LOCAL_CFLAGS += -mtune=atom -mssse3 -mfpmath=sse
 endif
 
-LOCAL_CXXFLAGS := -std=gnu++11 -fpermissive -DBUILDING_EPUB3
-LOCAL_CPP_FEATURES += exceptions rtti
 LOCAL_STATIC_LIBRARIES := xml2 crypto
 LOCAL_LDLIBS := -lz -landroid -llog
 LOCAL_C_INCLUDES += \
@@ -230,8 +255,7 @@ LOCAL_SRC_FILES := \
     $(EPUB3_PATH)/utilities/utfstring.cpp \
     $(wildcard $(EPUB3_PATH)/ePub/*.cpp) \
     $(wildcard $(LOCAL_PATH)/src/main/jni/*.cpp) \
-    $(wildcard $(LOCAL_PATH)/src/main/jni/jni/*.cpp) \
-    $(wildcard $(LOCAL_PATH)/src/main/jni/android/*.cpp)
+    $(wildcard $(LOCAL_PATH)/src/main/jni/jni/*.cpp)
+#    $(wildcard $(LOCAL_PATH)/src/main/jni/android/*.cpp)
 
 include $(BUILD_SHARED_LIBRARY)
-
