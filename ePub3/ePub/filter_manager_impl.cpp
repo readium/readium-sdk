@@ -49,7 +49,7 @@ FilterChainPtr FilterManagerImpl::BuildFilterChainForPackage(ConstPackagePtr pac
             filters.push_back(filter);
     }
     
-    return FilterChain::New(filters);
+    return std::make_shared<FilterChain>(filters); //FilterChain::New(filters);
 }
 
 EPUB3_END_NAMESPACE
