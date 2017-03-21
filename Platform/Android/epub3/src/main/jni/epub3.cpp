@@ -123,14 +123,14 @@ static jmethodID contentFiltersRegistrationHandler_Run_ID;
  * and translate it to a smart pointer on result.
  */
 std::shared_ptr<void> getNativePtr(JNIEnv *env, jobject thiz) {
-	// Get the native pointer id
-	jlong id = jni::Field<jlong>(env, thiz, "__nativePtr");
+    // Get the native pointer id
+    jlong id = jni::Field<jlong>(env, thiz, "__nativePtr");
 
-	// Get the smart pointer
-	std::shared_ptr<void> res(jni::Pointer(id).getPtr());
+    // Get the smart pointer
+    std::shared_ptr<void> res(jni::Pointer(id).getPtr());
 
-	// Return result
-	return res;
+    // Return result
+    return res;
 }
 
 /**
@@ -138,58 +138,58 @@ std::shared_ptr<void> getNativePtr(JNIEnv *env, jobject thiz) {
  * Optionally it may free the native string if the freeNative argument
  * is true.
  */
-jstring toJstring(JNIEnv *env, const char* str, bool freeNative = false) {
-	if (str == NULL) {
-		return NULL;
-	}
+jstring toJstring(JNIEnv *env, const char* str, bool freeNative) {
+    if (str == NULL) {
+        return NULL;
+    }
 
     jstring jstr = env->NewStringUTF(str);
     if (freeNative) {
-    	free((void *) str);
+        free((void *) str);
     }
 
-	return jstr;
+    return jstr;
 }
 
 /**
  * Calls the java createStringList method of EPub3 class
  */
 jobject javaEPub3_createStringList(JNIEnv *env) {
-	jobject list = env->CallStaticObjectMethod(javaEPub3Class,
-			createStringList_ID);
+    jobject list = env->CallStaticObjectMethod(javaEPub3Class,
+            createStringList_ID);
 
-	return list;
+    return list;
 }
 
 /**
  * Calls the java addStringToList method of EPub3 class
  */
 void javaEPub3_addStringToList(JNIEnv *env, jobject list, jstring str) {
-	env->CallStaticVoidMethod(javaEPub3Class,
-			addStringToList_ID, list, str);
+    env->CallStaticVoidMethod(javaEPub3Class,
+            addStringToList_ID, list, str);
 }
 
 /**
  * Calls the java createBuffer method of EPub3 class
  */
 jobject javaEPub3_createBuffer(JNIEnv *env, jint bufferSize) {
-	jobject buf = env->CallStaticObjectMethod(javaEPub3Class,
-			createBuffer_ID, bufferSize);
+    jobject buf = env->CallStaticObjectMethod(javaEPub3Class,
+            createBuffer_ID, bufferSize);
 
-	return buf;
+    return buf;
 }
 
 /**
  * Calls the java appendBytesToBuffer method of EPub3 class
  */
 void javaEPub3_appendBytesToBuffer(JNIEnv *env, jobject buffer, jbyteArray data) {
-	env->CallStaticVoidMethod(javaEPub3Class,
-			appendBytesToBuffer_ID, buffer, data);
+    env->CallStaticVoidMethod(javaEPub3Class,
+            appendBytesToBuffer_ID, buffer, data);
 }
 
 jboolean javaEPub3_handleSdkError(JNIEnv *env, jstring message, jboolean isSevereEpubError) {
-	jboolean b = env->CallStaticBooleanMethod(javaEPub3Class, handleSdkError_ID, message, isSevereEpubError);
-	return b;
+    jboolean b = env->CallStaticBooleanMethod(javaEPub3Class, handleSdkError_ID, message, isSevereEpubError);
+    return b;
 }
 
 /*
@@ -200,21 +200,21 @@ jboolean javaEPub3_handleSdkError(JNIEnv *env, jstring message, jboolean isSever
  * Initialize the cached java elements for Container class
  */
 static int onLoad_cacheJavaElements_epub3(JNIEnv *env) {
-	// Cache EPub3 class
-	INIT_CLASS_RETVAL(javaEPub3Class, javaEPub3ClassName, ONLOAD_ERROR);
-	// Cache EPub3 class methods
-	INIT_STATIC_METHOD_ID_RETVAL(createStringList_ID, javaEPub3Class, javaEPub3ClassName,
-			javaEPub3_createStringListMethodName, javaEPub3_createStringListSignature, ONLOAD_ERROR);
-	INIT_STATIC_METHOD_ID_RETVAL(addStringToList_ID, javaEPub3Class, javaEPub3ClassName,
-			javaEPub3_addStringToListMethodName, javaEPub3_addStringToListSignature, ONLOAD_ERROR);
-	INIT_STATIC_METHOD_ID_RETVAL(createBuffer_ID, javaEPub3Class, javaEPub3ClassName,
-			javaEPub3_createBufferMethodName, javaEPub3_createBufferSignature, ONLOAD_ERROR);
-	INIT_STATIC_METHOD_ID_RETVAL(appendBytesToBuffer_ID, javaEPub3Class, javaEPub3ClassName,
-			javaEPub3_appendBytesToBufferMethodName, javaEPub3_appendBytesToBufferSignature, ONLOAD_ERROR);
-	INIT_STATIC_METHOD_ID_RETVAL(handleSdkError_ID, javaEPub3Class, javaEPub3ClassName,
-			javaEPub3_handleSdkErrorMethodName, javaEPub3_handleSdkErrorSignature, ONLOAD_ERROR);
-	// Return JNI_VERSION for OK, if not one of the lines above already returned ONLOAD_ERROR
-	return JNI_VERSION;
+    // Cache EPub3 class
+    INIT_CLASS_RETVAL(javaEPub3Class, javaEPub3ClassName, ONLOAD_ERROR);
+    // Cache EPub3 class methods
+    INIT_STATIC_METHOD_ID_RETVAL(createStringList_ID, javaEPub3Class, javaEPub3ClassName,
+            javaEPub3_createStringListMethodName, javaEPub3_createStringListSignature, ONLOAD_ERROR);
+    INIT_STATIC_METHOD_ID_RETVAL(addStringToList_ID, javaEPub3Class, javaEPub3ClassName,
+            javaEPub3_addStringToListMethodName, javaEPub3_addStringToListSignature, ONLOAD_ERROR);
+    INIT_STATIC_METHOD_ID_RETVAL(createBuffer_ID, javaEPub3Class, javaEPub3ClassName,
+            javaEPub3_createBufferMethodName, javaEPub3_createBufferSignature, ONLOAD_ERROR);
+    INIT_STATIC_METHOD_ID_RETVAL(appendBytesToBuffer_ID, javaEPub3Class, javaEPub3ClassName,
+            javaEPub3_appendBytesToBufferMethodName, javaEPub3_appendBytesToBufferSignature, ONLOAD_ERROR);
+    INIT_STATIC_METHOD_ID_RETVAL(handleSdkError_ID, javaEPub3Class, javaEPub3ClassName,
+            javaEPub3_handleSdkErrorMethodName, javaEPub3_handleSdkErrorSignature, ONLOAD_ERROR);
+    // Return JNI_VERSION for OK, if not one of the lines above already returned ONLOAD_ERROR
+    return JNI_VERSION;
 }
 
 // needed only for the LauncherErrorHandler() C++ callback,
@@ -225,9 +225,9 @@ static bool LauncherErrorHandler(const ePub3::error_details& err)
 {
     const char * msg = err.message();
 
-	bool isSevereEpubError = (err.is_spec_error()
-			&& (err.severity() == ePub3::ViolationSeverity::Critical
-			|| err.severity() == ePub3::ViolationSeverity::Major));
+    bool isSevereEpubError = (err.is_spec_error()
+            && (err.severity() == ePub3::ViolationSeverity::Critical
+            || err.severity() == ePub3::ViolationSeverity::Major));
 
     LOGD("READIUM SDK ERROR HANDLER (%s): %s\n", isSevereEpubError ? "warning" : "info", msg);
 
@@ -247,7 +247,7 @@ static void initializeReadiumSDK(JNIEnv* env)
 {
     m_env = env;
 
-	LOGD("initializeReadiumSDK(): initializing Readium SDK...");
+    LOGD("initializeReadiumSDK(): initializing Readium SDK...");
 
     ePub3::ErrorHandlerFn launcherErrorHandler = LauncherErrorHandler;
     ePub3::SetErrorHandler(launcherErrorHandler);
@@ -260,7 +260,7 @@ static void initializeReadiumSDK(JNIEnv* env)
         env->CallVoidMethod(contentFiltersRegistrationHandler, contentFiltersRegistrationHandler_Run_ID);
     }
 
-	LOGD("initializeReadiumSDK(): initialization of Readium SDK finished");
+    LOGD("initializeReadiumSDK(): initialization of Readium SDK finished");
 }
 
 
@@ -273,71 +273,71 @@ static void initializeReadiumSDK(JNIEnv* env)
  */
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
-	// Get the JNI Environment to be able to initialize the cached the java elements
+    // Get the JNI Environment to be able to initialize the cached the java elements
     JNIEnv* env;
     if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION) != JNI_OK) {
-    	// This should not happen...
-    	LOGE("JNI_OnLoad(): failed to get environment. VM doesn't support JNI version 1.6");
+        // This should not happen...
+        LOGE("JNI_OnLoad(): failed to get environment. VM doesn't support JNI version 1.6");
         return ONLOAD_ERROR;
     }
 
     // Initialize the cached java elements from epub3
     if(onLoad_cacheJavaElements_epub3(env) == ONLOAD_ERROR) {
-    	LOGE("JNI_OnLoad(): failed to cache epub3 java elements");
-    	return ONLOAD_ERROR;
+        LOGE("JNI_OnLoad(): failed to cache epub3 java elements");
+        return ONLOAD_ERROR;
     }
 
     // Initialize the cached java elements from container
     if(onLoad_cacheJavaElements_container(env) == ONLOAD_ERROR) {
-    	LOGE("JNI_OnLoad(): failed to cache container java elements");
-    	return ONLOAD_ERROR;
+        LOGE("JNI_OnLoad(): failed to cache container java elements");
+        return ONLOAD_ERROR;
     }
 
     // Initialize the cached java elements from package
     if(onLoad_cacheJavaElements_package(env) == ONLOAD_ERROR) {
-    	LOGE("JNI_OnLoad(): failed to cache package java elements");
-    	return ONLOAD_ERROR;
+        LOGE("JNI_OnLoad(): failed to cache package java elements");
+        return ONLOAD_ERROR;
     }
 
     // Initialize the cached java elements from package
     if(onLoad_cacheJavaElements_iri(env) == ONLOAD_ERROR) {
-    	LOGE("JNI_OnLoad(): failed to cache IRI java elements");
-    	return ONLOAD_ERROR;
+        LOGE("JNI_OnLoad(): failed to cache IRI java elements");
+        return ONLOAD_ERROR;
     }
 
     // Initialize the cached java elements from package
     if(onLoad_cacheJavaElements_ResourceInputStream(env) == ONLOAD_ERROR) {
-    	LOGE("JNI_OnLoad(): failed to cache ResourceInputStream java elements");
-    	return ONLOAD_ERROR;
+        LOGE("JNI_OnLoad(): failed to cache ResourceInputStream java elements");
+        return ONLOAD_ERROR;
     }
 
     // Initialize the rest of the cached java elements that are still in JavaObjectsFactory class
     // TODO: Move all these elements to each respective class and remove these lines
 
-	INIT_CLASS_RETVAL(javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName, ONLOAD_ERROR);
+    INIT_CLASS_RETVAL(javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName, ONLOAD_ERROR);
 
-	INIT_STATIC_METHOD_ID_RETVAL(createSpineItemList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
-			"createSpineItemList", "()Ljava/util/List;", ONLOAD_ERROR);
-	INIT_STATIC_METHOD_ID_RETVAL(createSpineItem_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
-			"createSpineItem", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;)Lorg/readium/sdk/android/SpineItem;", ONLOAD_ERROR);
-	INIT_STATIC_METHOD_ID_RETVAL(addSpineItemToList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
-			"addSpineItemToList", "(Ljava/util/List;Lorg/readium/sdk/android/SpineItem;)V", ONLOAD_ERROR);
+    INIT_STATIC_METHOD_ID_RETVAL(createSpineItemList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
+            "createSpineItemList", "()Ljava/util/List;", ONLOAD_ERROR);
+    INIT_STATIC_METHOD_ID_RETVAL(createSpineItem_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
+            "createSpineItem", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;)Lorg/readium/sdk/android/SpineItem;", ONLOAD_ERROR);
+    INIT_STATIC_METHOD_ID_RETVAL(addSpineItemToList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
+            "addSpineItemToList", "(Ljava/util/List;Lorg/readium/sdk/android/SpineItem;)V", ONLOAD_ERROR);
 
-	INIT_STATIC_METHOD_ID_RETVAL(createNavigationTable_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
-			"createNavigationTable", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/readium/sdk/android/components/navigation/NavigationTable;", ONLOAD_ERROR);
-	INIT_STATIC_METHOD_ID_RETVAL(createNavigationPoint_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
-			"createNavigationPoint", "(Ljava/lang/String;Ljava/lang/String;)Lorg/readium/sdk/android/components/navigation/NavigationPoint;", ONLOAD_ERROR);
-	INIT_STATIC_METHOD_ID_RETVAL(addElementToParent_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
-			"addElementToParent", "(Lorg/readium/sdk/android/components/navigation/NavigationElement;Lorg/readium/sdk/android/components/navigation/NavigationElement;)V", ONLOAD_ERROR);
+    INIT_STATIC_METHOD_ID_RETVAL(createNavigationTable_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
+            "createNavigationTable", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/readium/sdk/android/components/navigation/NavigationTable;", ONLOAD_ERROR);
+    INIT_STATIC_METHOD_ID_RETVAL(createNavigationPoint_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
+            "createNavigationPoint", "(Ljava/lang/String;Ljava/lang/String;)Lorg/readium/sdk/android/components/navigation/NavigationPoint;", ONLOAD_ERROR);
+    INIT_STATIC_METHOD_ID_RETVAL(addElementToParent_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
+            "addElementToParent", "(Lorg/readium/sdk/android/components/navigation/NavigationElement;Lorg/readium/sdk/android/components/navigation/NavigationElement;)V", ONLOAD_ERROR);
 
-	INIT_STATIC_METHOD_ID_RETVAL(createManifestItemList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
-			"createManifestItemList", "()Ljava/util/List;", ONLOAD_ERROR);
-	INIT_STATIC_METHOD_ID_RETVAL(createManifestItem_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
-			"createManifestItem", "(Ljava/lang/String;Ljava/lang/String;)Lorg/readium/sdk/android/ManifestItem;", ONLOAD_ERROR);
-	INIT_STATIC_METHOD_ID_RETVAL(addManifestItemToList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
-			"addManifestItemToList", "(Ljava/util/List;Lorg/readium/sdk/android/ManifestItem;)V", ONLOAD_ERROR);
+    INIT_STATIC_METHOD_ID_RETVAL(createManifestItemList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
+            "createManifestItemList", "()Ljava/util/List;", ONLOAD_ERROR);
+    INIT_STATIC_METHOD_ID_RETVAL(createManifestItem_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
+            "createManifestItem", "(Ljava/lang/String;Ljava/lang/String;)Lorg/readium/sdk/android/ManifestItem;", ONLOAD_ERROR);
+    INIT_STATIC_METHOD_ID_RETVAL(addManifestItemToList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
+            "addManifestItemToList", "(Ljava/util/List;Lorg/readium/sdk/android/ManifestItem;)V", ONLOAD_ERROR);
 
-	// Return the JNI version this library wants to use
+    // Return the JNI version this library wants to use
     return JNI_VERSION;
 }
 
@@ -345,7 +345,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
  * JNI OnUnload function, called when the library is unloaded.
  */
 JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved) {
-	//TODO: Fill when needed
+    //TODO: Fill when needed
 }
 
 /*
@@ -355,13 +355,13 @@ JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved) {
  */
 JNIEXPORT void JNICALL
 Java_org_readium_sdk_android_EPub3_setCachePath(JNIEnv* env, jobject thiz, jstring cachePath) {
-	const char* str;
-	// Get a c string from java string
-	GET_UTF8_RET(str, cachePath);
-	// Coppy the string to the global variable
-	strlcpy(gAndroidCacheDir, str, PATH_MAX);
-	// Release the c string
-	RELEASE_UTF8(cachePath, str);
+    const char* str;
+    // Get a c string from java string
+    GET_UTF8_RET(str, cachePath);
+    // Coppy the string to the global variable
+    strlcpy(gAndroidCacheDir, str, PATH_MAX);
+    // Release the c string
+    RELEASE_UTF8(cachePath, str);
 }
 
 /*
@@ -394,6 +394,7 @@ Java_org_readium_sdk_android_EPub3_setContentFiltersRegistrationHandler(JNIEnv* 
         contentFiltersRegistrationHandler_Run_ID = m;
     }
 }
+
 
 /*
  * Class:     org_readium_sdk_android_EPub3
