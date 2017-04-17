@@ -413,6 +413,8 @@ public:
                 if (!bool(doc))
                 {
                     HandleError(EPUBError::MediaOverlayCannotParseSMILXML, _Str("Cannot parse XML: ", item->Href().c_str()));
+
+                    return 0;
                 }
 
 #if EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
