@@ -64,6 +64,7 @@
 
 @interface RDPackageResourceServer : NSObject
 
+@property (nonatomic, strong) NSBundle *coreResourceBundle;
 @property (nonatomic, readonly) RDPackage *package;
 @property (nonatomic, readonly) int port;
 @property (nonatomic, readonly) NSData *specialPayloadAnnotationsCSS;

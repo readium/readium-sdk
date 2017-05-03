@@ -688,8 +688,14 @@ JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetTableOfC
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetListOfFigures
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)
 {
-    auto navigationTable = PCKG(pckgPtr)->ListOfFigures();
+	auto navigationTable = PCKG(pckgPtr)->ListOfFigures();
 	return loadNavigationTable(env, navigationTable, "lof");
+}
+JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetListOfLandmarks
+		(JNIEnv* env, jobject thiz, jlong pckgPtr)
+{
+	auto navigationTable = PCKG(pckgPtr)->ListOfLandmarks();
+	return loadNavigationTable(env, navigationTable, "landmarks");
 }
 JNIEXPORT jobject JNICALL Java_org_readium_sdk_android_Package_nativeGetListOfIllustrations
 		(JNIEnv* env, jobject thiz, jlong pckgPtr)

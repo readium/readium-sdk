@@ -126,12 +126,12 @@ public class Container {
 	/*
 	 * Public methods
 	 */
-	
-    public static Container openContainer(String path) {
-    	// TODO: Implement this
-    	return null;
-    }
-    
+//
+//    public static Container openContainer(String path) {
+//    	// TODO: Implement this
+//    	return null;
+//    }
+//
 	/**
 	 * Closes this container and releases any data of it.
 	 */

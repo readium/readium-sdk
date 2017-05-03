@@ -171,11 +171,11 @@ public class Library {
 	 * @param container The container to be added.
 	 * @param path The path of the container.
 	 */
-	public void addPublicationsInContainerAtPath(String path) {
-	    Container container = Container.openContainer(path);
-	    if(container != null)
-	        addPublicationsInContainer(container, path);
-	}
+//	public void addPublicationsInContainerAtPath(String path) {
+//	    Container container = Container.openContainer(path);
+//	    if(container != null)
+//	        addPublicationsInContainer(container, path);
+//	}
 
 	/**
 	 * Returns an epub3:// url for the given package
@@ -201,31 +201,31 @@ public class Library {
 	 * @param allowLoad True to perform load.
 	 * @return The found package or null if not found.
 	 */
-	public Package getPackageForEPubURL(IRI url, boolean allowLoad) {
-	    // Is it an epub URL?
-	    if(url.getScheme() != IRI.EPUBScheme)
-	        return null;
-	    
-	    String ident = url.getHost();
-	    Pair<String, Package> entry = mPackages.get(ident);
-	    if(entry == null)
-	        return null;
-	    
-	    if(entry.second != null || !allowLoad )
-	        return entry.second;
-	    
-	    addPublicationsInContainerAtPath(entry.first);
-	    
-	    // returns a package ptr or nullptr
-	    return entry.second;
-	}
+//	public Package getPackageForEPubURL(IRI url, boolean allowLoad) {
+//	    // Is it an epub URL?
+//	    if(url.getScheme() != IRI.EPUBScheme)
+//	        return null;
+//
+//	    String ident = url.getHost();
+//	    Pair<String, Package> entry = mPackages.get(ident);
+//	    if(entry == null)
+//	        return null;
+//
+//	    if(entry.second != null || !allowLoad )
+//	        return entry.second;
+//
+//	    addPublicationsInContainerAtPath(entry.first);
+//
+//	    // returns a package ptr or nullptr
+//	    return entry.second;
+//	}
 
 	/**
 	 * Gets package for the the supplied url and loads it.
 	 * @param url The url of the package.
 	 * @return The found package or null if not found.
 	 */
-	public Package getPackageForEPubURL(IRI url) { return getPackageForEPubURL(url, true); }
+//	public Package getPackageForEPubURL(IRI url) { return getPackageForEPubURL(url, true); }
 
 	/**
 	 * Gets the CFI url for a manifest item.

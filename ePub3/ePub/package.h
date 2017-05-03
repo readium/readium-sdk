@@ -117,7 +117,7 @@ public:
      @param path The container-relative path to the XML OPF file.
      @result Returns `true` if the package was parsed successfully, `false` otherwise.
      */
-    virtual bool            Open(const string& path);
+    virtual bool            Open(const string& path, bool skipLoadingPotentiallyEncryptedContent = false);
     
     /**
      Returns the path used to construct this object minus the filename, e.g.
@@ -249,8 +249,15 @@ public:
     /// Returns the CFI node index for the `<spine>` element within the package
     /// document.
     uint32_t                SpineCFIIndex()                 const   { return _spineCFIIndex; }
-    
+
+public:
+    EPUB3_EXPORT
+    void            Unpack_Finally(bool resetContentFilterChain);
+
 protected:
+    void            LoadMediaOverlays();
+    void            LoadNavigationTables();
+
     shared_ptr<Archive>       _archive;                ///< The archive from which the package was loaded.
     shared_ptr<xml::Document> _opf;                    ///< The XML document representing the package.
     string                    _pathBase;               ///< The base path of the document within the archive.
@@ -269,7 +276,7 @@ protected:
     
     ///
     /// Unpacks the _opf document. Implemented by the subclass, to make PackageBase pure-virtual.
-    virtual bool            Unpack() = 0;
+    virtual bool            Unpack(bool skipLoadingPotentiallyEncryptedContent = false) = 0;
     
     /**
      Locates a spine item based on the corresponding CFI component.
@@ -372,7 +379,7 @@ public:
     
     ContainerPtr            GetContainer()          const       { return Owner(); }
     
-    virtual bool            Open(const string& path);
+    virtual bool            Open(const string& path, bool skipLoadingPotentiallyEncryptedContent = false);
     bool                    _OpenForTest(shared_ptr<xml::Document> doc, const string& basePath);
     
     ///
@@ -553,6 +560,9 @@ public:
     ///
     /// Returns the table of contents for this package.
     shared_ptr<class NavigationTable>   TableOfContents()       const       { return NavigationTable("toc"); }
+    ///
+    /// Return the list of landmarks, if any exists.
+    shared_ptr<class NavigationTable>   ListOfLandmarks()       const       { return NavigationTable("landmarks"); }
     ///
     /// Return the list of figures, if any exists.
     shared_ptr<class NavigationTable>   ListOfFigures()         const       { return NavigationTable("lof"); }
@@ -917,13 +927,20 @@ public:
     virtual void            SetFilterChain(FilterChainPtr chain) _NOEXCEPT {
         _filterChain = chain;
     }
-    
+
+public:
+    EPUB3_EXPORT
+    void            Unpack_Finally(bool resetContentFilterChain);
+
     /// @}
     
 protected:
+    void            LoadMediaOverlays();
+    void            LoadNavigationTables();
+
     ///
     /// Extracts information from the OPF XML document.
-    virtual bool            Unpack();
+    virtual bool            Unpack(bool skipLoadingPotentiallyEncryptedContent = false);
     ///
     /// Used to handle the `prefix` attribute of the OPF `<package>` element.
     void                    InstallPrefixesFromAttributeValue(const string& attrValue);

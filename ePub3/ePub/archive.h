@@ -40,7 +40,9 @@ EPUB3_BEGIN_NAMESPACE
 
 class ArchiveItemInfo;
 class ArchiveReader;
+#if ENABLE_ZIP_ARCHIVE_WRITER
 class ArchiveWriter;
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
 class ByteStream;
 
 #ifdef SUPPORT_ASYNC
@@ -196,7 +198,8 @@ public:
      @deprecated Please use ByteStreamAtPath(const string&)const instead.
      */
     virtual unique_ptr<ArchiveReader> ReaderAtPath(const string & path) const = 0;
-    
+
+#if ENABLE_ZIP_ARCHIVE_WRITER
     /**
      Obtain an object used to write data to a file within the archive.
      @param path The path of the item to read.
@@ -206,7 +209,8 @@ public:
      @deprecated Please use ByteStreamAtPath(const string&)const instead.
      */
     virtual unique_ptr<ArchiveWriter> WriterAtPath(const string & path, bool compress=true, bool create=true) = 0;
-    
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
+
     /**
      Determines whether a given file ought to be compressed when stored in the archive.
      
@@ -390,6 +394,8 @@ protected:
     ArchiveReader(ArchiveReader &&) {}
 };
 
+#if ENABLE_ZIP_ARCHIVE_WRITER
+
 /**
  A simple stream-like writer object used to add data to an archive.
  @deprecated This object has been superceded by the ByteStream API.
@@ -420,6 +426,8 @@ protected:
     ArchiveWriter(const ArchiveWriter&) _DELETED_;
     ArchiveWriter(ArchiveWriter&&) {}
 };
+
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
 
 EPUB3_END_NAMESPACE
 

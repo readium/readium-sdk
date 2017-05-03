@@ -46,8 +46,10 @@ class ZipArchive : public Archive
     };
     
 private:
+#if ENABLE_ZIP_ARCHIVE_WRITER
     static string TempFilePath();
-    
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
+
 public:
     ///
     /// Opens the ZipArchive at a given filesystem path.
@@ -80,8 +82,9 @@ public:
 #endif /* SUPPORT_ASYNC */
 
     virtual unique_ptr<ArchiveReader> ReaderAtPath(const string & path) const;
+#if ENABLE_ZIP_ARCHIVE_WRITER
     virtual unique_ptr<ArchiveWriter> WriterAtPath(const string & path, bool compress=true, bool create=true);
-        
+#endif //ENABLE_ZIP_ARCHIVE_WRITER
     virtual ArchiveItemInfo InfoAtPath(const string & path) const;
     
 protected:

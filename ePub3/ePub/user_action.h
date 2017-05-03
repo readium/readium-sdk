@@ -21,6 +21,8 @@
 #ifndef ePub3_user_action_h
 #define ePub3_user_action_h
 
+#if FUTURE_ENABLED
+
 #include <ePub3/epub3.h>
 #include <ePub3/cfi.h>
 #include <ePub3/utilities/iri.h>
@@ -70,5 +72,8 @@ private:
 };
 
 EPUB3_END_NAMESPACE
+
+
+#endif //FUTURE_ENABLED
 
 #endif

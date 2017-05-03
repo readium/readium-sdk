@@ -237,7 +237,7 @@ shared_ptr<NavigationElement> NavigationTable::BuildNavigationPoint(shared_ptr<x
 	if ( !bool(liChild) )
 		return nullptr;
 
-    auto point = NavigationPoint::New(elementPtr);
+    auto point = std::make_shared<NavigationPoint>(elementPtr); //NavigationPoint::New(elementPtr);
 
     for ( ; bool(liChild); liChild = liChild->NextElementSibling() )
     {
@@ -265,7 +265,7 @@ shared_ptr<NavigationElement> NavigationTable::BuildNavigationPoint(shared_ptr<x
 shared_ptr<NavigationElement> NavigationTable::BuildNCXNavigationPoint(shared_ptr<xml::Node> node)
 {
 	auto elementPtr = CastPtr<NavigationElement>();
-	auto point = NavigationPoint::New(elementPtr);
+	auto point = std::make_shared<NavigationPoint>(elementPtr); //NavigationPoint::New(elementPtr);
 
 	for (auto sub = node->FirstElementChild(); bool(sub); sub = sub->NextElementSibling())
 	{

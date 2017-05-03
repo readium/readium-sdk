@@ -50,7 +50,7 @@ bool SpineItem::ParseXML(shared_ptr<xml::Node> node)
     {
         for ( auto& property : properties.split(REGEX_NS::regex(",?\\s+")) )
         {
-            PropertyPtr prop = Property::New(holder);
+            PropertyPtr prop = std::make_shared<Property>(holder); //Property::New(holder);
             prop->SetPropertyIdentifier(this->PropertyIRIFromString(property));
             this->AddProperty(prop);
         }

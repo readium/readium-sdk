@@ -42,6 +42,8 @@ enum {
 typedef unsigned int XmlOptions;
 #endif
 
+#if !ENABLE_XML_READ_DOC_MEMORY
+
 /**
  @ingroup xml-utils
  */
@@ -56,9 +58,10 @@ public:
     const xmlParserInputBuffer * xmlBuffer() const { return _buf; }
     operator xmlParserInputBuffer * () { return xmlBuffer(); }
     operator const xmlParserInputBuffer * () const { return xmlBuffer(); }
-    
+
     std::shared_ptr<Document> xmlReadDocument(const char * url, const char * encoding, int options);
-    std::shared_ptr<Document> htmlReadDocument(const char * url, const char * encoding, int options);
+//    std::shared_ptr<Document> htmlReadDocument(const char * url, const char * encoding, int options);
+
 #elif EPUB_USE(WIN_XML)
 	::Windows::Storage::IStorageFile^ File() { return _store; }
 	operator ::Windows::Storage::IStorageFile^() { return _store; }
@@ -90,55 +93,6 @@ protected:
     
 };
 
-/**
- @ingroup xml-utils
- */
-class OutputBuffer : public WrapperBase<OutputBuffer>
-{
-public:
-    OutputBuffer(const std::string & encoding = std::string());
-#if EPUB_USE(LIBXML2)
-    OutputBuffer(OutputBuffer && o) : _buf(o._buf) { o._buf = nullptr; }
-#elif EPUB_USE(WIN_XML)
-	OutputBuffer(OutputBuffer && o) : _store(o._store) { o._store = nullptr; }
-#endif
-    virtual ~OutputBuffer();
-#if EPUB_USE(LIBXML2)
-    xmlOutputBuffer * xmlBuffer() { return _buf; }
-    const xmlOutputBuffer * xmlBuffer() const { return _buf; }
-    operator xmlOutputBuffer * () { return xmlBuffer(); }
-    operator const xmlOutputBuffer * () const { return xmlBuffer(); }
-    
-    void flush() { xmlOutputBufferFlush(_buf); }
-    
-	int writeDocument(xmlDocPtr doc);
-#elif EPUB_USE(WIN_XML)
-	::Windows::Storage::IStorageFile^ File() { return _store; }
-	operator ::Windows::Storage::IStorageFile^() { return _store; }
-
-	int WriteDocument(std::shared_ptr<const Document> doc);
-#endif
-	virtual size_t size() const = 0;
-	virtual size_t offset() const = 0;
-    
-    virtual
-    void release() OVERRIDE
-        {}
-
-protected:
-#if EPUB_USE(LIBXML2)
-    xmlOutputBufferPtr  _buf;
-#elif EPUB_USE(WIN_XML)
-	::Windows::Storage::IStorageFile^	_store;
-#endif
-    
-    virtual bool write(const uint8_t * buf, size_t len) = 0;
-	virtual bool close() { return false; }
-    
-    static int write_cb(void * context, const char * buffer, int len);
-    static int close_cb(void * context);
-    
-};
 
 /**
  @ingroup xml-utils
@@ -161,6 +115,59 @@ protected:
     
 };
 
+
+#endif //ENABLE_XML_READ_DOC_MEMORY
+
+
+/**
+ @ingroup xml-utils
+ */
+class OutputBuffer : public WrapperBase<OutputBuffer>
+{
+public:
+	OutputBuffer(const std::string & encoding = std::string());
+#if EPUB_USE(LIBXML2)
+	OutputBuffer(OutputBuffer && o) : _buf(o._buf) { o._buf = nullptr; }
+#elif EPUB_USE(WIN_XML)
+	OutputBuffer(OutputBuffer && o) : _store(o._store) { o._store = nullptr; }
+#endif
+	virtual ~OutputBuffer();
+#if EPUB_USE(LIBXML2)
+	xmlOutputBuffer * xmlBuffer() { return _buf; }
+    const xmlOutputBuffer * xmlBuffer() const { return _buf; }
+    operator xmlOutputBuffer * () { return xmlBuffer(); }
+    operator const xmlOutputBuffer * () const { return xmlBuffer(); }
+
+    void flush() { xmlOutputBufferFlush(_buf); }
+
+	int writeDocument(xmlDocPtr doc);
+#elif EPUB_USE(WIN_XML)
+	::Windows::Storage::IStorageFile^ File() { return _store; }
+	operator ::Windows::Storage::IStorageFile^() { return _store; }
+
+	int WriteDocument(std::shared_ptr<const Document> doc);
+#endif
+	virtual size_t size() const = 0;
+	virtual size_t offset() const = 0;
+
+	virtual
+	void release() OVERRIDE
+	{}
+
+protected:
+#if EPUB_USE(LIBXML2)
+	xmlOutputBufferPtr  _buf;
+#elif EPUB_USE(WIN_XML)
+	::Windows::Storage::IStorageFile^	_store;
+#endif
+
+	virtual bool write(const uint8_t * buf, size_t len) = 0;
+	virtual bool close() { return false; }
+
+	static int write_cb(void * context, const char * buffer, int len);
+	static int close_cb(void * context);
+
+};
 /**
  @ingroup xml-utils
  */

@@ -24,9 +24,14 @@
 #include <ePub3/epub3.h>
 #include <ePub3/content_module.h>
 #include <ePub3/credential_request.h>
+#include <ePub3/utilities/utfstring.h>
 #include <map>
-#include <future>
 #include <memory>
+
+#if FUTURE_ENABLED
+#include <mutex>
+#include <future>
+#endif //FUTURE_ENABLED
 
 EPUB3_BEGIN_NAMESPACE
 
@@ -53,32 +58,38 @@ public:
     // Registering Content Module implementations
     
     void
-    RegisterContentModule(std::shared_ptr<ContentModule> module,
-                          const string& name) _NOEXCEPT;
-    
+    RegisterContentModule(ContentModule* module,
+                          const ePub3::string& name) _NOEXCEPT;
+
     ////////////////////////////////////////////////////
     // Services for DRM implementations
-    
+#if FUTURE_ENABLED
     static
     void
     DisplayMessage(const string& title,
                    const string& message) _NOEXCEPT;
-    
+
     static
     async_result<Credentials>
     RequestCredentialInput(const CredentialRequest& request);
-    
+#endif //FUTURE_ENABLED
+
 private:
     static std::unique_ptr<ContentModuleManager>        s_instance;
-    
-    std::mutex                                          _mutex;
+
+#if FUTURE_ENABLED
+std::mutex                                          _mutex;
+#endif //FUTURE_ENABLED
+
     std::map<string, std::shared_ptr<ContentModule>>    _known_modules;
     
     friend class Container;
-    
-    // for the use of Container::OpenContainer(path)
+
+#if FUTURE_ENABLED
     async_result<ContainerPtr> LoadContentAtPath(const string& path, launch policy);
-    
+#else
+    ContainerPtr LoadContentAtPath(const string& path);
+#endif //FUTURE_ENABLED
 };
 
 EPUB3_END_NAMESPACE

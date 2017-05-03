@@ -740,7 +740,7 @@ std::shared_ptr<SeekableByteStream> FileByteStream::Clone() const
 #pragma mark -
 #endif
 
-ZipFileByteStream::ZipFileByteStream(struct zip* archive, const string& path, int flags) : SeekableByteStream(), _file(nullptr), _mode(0)
+ZipFileByteStream::ZipFileByteStream(struct zip* archive, const string& path, int flags) : SeekableByteStream(), _file(nullptr), _mode(std::ios::in | std::ios::out | std::ios::app | std::ios::binary)
 {
     Open(archive, path, flags);
 }

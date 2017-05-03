@@ -65,7 +65,8 @@ bool Collection::ParseXML(shared_ptr<xml::Node> node)
                 if (_links.size() != 0 )
                     HandleError(EPUBError::OPFCollectionSubcollectionOutOfOrder);
                 
-                CollectionPtr sub = New(Owner(), shared_from_this());
+//                CollectionPtr sub = New(Owner(), shared_from_this());
+                CollectionPtr sub = std::make_shared<Collection>(Owner(), shared_from_this());
                 if (sub->ParseXML(child))
                 {
 #if EPUB_HAVE(CXX_MAP_EMPLACE)
@@ -77,7 +78,7 @@ bool Collection::ParseXML(shared_ptr<xml::Node> node)
             }
             else if (name == "link")
             {
-                LinkPtr link = Link::New(shared_from_this());
+                LinkPtr link = std::make_shared<Link>(shared_from_this()); //Link::New(shared_from_this());
                 if (link->ParseXML(child))
                     _links.push_back(link);
             }
@@ -110,7 +111,7 @@ void Collection::ParseMetadata(shared_ptr<xml::Node> node)
             continue;
         }
         
-        PropertyPtr p = Property::New(holderPtr);
+        PropertyPtr p = std::make_shared<Property>(holderPtr); //Property::New(holderPtr);
         if (p->ParseMetaElement(metaNode))
             AddProperty(p);
     }
