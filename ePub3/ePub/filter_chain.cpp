@@ -138,7 +138,7 @@ std::shared_ptr<ByteStream> FilterChain::GetFilterChainByteStreamRange(ConstMani
 std::unique_ptr<ByteStream> FilterChain::GetFilterChainByteStreamRange(ConstManifestItemPtr item, SeekableByteStream *rawInput) const
 {
     unique_ptr<ByteStream> resultStream;
-    uint nFilters = 0;
+    unsigned int nFilters = 0;
     for (ContentFilterPtr filter : _filters)
     {
         if (filter->TypeSniffer()(item))

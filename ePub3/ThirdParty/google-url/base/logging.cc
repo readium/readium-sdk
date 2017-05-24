@@ -406,7 +406,7 @@ void LogMessage::Init(const char* file, int line) {
   stream_ << log_severity_names[severity_] << ":" << file << "(" << line << ")] ";
   
 #if _WIN32 || _WIN64
-  message_start_ = stream_.pcount();
+  message_start_ = static_cast<int>(stream_.pcount());
 #else
   message_start_ = static_cast<int>(stream_.str().length());
 #endif
@@ -492,11 +492,11 @@ LogMessage::~LogMessage() {
       DebugBreak();
     } else {
       if (log_assert_handler) {
-        log_assert_handler(std::string(stream_.str(), stream_.pcount()));
+        log_assert_handler(std::string(stream_.str(), static_cast<std::string::size_type>(stream_.pcount())));
       } else {
         // don't use the string with the newline, get a fresh version to send to
         // the debug message process
-        DisplayDebugMessage(std::string(stream_.str(), stream_.pcount()));
+        DisplayDebugMessage(std::string(stream_.str(), static_cast<std::string::size_type>(stream_.pcount())));
         TerminateProcess(GetCurrentProcess(), 1);
       }
     }

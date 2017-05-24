@@ -966,7 +966,7 @@ bool Package::Unpack(bool skipLoadingPotentiallyEncryptedContent)
         if ( foundIdentifier && !uniqueIDRef.empty() )
         {
             bool found = false;
-            for (int i = 0; i < uidRefIds.size(); i++)
+            for (std::vector<string>::size_type i = 0; i < uidRefIds.size(); i++)
             {
                 const string id = uidRefIds[i];
                 if ( uniqueIDRef == id )

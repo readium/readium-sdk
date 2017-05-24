@@ -176,7 +176,7 @@ public:
             m_allocated_buffer_size = bytesToRead;
         }
 
-        for (int i = 0; i < m_allocated_buffer_size; i++)
+        for (ByteStream::size_type i = 0; i < m_allocated_buffer_size; i++)
         {
             m_buffer[i] = 0;
         }

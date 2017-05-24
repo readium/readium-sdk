@@ -70,7 +70,7 @@ bool EncryptionInfo::ParseXML(shared_ptr<xml::Node> node)
     strings = xpath.Strings("./enc:EncryptionProperties/enc:EncryptionProperty/ep:Compression/@OriginalLength", node);
     if (!strings.empty())
     {
-        for ( int i = 0 ; i < strings[0].size() ; i++)
+        for (XPathWrangler::StringList::size_type i = 0; i < strings[0].size(); i++)
             if (strings[0][i] < '0' || strings[0][i] > '9' )
                 return false;
         
