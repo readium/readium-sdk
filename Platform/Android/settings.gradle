@@ -1,3 +1,4 @@
 include ':epub3'
 include ':lib'
 
+project(':epub3').projectDir = new File(rootProject.projectDir, './epub3')

@@ -1,23 +1,45 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
-        jcenter()
+       jcenter()
     }
     dependencies {
-        // Retrieve ndk debug settings
+
         Properties properties = new Properties()
         properties.load(rootProject.file('local.properties').newDataInputStream())
-        def ndkDebug = properties.getProperty('readium.ndk_debug', "false")
-        ndkDebug = (ndkDebug == "true") ? true : false;
-        rootProject.ext.set('readium_ndk_debug', ndkDebug)
+
+        def ndkClang = properties.getProperty('readium.ndk_clang', "false")
+        ndkClang = (ndkClang == "true") ? true : false;
+        rootProject.ext.set('readium_ndk_clang', ndkClang)
+//        def ndk_clang = (rootProject.hasProperty("readium_ndk_clang") && rootProject.readium_ndk_clang)
+//        if (ndk_clang) environment 'READIUM_CLANG', 'true'
+
+        def ndkSkipX86 = properties.getProperty('readium.ndk_skipX86', "false")
+        ndkSkipX86 = (ndkSkipX86 == "true") ? true : false;
+        rootProject.ext.set('readium_ndk_skipX86', ndkSkipX86)
+//        def ndk_skipX86 = (rootProject.hasProperty("readium_ndk_skipX86") && rootProject.readium_ndk_skipX86)
+//        if (ndk_skipX86) environment 'READIUM_SKIPX86', 'true'
+
+        def ndkSkipARM = properties.getProperty('readium.ndk_skipARM', "false")
+        ndkSkipARM = (ndkSkipARM == "true") ? true : false;
+        rootProject.ext.set('readium_ndk_skipARM', ndkSkipARM)
+//        def ndk_skipARM = (rootProject.hasProperty("readium_ndk_skipARM") && rootProject.readium_ndk_skipARM)
+//        if (ndk_skipARM) environment 'READIUM_SKIPARM', 'true'
+
+        def ndkExperimental = properties.getProperty('readium.ndk_experimental', "false")
+        ndkExperimental = (ndkExperimental == "true") ? true : false;
+        rootProject.ext.set('readium_ndk_experimental', ndkExperimental)
+//        def ndk_experimental = (rootProject.hasProperty("readium_ndk_experimental") && rootProject.readium_ndk_experimental)
+//        if (ndk_experimental) environment 'READIUM_EXPERIMENTAL', 'true'
 
         // Use stable gradle or experimental gradle
-        if (ndkDebug) {
-            classpath "com.android.tools.build:gradle-experimental:0.6.0-beta6"
+        if (ndkExperimental) {
+            //https://bintray.com/android/android-tools/com.android.tools.build.gradle-experimental/view
+            classpath "com.android.tools.build:gradle-experimental:0.9.2"
         } else {
-            classpath "com.android.tools.build:gradle:1.5.0"
+            //https://bintray.com/android/android-tools/com.android.tools.build.gradle/view
+            classpath "com.android.tools.build:gradle:2.3.2"
         }
-
     }
 }
 
