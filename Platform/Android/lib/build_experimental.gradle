@@ -1,45 +1,72 @@
 apply plugin: 'com.android.model.library'
 
+def ndk_skipX86 = (rootProject.hasProperty("readium_ndk_skipX86") && rootProject.readium_ndk_skipX86)
+def ndk_skipARM = (rootProject.hasProperty("readium_ndk_skipARM") && rootProject.readium_ndk_skipARM)
+def ndk_clang = (rootProject.hasProperty("readium_ndk_clang") && rootProject.readium_ndk_clang)
+def ndk_experimental = (rootProject.hasProperty("readium_ndk_experimental") && rootProject.readium_ndk_experimental)
+
 model {
     android {
-        compileSdkVersion = 23
-        buildToolsVersion = "23.0.2"
+        compileSdkVersion = 25
+        buildToolsVersion = "25.0.3"
 
-        defaultConfig.with {
-            minSdkVersion.apiLevel   = 19
-            targetSdkVersion.apiLevel = 23
+        defaultConfig {
+
+            // manifest@package attribute in src/main/AndroidManifest.xml
+            // applicationId = "org.readium.sdk.android"
+
+            // manifest/uses-sdk@android:minSdkVersion attribute in src/main/AndroidManifest.xml
+            minSdkVersion.apiLevel = 19
+
+            // manifest/uses-sdk@android:targetSdkVersion attribute in src/main/AndroidManifest.xml
+            targetSdkVersion.apiLevel = 25
+
+            // manifest@android:versionCode attribute in src/main/AndroidManifest.xml
+            versionCode 25
+
+            // manifest@android:versionName attribute in src/main/AndroidManifest.xml
+            versionName "1.25"
         }
-    }
 
-    android.sources {
-        main {
-            jniLibs {
-                dependencies {
-                    project ":epub3"
+        sources {
+            main {
+                java {
+                    source {
+                        srcDirs = [ './src/main/java' ]
+                    }
+                }
+
+                jniLibs {
+                    dependencies {
+                        project ":epub3"
+                    }
                 }
             }
         }
-    }
 
-    android.buildTypes {
-        debug {
-            minifyEnabled = false
-        }
-        release {
-            minifyEnabled = true
-        }
-    }
-
-    android.productFlavors {
-        create ("arm") {
-            ndk.with {
-                abiFilters.add("armeabi-v7a")
+        buildTypes {
+            debug {
+                minifyEnabled = false
+            }
+            release {
+                minifyEnabled = false
             }
         }
-        create ("x86") {
-            ndk.with {
-                abiFilters.add("x86")
-            }
+
+        productFlavors {
+            if (!ndk_skipARM)
+                create("arm") {
+                    ndk.with {
+                        abiFilters.add("armeabi-v7a")
+                    }
+                }
+
+            if (!ndk_skipX86)
+                create("x86") {
+                    ndk.with {
+                        abiFilters.add("x86")
+                    }
+                }
         }
     }
 }
