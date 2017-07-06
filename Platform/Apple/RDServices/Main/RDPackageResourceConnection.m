@@ -230,6 +230,17 @@ static BOOL m_provideCoreResourcesIsKnown = NO;
 			}
 		}
 	}
+    NSArray<NSString *> *components = [path componentsSeparatedByString:@"/"];
+
+    if (components.count > 1) {
+        NSString *newPath = [components lastObject];
+
+        provideCoreResource = m_provideCoreResources && [m_coreResourcePaths containsObject:newPath];
+        if (provideCoreResource) {
+            //NSLog(@"httpResponseForMethod: newPath = %@", newPath);
+            path = newPath;
+        }
+    }
 
 	if (provideCoreResource) {
 		path = [m_coreResourceBundle.resourcePath stringByAppendingPathComponent:path];
