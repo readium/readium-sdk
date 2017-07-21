@@ -110,7 +110,8 @@ static BOOL m_provideCoreResourcesIsKnown = NO;
 	{
 		return nil;
 	}
-	
+    path = [path stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    path = [path stringByStandardizingPath];
 	if ([path hasPrefix:@"/"]) {
 		path = [path substringFromIndex:1];
 	}
