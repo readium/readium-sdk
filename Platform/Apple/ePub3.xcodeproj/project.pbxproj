@@ -15,6 +15,7 @@
 		1ED0084917A9DC6F00819EBD /* initialization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED0084717A9DC6F00819EBD /* initialization.cpp */; };
 		1EFA3ACB17AB0BEF003A4BC2 /* filter_manager_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EFA3ACA17AB0BEF003A4BC2 /* filter_manager_impl.cpp */; };
 		1EFA3ACC17AB0C7A003A4BC2 /* filter_manager_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EFA3ACA17AB0BEF003A4BC2 /* filter_manager_impl.cpp */; };
+		315285D41F41D63A0056156C /* DeviceUtilty.mm in Sources */ = {isa = PBXBuildFile; fileRef = 315285D31F41D63A0056156C /* DeviceUtilty.mm */; };
 		3418BA7D16C4151E009AA7EF /* ring_buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABA88FD116C2B4ED00F2014B /* ring_buffer.cpp */; };
 		588D24201A02EF8F006A92BB /* PassThroughFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 588D241E1A02EF8F006A92BB /* PassThroughFilter.cpp */; };
 		588D24211A02EF8F006A92BB /* PassThroughFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 588D241E1A02EF8F006A92BB /* PassThroughFilter.cpp */; };
@@ -446,6 +447,8 @@
 		1ED0084717A9DC6F00819EBD /* initialization.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = initialization.cpp; sourceTree = "<group>"; };
 		1EFA3AC917AB0BC0003A4BC2 /* filter_manager_impl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = filter_manager_impl.h; sourceTree = "<group>"; };
 		1EFA3ACA17AB0BEF003A4BC2 /* filter_manager_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filter_manager_impl.cpp; sourceTree = "<group>"; };
+		315285D31F41D63A0056156C /* DeviceUtilty.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DeviceUtilty.mm; sourceTree = "<group>"; };
+		315285D51F41D6DE0056156C /* DeviceUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeviceUtility.h; sourceTree = "<group>"; };
 		588D241E1A02EF8F006A92BB /* PassThroughFilter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PassThroughFilter.cpp; sourceTree = "<group>"; };
 		588D241F1A02EF8F006A92BB /* PassThroughFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PassThroughFilter.h; sourceTree = "<group>"; };
 		832DB29A1E682CB100415B52 /* content_module_exception.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = content_module_exception.h; sourceTree = "<group>"; };
@@ -1651,6 +1654,8 @@
 				AB6AC734169225E2000DE924 /* signatures.cpp */,
 				AB6AC735169225E3000DE924 /* signatures.h */,
 				A250DE47346B36E8BC291F6D /* MediaOverlays */,
+				315285D31F41D63A0056156C /* DeviceUtilty.mm */,
+				315285D51F41D6DE0056156C /* DeviceUtility.h */,
 			);
 			name = Components;
 			sourceTree = "<group>";
@@ -2116,6 +2121,7 @@
 				AB906FAF182C1DFF0097A7FE /* optional.cpp in Sources */,
 				ABA4BB3A16ADF64400161B77 /* zip_unchange_all.c in Sources */,
 				ABA4BB3B16ADF64400161B77 /* zip_unchange_archive.c in Sources */,
+				315285D41F41D63A0056156C /* DeviceUtilty.mm in Sources */,
 				ABA4BB3C16ADF64400161B77 /* zip_unchange_data.c in Sources */,
 				ABA4BB3D16ADF64400161B77 /* utfstring.cpp in Sources */,
 				ABA4BB3E16ADF64400161B77 /* iri.cpp in Sources */,

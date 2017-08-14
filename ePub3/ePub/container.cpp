@@ -29,6 +29,10 @@
 #include <ePub3/xml/io.h>
 #include <ePub3/content_module_manager.h>
 
+#ifdef TARGET_OS_IPHONE
+#include "DeviceUtility.h"
+#endif
+
 /*
 #if EPUB_COMPILER(CLANG) && defined(ANDROID)
 #ifdef __cplusplus
@@ -307,15 +311,65 @@ void Container::ParseVendorMetadata()
     XPathWrangler::NamespaceList __ns;
     XPathWrangler xpath(docXml, __ns);
 #endif
-
+#ifdef TARGET_OS_IPHONE
+    xml::NodeSet nodes = xpath.Nodes("/display_options/platform");
+#else
     xml::NodeSet nodes = xpath.Nodes("/display_options/platform/option");
+#endif // TARGET_OS_IPHONE
     if ( nodes.empty() )
     {
         //xml::string str(docXml->XMLString());
         //printf("%s\n", docXml->XMLString().utf8());
         return;
     }
+#ifdef TARGET_OS_IPHONE
+    for (auto node : nodes) {
+        string name = _getProp(node, "name");
 
+        if (name.empty()) {
+            continue;
+        }
+        if (name != "*" &&
+            ((name.tolower() == "iphone" && IsiPad()) || (name.tolower() == "ipad" && !IsiPad()))) {
+            continue;
+        }
+        XPathWrangler xpath(node->Document(), {});
+        xml::NodeSet childNodes = xpath.Nodes("./option", node);
+
+        if (childNodes.empty()) {
+            continue;
+        }
+        for (auto childNode : childNodes) {
+            string childName = _getProp(childNode, "name");
+
+            if (childName.empty()) {
+                continue;
+            }
+            if (childName == "fixed-layout") {
+                if (!_appleIBooksDisplayOption_FixedLayout.empty() && name == "*") {
+                    continue;
+                }
+                _appleIBooksDisplayOption_FixedLayout = childNode->Content(); // true | false
+            } else if (childName == "open-to-spread") {
+                if (!_appleIBooksDisplayOption_OpenToSpread.empty() && name == "*") {
+                    continue;
+                }
+                _appleIBooksDisplayOption_OpenToSpread = childNode->Content(); // true | false
+            } else if (childName == "orientation-lock") {
+                if (!_appleIBooksDisplayOption_Orientation.empty() && name == "*") {
+                    continue;
+                }
+                _appleIBooksDisplayOption_Orientation = childNode->Content(); // landscape-only | portrait-only | none
+            }
+        }
+#if 0
+        printf("Container::ParseVendorMetadata: _appleIBooksDisplayOption_FixedLayout = %s, "
+               "_appleIBooksDisplayOption_OpenToSpread = %s, _appleIBooksDisplayOption_Orientation = %s\n",
+               _appleIBooksDisplayOption_FixedLayout.c_str(), _appleIBooksDisplayOption_OpenToSpread.c_str(),
+               _appleIBooksDisplayOption_Orientation.c_str());
+#endif
+    }
+#else
     for ( auto node : nodes )
     {
         string name = _getProp(node, "name");
@@ -331,6 +385,7 @@ void Container::ParseVendorMetadata()
             _appleIBooksDisplayOption_Orientation = node->Content(); // landscape-only | portrait-only | none
         }
     }
+#endif // TARGET_OS_IPHONE
 }
 
 void Container::LoadEncryption()

@@ -459,6 +459,29 @@ bool Package::Open(const string& path, bool skipLoadingPotentiallyEncryptedConte
             prop->SetValue(val);
             AddProperty(prop);
         }
+        string spread = container->GetVendorMetadata_AppleIBooksDisplayOption_OpenToSpread();
+
+        if (spread == "true") {
+            this->RegisterPrefixIRIStem("rendition", "http://www.idpf.org/vocab/rendition/#");
+            this->RemoveProperty("spread", "rendition");
+
+            PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
+            PropertyPtr prop = std::make_shared<Property>(holderPtr); //Property::New(holderPtr);
+
+            prop->SetPropertyIdentifier(MakePropertyIRI("spread", "rendition"));
+            if (orientation.empty()) {
+                prop->SetValue("both");
+            } else {
+                if (landscape) {
+                    prop->SetValue("landscape");
+                } else if (portrait) {
+                    prop->SetValue("portrait");
+                } else if (none) {
+                    prop->SetValue("both");
+                }
+            }
+            AddProperty(prop);
+        }
     }
 
 #if _XML_OVERRIDE_SWITCHES

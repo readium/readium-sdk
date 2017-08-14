@@ -192,10 +192,12 @@ protected:
     /// (+ Sony, Amazon, etc.?)
     void ParseVendorMetadata();
     string _appleIBooksDisplayOption_FixedLayout; // true | false
+    string _appleIBooksDisplayOption_OpenToSpread; // true | false
     string _appleIBooksDisplayOption_Orientation; // landscape-only | portrait-only | none
 public:
     // TODO: this API does not need to be public, only used internally by Package::Open() to adjust OPF rendition:layout|orientation properties
     const string GetVendorMetadata_AppleIBooksDisplayOption_FixedLayout() const { return _appleIBooksDisplayOption_FixedLayout; };
+    const string GetVendorMetadata_AppleIBooksDisplayOption_OpenToSpread() const { return _appleIBooksDisplayOption_OpenToSpread; };
     const string GetVendorMetadata_AppleIBooksDisplayOption_Orientation() const { return _appleIBooksDisplayOption_Orientation; };
 
 protected:
