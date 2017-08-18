@@ -981,7 +981,9 @@ public:
                 std::shared_ptr<ManifestItem> spineManifestItem = smilData->_spineItem->ManifestItem();
                 if (srcManifestItem != spineManifestItem)
                 {
-                    printf("Media Overlays TEXT SRC mismatch (SMIL[1] with XHTML[1+]): %s (%s) [%s]\n", srcManifestItem->Href().c_str(), spineManifestItem->Href().c_str(), item->Href().c_str());
+                    printf("Media Overlays TEXT SRC mismatch (SMIL[1] with XHTML[1+]): %s (%s) [%s]\n",
+                           srcManifestItem ? srcManifestItem->Href().c_str() : "NULL", spineManifestItem ? spineManifestItem->Href().c_str() : "NULL",
+                           item->Href().c_str());
                     _excludeAudioDuration = true;
                 }
 
