@@ -165,7 +165,7 @@ static const ErrorLookup gErrorLookupTable = {
     {EPUBError::MediaOverlayEmptySeq, {ViolationSeverity::Major, EPUBSpec::MediaOverlays, "2.4.5", "A <seq> element MUST contain at least one <par> or <seq> child element."}},
     {EPUBError::MediaOverlayEmptyPar, {ViolationSeverity::Major, EPUBSpec::MediaOverlays, "2.4.6", "A <par> element MUST contain a <text> child element."}},
     {EPUBError::MediaOverlayInvalidText, {ViolationSeverity::Critical, EPUBSpec::MediaOverlays, "2.4.7", "A <text> element MUST have a 'src' attribute."}},
-    {EPUBError::MediaOverlayInvalidTextSource, {ViolationSeverity::Major, EPUBSpec::MediaOverlays, "2.4.7", "A <text> element's 'src' attribute MUST reference an item in the publication's <manifest>."}},
+    {EPUBError::MediaOverlayInvalidTextSource, {ViolationSeverity::Medium, EPUBSpec::MediaOverlays, "2.4.7", "A <text> element's 'src' attribute MUST reference an item in the publication's <manifest>."}},
     {EPUBError::MediaOverlayTextSrcFragmentMissing, {ViolationSeverity::Medium, EPUBSpec::MediaOverlays, "2.4.7", "A <text> element's 'src' attribute should contain a fragment identifier."}},
     {EPUBError::MediaOverlayInvalidAudio, {ViolationSeverity::Critical, EPUBSpec::MediaOverlays, "2.4.8", "An <audio> element MUST have a 'src' attribute."}},
     {EPUBError::MediaOverlayInvalidAudioSource, {ViolationSeverity::Major, EPUBSpec::MediaOverlays, "2.4.8", "An <audio> element's 'src' attribute MUST reference an item in the publication's <manifest>."}},
@@ -309,7 +309,7 @@ INITIALIZER(__initErrorTables)
     gErrorLookupTable[EPUBError::MediaOverlayEmptySeq] = ErrorInfo(ViolationSeverity::Major, EPUBSpec::MediaOverlays, "2.4.5", "A <seq> element MUST contain at least one <par> or <seq> child element.");
     gErrorLookupTable[EPUBError::MediaOverlayEmptyPar] = ErrorInfo(ViolationSeverity::Major, EPUBSpec::MediaOverlays, "2.4.6", "A <par> element MUST contain a <text> child element.");
     gErrorLookupTable[EPUBError::MediaOverlayInvalidText] = ErrorInfo(ViolationSeverity::Critical, EPUBSpec::MediaOverlays, "2.4.7", "A <text> element MUST have a 'src' attribute.");
-    gErrorLookupTable[EPUBError::MediaOverlayInvalidTextSource] = ErrorInfo(ViolationSeverity::Major, EPUBSpec::MediaOverlays, "2.4.7", "A <text> element's 'src' attribute MUST reference an item in the publication's <manifest>.");
+    gErrorLookupTable[EPUBError::MediaOverlayInvalidTextSource] = ErrorInfo(ViolationSeverity::Medium, EPUBSpec::MediaOverlays, "2.4.7", "A <text> element's 'src' attribute MUST reference an item in the publication's <manifest>.");
     gErrorLookupTable[EPUBError::MediaOverlayTextSrcFragmentMissing] = ErrorInfo(ViolationSeverity::Medium, EPUBSpec::MediaOverlays, "2.4.7", "A <text> element's 'src' attribute should contain a fragment identifier.");
     gErrorLookupTable[EPUBError::MediaOverlayInvalidAudio] = ErrorInfo(ViolationSeverity::Critical, EPUBSpec::MediaOverlays, "2.4.8", "An <audio> element MUST have a 'src' attribute.");
     gErrorLookupTable[EPUBError::MediaOverlayInvalidAudioSource] = ErrorInfo(ViolationSeverity::Major, EPUBSpec::MediaOverlays, "2.4.8", "An <audio> element's 'src' attribute MUST reference an item in the publication's <manifest>.");
