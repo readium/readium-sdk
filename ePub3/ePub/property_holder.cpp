@@ -51,6 +51,7 @@ const std::map<const string, bool> PropertyHolder::CoreMediaTypes({
     // Audio Types
     {"audio/mpeg", true},                           // MP3 audio
     {"audio/mp4", true},                            // AAC LC audio using MP4 container
+    {"audio/x-wav", true},                          // WAV audio
     
     // Text Types
     {"text/css", true},                             // EPUB Style Sheets
@@ -86,6 +87,7 @@ static const __mtype_t __mtype_values[14] = {
     // Audio Types
     __mtype_t("audio/mpeg", true),                           // MP3 audio
     __mtype_t("audio/mp4", true),                            // AAC LC audio using MP4 container
+    __mtype_t{"audio/x-wav", true},                          // WAV audio
     
     // Text Types
     __mtype_t("text/css", true),                             // EPUB Style Sheets

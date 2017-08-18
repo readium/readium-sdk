@@ -894,7 +894,7 @@ public:
                 {
                     HandleError(EPUBError::MediaOverlayInvalidAudioSource, _Str(item->Href().c_str(), " [", src_file.c_str(), "] => audio source manifest cannot be found"));
                 }
-                else if (srcManifestItem->MediaType() != "audio/mpeg" && srcManifestItem->MediaType() != "audio/mp4") //package->CoreMediaTypes.find(mediaType) == package->CoreMediaTypes.end()
+                else if (srcManifestItem->MediaType() != "audio/mpeg" && srcManifestItem->MediaType() != "audio/mp4" && srcManifestItem->MediaType() != "audio/x-wav") //package->CoreMediaTypes.find(mediaType) == package->CoreMediaTypes.end()
                 {
                     HandleError(EPUBError::MediaOverlayInvalidAudioType, _Str(item->Href().c_str(), " [", src_file.c_str(), " (", srcManifestItem->MediaType().c_str(), ")] => audio source type is invalid"));
                 }
