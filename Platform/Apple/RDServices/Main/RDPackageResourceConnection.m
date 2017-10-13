@@ -207,7 +207,7 @@ static BOOL m_provideCoreResourcesIsKnown = NO;
 
 	if ([path hasSuffix:@"readium_epubReadingSystem_inject.js"]) {
 
-		NSString* cmd = @"var epubRSInject = function(win, isTopIframe) { if (win.frames) { for (var i = 0; i < win.frames.length; i++) { var iframe = win.frames[i]; if (iframe.readium_set_epubReadingSystem) { iframe.readium_set_epubReadingSystem(window.navigator.epubReadingSystem, isTopIframe); } epubRSInject(iframe, false); } } }; epubRSInject(window, true);";
+		NSString* cmd = @"var epubRSInject = function(win, isTopIframe) { if (win.frames) { for (var i = 0; i < win.frames.length; i++) { var iframe = win.frames[i]; try { if (iframe.readium_set_epubReadingSystem) { iframe.readium_set_epubReadingSystem(window.navigator.epubReadingSystem, isTopIframe); } epubRSInject(iframe, false); } catch(err) { console.log(err); } } } }; epubRSInject(window, true);";
 		// Iterate top-level iframes, inject global window.navigator.epubReadingSystem if the expected hook function exists ( readium_set_epubReadingSystem() ).
 		[m_packageResourceServer executeJavaScript:cmd];
 		
