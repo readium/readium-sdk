@@ -75,6 +75,9 @@ _archive(std::move(o._archive)), _ocf(o._ocf), _packages(std::move(o._packages))
 }
 Container::~Container()
 {
+    if (_ocf) {
+        xml::Node::Unwrap((xmlNodePtr)_ocf->xml());
+    }
 }
 
 bool Container::Open(const string& path, bool skipLoadingPotentiallyEncryptedContent)
@@ -96,7 +99,9 @@ bool Container::Open(const string& path, bool skipLoadingPotentiallyEncryptedCon
     if (!reader) {
         throw std::invalid_argument(_Str("ZIP Path not recognised: '", gContainerFilePath, "'"));
     }
-
+    if (_ocf) {
+        xml::Node::Unwrap((xmlNodePtr)_ocf->xml());
+    }
 #if ENABLE_XML_READ_DOC_MEMORY
 
     _ocf = reader.readXml(ePub3::string(gContainerFilePath));
@@ -144,6 +149,8 @@ bool Container::Open(const string& path, bool skipLoadingPotentiallyEncryptedCon
 
 		if (pkg->Open(path, skipLoadingPotentiallyEncryptedContent))
 			_packages.push_back(pkg);
+
+        xml::Node::Unwrap(n->xml());
 	}
 
 	return true;
@@ -361,6 +368,7 @@ void Container::ParseVendorMetadata()
                 }
                 _appleIBooksDisplayOption_Orientation = childNode->Content(); // landscape-only | portrait-only | none
             }
+            xml::Node::Unwrap(childNode->xml());
         }
 #if 0
         printf("Container::ParseVendorMetadata: _appleIBooksDisplayOption_FixedLayout = %s, "
@@ -386,6 +394,8 @@ void Container::ParseVendorMetadata()
         }
     }
 #endif // TARGET_OS_IPHONE
+    xml::Node::UnwrapNodeSet(nodes);
+    xml::Node::Unwrap((xmlNodePtr)docXml->xml());
 }
 
 void Container::LoadEncryption()
@@ -425,6 +435,7 @@ void Container::LoadEncryption()
     if ( nodes.empty() )
     {
 		xml::string str(enc->XMLString());
+        xml::Node::Unwrap((xmlNodePtr)enc->xml());
 		printf("%s\n", enc->XMLString().utf8());
         return;     // should be a hard error?
     }
@@ -434,7 +445,9 @@ void Container::LoadEncryption()
         auto encPtr = std::make_shared<EncryptionInfo>(shared_from_this()); //EncryptionInfo::New(Ptr());
         if ( encPtr->ParseXML(node) )
             _encryption.push_back(encPtr);
+        xml::Node::Unwrap(node->xml());
     }
+    xml::Node::Unwrap((xmlNodePtr)enc->xml());
 }
 shared_ptr<EncryptionInfo> Container::EncryptionInfoForPath(const string &path) const
 {

@@ -48,7 +48,7 @@ bool Collection::ParseXML(shared_ptr<xml::Node> node)
             HandleError(EPUBError::OPFCollectionMissingRole);
         
         size_t nodeIdx = 0;
-        for (auto child = node->FirstElementChild(); bool(child); child = child->NextElementSibling(), ++nodeIdx)
+        for (auto child = node->FirstElementChild(); bool(child); )
         {
             string name(child->Name());
             
@@ -82,6 +82,9 @@ bool Collection::ParseXML(shared_ptr<xml::Node> node)
                 if (link->ParseXML(child))
                     _links.push_back(link);
             }
+            xml::Node::Unwrap(child->xml());
+            child = child->NextElementSibling();
+            ++nodeIdx;
         }
         
         if (_links.empty())
@@ -97,7 +100,7 @@ bool Collection::ParseXML(shared_ptr<xml::Node> node)
 void Collection::ParseMetadata(shared_ptr<xml::Node> node)
 {
     PropertyHolderPtr holderPtr = CastPtr<PropertyHolder>();
-    for (auto metaNode = node->FirstElementChild(); bool(metaNode); metaNode = metaNode->NextElementSibling())
+    for (auto metaNode = node->FirstElementChild(); bool(metaNode); )
     {
         if (!_getProp(metaNode, "refines").empty())
         {
@@ -114,6 +117,8 @@ void Collection::ParseMetadata(shared_ptr<xml::Node> node)
         PropertyPtr p = std::make_shared<Property>(holderPtr); //Property::New(holderPtr);
         if (p->ParseMetaElement(metaNode))
             AddProperty(p);
+        xml::Node::Unwrap(metaNode->xml());
+        metaNode = metaNode->NextElementSibling();
     }
 }
 

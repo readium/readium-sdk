@@ -18,6 +18,7 @@
 //  the License, or (at your option) any later version. You should have received a copy of the GNU 
 //  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include "document.h"
 #include "media-overlays_smil_model.h"
 #include "package.h"
 #include <ePub3/media-overlays_smil_utils.h>
@@ -438,8 +439,11 @@ public:
                     HandleError(EPUBError::MediaOverlayInvalidRootElement, _Str("Multiple 'smil' root elements found: ", item->Href().c_str()));
                 }
 
-                if (nodes.size() != 1)
+                if (nodes.size() != 1) {
+                    xml::Node::UnwrapNodeSet(nodes);
+                    xml::Node::Unwrap((xmlNodePtr)doc->xml());
                     return 0;
+                }
 
                 shared_ptr<xml::Node> smil = nodes[0];
 
@@ -452,7 +456,7 @@ public:
                 {
                     HandleError(EPUBError::MediaOverlayInvalidVersion, _Str("Invalid SMIL version (", version, "): ", item->Href().c_str()));
                 }
-
+                xml::Node::UnwrapNodeSet(nodes);
                 nodes = xpath.Nodes("./smil:head", smil);
 
                 if (nodes.empty())
@@ -467,9 +471,11 @@ public:
                 else if (nodes.size() > 1)
                 {
                     HandleError(EPUBError::MediaOverlayHeadIncorrectlyPlaced, _Str("multiple 'head' elements found: ", item->Href().c_str()));
+                    xml::Node::UnwrapNodeSet(nodes);
+                    xml::Node::Unwrap((xmlNodePtr)doc->xml());
                     return 0;
                 }
-
+                xml::Node::UnwrapNodeSet(nodes);
                 nodes = xpath.Nodes("./smil:body", smil);
 
                 if (nodes.empty())
@@ -483,6 +489,8 @@ public:
 
                 if (nodes.size() != 1)
                 {
+                    xml::Node::UnwrapNodeSet(nodes);
+                    xml::Node::Unwrap((xmlNodePtr)doc->xml());
                     return 0;
                 }
 
@@ -548,6 +556,8 @@ public:
                 accumulatedDurationMilliseconds += smilDur;
 
                 spineItem = spineItem->Next();
+                xml::Node::UnwrapNodeSet(nodes);
+                xml::Node::Unwrap((xmlNodePtr)doc->xml());
             }
 
             return accumulatedDurationMilliseconds;
@@ -1002,7 +1012,7 @@ public:
             {
                 _excludeAudioDuration = false;
 
-                for (; bool(childNode); childNode = childNode->NextElementSibling())
+                while (bool(childNode))
                 {
                     uint32_t time = parseSMIL(smilData, sequence, parallel, item, childNode, cache_manifestItemToAbsolutePath, cache_smilRelativePathToManifestItem);
 
@@ -1010,6 +1020,8 @@ public:
                     {
                         accumulatedDurationMilliseconds += time;
                     }
+                    xml::Node::Unwrap(childNode->xml());
+                    childNode = childNode->NextElementSibling();
                 }
             }
 

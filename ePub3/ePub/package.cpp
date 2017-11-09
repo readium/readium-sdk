@@ -97,11 +97,17 @@ PackageBase::PackageBase(PackageBase&& o) : _archive(o._archive), _opf(std::move
 PackageBase::~PackageBase()
 {
     // our Container owns the archive
+    if (_opf) {
+        xml::Node::Unwrap((xmlNodePtr)_opf->xml());
+    }
 }
 
 bool PackageBase::Open(const string& path, bool skipLoadingPotentiallyEncryptedContent)
 {
     ArchiveXmlReader reader(_archive->ReaderAtPath(path.stl_str()));
+    if (_opf) {
+        xml::Node::Unwrap((xmlNodePtr)_opf->xml());
+    }
 #if ENABLE_XML_READ_DOC_MEMORY
 
         _opf = reader.readXml(path);
@@ -309,7 +315,7 @@ NavigationList PackageBase::NavTablesFromManifestItem(shared_ptr<PackageBase> ow
     
     if (navList.empty() && pItem->Href().rfind(".ncx") == pItem->Href().size()-4)
         navList = _LoadNCXNavTablesFromManifestItem(sharedPkg, pItem, doc);
-    
+    xml::Node::Unwrap((xmlNodePtr)doc->xml());
     return navList;
 }
 NavigationList PackageBase::_LoadEPUB3NavTablesFromManifestItem(PackagePtr sharedPkg, ManifestItemPtr pItem, shared_ptr<xml::Document> doc)
@@ -332,6 +338,7 @@ NavigationList PackageBase::_LoadEPUB3NavTablesFromManifestItem(PackagePtr share
 		auto navTablePtr = std::make_shared<ePub3::NavigationTable>(sharedPkg, pItem->Href()); //NavigationTable::New(sharedPkg, pItem->Href());
 		if (navTablePtr->ParseXML(navNode))
 			tables.push_back(navTablePtr);
+        xml::Node::Unwrap(navNode->xml());
 	}
 
 	// now look for any <dl> nodes with an epub:type of "glossary"
@@ -340,6 +347,7 @@ NavigationList PackageBase::_LoadEPUB3NavTablesFromManifestItem(PackagePtr share
 	{
 		auto glosPtr = std::make_shared<Glossary>(node, sharedPkg); //Glossary::New(node, sharedPkg);
 		tables.push_back(glosPtr);
+        xml::Node::Unwrap(node->xml());
 	}
 
 	return tables;
@@ -369,6 +377,7 @@ NavigationList PackageBase::_LoadNCXNavTablesFromManifestItem(PackagePtr sharedP
 		auto navTablePtr = std::make_shared<ePub3::NavigationTable>(sharedPkg, pItem->Href()); //NavigationTable::New(sharedPkg, pItem->Href());
 		if (navTablePtr->ParseNCXNavMap(nodes[0], title))
 			tables.push_back(navTablePtr);
+        xml::Node::UnwrapNodeSet(nodes);
 	}
 
 	// now look for any <pageList> nodes
@@ -378,6 +387,7 @@ NavigationList PackageBase::_LoadNCXNavTablesFromManifestItem(PackagePtr sharedP
 		auto navTablePtr = std::make_shared<ePub3::NavigationTable>(sharedPkg, pItem->Href()); //NavigationTable::New(sharedPkg, pItem->Href());
 		if (navTablePtr->ParseNCXPageList(nodes[0]))
 			tables.push_back(navTablePtr);
+        xml::Node::UnwrapNodeSet(nodes);
 	}
 
 	// now any <navList> nodes
@@ -387,6 +397,7 @@ NavigationList PackageBase::_LoadNCXNavTablesFromManifestItem(PackagePtr sharedP
 		auto navTablePtr = std::make_shared<ePub3::NavigationTable>(sharedPkg, pItem->Href()); //NavigationTable::New(sharedPkg, pItem->Href());
 		if (navTablePtr->ParseNCXNavList(node))
 			tables.push_back(navTablePtr);
+        xml::Node::Unwrap(node->xml());
 	}
 
 	return tables;
@@ -550,6 +561,7 @@ void Package::LoadNavigationTables()
     if ( rootName != "package" )
     {
         HandleError(EPUBError::OPFInvalidPackageDocument);
+        xml::Node::Unwrap((xmlNodePtr)root->xml());
         return;
     }
     versionStr = _getProp(root, "version");
@@ -569,6 +581,7 @@ void Package::LoadNavigationTables()
         if (version < 3)
             isEPUB3 = false;
     }
+    xml::Node::Unwrap((xmlNodePtr)root->xml());
 
     PackagePtr sharedMe = shared_from_this();
 
@@ -671,6 +684,7 @@ bool Package::Unpack(bool skipLoadingPotentiallyEncryptedContent)
     if ( rootName != "package" )
     {
         HandleError(EPUBError::OPFInvalidPackageDocument);
+        xml::Node::Unwrap((xmlNodePtr)root->xml());
         return false;       // not an OPF file, innit?
     }
 	versionStr = _getProp(root, "version");
@@ -719,13 +733,14 @@ bool Package::Unpack(bool skipLoadingPotentiallyEncryptedContent)
         {
             HandleError(EPUBError::OPFMetadataOutOfOrder);
         }
-        
+        xml::Node::Unwrap(child->xml());
 		child = child->NextElementSibling();
     }
     
     if ( _spineCFIIndex == 0 )
     {
         HandleError(EPUBError::OPFNoSpine);
+        xml::Node::Unwrap((xmlNodePtr)root->xml());
         return false;       // spineless!
     }
     
@@ -846,12 +861,14 @@ bool Package::Unpack(bool skipLoadingPotentiallyEncryptedContent)
             {
                 _spine = next;
             }
-            
             cur = next;
         }
     }
     catch (const std::system_error& exc)
     {
+        xml::Node::UnwrapNodeSet(manifestNodes);
+        xml::Node::UnwrapNodeSet(spineNodes);
+        xml::Node::Unwrap((xmlNodePtr)root->xml());
         if ( exc.code().category() == epub_spec_category() )
             throw;
         
@@ -859,10 +876,14 @@ bool Package::Unpack(bool skipLoadingPotentiallyEncryptedContent)
     }
     catch (...)
     {
+        xml::Node::UnwrapNodeSet(manifestNodes);
+        xml::Node::UnwrapNodeSet(spineNodes);
+        xml::Node::Unwrap((xmlNodePtr)root->xml());
         return false;
     }
-    
+    xml::Node::UnwrapNodeSet(manifestNodes);
     manifestNodes.clear();
+    xml::Node::UnwrapNodeSet(spineNodes);
     spineNodes.clear();
     
     // collections
@@ -888,14 +909,19 @@ bool Package::Unpack(bool skipLoadingPotentiallyEncryptedContent)
     }
     catch (const std::system_error& exc)
     {
+        xml::Node::UnwrapNodeSet(collectionNodes);
+        xml::Node::Unwrap((xmlNodePtr)root->xml());
         if (exc.code().category() == epub_spec_category())
             throw;
         return false;
     }
     catch (...)
     {
+        xml::Node::UnwrapNodeSet(collectionNodes);
+        xml::Node::Unwrap((xmlNodePtr)root->xml());
         return false;
     }
+    xml::Node::UnwrapNodeSet(collectionNodes);
     
     // now the metadata, which is slightly more involved due to extensions
     xml::NodeSet metadataNodes;
@@ -936,6 +962,9 @@ bool Package::Unpack(bool skipLoadingPotentiallyEncryptedContent)
 #else
 	                _EPUB2Properties[name] = content;
 #endif
+                if (bool(ns)) {
+                    xml::Node::Unwrap((xmlNodePtr)ns->xml());
+                }
                 // it's an ePub2 item-- ignore it
                 continue;
             }
@@ -949,7 +978,9 @@ bool Package::Unpack(bool skipLoadingPotentiallyEncryptedContent)
                 // by elimination it's refining something-- we'll process it later when we know we've got all the main nodes in there
 				refineNodes.push_back(node);
             }
-            
+            if (bool(ns)) {
+                xml::Node::Unwrap((xmlNodePtr)ns->xml());
+            }
             if ( p && p->ParseMetaElement(node) )
             {
                 switch ( p->Type() )
@@ -1071,8 +1102,10 @@ bool Package::Unpack(bool skipLoadingPotentiallyEncryptedContent)
         
         // now look at the <spine> element for properties
 		auto spineNode = root->FirstElementChild();
-        for ( uint32_t i = 2; i < _spineCFIIndex; i += 2 )
+        for ( uint32_t i = 2; i < _spineCFIIndex; i += 2 ) {
+            xml::Node::Unwrap(spineNode->xml());
             spineNode = spineNode->NextElementSibling();
+        }
         
         string value = _getProp(spineNode, "page-progression-direction");
         if ( !value.empty() )
@@ -1082,17 +1115,27 @@ bool Package::Unpack(bool skipLoadingPotentiallyEncryptedContent)
             prop->SetValue(value);
             AddProperty(prop);
         }
+        xml::Node::Unwrap(spineNode->xml());
     }
     catch (std::system_error& exc)
     {
+        xml::Node::UnwrapNodeSet(metadataNodes);
+        xml::Node::UnwrapNodeSet(refineNodes);
+        xml::Node::Unwrap((xmlNodePtr)root->xml());
         if ( exc.code().category() == epub_spec_category() )
             throw;
         return false;
     }
     catch (...)
     {
+        xml::Node::UnwrapNodeSet(metadataNodes);
+        xml::Node::UnwrapNodeSet(refineNodes);
+        xml::Node::Unwrap((xmlNodePtr)root->xml());
         return false;
     }
+    xml::Node::UnwrapNodeSet(metadataNodes);
+    xml::Node::UnwrapNodeSet(refineNodes);
+    xml::Node::Unwrap((xmlNodePtr)root->xml());
     
     // now any content type bindings
     xml::NodeSet bindingNodes;
@@ -1176,13 +1219,16 @@ bool Package::Unpack(bool skipLoadingPotentiallyEncryptedContent)
     }
     catch (std::exception& exc)
     {
+        xml::Node::UnwrapNodeSet(bindingNodes);
         std::cerr << "Exception processing OPF file: " << exc.what() << std::endl;
         throw;
     }
     catch (...)
     {
+        xml::Node::UnwrapNodeSet(bindingNodes);
 		return false;
     }
+    xml::Node::UnwrapNodeSet(bindingNodes);
 
     // lastly, let's set the media support information
     InitMediaSupport();
@@ -1279,7 +1325,11 @@ string Package::PackageID() const
 }
 string Package::Version() const
 {
-    return _getProp(_opf->Root(), "version");
+    auto root = _opf->Root();
+    string version = _getProp(root, "version");
+    xml::Node::Unwrap((xmlNodePtr)root->xml());
+
+    return version;
 }
 void Package::FireLoadEvent(const IRI &url) const
 {

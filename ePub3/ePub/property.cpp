@@ -214,28 +214,38 @@ bool Property::ParseMetaElement(shared_ptr<xml::Node> node)
     if ( ns != nullptr && ns->URI() == DCMES_uri )
     {
         auto found = NameToIDMap.find(node->Name());
-        if ( found == NameToIDMap.end() )
+        if ( found == NameToIDMap.end() ) {
+            xml::Node::Unwrap((xmlNodePtr)ns->xml());
             return false;
+        }
         
         _type = found->second;
         _identifier = IRI(string(DCMES_uri) + node->Name());
         _value = node->Content();
         _language = node->Language();
         SetXMLIdentifier(_getProp(node, "id"));
+        xml::Node::Unwrap((xmlNodePtr)ns->xml());
         
         return true;
     }
     else if ( node->Name() == MetaTagName )
     {
         string property = _getProp(node, "property");
-        if ( property.empty() )
+        if ( property.empty() ) {
+            if (ns != nullptr) {
+                xml::Node::Unwrap((xmlNodePtr)ns->xml());
+            }
             return false;
+        }
 
         _type = DCType::Custom;
 		_identifier = OwnedBy::Owner()->PropertyIRIFromString(property);
 		_value = node->Content();
 		_language = node->Language();
         SetXMLIdentifier(_getProp(node, "id"));
+        if (ns != nullptr) {
+            xml::Node::Unwrap((xmlNodePtr)ns->xml());
+        }
 
         return true;
     }
@@ -246,10 +256,13 @@ bool Property::ParseMetaElement(shared_ptr<xml::Node> node)
         _value = node->Content();
         _language = node->Language();
         SetXMLIdentifier(_getProp(node, "id"));
+        xml::Node::Unwrap((xmlNodePtr)ns->xml());
 
         return true;
     }
-    
+    if (ns != nullptr) {
+        xml::Node::Unwrap((xmlNodePtr)ns->xml());
+    }
     return false;
 }
 void Property::SetDCType(DCType type)

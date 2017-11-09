@@ -187,30 +187,31 @@ Node::~Node()
         return;
     
     _Private* priv = reinterpret_cast<_Private*>(_xml->_private);
-    if ( priv->__sig != _READIUM_XML_SIGNATURE ||
+    if ( priv && (priv->__sig != _READIUM_XML_SIGNATURE ||
 #if ENABLE_WEAK_PTR_XML_NODE_WRAPPER
         (priv->__ptr.lock() != nullptr && priv->__ptr.lock().get() != this)
 #else
         priv->__ptr.get() != this
 #endif //ENABLE_WEAK_PTR_XML_NODE_WRAPPER
-        ) {
+        )) {
         return;
     }
 
 #if ENABLE_WEAK_PTR_XML_NODE_WRAPPER
-    if (!bool(priv->__ptr.lock()))
+    if (priv && !bool(priv->__ptr.lock()))
     {
         _xml->_private = nullptr;
         delete priv;
     }
 #endif //ENABLE_WEAK_PTR_XML_NODE_WRAPPER
-
     // free the underlying node if *and only if* it is detached
     if ( _xml->parent == nullptr && _xml->prev == nullptr && _xml->next == nullptr )
     {
 #if !ENABLE_WEAK_PTR_XML_NODE_WRAPPER
         _xml->_private = nullptr;
-        delete priv;
+        if (priv) {
+            delete priv;
+        }
 #endif //!ENABLE_WEAK_PTR_XML_NODE_WRAPPER
         xmlFreeNode(_xml);
     }
@@ -655,11 +656,11 @@ void Node::Wrap(_xmlNode *aNode)
     // is deallocated.
     aNode->_private = wrapper;
 }
+
 void Node::Unwrap(_xmlNode *aNode)
 {
     typedef LibXML2Private<class Namespace> NsPrivate;
     typedef LibXML2Private<Node> NodePrivate;
-    
     if (aNode->type == XML_NAMESPACE_DECL)
     {
         // _xmlNs is laid out differently -- _private is in a different place...
@@ -670,7 +671,9 @@ void Node::Unwrap(_xmlNode *aNode)
             if (ptr->__sig == _READIUM_XML_SIGNATURE)
             {
 #if !ENABLE_WEAK_PTR_XML_NODE_WRAPPER
-                ptr->__ptr->release();
+                // DO NOT call release() because it only sets _xml to nullptr.
+                // This will cause _xml never been released!
+                //ptr->__ptr->release();
 #endif //!ENABLE_WEAK_PTR_XML_NODE_WRAPPER
                 delete ptr;
             }
@@ -682,12 +685,21 @@ void Node::Unwrap(_xmlNode *aNode)
         NodePrivate* ptr = reinterpret_cast<NodePrivate*>(aNode->_private);
         if (ptr->__sig == _READIUM_XML_SIGNATURE)
         {
-            ptr->__ptr->release();
+            // DO NOT call release() because it only sets _xml to nullptr.
+            // This will cause _xml never been released!
+            //ptr->__ptr->release();
             delete ptr;
         }
         aNode->_private = nullptr;
     }
 }
+
+void Node::UnwrapNodeSet(NodeSet nodes) {
+    for (auto node : nodes) {
+        xml::Node::Unwrap(node->xml());
+    }
+}
+
 xmlNodePtr Node::createChild(const string &name, const string &prefix) const
 {
     xmlNs * ns = nullptr;

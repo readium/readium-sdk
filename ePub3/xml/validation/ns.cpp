@@ -39,7 +39,7 @@ Namespace::~Namespace()
         return;
     
     LibXML2Private<Namespace>* priv = reinterpret_cast<LibXML2Private<Namespace>*>(_xml->_private);
-    if (
+    if (priv &&
 #if ENABLE_WEAK_PTR_XML_NODE_WRAPPER
         priv->__sig == _READIUM_XML_SIGNATURE && priv->__ptr.lock() == nullptr/* && priv->__ptr.lock().get() == this*/
 #else

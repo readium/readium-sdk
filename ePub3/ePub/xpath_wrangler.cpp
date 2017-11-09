@@ -64,6 +64,9 @@ XPathWrangler::StringList XPathWrangler::Strings(const string& xpath, shared_ptr
 				{
 					strings.emplace_back(node->StringValue());
 				}
+                for (auto node: nodes) {
+                    xml::Node::Unwrap(node->xml());
+                }
 				break;
 			}
             default:

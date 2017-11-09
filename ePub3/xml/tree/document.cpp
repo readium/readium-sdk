@@ -115,16 +115,24 @@ Document::Document(xmlDocPtr doc) : Node(reinterpret_cast<xmlNodePtr>(doc))
 }
 Document::Document(std::shared_ptr<Element> rootElement) : Node(reinterpret_cast<xmlNodePtr>(xmlNewDoc(BAD_CAST "1.0")))
 {
-    if ( SetRoot(rootElement) == nullptr )
+    auto root = SetRoot(rootElement);
+
+    if (root == nullptr) {
         throw InternalError("Failed to set document root element");
+    } else {
+        xml::Node::Unwrap((xmlNodePtr)root->xml());
+    }
 }
 Document::~Document()
 {
     xmlDocPtr doc = xml();
-    Unwrap(_xml);
+    // There is no necessary to call Unwrap here, caller should maintain the wrapping once Document instance is wrapped
+    // Actually original implementation Document will never been de-allocated because LibXML2Private would hold the instance...
+    //Unwrap(_xml);
     _xml = nullptr;
     xmlFreeDoc(doc);
 }
+
 string Document::Encoding() const
 {
     return xml()->encoding;
@@ -190,7 +198,7 @@ std::shared_ptr<Node> Document::AddNode(std::shared_ptr<Node> commentOrPINode, b
     {
         root->InsertAfter(commentOrPINode);
     }
-    
+    xml::Node::Unwrap((xmlNodePtr)root->xml());
     return commentOrPINode;
 }
 std::shared_ptr<Node> Document::AddComment(const string &comment, bool beforeRoot)

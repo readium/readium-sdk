@@ -193,6 +193,7 @@ public:
 #if EPUB_USE(LIBXML2)
     static void Wrap(_xmlNode* xml);
     static void Unwrap(_xmlNode * xml);
+    static void UnwrapNodeSet(NodeSet nodes);
 #elif EPUB_USE(WIN_XML)
 	static std::shared_ptr<Node> NewNode(NativePtr ptr);
 #endif

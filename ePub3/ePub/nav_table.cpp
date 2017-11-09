@@ -43,10 +43,17 @@ static void NCXNavLabelText(shared_ptr<xml::Node> navLabel, string& outString)
 {
 	auto textNode = navLabel->FirstElementChild();
 	string cName = textNode->Name();
+    bool enterLoop = false;
 	while (bool(textNode) && cName != "text") {
+        if (!enterLoop) {
+            enterLoop = true;
+        }
+        xml::Node::Unwrap(textNode->xml());
 		textNode = textNode->NextElementSibling();
 	}
-
+    if (!enterLoop) {
+        xml::Node::Unwrap(textNode->xml());
+    }
 	if (bool(textNode))
 		outString = textNode->StringValue();
 	else
@@ -106,10 +113,13 @@ bool NavigationTable::ParseXML(shared_ptr<xml::Node> node)
     xml::NodeSet nodes = xpath.Nodes("./html:ol", node);
     if ( nodes.empty() )
         return false;
-    if ( nodes.size() != 1 )
+    if ( nodes.size() != 1 ) {
+        xml::Node::UnwrapNodeSet(nodes);
         return false;
+    }
 
     LoadChildElements(Ptr(), nodes[0]);
+    xml::Node::UnwrapNodeSet(nodes);
     
     return true;
 }
@@ -118,7 +128,7 @@ bool NavigationTable::ParseNCXNavMap(shared_ptr<xml::Node> node, const string& t
 	_type = "toc";
 	_title = title;
 
-	for (auto navPoint = node->FirstElementChild(); bool(navPoint); navPoint = navPoint->NextElementSibling())
+	for (auto navPoint = node->FirstElementChild(); bool(navPoint); )
 	{
 		string cName(navPoint->Name());
 		if (cName != "navPoint")
@@ -128,6 +138,8 @@ bool NavigationTable::ParseNCXNavMap(shared_ptr<xml::Node> node, const string& t
 		}
 
 		LoadChildNavPoint(Ptr(), navPoint);
+        xml::Node::Unwrap(navPoint->xml());
+        navPoint = navPoint->NextElementSibling();
 	}
 
 	return true;
@@ -137,7 +149,7 @@ bool NavigationTable::ParseNCXPageList(shared_ptr<xml::Node> pNode)
 	_type = "page-list";
 	_title = "Page List";	// TODO: localization
 	
-	for (auto sub = pNode->FirstElementChild(); bool(sub); sub = sub->NextElementSibling())
+	for (auto sub = pNode->FirstElementChild(); bool(sub); )
 	{
 		string cName(sub->Name());
 		if (cName != "pageTarget")
@@ -147,6 +159,8 @@ bool NavigationTable::ParseNCXPageList(shared_ptr<xml::Node> pNode)
 		}
 
 		LoadChildNavPoint(Ptr(), sub);
+        xml::Node::Unwrap(sub->xml());
+        sub = sub->NextElementSibling();
 	}
 
 	return true;
@@ -155,7 +169,7 @@ bool NavigationTable::ParseNCXNavList(shared_ptr<xml::Node> pNode)
 {
 	
 
-	for (auto sub = pNode->FirstElementChild(); bool(sub); sub = sub->NextElementSibling())
+	for (auto sub = pNode->FirstElementChild(); bool(sub); )
 	{
 		string cName(sub->Name());
 		if (cName == "navLabel")
@@ -185,6 +199,8 @@ bool NavigationTable::ParseNCXNavList(shared_ptr<xml::Node> pNode)
 		}
 
 		LoadChildNavPoint(Ptr(), sub);
+        xml::Node::Unwrap(sub->xml());
+        sub = sub->NextElementSibling();
 	}
 
 	return true;
@@ -220,6 +236,7 @@ void NavigationTable::LoadChildElements(shared_ptr<NavigationElement> pElement, 
         {
             pElement->AppendChild(childElement);
         }
+        xml::Node::Unwrap(liNode->xml());
     }
 }
 void NavigationTable::LoadChildNavPoint(shared_ptr<NavigationElement> pElement, shared_ptr<xml::Node> node)
@@ -239,7 +256,7 @@ shared_ptr<NavigationElement> NavigationTable::BuildNavigationPoint(shared_ptr<x
 
     auto point = std::make_shared<NavigationPoint>(elementPtr); //NavigationPoint::New(elementPtr);
 
-    for ( ; bool(liChild); liChild = liChild->NextElementSibling() )
+    while ( bool(liChild) )
     {
         string cName(liChild->Name());
 
@@ -257,6 +274,8 @@ shared_ptr<NavigationElement> NavigationTable::BuildNavigationPoint(shared_ptr<x
             LoadChildElements(point, liChild);
             break;
         }
+        xml::Node::Unwrap(liChild->xml());
+        liChild = liChild->NextElementSibling();
     }
 
     return point;
@@ -267,7 +286,7 @@ shared_ptr<NavigationElement> NavigationTable::BuildNCXNavigationPoint(shared_pt
 	auto elementPtr = CastPtr<NavigationElement>();
 	auto point = std::make_shared<NavigationPoint>(elementPtr); //NavigationPoint::New(elementPtr);
 
-	for (auto sub = node->FirstElementChild(); bool(sub); sub = sub->NextElementSibling())
+	for (auto sub = node->FirstElementChild(); bool(sub); )
 	{
 		string cName = sub->Name();
 		string tmp;
@@ -286,6 +305,8 @@ shared_ptr<NavigationElement> NavigationTable::BuildNCXNavigationPoint(shared_pt
 		{
 			LoadChildNavPoint(point, sub);
 		}
+        xml::Node::Unwrap(sub->xml());
+        sub = sub->NextElementSibling();
 	}
 
 	return point;
