@@ -359,10 +359,10 @@ public:
 
                     shared_ptr<SMILData::Sequence> sequence = std::const_pointer_cast<SMILData::Sequence>(data->Body());
 
-                    shared_ptr<SMILData::Parallel> par = std::make_shared<SMILData::Parallel>(sequence, "", data);
+                    shared_ptr<SMILData::Parallel> par = std::make_shared<SMILData::Parallel>(nullptr, "", data);
 					sequence->_children.push_back(par);
 
-                    par->_text = std::make_shared<SMILData::Text>(par, data->XhtmlSpineItem()->ManifestItem()->Href(), "", nullptr, data);
+                    par->_text = std::make_shared<SMILData::Text>(nullptr, data->XhtmlSpineItem()->ManifestItem()->Href(), "", nullptr, data);
                 });
             }
         }
@@ -883,7 +883,7 @@ public:
                     HandleError(EPUBError::MediaOverlaySMILParallelSequenceParent, _Str(item->Href().c_str(), " => parent of parallel time container must be sequence"));
                 }
 
-                shared_ptr<SMILData::Parallel> par = std::make_shared<SMILData::Parallel>(sequence, type, smilData);
+                shared_ptr<SMILData::Parallel> par = std::make_shared<SMILData::Parallel>(nullptr, type, smilData);
 				sequence->_children.push_back(par);
 
                 sequence = nullptr;
@@ -963,7 +963,7 @@ public:
                     accumulatedDurationMilliseconds += clipDuration;
                 }
 
-                parallel->_audio = std::make_shared<SMILData::Audio>(parallel, src_file, srcManifestItem, clipBeginMilliseconds, clipEndMilliseconds, smilData);
+                parallel->_audio = std::make_shared<SMILData::Audio>(nullptr, src_file, srcManifestItem, clipBeginMilliseconds, clipEndMilliseconds, smilData);
 
                 sequence = nullptr;
                 parallel = nullptr;
@@ -997,7 +997,7 @@ public:
                     _excludeAudioDuration = true;
                 }
 
-                parallel->_text = std::make_shared<SMILData::Text>(parallel, src_file, src_fragmentID, srcManifestItem, smilData);
+                parallel->_text = std::make_shared<SMILData::Text>(nullptr, src_file, src_fragmentID, srcManifestItem, smilData);
 
                 sequence = nullptr;
                 parallel = nullptr;
