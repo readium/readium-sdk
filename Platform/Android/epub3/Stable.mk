@@ -171,6 +171,7 @@ LOCAL_LDLIBS := -lz -landroid -llog
 LOCAL_C_INCLUDES += \
         $(LOCAL_PATH)/include \
         $(LOCAL_PATH)/include/ePub3 \
+        $(LOCAL_PATH)/include/ePub3/xml \
         $(LOCAL_PATH)/include/ePub3/utilities
         # $(READIUM_NDK_INCLUDE_DIR)
         
