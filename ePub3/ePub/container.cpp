@@ -31,6 +31,14 @@
 
 #ifdef TARGET_OS_IPHONE
 #include "DeviceUtility.h"
+#elif defined(__ANDROID__)
+#ifdef __cplusplus
+extern "C" {
+#endif
+bool isTablet();
+#ifdef __cplusplus
+}
+#endif
 #endif
 
 /*
@@ -287,7 +295,6 @@ string Container::Version() const
 
 void Container::ParseVendorMetadata()
 {
-
     unique_ptr<ArchiveReader> pZipReader = _archive->ReaderAtPath(gAppleiBooksDisplayOptionsFilePath);
     if ( !pZipReader )
         return;
@@ -318,18 +325,14 @@ void Container::ParseVendorMetadata()
     XPathWrangler::NamespaceList __ns;
     XPathWrangler xpath(docXml, __ns);
 #endif
-#ifdef TARGET_OS_IPHONE
     xml::NodeSet nodes = xpath.Nodes("/display_options/platform");
-#else
-    xml::NodeSet nodes = xpath.Nodes("/display_options/platform/option");
-#endif // TARGET_OS_IPHONE
+
     if ( nodes.empty() )
     {
         //xml::string str(docXml->XMLString());
         //printf("%s\n", docXml->XMLString().utf8());
         return;
     }
-#ifdef TARGET_OS_IPHONE
     for (auto node : nodes) {
         string name = _getProp(node, "name");
 
@@ -337,7 +340,11 @@ void Container::ParseVendorMetadata()
             continue;
         }
         if (name != "*" &&
+#ifdef TARGET_OS_IPHONE
             ((name.tolower() == "iphone" && IsiPad()) || (name.tolower() == "ipad" && !IsiPad()))) {
+#elif defined(__ANDROID__)
+            ((name.tolower() == "iphone" && isTablet()) || (name.tolower() == "ipad" && !isTablet()))) {
+#endif
             continue;
         }
         XPathWrangler xpath(node->Document(), {});
@@ -377,23 +384,6 @@ void Container::ParseVendorMetadata()
                _appleIBooksDisplayOption_Orientation.c_str());
 #endif
     }
-#else
-    for ( auto node : nodes )
-    {
-        string name = _getProp(node, "name");
-        if (name.empty())
-            continue;
-
-        if (name == "fixed-layout")
-        {
-            _appleIBooksDisplayOption_FixedLayout = node->Content(); // true | false
-        }
-        else if (name == "orientation-lock")
-        {
-            _appleIBooksDisplayOption_Orientation = node->Content(); // landscape-only | portrait-only | none
-        }
-    }
-#endif // TARGET_OS_IPHONE
     xml::Node::UnwrapNodeSet(nodes);
     xml::Node::Unwrap((xmlNodePtr)docXml->xml());
 }

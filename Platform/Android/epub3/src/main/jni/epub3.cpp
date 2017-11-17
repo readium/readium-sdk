@@ -41,6 +41,7 @@
 
 using namespace std;
 
+#define IS_TABLET_IS_IMPLEMENTED 0
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,7 +54,10 @@ extern "C" {
 
 //TODO: Remove when JavaObjectsFactory methods passed to respective classes
 static const char *javaJavaObjectsFactoryClassName = "org/readium/sdk/android/JavaObjectsFactory";
-
+#if IS_TABLET_IS_IMPLEMENTED
+static const char *javaJavaObjectsNookApplicationClassName = "com/bn/nook/app/NookApplication";
+static const char *javaJavaObjectsDeviceUtilsClassName = "com/bn/nook/util/DeviceUtils";
+#endif // IS_TABLET_IS_IMPLEMENTED
 static const char *javaEPub3ClassName = "org/readium/sdk/android/EPub3";
 
 static const char *javaEPub3_createStringListMethodName = "createStringList";
@@ -117,7 +121,12 @@ static jmethodID createBuffer_ID;
 static jmethodID appendBytesToBuffer_ID;
 static jmethodID handleSdkError_ID;
 static jmethodID contentFiltersRegistrationHandler_Run_ID;
-
+#if IS_TABLET_IS_IMPLEMENTED
+static jclass javaJavaObjectsNookApplicationClass = NULL;
+static jclass javaJavaObjectsDeviceUtilsClass = NULL;
+static jmethodID getContext_ID;
+static jmethodID isTablet_ID;
+#endif // IS_TABLET_IS_IMPLEMENTED
 
 /*
  * Exported functions
@@ -268,7 +277,26 @@ static void initializeReadiumSDK(JNIEnv* env)
     LOGD("initializeReadiumSDK(): initialization of Readium SDK finished");
 }
 
+bool isTablet() {
+#if IS_TABLET_IS_IMPLEMENTED
+    if (m_env) {
+        LOGD("isTablet: javaJavaObjectsNookApplicationClass = %p, getContext_ID = %p, javaJavaObjectsDeviceUtilsClass = %p, isTablet_ID = %p",
+                javaJavaObjectsNookApplicationClass, getContext_ID, javaJavaObjectsDeviceUtilsClass, isTablet_ID);
 
+        jobject jContext = m_env->CallStaticObjectMethod(javaJavaObjectsNookApplicationClass, getContext_ID);
+
+        if (jContext) {
+	        jboolean isTablet = m_env->CallStaticBooleanMethod(javaJavaObjectsDeviceUtilsClass, isTablet_ID, jContext);
+
+            LOGD("isTablet: %s", isTablet ? "true" : "false");
+            return isTablet;
+        }
+    } else {
+        LOGW("isTablet: null m_env!");
+    }
+#endif // IS_TABLET_IS_IMPLEMENTED
+    return false;
+}
 /*
  * JNI functions
  **************************************************/
@@ -341,7 +369,15 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
             "createManifestItem", "(Ljava/lang/String;Ljava/lang/String;)Lorg/readium/sdk/android/ManifestItem;", ONLOAD_ERROR);
     INIT_STATIC_METHOD_ID_RETVAL(addManifestItemToList_ID, javaJavaObjectsFactoryClass, javaJavaObjectsFactoryClassName,
             "addManifestItemToList", "(Ljava/util/List;Lorg/readium/sdk/android/ManifestItem;)V", ONLOAD_ERROR);
+#if IS_TABLET_IS_IMPLEMENTED
+    INIT_CLASS_RETVAL(javaJavaObjectsNookApplicationClass, javaJavaObjectsNookApplicationClassName, ONLOAD_ERROR);
+    INIT_CLASS_RETVAL(javaJavaObjectsDeviceUtilsClass, javaJavaObjectsDeviceUtilsClassName, ONLOAD_ERROR);
 
+    INIT_STATIC_METHOD_ID_RETVAL(getContext_ID, javaJavaObjectsNookApplicationClass, javaJavaObjectsNookApplicationClassName,
+            "getContext", "()Landroid/content/Context;", ONLOAD_ERROR);
+    INIT_STATIC_METHOD_ID_RETVAL(isTablet_ID, javaJavaObjectsDeviceUtilsClass, javaJavaObjectsDeviceUtilsClassName,
+            "isTablet", "(Landroid/content/Context;)Z", ONLOAD_ERROR);
+#endif // IS_TABLET_IS_IMPLEMENTED
     // Return the JNI version this library wants to use
     return JNI_VERSION;
 }
