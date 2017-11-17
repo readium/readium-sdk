@@ -864,7 +864,7 @@ public:
                     HandleError(EPUBError::MediaOverlaySMILSequenceSequenceParent, _Str(item->Href().c_str(), " => parent of sequence time container must be sequence"));
                 }
 
-                shared_ptr<SMILData::Sequence> seq = std::make_shared<SMILData::Sequence>(sequence, textref_file, textref_fragmentID, textrefManifestItem, type, smilData);
+                shared_ptr<SMILData::Sequence> seq = std::make_shared<SMILData::Sequence>(nullptr, textref_file, textref_fragmentID, textrefManifestItem, type, smilData);
 				sequence->_children.push_back(seq);
 
                 sequence = seq;
