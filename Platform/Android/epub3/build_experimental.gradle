@@ -5,6 +5,27 @@ def ndk_skipARM = (rootProject.hasProperty("readium_ndk_skipARM") && rootProject
 def ndk_clang = (rootProject.hasProperty("readium_ndk_clang") && rootProject.readium_ndk_clang)
 def ndk_experimental = (rootProject.hasProperty("readium_ndk_experimental") && rootProject.readium_ndk_experimental)
 
+// Retrieve ndk dir
+Properties properties = new Properties()
+properties.load(rootProject.file('local.properties').newDataInputStream())
+def ndkDir = properties.getProperty('ndk.dir', "").toString().replaceAll("\\\\", "/")
+println "NDK dir: ${ndkDir}"
+
+def ndkDirIncludes = "${ndkDir}/sysroot/usr/include"
+println "NDK includes: ${ndkDirIncludes}"
+
+// armeabi-v7a
+def ndkDirIncludesASM_ARM = "${ndkDirIncludes}/arm-linux-androideabi"
+println "NDK includes ASM (ARM): ${ndkDirIncludesASM_ARM}"
+
+// arm64-v8a
+def ndkDirIncludesASM_ARM64 = "${ndkDirIncludes}/aarch64-linux-androideabi"
+println "NDK includes ASM (ARM64): ${ndkDirIncludesASM_ARM64}"
+
+// x86
+def ndkDirIncludesASM_X86 = "${ndkDirIncludes}/x86_64-linux-android"
+println "NDK includes ASM (X86): ${ndkDirIncludesASM_X86}"
+
 model {
 //    repositories {
 //        libs(PrebuiltLibraries) {
@@ -41,8 +62,8 @@ model {
 //    }
 
     android {
-        compileSdkVersion = 25
-        buildToolsVersion = "27"
+        compileSdkVersion = 26
+        buildToolsVersion = "27.0.2"
         sources {
             main {
                 jni {
@@ -123,6 +144,7 @@ model {
                 (ndk_clang && clangWithGnuStl) ? "-DCLANG_WITH_GNUSTL" : "-DREADIUM_GCC",
                 ndk_clang ? "-D_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49=_LIBCPP_INLINE_VISIBILITY" : "-DREADIUM_GCC",
                 "-I../prefix.h",
+                "-I${ndkDirIncludes}".toString(),
                 "-I${file("./include")}".toString(),
                 "-I${file("./include/ePub3")}".toString(),
                 "-I${file("./include/ePub3/utilities")}".toString(),
@@ -169,6 +191,8 @@ model {
 //                                ,
 //                                "-L${file("../../../ePub3/ThirdParty/icu4c/lib/armeabi-v7a")}".toString()
                         ])
+                        cppFlags.add("-I${ndkDirIncludesASM_ARM}".toString())
+                        CFlags.add("-I${ndkDirIncludesASM_ARM}".toString())
                     }
                 }
 
@@ -181,6 +205,8 @@ model {
 //                                ,
 //                                "-L${file("../../../ePub3/ThirdParty/icu4c/lib/x86")}".toString()
                         ])
+                        cppFlags.add("-I${ndkDirIncludesASM_X86}".toString())
+                        CFlags.add("-I${ndkDirIncludesASM_X86}".toString())
                     }
                 }
         } //productFlavors

@@ -119,6 +119,10 @@ task buildMk(dependsOn: "buildIncludes", type: Exec) {
     properties.load(project.rootProject.file('local.properties').newDataInputStream())
     def ndkDir = properties.getProperty('ndk.dir', null)
 
+    def ndkDirIncludes = "${ndkDir}/sysroot/usr/include".toString().replaceAll("\\\\", "/")
+    println "NDK includes: ${ndkDirIncludes}"
+    environment "READIUM_NDK_INCLUDE_DIR", "${ndkDirIncludes}"
+
     // Call ndk build
 
     //def isWindows = OperatingSystem.current().isLinux();

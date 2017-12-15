@@ -20,6 +20,6 @@
     android:versionCode="25"
     android:versionName="1.25" >
 
-    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="25"/>
+    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="26"/>
 
 </manifest>
