@@ -7,7 +7,7 @@ def ndk_experimental = (rootProject.hasProperty("readium_ndk_experimental") && r
 
 android {
     compileSdkVersion = 25
-    buildToolsVersion = "26.0.2"
+    buildToolsVersion = "27.0.2"
 
     defaultConfig {
         // manifest@package attribute in src/main/AndroidManifest.xml
