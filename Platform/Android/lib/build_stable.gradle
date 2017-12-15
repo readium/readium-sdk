@@ -20,10 +20,10 @@ android {
         targetSdkVersion 26
 
         // manifest@android:versionCode attribute in src/main/AndroidManifest.xml
-        versionCode 25
+        versionCode 29
 
         // manifest@android:versionName attribute in src/main/AndroidManifest.xml
-        versionName "1.25"
+        versionName "1.29"
     }
 
     sourceSets {
