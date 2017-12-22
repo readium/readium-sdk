@@ -124,6 +124,22 @@ LOCAL_SRC_FILES := \
         $(THIRD_PARTY_PATH)/libxml2-android/schematron.c
 LOCAL_C_INCLUDES += \
         $(LOCAL_PATH)/include
+        # $(READIUM_NDK_INCLUDE_DIR)
+
+# ifeq ($(TARGET_ARCH_ABI),x86)
+# LOCAL_C_INCLUDES += \
+#         $(READIUM_NDK_INCLUDE_DIR)/x86_64-linux-android
+# endif
+
+# ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
+# LOCAL_C_INCLUDES += \
+#         $(READIUM_NDK_INCLUDE_DIR)/arm-linux-android
+# endif
+
+# ifeq ($(TARGET_ARCH_ABI),arm64-v8a)
+# LOCAL_C_INCLUDES += \
+#         $(READIUM_NDK_INCLUDE_DIR)/aarch64-linux-android
+# endif
 
 include $(BUILD_STATIC_LIBRARY)
 
@@ -156,6 +172,23 @@ LOCAL_C_INCLUDES += \
         $(LOCAL_PATH)/include \
         $(LOCAL_PATH)/include/ePub3 \
         $(LOCAL_PATH)/include/ePub3/utilities
+        # $(READIUM_NDK_INCLUDE_DIR)
+        
+# ifeq ($(TARGET_ARCH_ABI),x86)
+# LOCAL_C_INCLUDES += \
+#         $(READIUM_NDK_INCLUDE_DIR)/x86_64-linux-android
+# endif
+
+# ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
+# LOCAL_C_INCLUDES += \
+#         $(READIUM_NDK_INCLUDE_DIR)/arm-linux-android
+# endif
+
+# ifeq ($(TARGET_ARCH_ABI),arm64-v8a)
+# LOCAL_C_INCLUDES += \
+#         $(READIUM_NDK_INCLUDE_DIR)/aarch64-linux-android
+# endif
+
 LOCAL_SRC_FILES := \
     $(THIRD_PARTY_PATH)/sha1/sha1.cpp \
     $(THIRD_PARTY_PATH)/libzip/mkstemp.c \

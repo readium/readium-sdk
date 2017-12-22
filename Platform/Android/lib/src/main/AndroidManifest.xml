@@ -17,9 +17,9 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.readium.sdk.android"
-    android:versionCode="25"
-    android:versionName="1.25" >
+    android:versionCode="29"
+    android:versionName="1.29" >
 
-    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="25"/>
+    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="26"/>
 
 </manifest>
