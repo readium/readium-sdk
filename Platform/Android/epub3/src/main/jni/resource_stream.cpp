@@ -47,7 +47,7 @@ std::size_t ResourceStream::getBufferSize() {
 ResourceStream::~ResourceStream() {
 	ePub3::ByteStream* reader = _ptr.get();
 	reader->Close();
-	_ptr.release();
+	_ptr.reset();
 }
 
 #ifdef __cplusplus
