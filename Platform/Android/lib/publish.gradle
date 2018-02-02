@@ -31,7 +31,7 @@ publishing.publications {
          * Translates "_" in flavor names to "-" for artifactIds, because "-" in flavor name is an
          * illegal character, but is well used in artifactId names.
          */
-        def variantArtifactId = flavored ? variant.flavorName.replace('_', '-') : project.name
+        def variantArtifactId = flavored ? packageName + '-' + variant.flavorName.replace('_', '-') : packageName
 
         /**
          * If the javadoc destinationDir wasn't changed per flavor, the libraryVariants would
@@ -82,7 +82,7 @@ publishing.publications {
         publicationNames.add(publicationName)
 
         "$publicationName"(MavenPublication) {
-            artifactId packageName + '-' + variantArtifactId
+            artifactId variantArtifactId
             group groupId
             version libraryVersion
 
