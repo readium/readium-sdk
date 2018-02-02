@@ -39,7 +39,7 @@ buildscript {
         } else {
             //https://bintray.com/android/android-tools/com.android.tools.build.gradle/view
             classpath "com.android.tools.build:gradle:2.3.3"
-            classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7"
+            classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0"
         }
     }
 }

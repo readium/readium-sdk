@@ -52,20 +52,22 @@ android {
         }
     }
 
-    productFlavors {
-        if (!ndk_skipARM)
-            "arm" {
-                ndk.with {
-                    abiFilters = ["armeabi-v7a"]
+    if (ndk_skipARM || ndk_skipX86) {
+        productFlavors {
+            if (!ndk_skipARM)
+                "arm" {
+                    ndk.with {
+                        abiFilters = ["armeabi-v7a"]
+                    }
                 }
-            }
 
-        if (!ndk_skipX86)
-            "x86" {
-                ndk.with {
-                    abiFilters = ["x86"]
+            if (!ndk_skipX86)
+                "x86" {
+                    ndk.with {
+                        abiFilters = ["x86"]
+                    }
                 }
-            }
+        }
     }
 }
 
