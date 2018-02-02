@@ -20,6 +20,6 @@
     android:versionCode="29"
     android:versionName="1.29" >
 
-    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="26"/>
+    <uses-sdk android:minSdkVersion="17" android:targetSdkVersion="26"/>
 
 </manifest>

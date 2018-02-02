@@ -16,7 +16,7 @@ android {
         // applicationId = "org.readium.sdk.android"
 
         // manifest/uses-sdk@android:minSdkVersion attribute in src/main/AndroidManifest.xml
-        minSdkVersion 19
+        minSdkVersion 17
 
         // manifest/uses-sdk@android:targetSdkVersion attribute in src/main/AndroidManifest.xml
         targetSdkVersion 26
