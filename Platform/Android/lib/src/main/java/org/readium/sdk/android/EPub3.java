@@ -40,6 +40,8 @@ public class EPub3 {
 	 * Static Native library loader
 	 */
 	static {
+		// Load gnustl for Android SDK version 17
+		System.loadLibrary("gnustl_shared");
 		// Load the ePub3 Native lib
 		System.loadLibrary("epub3");
 	}
