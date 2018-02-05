@@ -25,7 +25,7 @@ android {
         versionCode 29
 
         // manifest@android:versionName attribute in src/main/AndroidManifest.xml
-        versionName "1.29.1"
+        versionName "1.29.2"
     }
 
     sourceSets {
@@ -82,7 +82,7 @@ ext {
     packageRepo = "maven"
     packageName = "readium-sdk-android"
     packageOrganization = "youboox"
-    libraryVersion = "0.29.1"
+    libraryVersion = "0.29.2"
     libraryDesc = "Readium SDK (Android API)"
     siteUrl = 'https://github.com/readium/readium-sdk'
     gitUrl = 'https://github.com/readium/readium-sdk.git'
