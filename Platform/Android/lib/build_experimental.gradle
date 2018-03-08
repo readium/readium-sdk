@@ -22,10 +22,10 @@ model {
             targetSdkVersion.apiLevel = 26
 
             // manifest@android:versionCode attribute in src/main/AndroidManifest.xml
-            versionCode 30
+            versionCode 31
 
             // manifest@android:versionName attribute in src/main/AndroidManifest.xml
-            versionName "1.30"
+            versionName "1.31"
         }
 
         sources {
