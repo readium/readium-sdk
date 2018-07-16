@@ -249,6 +249,7 @@ static void populateJsonWithSmilPar(stringstream &stream, std::shared_ptr<const 
 
     stream << "{" << endl;
 	stream << "\"epubtype\": \"" << par->Type() << "\" ," << endl;
+	stream << "\"id\": \"" << par->Id() << "\" ," << endl;
 	stream << "\"nodeType\": \"" << par->Name() << "\" ," << endl;
 
 	stream << "\"children\" : [ " <<endl;
@@ -277,6 +278,7 @@ static void populateJsonWithSmilSeq(stringstream &stream, std::shared_ptr<const 
     stream << "{" << endl;
     stream << "\"textref\": \"" << seqq->TextRefFile() << "\" ," << endl;
 	stream << "\"epubtype\": \"" << seqq->Type() << "\" ," << endl;
+	stream << "\"id\": \"" << seqq->Id() << "\" ," << endl;
 	stream << "\"nodeType\": \"" << seqq->Name() << "\" ," << endl;
 
 	stream << "\"children\": [" << endl;

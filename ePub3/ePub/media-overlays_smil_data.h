@@ -108,6 +108,7 @@ EPUB3_BEGIN_NAMESPACE
                 TimeContainer(TimeContainer &&) _DELETED_;
 
             protected:
+                string _id;
                 string _type; // space-separated
 
             public:
@@ -115,7 +116,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                TimeContainer(shared_ptr<Sequence> parent, string type, const SMILDataPtr smilData):TimeNode(parent, smilData), _type(type)
+                TimeContainer(shared_ptr<Sequence> parent, string id, string type, const SMILDataPtr smilData):TimeNode(parent, smilData), _id(id), _type(type)
                 {
 					// can't access shared_from_this() yet-- might work with MS' implementation, but not in libc++
 					/*
@@ -132,6 +133,14 @@ EPUB3_BEGIN_NAMESPACE
                 {
                     return std::dynamic_pointer_cast<const Sequence>(_parent);
                 }
+
+                EPUB3_EXPORT
+
+                const string Id() const
+                {
+                    return _id;
+                }
+
 
                 EPUB3_EXPORT
 
@@ -316,7 +325,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-					Sequence(shared_ptr<Sequence> parent, string textref_file, string textref_fragmentID, const ManifestItemPtr textrefManifestItem, string type, const SMILDataPtr smilData) :TimeContainer(parent, type, smilData), _textref_file(textref_file), _textref_fragmentID(textref_fragmentID), _textrefManifestItem(textrefManifestItem), _children()
+					Sequence(shared_ptr<Sequence> parent, string textref_file, string textref_fragmentID, const ManifestItemPtr textrefManifestItem, string id, string type, const SMILDataPtr smilData) :TimeContainer(parent, id, type, smilData), _textref_file(textref_file), _textref_fragmentID(textref_fragmentID), _textrefManifestItem(textrefManifestItem), _children()
                 {
                 }
 
@@ -626,7 +635,7 @@ EPUB3_BEGIN_NAMESPACE
 
                 EPUB3_EXPORT
 
-                Parallel(shared_ptr<Sequence> parent, string type, const SMILDataPtr smilData):TimeContainer(parent, type, smilData), _audio(nullptr), _text(nullptr)
+                Parallel(shared_ptr<Sequence> parent, string id, string type, const SMILDataPtr smilData):TimeContainer(parent, id, type, smilData), _audio(nullptr), _text(nullptr)
                 {
                 }
 

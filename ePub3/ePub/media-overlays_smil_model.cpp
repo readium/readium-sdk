@@ -363,11 +363,11 @@ public:
                     
                     printf("SMIL placeholder for 'blank' MO page: %s\n", data->XhtmlSpineItem()->ManifestItem()->Href().c_str());
 
-                    data->_root = std::make_shared<SMILData::Sequence>(nullptr, "", "", nullptr, "", data);
+                    data->_root = std::make_shared<SMILData::Sequence>(nullptr, "", "", nullptr, "", "", data);
 
                     shared_ptr<SMILData::Sequence> sequence = std::const_pointer_cast<SMILData::Sequence>(data->Body());
 
-                    shared_ptr<SMILData::Parallel> par = std::make_shared<SMILData::Parallel>(sequence, "", data);
+                    shared_ptr<SMILData::Parallel> par = std::make_shared<SMILData::Parallel>(sequence, "", "", data);
 					sequence->_children.push_back(par);
 
                     par->_text = std::make_shared<SMILData::Text>(par, data->XhtmlSpineItem()->ManifestItem()->Href(), "", nullptr, data);
@@ -833,6 +833,7 @@ public:
             }
 
             string type = string(_getProp(element, "type", ePub3NamespaceURI));
+            string id = string(_getProp(element, "id", ePub3NamespaceURI));
 
             if (elementName == "body")
             {
@@ -842,7 +843,7 @@ public:
                     HandleError(EPUBError::MediaOverlayInvalidTextRefSource, _Str(item->Href().c_str(), " [", textref_file.c_str(), "] => text ref manifest cannot be found"));
                 }
 
-                smilData->_root = std::make_shared<SMILData::Sequence>(nullptr, textref_file, textref_fragmentID, textrefManifestItem, type, smilData);
+                smilData->_root = std::make_shared<SMILData::Sequence>(nullptr, textref_file, textref_fragmentID, textrefManifestItem, id, type, smilData);
 
                 sequence = std::const_pointer_cast<SMILData::Sequence>(smilData->Body());
 
@@ -861,7 +862,7 @@ public:
                     HandleError(EPUBError::MediaOverlaySMILSequenceSequenceParent, _Str(item->Href().c_str(), " => parent of sequence time container must be sequence"));
                 }
 
-                shared_ptr<SMILData::Sequence> seq = std::make_shared<SMILData::Sequence>(sequence, textref_file, textref_fragmentID, textrefManifestItem, type, smilData);
+                shared_ptr<SMILData::Sequence> seq = std::make_shared<SMILData::Sequence>(sequence, textref_file, textref_fragmentID, textrefManifestItem, id, type, smilData);
 				sequence->_children.push_back(seq);
 
                 sequence = seq;
@@ -880,7 +881,7 @@ public:
                     HandleError(EPUBError::MediaOverlaySMILParallelSequenceParent, _Str(item->Href().c_str(), " => parent of parallel time container must be sequence"));
                 }
 
-                shared_ptr<SMILData::Parallel> par = std::make_shared<SMILData::Parallel>(sequence, type, smilData);
+                shared_ptr<SMILData::Parallel> par = std::make_shared<SMILData::Parallel>(sequence, id, type, smilData);
 				sequence->_children.push_back(par);
 
                 sequence = nullptr;
