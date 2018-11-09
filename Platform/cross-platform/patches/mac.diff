@@ -1,0 +1,46 @@
+diff --git a/ePub3/xml/tree/node.cpp b/ePub3/xml/tree/node.cpp
+index a4a6254..766c333 100644
+--- a/ePub3/xml/tree/node.cpp
++++ b/ePub3/xml/tree/node.cpp
+@@ -30,7 +30,7 @@
+ #include <cstdlib>
+ 
+ #if EPUB_PLATFORM(MAC)
+-#include "xml_bridge_dtrace_probes.h"
++//#include "xml_bridge_dtrace_probes.h"
+ #endif
+ 
+ #ifndef NDEBUG
+diff --git a/ePub3/utilities/utfstring.h b/ePub3/utilities/utfstring.h
+index b5289dd..16b15f3 100644
+--- a/ePub3/utilities/utfstring.h
++++ b/ePub3/utilities/utfstring.h
+@@ -574,11 +574,11 @@ public:
+     
+     __base::allocator_type get_allocator() const _NOEXCEPT { return _base.get_allocator(); }
+     
+-    EPUB3_EXPORT string& tolower(const std::locale& loc = std::locale(""));
+-    EPUB3_EXPORT const string tolower(const std::locale& loc = std::locale("")) const;
++    EPUB3_EXPORT string& tolower(const std::locale& loc = std::locale());
++    EPUB3_EXPORT const string tolower(const std::locale& loc = std::locale()) const;
+     
+-    EPUB3_EXPORT string& toupper(const std::locale& loc = std::locale(""));
+-    EPUB3_EXPORT const string toupper(const std::locale& loc = std::locale("")) const;
++    EPUB3_EXPORT string& toupper(const std::locale& loc = std::locale());
++    EPUB3_EXPORT const string toupper(const std::locale& loc = std::locale()) const;
+     
+ #if 0
+ #pragma mark - Searching
+diff --git a/ePub3/utilities/epub_locale.cpp b/ePub3/utilities/epub_locale.cpp
+index 1048247..0b08870 100644
+--- a/ePub3/utilities/epub_locale.cpp
++++ b/ePub3/utilities/epub_locale.cpp
+@@ -23,7 +23,7 @@
+ EPUB3_BEGIN_NAMESPACE
+ 
+ // empty string means 'current user locale', no parameter/nullptr means 'C locale'
+-static std::locale  gCurrentLocale("");
++static std::locale  gCurrentLocale;
+ 
+ EPUB3_EXPORT
+ std::locale& CurrentLocale()

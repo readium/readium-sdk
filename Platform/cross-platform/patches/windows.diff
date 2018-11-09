@@ -1,0 +1,275 @@
+diff --git a/ePub3/ThirdParty/google-url/src/url_canon_cpp11.cc b/ePub3/ThirdParty/google-url/src/url_canon_cpp11.cc
+index 944ac03..b422ef2 100644
+--- a/ePub3/ThirdParty/google-url/src/url_canon_cpp11.cc
++++ b/ePub3/ThirdParty/google-url/src/url_canon_cpp11.cc
+@@ -172,8 +172,8 @@ public:
+     }
+ };
+ #else
+-typedef std::wstring_convert<std::codecvt_utf8<char16>, char16> __conv16;
+-typedef std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> __conv32;
++typedef std::wstring_convert<std::codecvt_utf8<__int16>, __int16> __conv16;
++typedef std::wstring_convert<std::codecvt_utf8<__int32>, __int32> __conv32;
+ #endif
+ 
+ CXX11CharsetConverter::CXX11CharsetConverter()
+@@ -187,8 +187,8 @@ void CXX11CharsetConverter::ConvertFromUTF16(const char16 *input, int input_len,
+     int begin_offset = output->length();
+     int dest_capacity = output->capacity() - begin_offset;
+     output->set_length(output->length());
+-    
+-    __conv16::byte_string utf8 = __conv16().to_bytes(input, input+input_len);
++    auto p = reinterpret_cast<const int16_t *>(input);
++    __conv16::byte_string utf8 = __conv16().to_bytes(p, p+input_len);
+     
+     if ( static_cast<int>(utf8.size()) > dest_capacity )
+         output->Resize(static_cast<int>(begin_offset+utf8.size()));
+@@ -303,7 +303,8 @@ bool ReadUTFChar(const char16* str, int* begin, int length, unsigned* code_point
+ {
+     // C++11 doesn't provide a direct UTF16<->UTF32 conversion, so we'll have to
+     //  go through UTF-8
+-    __conv16::byte_string utf8  = __conv16().to_bytes(str+*begin, str+length);
++    auto p = reinterpret_cast<const int16_t *>(str);
++    __conv16::byte_string utf8  = __conv16().to_bytes(p+*begin, p+length);
+     __conv32::wide_string utf32 = __conv32().from_bytes(utf8);
+     
+     if ( utf32.empty() )
+diff --git a/ePub3/_config.h b/ePub3/_config.h
+index fa4887a..3f712c6 100644
+--- a/ePub3/_config.h
++++ b/ePub3/_config.h
+@@ -169,8 +169,10 @@ typedef signed long ssize_t;
+ 
+ #if EPUB_PLATFORM(WIN) || EPUB_PLATFORM(WINRT)
+ # define strncasecmp _strnicmp
++#if !MSVS_VERSION_2015
+ # define snprintf(buf,count,fmt,...) _snprintf_s(buf, count, count, fmt, __VA_ARGS__)
+ #endif
++#endif
+ 
+ #if EPUB_PLATFORM(WINRT)
+ # define EPUB_USE_LIBXML2 0
+diff --git a/ePub3/ePub/PassThroughFilter.h b/ePub3/ePub/PassThroughFilter.h
+index 8ae7da3..253aeaf 100644
+--- a/ePub3/ePub/PassThroughFilter.h
++++ b/ePub3/ePub/PassThroughFilter.h
+@@ -26,7 +26,7 @@
+ #include <ePub3/encryption.h>
+ #include REGEX_INCLUDE
+ #include <cstring>
+-#import <ePub3/utilities/byte_stream.h>
++#include <ePub3/utilities/byte_stream.h>
+ 
+ EPUB3_BEGIN_NAMESPACE
+ 
+diff --git a/ePub3/ePub/filter_chain.cpp b/ePub3/ePub/filter_chain.cpp
+index 9cc2633..e77fe9d 100644
+--- a/ePub3/ePub/filter_chain.cpp
++++ b/ePub3/ePub/filter_chain.cpp
+@@ -138,7 +138,7 @@ std::shared_ptr<ByteStream> FilterChain::GetFilterChainByteStreamRange(ConstMani
+ std::unique_ptr<ByteStream> FilterChain::GetFilterChainByteStreamRange(ConstManifestItemPtr item, SeekableByteStream *rawInput) const
+ {
+     unique_ptr<ByteStream> resultStream;
+-    uint nFilters = 0;
++    unsigned int nFilters = 0;
+     for (ContentFilterPtr filter : _filters)
+     {
+         if (filter->TypeSniffer()(item))
+diff --git a/ePub3/ePub/font_obfuscation.cpp b/ePub3/ePub/font_obfuscation.cpp
+index 2d01dc4..b7871f1 100644
+--- a/ePub3/ePub/font_obfuscation.cpp
++++ b/ePub3/ePub/font_obfuscation.cpp
+@@ -19,6 +19,7 @@
+ //  Affero General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ 
+ #include <ePub3/base.h>
++#include <ePub3/utilities/error_handler.h>
+ 
+ // OpenSSL APIs are deprecated on OS X and iOS
+ #if EPUB_OS(DARWIN)
+@@ -43,7 +44,7 @@ using namespace ::Windows::Security::Cryptography::Core;
+ 
+ EPUB3_BEGIN_NAMESPACE
+ 
+-#if !EPUB_COMPILER_SUPPORTS(CXX_NONSTATIC_MEMBER_INIT) || EPUB_COMPILER(MSVC)
++#if !EPUB_COMPILER_SUPPORTS(CXX_NONSTATIC_MEMBER_INIT)
+ const char * const FontObfuscator::FontObfuscationAlgorithmID = "http://www.idpf.org/2008/embedding";
+ #endif
+ 
+diff --git a/ePub3/ePub/font_obfuscation.h b/ePub3/ePub/font_obfuscation.h
+index 30ba3a0..2c87f18 100644
+--- a/ePub3/ePub/font_obfuscation.h
++++ b/ePub3/ePub/font_obfuscation.h
+@@ -42,8 +42,8 @@ class FontObfuscator : public ContentFilter, public PointerType<FontObfuscator>
+ protected:
+     static const size_t         KeySize = 20;       // SHA-1 key size = 20 bytes
+     static const REGEX_NS::regex     TypeCheck;
+-    CONSTEXPR static EPUB3_EXPORT const char * const	FontObfuscationAlgorithmID
+-#if EPUB_COMPILER_SUPPORTS(CXX_NONSTATIC_MEMBER_INIT) && !EPUB_COMPILER(MSVC)
++    CONSTEXPR static EPUB3_EXPORT const char * const	FontObfuscationAlgorithmID 
++#if EPUB_COMPILER_SUPPORTS(CXX_NONSTATIC_MEMBER_INIT) 
+             = "http://www.idpf.org/2008/embedding"
+ #endif
+               ;
+diff --git a/ePub3/utilities/executor.h b/ePub3/utilities/executor.h
+index 1155cf7..641c5b0 100644
+--- a/ePub3/utilities/executor.h
++++ b/ePub3/utilities/executor.h
+@@ -164,7 +164,7 @@ protected:
+             // terminate if a closure throws an exception
+             // this matches the paper's guidance
+             try {
+-                invoke(closure);
++                std::invoke(closure);
+             } catch (...) {
+ #ifndef NDEBUG
+                 std::exception_ptr __exc = std::current_exception();
+diff --git a/ePub3/utilities/future.cpp b/ePub3/utilities/future.cpp
+index 625f0f5..6d85eba 100644
+--- a/ePub3/utilities/future.cpp
++++ b/ePub3/utilities/future.cpp
+@@ -131,8 +131,10 @@ __shared_state_base::__at_thread_exit()
+     static thread_local _VecType __vec;
+     return __vec;
+ #elif EPUB_COMPILER(MSVC)
++    static thread_local _VecType __vec;
++    return __vec;
+     // grumbles something about having to use internal API...
+-	static _Tss_t __key;
++	/*static _Tss_t __key;
+ 	static std::once_flag __once;
+ 	std::call_once(__once, [&]() {
+ 		_Tss_create(&__key, &__KillVectorPtr);
+@@ -145,7 +147,7 @@ __shared_state_base::__at_thread_exit()
+ 	}
+ 
+ 	_VecType* __pv = reinterpret_cast<_VecType*>(__p);
+-	return *__pv;
++	return *__pv;*/
+ #elif EPUB_OS(UNIX)
+     static pthread_key_t __key;
+     static std::once_flag __once;
+diff --git a/ePub3/utilities/iri.cpp b/ePub3/utilities/iri.cpp
+index 3fe3a6a..ecd509e 100644
+--- a/ePub3/utilities/iri.cpp
++++ b/ePub3/utilities/iri.cpp
+@@ -21,7 +21,7 @@
+ #include "iri.h"
+ #include <google-url/url_util.h>
+ #include "cfi.h"
+-#include "make_unique.h"
++//#include "make_unique.h"
+ #include REGEX_INCLUDE
+ 
+ EPUB3_BEGIN_NAMESPACE
+@@ -44,7 +44,7 @@ void IRI::AddStandardScheme(const string& scheme)
+     url_util::AddStandardScheme(scheme.c_str());
+ }
+ 
+-IRI::IRI(const string& iriStr) : _urnComponents(), _url(make_unique<GURL>(iriStr.stl_str())), _pureIRI(iriStr)
++IRI::IRI(const string& iriStr) : _urnComponents(), _url(std::make_unique<GURL>(iriStr.stl_str())), _pureIRI(iriStr)
+ {
+     // is it a URN?
+     if ( iriStr.find("urn:", 0, 4) == 0 )
+@@ -64,7 +64,7 @@ IRI::IRI(const string& nameID, const string& namespacedString) :
+     _urnComponents({gURNScheme, nameID, namespacedString}),
+ #endif
+     _pureIRI(_Str("urn:", nameID, ":", namespacedString)),
+-    _url(make_unique<GURL>(_pureIRI.stl_str()))
++    _url(std::make_unique<GURL>(_pureIRI.stl_str()))
+ {
+ #if !EPUB_COMPILER_SUPPORTS(CXX_INITIALIZER_LISTS)
+     _urnComponents.push_back(gURNScheme);
+@@ -72,7 +72,7 @@ IRI::IRI(const string& nameID, const string& namespacedString) :
+     _urnComponents.push_back(namespacedString);
+ #endif
+ }
+-IRI::IRI(const string& scheme, const string& host, const string& path, const string& query, const string& fragment) : _urnComponents(), _url(make_unique<GURL>())
++IRI::IRI(const string& scheme, const string& host, const string& path, const string& query, const string& fragment) : _urnComponents(), _url(std::make_unique<GURL>())
+ {
+     _pureIRI = _Str(scheme, "://", host);
+     if ( path.empty() )
+@@ -87,7 +87,7 @@ IRI::IRI(const string& scheme, const string& host, const string& path, const str
+     if ( !fragment.empty() )
+         _pureIRI += _Str("#", fragment);
+     
+-    _url = make_unique<GURL>(_pureIRI.stl_str());
++    _url = std::make_unique<GURL>(_pureIRI.stl_str());
+ }
+ IRI::~IRI()
+ {
+@@ -99,7 +99,7 @@ IRI& IRI::operator=(const IRI& o)
+     if ( _url != nullptr )
+         *_url = *o._url;
+     else
+-        _url = make_unique<GURL>(*o._url);
++        _url = std::make_unique<GURL>(*o._url);
+     return *this;
+ }
+ IRI& IRI::operator=(IRI &&o)
+@@ -127,7 +127,7 @@ IRI& IRI::operator=(const string& str)
+         }
+     }
+     
+-    auto newURL = make_unique<GURL>(str.stl_str());
++    auto newURL = std::make_unique<GURL>(str.stl_str());
+     if ( !newURL->is_valid() && !isURN )
+         throw std::invalid_argument(_Str("IRI: '", str, "' is not a valid URL string."));
+     
+@@ -325,7 +325,7 @@ string IRI::URLEncodeComponent(const string& str)
+ string IRI::PercentEncodeUCS(const string& str)
+ {
+     std::stringstream ss;
+-    for ( char32_t ch : str )
++    for ( __int32 ch : str )
+     {
+         if ( ch > 0x7F )
+         {
+diff --git a/ePub3/utilities/iri.h b/ePub3/utilities/iri.h
+index 4a51370..18d3d82 100644
+--- a/ePub3/utilities/iri.h
++++ b/ePub3/utilities/iri.h
+@@ -22,7 +22,7 @@
+ #define __ePub3__iri__
+ 
+ #include <ePub3/utilities/utfstring.h>
+-#include <ePub3/utilities/make_unique.h>
++//#include <ePub3/utilities/make_unique.h>
+ #include <google-url/gurl.h>
+ #include <vector>
+ 
+@@ -66,7 +66,7 @@ public:
+ public:
+     ///
+     /// Initializes an empty (and thus invalid) IRI.
+-    IRI() : _urnComponents(), _url(make_unique<GURL>()), _pureIRI() {}
++    IRI() : _urnComponents(), _url(std::make_unique<GURL>()), _pureIRI() {}
+     
+     /**
+      Create a new IRI.
+diff --git a/ePub3/utilities/make_unique.h b/ePub3/utilities/make_unique.h
+index 3c8c91a..4d7033c 100644
+--- a/ePub3/utilities/make_unique.h
++++ b/ePub3/utilities/make_unique.h
+@@ -30,7 +30,7 @@
+ #include <type_traits>
+ #include <utility>
+ 
+-#if EPUB_PLATFORM(WINRT)
++#if EPUB_PLATFORM(WIN)
+ using std::make_unique;
+ #else
+ 
+diff --git a/ePub3/utilities/utfstring.h b/ePub3/utilities/utfstring.h
+index b5289dd..7e6b8aa 100644
+--- a/ePub3/utilities/utfstring.h
++++ b/ePub3/utilities/utfstring.h
+@@ -1122,7 +1122,7 @@ public:
+     }
+ };
+ 
+-#if (!defined(UTF_USE_ICU) || UTF_USE_ICU == 0) && !EPUB_PLATFORM(WIN)
++#if (!defined(UTF_USE_ICU) || UTF_USE_ICU == 0) //&& !EPUB_PLATFORM(WIN)
+ // ePub::string::_Convert is implemented for Unicode via template specializations here
+ template <>
+ class string::_Convert<char16_t> {
