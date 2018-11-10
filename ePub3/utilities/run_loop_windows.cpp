@@ -583,7 +583,7 @@ RunLoop::Timer::Timer(Clock::time_point& fireDate, Clock::duration& interval, Ti
 	}
 
 #else
-    _handle = CreateWaitableTimer(NULL, FALSE);
+	_handle = CreateWaitableTimer(NULL, FALSE, nullptr);
     if ( _handle == NULL )
         _THROW_LAST_ERROR();
 
