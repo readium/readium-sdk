@@ -51,6 +51,39 @@ ndk-compile.sh build
 
 Everything else should be set up appropriately by that script.
 
+### Maven Package
+
+Once the `ndk-compile.sh` command above has been executed, the native library
+and Java code can be packaged into standard Maven packages and deployed to
+repositories to be referenced as dependencies from Android applications.
+Assuming that the Android artifacts have been deployed to a local repository
+(with the [maven-android-sdk-deployer](https://github.com/simpligility/maven-android-sdk-deployer),
+for example), packages can be produced with the following command:
+
+```bash
+$ mvn clean package
+```
+
+The created artifacts can then be deployed to any repository (with `mvn deploy`)
+and then referenced from any Android application with the following dependency
+declaration (in Maven syntax, but applicable to any other build system that
+uses Maven packages):
+
+```
+<dependency>
+  <groupId>org.readium</groupId>
+  <artifactId>readium-sdk-android-runtime</artifactId>
+  <version>0.20.0</version>
+</dependency>
+<dependency>
+  <groupId>org.readium</groupId>
+  <artifactId>libepub3</artifactId>
+  <version>0.20.0</version>
+  <classifier>armeabi-v7a</classifier>
+  <type>so</type>
+</dependency>
+```
+
 ### Linux Notes (Ubuntu 13.04 64bit):
 
 
