@@ -38,6 +38,7 @@ const IRI SpineItem::PageSpreadLeftPropertyIRI("http://idpf.org/epub/vocab/packa
 
 SpineItem::SpineItem(const shared_ptr<Package>& owner) : OwnedBy(owner), PropertyHolder(owner), _idref(), _linear(true), _next(), _prev()
 {
+    RegisterPrefixIRIStem("rendition", "http://www.idpf.org/vocab/rendition/#");
 }
 SpineItem::SpineItem(SpineItem&& o) : OwnedBy(std::move(o)), PropertyHolder(std::move(o)), XMLIdentifiable(std::move(o)), _idref(std::move(o._idref)), _linear(o._linear), _prev(std::move(o._prev)), _next(std::move(o._next))
 {
