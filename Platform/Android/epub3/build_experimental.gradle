@@ -62,8 +62,8 @@ model {
 //    }
 
     android {
-        compileSdkVersion = 26
-        buildToolsVersion = "27.0.3"
+        compileSdkVersion = 28
+        buildToolsVersion = "28.0.3"
         sources {
             main {
                 jni {
@@ -138,6 +138,7 @@ model {
                 stl = "c++_shared"
 
             def arrayFlags = [
+                "-J6",
                 "-fexceptions",
                 "-DBUILDING_EPUB3",
 //                "-DLIBXML_ICU_ENABLED",

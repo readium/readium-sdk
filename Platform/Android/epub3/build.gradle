@@ -138,7 +138,7 @@ task buildMk(dependsOn: "buildIncludes", type: Exec) {
     if (ndk_experimental) environment 'READIUM_EXPERIMENTAL', 'true'
 
     commandLine "$ndkDir/ndk-build${ndkBuildExt}",
-            "-j", "4", //Runtime.runtime.availableProcessors()
+            "-j", "6", //Runtime.runtime.availableProcessors()
             '-C', projectPath,
             'NDK_APPLICATION_MK=Application.mk',
             "APP_BUILD_SCRIPT=${buildScript}",

@@ -6,8 +6,8 @@ def ndk_clang = (rootProject.hasProperty("readium_ndk_clang") && rootProject.rea
 def ndk_experimental = (rootProject.hasProperty("readium_ndk_experimental") && rootProject.readium_ndk_experimental)
 
 android {
-    compileSdkVersion = 26
-    buildToolsVersion = "27.0.3"
+    compileSdkVersion = 28
+    buildToolsVersion = "28.0.3"
 
     defaultConfig {
         // manifest@package attribute in src/main/AndroidManifest.xml
@@ -17,7 +17,7 @@ android {
         minSdkVersion 19
 
         // manifest/uses-sdk@android:targetSdkVersion attribute in src/main/AndroidManifest.xml
-        targetSdkVersion 26
+        targetSdkVersion 28
 
         // manifest@android:versionCode attribute in src/main/AndroidManifest.xml
         versionCode 31
