@@ -138,7 +138,7 @@ model {
                 stl = "c++_shared"
 
             def arrayFlags = [
-                "-J6",
+                // "-J6",
                 "-fexceptions",
                 "-DBUILDING_EPUB3",
 //                "-DLIBXML_ICU_ENABLED",
@@ -193,7 +193,9 @@ model {
 //                                "-L${file("../../../ePub3/ThirdParty/icu4c/lib/armeabi-v7a")}".toString()
                         ])
                         cppFlags.add("-I${ndkDirIncludesASM_ARM}".toString())
+                        cppFlags.add("-J6")
                         CFlags.add("-I${ndkDirIncludesASM_ARM}".toString())
+                        CFlags.add("-J6")
                     }
                 }
 

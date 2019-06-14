@@ -50,9 +50,11 @@ android {
         }
     }
 
+    flavorDimensions "version"
     productFlavors {
         if (!ndk_skipARM)
             "arm" {
+                dimension "version"
                 ndk.with {
                     abiFilters = ["armeabi-v7a"]
                 }
@@ -60,6 +62,7 @@ android {
 
         if (!ndk_skipX86)
             "x86" {
+                dimension "version"
                 ndk.with {
                     abiFilters = ["x86"]
                 }
