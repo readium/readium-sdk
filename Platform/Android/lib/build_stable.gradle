@@ -121,22 +121,6 @@ android {
     }
 }
 
-clean.doFirst {
-    println "[[${project.name}]] (LIB) Remove *.so *.aar (${currentBuildType})"
-
-    def dstDirPath = "${project.projectDir}/../epub3/jniLibs/"
-    delete dstDirPath
-
-    dstDirPath = "${project.projectDir}/../epub3/libs/"
-    delete dstDirPath
-
-    dstDirPath = "${project.projectDir}/../dist/"
-    delete dstDirPath
-}
-// task cleanLibs {
-//     doFirst {
-//     }
-// }
 task copyLibs {
     doLast {
         println "[[${project.name}]] (LIB) Copy *.so *.aar (${currentBuildType})"
@@ -178,21 +162,28 @@ task copyLibs {
         }
     }
 }
-// copyLibs.dependsOn "cleanLibs"
 
 tasks.whenTaskAdded { task ->
     println "[[${project.name}]] (LIB) TaskAdded: ${task.name} (${currentBuildType})"
 
-    if (task.name.startsWith("compile")) {
+    if (task.name.startsWith("assemble")) {
         task.dependsOn ":epub3:buildMk"
     }
     if (task.name.startsWith("assemble")) {
-        task.dependsOn copyLibs
+        task.finalizedBy copyLibs
     }
+}
+gradle.buildFinished { buildResult ->
+    println "[[${project.name}]] (LIB) buildFinished (${currentBuildType})"
 }
 
 gradle.taskGraph.whenReady { taskGraph ->
     println "[[${project.name}]] (LIB) taskGraph ready"
+
+    // taskGraph.getAllTasks().last().finalizedBy copyLibs
+    taskGraph.getAllTasks().last().doLast {
+        println "[[${project.name}]] (LIB) last TASK (${currentBuildType})"
+    } // .dependsOn copyLibs
 
     if (taskGraph.hasTask(buildRelease)) {
         println "[[${project.name}]] (LIB) taskGraph RELEASE (build)"

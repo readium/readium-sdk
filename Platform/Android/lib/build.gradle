@@ -13,3 +13,16 @@ if (ndk_experimental) {
 } else {
     apply from: 'build_stable.gradle'
 }
+
+clean.doFirst {
+    println "[[${project.name}]] (LIB) Remove *.so *.aar"
+
+    def dstDirPath = "${project.projectDir}/../epub3/jniLibs/"
+    delete dstDirPath
+
+    dstDirPath = "${project.projectDir}/../epub3/libs/"
+    delete dstDirPath
+
+    dstDirPath = "${project.projectDir}/../dist/"
+    delete dstDirPath
+}

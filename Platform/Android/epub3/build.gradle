@@ -152,11 +152,12 @@ task buildMk(dependsOn: "buildIncludes", type: Exec) {
 tasks.whenTaskAdded { task ->
     println "[[${project.name}]] (EPUB3) TaskAdded: ${task.name}"
 
-    // if (task.name.startsWith("compile")) {
-    //     if (ndk_experimental) {
-    //         task.dependsOn "buildIncludes"
-    //     } else {
-    //         task.dependsOn "buildMk"
-    //     }
-    // }
+    if (task.name.startsWith("compile")) {
+        if (ndk_experimental) {
+            task.dependsOn "buildIncludes"
+        }
+        // else {
+        //     task.dependsOn "buildMk"
+        // }
+    }
 }

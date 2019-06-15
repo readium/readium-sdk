@@ -285,3 +285,9 @@ model {
         } //productFlavors
     } //android
 } //model
+
+// tasks.all { task ->
+//     if (task.name.startsWith('compile') && task.name.endsWith('Ndk')) {
+//         task.enabled = false
+//     }
+// }
