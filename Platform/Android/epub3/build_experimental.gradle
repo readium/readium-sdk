@@ -5,26 +5,31 @@ def ndk_skipARM = (rootProject.hasProperty("readium_ndk_skipARM") && rootProject
 def ndk_clang = (rootProject.hasProperty("readium_ndk_clang") && rootProject.readium_ndk_clang)
 def ndk_experimental = (rootProject.hasProperty("readium_ndk_experimental") && rootProject.readium_ndk_experimental)
 
+println "[[${project.name}]] (EPUB3) Gradle Experimental: ${ndk_experimental}"
+println "[[${project.name}]] (EPUB3) Skip ARM: ${ndk_skipARM}"
+println "[[${project.name}]] (EPUB3) Skip x86: ${ndk_skipX86}"
+println "[[${project.name}]] (EPUB3) Clang: ${ndk_clang}"
+
 // Retrieve ndk dir
 Properties properties = new Properties()
 properties.load(rootProject.file('local.properties').newDataInputStream())
 def ndkDir = properties.getProperty('ndk.dir', "").toString().replaceAll("\\\\", "/")
-println "NDK dir: ${ndkDir}"
+println "[[${project.name}]] (EPUB3) ndkDir: ${ndkDir}"
 
 def ndkDirIncludes = "${ndkDir}/sysroot/usr/include"
-println "NDK includes: ${ndkDirIncludes}"
+println "[[${project.name}]] (EPUB3) ndkDirIncludes: ${ndkDirIncludes}"
 
 // armeabi-v7a
 def ndkDirIncludesASM_ARM = "${ndkDirIncludes}/arm-linux-androideabi"
-println "NDK includes ASM (ARM): ${ndkDirIncludesASM_ARM}"
+println "[[${project.name}]] (EPUB3) ndkDirIncludesASM_ARM: ${ndkDirIncludesASM_ARM}"
 
 // arm64-v8a
 def ndkDirIncludesASM_ARM64 = "${ndkDirIncludes}/aarch64-linux-android"
-println "NDK includes ASM (ARM64): ${ndkDirIncludesASM_ARM64}"
+println "[[${project.name}]] (EPUB3) ndkDirIncludesASM_ARM64: ${ndkDirIncludesASM_ARM64}"
 
 // x86
 def ndkDirIncludesASM_X86 = "${ndkDirIncludes}/x86_64-linux-android"
-println "NDK includes ASM (X86): ${ndkDirIncludesASM_X86}"
+println "[[${project.name}]] (EPUB3) ndkDirIncludesASM_X86: ${ndkDirIncludesASM_X86}"
 
 model {
 //    repositories {

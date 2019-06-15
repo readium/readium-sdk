@@ -108,7 +108,8 @@ model {
 
 task copyLibs {
     doLast {
-        println ("Copy libs (SKIPPED)")
+        println "[[${project.name}]] (LIB) Copy *.so (SKIPPED)"
+
         // println ("Copy libs ... ${currentBuildType}")
         // android.productFlavors.all { flavor ->
         //     android.buildTypes.all { buildType ->
@@ -128,5 +129,13 @@ task copyLibs {
         //         }
         //     }
         // }
+    }
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.startsWith("compile")) {
+        println "[[${project.name}]] (LIB) TaskAdded: ${task.name}"
+
+        task.dependsOn copyLibs
     }
 }

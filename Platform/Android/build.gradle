@@ -27,6 +27,11 @@ rootProject.ext.set('readium_ndk_experimental', ndkExperimental)
 //        def ndk_experimental = (rootProject.hasProperty("readium_ndk_experimental") && rootProject.readium_ndk_experimental)
 //        if (ndk_experimental) environment 'READIUM_EXPERIMENTAL', 'true'
 
+println "[[${project.name}]] (ROOT) Gradle Experimental: ${ndkExperimental}"
+println "[[${project.name}]] (ROOT) Skip ARM: ${ndkSkipARM}"
+println "[[${project.name}]] (ROOT) Skip x86: ${ndkSkipX86}"
+println "[[${project.name}]] (ROOT) Clang: ${ndkClang}"
+
 buildscript {
     repositories {
         Properties properties = new Properties()
@@ -50,13 +55,11 @@ buildscript {
         ndkExperimental = (ndkExperimental == "true") ? true : false;
 
         if (ndkExperimental) {
-            println "${project.name}: classpath Gradle EXPERIMENTAL ..."
             // https://bintray.com/android/android-tools/com.android.tools.build.gradle-experimental/view
             // https://mvnrepository.com/artifact/com.android.tools.build/gradle-experimental?repo=google
             // 0.11.1 fails https://stackoverflow.com/questions/47057160/
             classpath "com.android.tools.build:gradle-experimental:0.9.3"
         } else {
-            println "${project.name}: classpath Gradle STABLE ..."
             // https://bintray.com/android/android-tools/com.android.tools.build.gradle/view
             // https://mvnrepository.com/artifact/com.android.tools.build/gradle?repo=google
             classpath "com.android.tools.build:gradle:3.4.1"

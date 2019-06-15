@@ -3,21 +3,13 @@ def ndk_skipARM = (rootProject.hasProperty("readium_ndk_skipARM") && rootProject
 def ndk_clang = (rootProject.hasProperty("readium_ndk_clang") && rootProject.readium_ndk_clang)
 def ndk_experimental = (rootProject.hasProperty("readium_ndk_experimental") && rootProject.readium_ndk_experimental)
 
-if (ndk_experimental) {
-    println "${project.name}: Using Gradle EXPERIMENTAL to build lib"
+println "[[${project.name}]] (LIB) Gradle Experimental: ${ndk_experimental}"
+println "[[${project.name}]] (LIB) Skip ARM: ${ndk_skipARM}"
+println "[[${project.name}]] (LIB) Skip x86: ${ndk_skipX86}"
+println "[[${project.name}]] (LIB) Clang: ${ndk_clang}"
 
+if (ndk_experimental) {
     apply from: 'build_experimental.gradle'
 } else {
-    println "${project.name}: Using Gradle STABLE to build lib"
-
     apply from: 'build_stable.gradle'
-}
-
-tasks.whenTaskAdded { task ->
-    if (task.name.startsWith("compile")) {
-        if (!ndk_experimental) {
-            task.dependsOn ":epub3:buildMk"
-        }
-        task.dependsOn copyLibs
-    }
 }
