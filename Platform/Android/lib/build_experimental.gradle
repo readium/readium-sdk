@@ -54,19 +54,54 @@ model {
         }
 
         productFlavors {
-            if (!ndk_skipARM)
-                create("arm") {
+            if (!ndk_skipARM) {
+                // create("armeabi-v7a") {
+                //     ndk.with {
+                //         abiFilters.add("armeabi-v7a")
+                //     }
+                // }
+                // create("arm64-v8a") {
+                //     ndk.with {
+                //         abiFilters.add("arm64-v8a")
+                //     }
+                // }
+                create("armeabi-v7a--arm64-v8a") {
                     ndk.with {
                         abiFilters.add("armeabi-v7a")
+                        abiFilters.add("arm64-v8a")
                     }
                 }
+            }
 
-            if (!ndk_skipX86)
-                create("x86") {
+            if (!ndk_skipX86) {
+                // create("x86") {
+                //     ndk.with {
+                //         abiFilters.add("x86")
+                //     }
+                // }
+                // create("x86_64") {
+                //     ndk.with {
+                //         abiFilters.add("x86_64")
+                //     }
+                // }
+                create("x86--x86_64") {
                     ndk.with {
                         abiFilters.add("x86")
+                        abiFilters.add("x86_64")
                     }
                 }
+            }
+
+            if (!ndk_skipARM && !ndk_skipX86) {
+                create("armeabi-v7a--arm64-v8a--x86--x86_64") {
+                    ndk.with {
+                        abiFilters.add("armeabi-v7a")
+                        abiFilters.add("arm64-v8a")
+                        abiFilters.add("x86")
+                        abiFilters.add("x86_64")
+                    }
+                }
+            }
         }
     }
 }

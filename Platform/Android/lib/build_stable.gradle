@@ -52,20 +52,55 @@ android {
 
     flavorDimensions "version"
     productFlavors {
-        if (!ndk_skipARM)
-            "arm" {
+        if (!ndk_skipARM && !ndk_skipX86) {
+            "armeabi-v7a--arm64-v8a--x86--x86_64" {
                 dimension "version"
                 ndk.with {
-                    abiFilters = ["armeabi-v7a"]
+                    abiFilters = ["armeabi-v7a", "arm64-v8a", "x86", "x86_64"]
+                }
+            }
+        } else {
+            if (!ndk_skipARM) {
+                // "armeabi-v7a" {
+                //    dimension "version"
+                //     ndk.with {
+                //         abiFilters = ["armeabi-v7a"]
+                //     }
+                // }
+                // "arm64-v8a" {
+                //    dimension "version"
+                //     ndk.with {
+                //         abiFilters = ["arm64-v8a"]
+                //     }
+                // }
+                "armeabi-v7a--arm64-v8a" {
+                    dimension "version"
+                    ndk.with {
+                        abiFilters = ["armeabi-v7a", "arm64-v8a"]
+                    }
                 }
             }
 
-        if (!ndk_skipX86)
-            "x86" {
-                dimension "version"
-                ndk.with {
-                    abiFilters = ["x86"]
+            if (!ndk_skipX86) {
+                // "x86" {
+                //     ndk.with {
+                //    dimension "version"
+                //         abiFilters = ["x86"]
+                //     }
+                // }
+                // "x86_64" {
+                //    dimension "version"
+                //     ndk.with {
+                //         abiFilters = ["x86_64"]
+                //     }
+                // }
+                "x86--x86_64" {
+                    dimension "version"
+                    ndk.with {
+                        abiFilters = ["x86", "x86_64"]
+                    }
                 }
             }
+        }
     }
 }
