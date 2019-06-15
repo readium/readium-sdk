@@ -5,7 +5,12 @@ def ndk_skipARM = (rootProject.hasProperty("readium_ndk_skipARM") && rootProject
 def ndk_clang = (rootProject.hasProperty("readium_ndk_clang") && rootProject.readium_ndk_clang)
 def ndk_experimental = (rootProject.hasProperty("readium_ndk_experimental") && rootProject.readium_ndk_experimental)
 
+def currentBuildType
 android {
+    libraryVariants.all { variant ->
+        currentBuildType = variant.buildType.name
+    }
+
     compileSdkVersion = 28
     buildToolsVersion = "28.0.3"
 
@@ -98,6 +103,31 @@ android {
                     dimension "version"
                     ndk.with {
                         abiFilters = ["x86", "x86_64"]
+                    }
+                }
+            }
+        }
+    }
+}
+
+task copyLibs {
+    doLast {
+        println ("Copy libs ... ${currentBuildType}")
+        android.productFlavors.all { flavor ->
+            android.buildTypes.all { buildType ->
+                if (currentBuildType == buildType.name) {
+                    flavor.ndk.abiFilters.each { abiFilter ->
+
+                        // def srcDirPath_LIBS = "${project.projectDir}/build/intermediates/library_and_local_jars_jni/${flavor}/${buildType.name}/${abiFilter}"
+                        def srcDirPath_LIBS = "${project.projectDir}/../epub3/libs/${abiFilter}"
+                        def dstDirPath_LIBS = "${project.projectDir}/libs/${buildType.name.toUpperCase()}/${abiFilter}"
+
+                        copy {
+                            from("${srcDirPath_LIBS}") {
+                                include("*.so")
+                            }
+                            into("${dstDirPath_LIBS}")
+                        }
                     }
                 }
             }

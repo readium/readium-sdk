@@ -147,11 +147,9 @@ task buildMk(dependsOn: "buildIncludes", type: Exec) {
 }
 
 tasks.whenTaskAdded { task ->
-    def taskName = task.name
-
-    if (taskName.startsWith("compile")) {
+    if (task.name.startsWith("compile")) {
         if (ndk_experimental) {
-            println "${project.name} - ${taskName}: Using Gradle EXPERIMENTAL, no need to invoke external NDK / Makefile to build EPUB3 lib"
+            println "${project.name} - ${task.name}: Using Gradle EXPERIMENTAL, no need to invoke external NDK / Makefile to build EPUB3 lib"
             task.dependsOn "buildIncludes"
         } else {
             task.dependsOn "buildMk"

@@ -9,3 +9,4 @@ rm -rf epub3/obj
 #rm -rf epub3/src/main/gen2remove
 
 rm -rf lib/build
+rm -rf lib/libs

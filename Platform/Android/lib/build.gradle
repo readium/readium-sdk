@@ -14,11 +14,10 @@ if (ndk_experimental) {
 }
 
 tasks.whenTaskAdded { task ->
-    def taskName = task.name
-
-    if (taskName.startsWith("compile")) {
+    if (task.name.startsWith("compile")) {
         if (!ndk_experimental) {
             task.dependsOn ":epub3:buildMk"
         }
+        task.dependsOn copyLibs
     }
 }
