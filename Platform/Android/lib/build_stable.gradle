@@ -5,9 +5,16 @@ def ndk_skipARM = (rootProject.hasProperty("readium_ndk_skipARM") && rootProject
 def ndk_clang = (rootProject.hasProperty("readium_ndk_clang") && rootProject.readium_ndk_clang)
 def ndk_experimental = (rootProject.hasProperty("readium_ndk_experimental") && rootProject.readium_ndk_experimental)
 
+def currentBuildType
 android {
-    compileSdkVersion = 26
-    buildToolsVersion = "27.0.3"
+    libraryVariants.all { variant ->
+        println "[[${project.name}]] (LIB) libraryVariant buildType: ${variant.buildType.name}"
+
+        // currentBuildType = variant.buildType.name
+    }
+
+    compileSdkVersion = 28
+    buildToolsVersion = "28.0.3"
 
     defaultConfig {
         // manifest@package attribute in src/main/AndroidManifest.xml
@@ -17,7 +24,7 @@ android {
         minSdkVersion 19
 
         // manifest/uses-sdk@android:targetSdkVersion attribute in src/main/AndroidManifest.xml
-        targetSdkVersion 26
+        targetSdkVersion 28
 
         // manifest@android:versionCode attribute in src/main/AndroidManifest.xml
         versionCode 31
@@ -50,19 +57,164 @@ android {
         }
     }
 
+    flavorDimensions "version"
     productFlavors {
-        if (!ndk_skipARM)
-            "arm" {
+        if (!ndk_skipARM && !ndk_skipX86) {
+            "armeabi-v7a--arm64-v8a--x86--x86_64" {
+                dimension "version"
                 ndk.with {
-                    abiFilters = ["armeabi-v7a"]
+                    abiFilters = ["armeabi-v7a", "arm64-v8a", "x86", "x86_64"]
+                }
+            }
+        } else {
+            if (!ndk_skipARM) {
+                // "armeabi-v7a" {
+                //    dimension "version"
+                //     ndk.with {
+                //         abiFilters = ["armeabi-v7a"]
+                //     }
+                // }
+                // "arm64-v8a" {
+                //    dimension "version"
+                //     ndk.with {
+                //         abiFilters = ["arm64-v8a"]
+                //     }
+                // }
+                "armeabi-v7a--arm64-v8a" {
+                    dimension "version"
+                    ndk.with {
+                        abiFilters = ["armeabi-v7a", "arm64-v8a"]
+                    }
                 }
             }
 
-        if (!ndk_skipX86)
-            "x86" {
-                ndk.with {
-                    abiFilters = ["x86"]
+            if (!ndk_skipX86) {
+                // "x86" {
+                //     ndk.with {
+                //    dimension "version"
+                //         abiFilters = ["x86"]
+                //     }
+                // }
+                // "x86_64" {
+                //    dimension "version"
+                //     ndk.with {
+                //         abiFilters = ["x86_64"]
+                //     }
+                // }
+                "x86--x86_64" {
+                    dimension "version"
+                    ndk.with {
+                        abiFilters = ["x86", "x86_64"]
+                    }
                 }
             }
+        }
+    }
+
+    variantFilter { variant ->
+        println "[[${project.name}]] (LIB) variantFilter buildType: ${variant.buildType.name}"
+
+        // def names = variant.flavors*.name
+        // if (names.contains("xxx")) {
+        //     setIgnore(true)
+        // }
     }
 }
+
+task copyLibs {
+    doLast {
+        println "[[${project.name}]] (LIB) Copy *.so *.aar (${currentBuildType})"
+
+        android.productFlavors.all { flavor ->
+            println "  [[${project.name}]] (LIB) productFlavor (${flavor.name})"
+
+            android.buildTypes.all { buildType ->
+                println "    [[${project.name}]] (LIB) buildType (${buildType.name})"
+
+                if (currentBuildType == buildType.name) {
+
+                    def srcDirPath_AAR = "${project.projectDir}/build/outputs/aar"
+                    def dstDirPath_AAR = "${project.projectDir}/../dist/${buildType.name.toUpperCase()}"
+                    copy {
+                        from("${srcDirPath_AAR}") {
+                            include("*-${flavor.name}-${buildType.name}.aar")
+                        }
+                        into("${dstDirPath_AAR}")
+                    }
+
+                    flavor.ndk.abiFilters.each { abiFilter ->
+                        println "      [[${project.name}]] (LIB) abiFilter (${abiFilter})"
+
+                        // def srcDirPath_LIBS = "${project.projectDir}/build/intermediates/library_and_local_jars_jni/${flavor}/${buildType.name}/${abiFilter}"
+                        def srcDirPath_LIBS = "${project.projectDir}/../epub3/libs/${abiFilter}"
+                        // def dstDirPath_LIBS = "${project.projectDir}/libs/${buildType.name.toUpperCase()}/${abiFilter}"
+                        def dstDirPath_LIBS = "${project.projectDir}/../epub3/jniLibs/${buildType.name.toUpperCase()}/${abiFilter}"
+
+                        copy {
+                            from("${srcDirPath_LIBS}") {
+                                include("*.so")
+                            }
+                            into("${dstDirPath_LIBS}")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+tasks.whenTaskAdded { task ->
+    println "[[${project.name}]] (LIB) TaskAdded: ${task.name} (${currentBuildType})"
+
+    if (task.name.startsWith("assemble")) {
+        task.dependsOn ":epub3:buildMk"
+    }
+    if (task.name.startsWith("assemble")) {
+        task.finalizedBy copyLibs
+    }
+}
+gradle.buildFinished { buildResult ->
+    println "[[${project.name}]] (LIB) buildFinished (${currentBuildType})"
+}
+
+gradle.taskGraph.whenReady { taskGraph ->
+    println "[[${project.name}]] (LIB) taskGraph ready"
+
+    // taskGraph.getAllTasks().last().finalizedBy copyLibs
+    taskGraph.getAllTasks().last().doLast {
+        println "[[${project.name}]] (LIB) last TASK (${currentBuildType})"
+    } // .dependsOn copyLibs
+
+    if (taskGraph.hasTask(buildRelease)) {
+        println "[[${project.name}]] (LIB) taskGraph RELEASE (build)"
+
+        currentBuildType = "release"
+    } else if (taskGraph.hasTask(buildDebug)) {
+        println "[[${project.name}]] (LIB) taskGraph DEBUG (build)"
+
+        currentBuildType = "debug"
+    } else {
+        if (taskGraph.hasTask(assembleRelease)) {
+            println "[[${project.name}]] (LIB) taskGraph RELEASE (assemble)"
+
+            currentBuildType = "release"
+        }
+        if (taskGraph.hasTask(assembleDebug)) {
+            println "[[${project.name}]] (LIB) taskGraph DEBUG (assemble)"
+
+            currentBuildType = "debug"
+        }
+    }
+}
+
+task buildRelease(type: GradleBuild, dependsOn: build) {
+}
+
+task buildDebug(type: GradleBuild, dependsOn: build) {
+}
+
+// task assembleRelease(type: GradleBuild, dependsOn: assemble) {
+// }
+
+// task assembleDebug(type: GradleBuild, dependsOn: assemble) {
+// }

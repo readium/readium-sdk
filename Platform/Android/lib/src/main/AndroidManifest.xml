@@ -29,6 +29,6 @@
     android:versionCode="31"
     android:versionName="1.31" >
 
-    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="26"/>
+    <!--<uses-sdk android:minSdkVersion="19" android:targetSdkVersion="28"/>-->
 
 </manifest>

@@ -35,7 +35,9 @@
 #include <google-url/logging.h>
 #include "url_canon_internal.h"
 
+#if defined(WIN32)
 typedef unsigned long long uint64_t;
+#endif
 
 namespace url_canon {
 

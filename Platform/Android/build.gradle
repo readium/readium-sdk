@@ -1,50 +1,80 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-buildscript {
-    repositories {
-       jcenter()
-    }
-    dependencies {
 
-        Properties properties = new Properties()
-        properties.load(rootProject.file('local.properties').newDataInputStream())
+Properties properties = new Properties()
+properties.load(rootProject.file('local.properties').newDataInputStream())
 
-        def ndkClang = properties.getProperty('readium.ndk_clang', "false")
-        ndkClang = (ndkClang == "true") ? true : false;
-        rootProject.ext.set('readium_ndk_clang', ndkClang)
+def ndkClang = properties.getProperty('readium.ndk_clang', "false")
+ndkClang = (ndkClang == "true") ? true : false;
+rootProject.ext.set('readium_ndk_clang', ndkClang)
 //        def ndk_clang = (rootProject.hasProperty("readium_ndk_clang") && rootProject.readium_ndk_clang)
 //        if (ndk_clang) environment 'READIUM_CLANG', 'true'
 
-        def ndkSkipX86 = properties.getProperty('readium.ndk_skipX86', "false")
-        ndkSkipX86 = (ndkSkipX86 == "true") ? true : false;
-        rootProject.ext.set('readium_ndk_skipX86', ndkSkipX86)
+def ndkSkipX86 = properties.getProperty('readium.ndk_skipX86', "false")
+ndkSkipX86 = (ndkSkipX86 == "true") ? true : false;
+rootProject.ext.set('readium_ndk_skipX86', ndkSkipX86)
 //        def ndk_skipX86 = (rootProject.hasProperty("readium_ndk_skipX86") && rootProject.readium_ndk_skipX86)
 //        if (ndk_skipX86) environment 'READIUM_SKIPX86', 'true'
 
-        def ndkSkipARM = properties.getProperty('readium.ndk_skipARM', "false")
-        ndkSkipARM = (ndkSkipARM == "true") ? true : false;
-        rootProject.ext.set('readium_ndk_skipARM', ndkSkipARM)
+def ndkSkipARM = properties.getProperty('readium.ndk_skipARM', "false")
+ndkSkipARM = (ndkSkipARM == "true") ? true : false;
+rootProject.ext.set('readium_ndk_skipARM', ndkSkipARM)
 //        def ndk_skipARM = (rootProject.hasProperty("readium_ndk_skipARM") && rootProject.readium_ndk_skipARM)
 //        if (ndk_skipARM) environment 'READIUM_SKIPARM', 'true'
 
-        def ndkExperimental = properties.getProperty('readium.ndk_experimental', "false")
-        ndkExperimental = (ndkExperimental == "true") ? true : false;
-        rootProject.ext.set('readium_ndk_experimental', ndkExperimental)
+def ndkExperimental = properties.getProperty('readium.ndk_experimental', "false")
+ndkExperimental = (ndkExperimental == "true") ? true : false;
+rootProject.ext.set('readium_ndk_experimental', ndkExperimental)
 //        def ndk_experimental = (rootProject.hasProperty("readium_ndk_experimental") && rootProject.readium_ndk_experimental)
 //        if (ndk_experimental) environment 'READIUM_EXPERIMENTAL', 'true'
 
-        // Use stable gradle or experimental gradle
+println "[[${project.name}]] (ROOT) Gradle Experimental: ${ndkExperimental}"
+println "[[${project.name}]] (ROOT) Skip ARM: ${ndkSkipARM}"
+println "[[${project.name}]] (ROOT) Skip x86: ${ndkSkipX86}"
+println "[[${project.name}]] (ROOT) Clang: ${ndkClang}"
+
+buildscript {
+    repositories {
+        Properties properties = new Properties()
+        properties.load(rootProject.file('local.properties').newDataInputStream())
+        def ndkExperimental = properties.getProperty('readium.ndk_experimental', "false")
+        ndkExperimental = (ndkExperimental == "true") ? true : false;
+
+        if (!ndkExperimental) {
+            google()
+        }
+        maven {
+            url "https://maven.google.com"
+        }
+        jcenter()
+    }
+
+    dependencies {
+        Properties properties = new Properties()
+        properties.load(rootProject.file('local.properties').newDataInputStream())
+        def ndkExperimental = properties.getProperty('readium.ndk_experimental', "false")
+        ndkExperimental = (ndkExperimental == "true") ? true : false;
+
         if (ndkExperimental) {
-            //https://bintray.com/android/android-tools/com.android.tools.build.gradle-experimental/view
+            // https://bintray.com/android/android-tools/com.android.tools.build.gradle-experimental/view
+            // https://mvnrepository.com/artifact/com.android.tools.build/gradle-experimental?repo=google
+            // 0.11.1 fails https://stackoverflow.com/questions/47057160/
             classpath "com.android.tools.build:gradle-experimental:0.9.3"
         } else {
-            //https://bintray.com/android/android-tools/com.android.tools.build.gradle/view
-            classpath "com.android.tools.build:gradle:2.3.3"
+            // https://bintray.com/android/android-tools/com.android.tools.build.gradle/view
+            // https://mvnrepository.com/artifact/com.android.tools.build/gradle?repo=google
+            classpath "com.android.tools.build:gradle:3.4.1"
         }
     }
 }
 
 allprojects {
     repositories {
+        if (!ndkExperimental) {
+            google()
+        }
+        maven {
+            url "https://maven.google.com"
+        }
         jcenter()
         flatDir {
             dirs 'libs'

@@ -5,26 +5,31 @@ def ndk_skipARM = (rootProject.hasProperty("readium_ndk_skipARM") && rootProject
 def ndk_clang = (rootProject.hasProperty("readium_ndk_clang") && rootProject.readium_ndk_clang)
 def ndk_experimental = (rootProject.hasProperty("readium_ndk_experimental") && rootProject.readium_ndk_experimental)
 
+println "[[${project.name}]] (EPUB3) Gradle Experimental: ${ndk_experimental}"
+println "[[${project.name}]] (EPUB3) Skip ARM: ${ndk_skipARM}"
+println "[[${project.name}]] (EPUB3) Skip x86: ${ndk_skipX86}"
+println "[[${project.name}]] (EPUB3) Clang: ${ndk_clang}"
+
 // Retrieve ndk dir
 Properties properties = new Properties()
 properties.load(rootProject.file('local.properties').newDataInputStream())
 def ndkDir = properties.getProperty('ndk.dir', "").toString().replaceAll("\\\\", "/")
-println "NDK dir: ${ndkDir}"
+println "[[${project.name}]] (EPUB3) ndkDir: ${ndkDir}"
 
 def ndkDirIncludes = "${ndkDir}/sysroot/usr/include"
-println "NDK includes: ${ndkDirIncludes}"
+println "[[${project.name}]] (EPUB3) ndkDirIncludes: ${ndkDirIncludes}"
 
 // armeabi-v7a
 def ndkDirIncludesASM_ARM = "${ndkDirIncludes}/arm-linux-androideabi"
-println "NDK includes ASM (ARM): ${ndkDirIncludesASM_ARM}"
+println "[[${project.name}]] (EPUB3) ndkDirIncludesASM_ARM: ${ndkDirIncludesASM_ARM}"
 
 // arm64-v8a
-def ndkDirIncludesASM_ARM64 = "${ndkDirIncludes}/aarch64-linux-androideabi"
-println "NDK includes ASM (ARM64): ${ndkDirIncludesASM_ARM64}"
+def ndkDirIncludesASM_ARM64 = "${ndkDirIncludes}/aarch64-linux-android"
+println "[[${project.name}]] (EPUB3) ndkDirIncludesASM_ARM64: ${ndkDirIncludesASM_ARM64}"
 
 // x86
 def ndkDirIncludesASM_X86 = "${ndkDirIncludes}/x86_64-linux-android"
-println "NDK includes ASM (X86): ${ndkDirIncludesASM_X86}"
+println "[[${project.name}]] (EPUB3) ndkDirIncludesASM_X86: ${ndkDirIncludesASM_X86}"
 
 model {
 //    repositories {
@@ -62,8 +67,8 @@ model {
 //    }
 
     android {
-        compileSdkVersion = 26
-        buildToolsVersion = "27.0.3"
+        compileSdkVersion = 28
+        buildToolsVersion = "28.0.3"
         sources {
             main {
                 jni {
@@ -138,6 +143,7 @@ model {
                 stl = "c++_shared"
 
             def arrayFlags = [
+                // "-J6",
                 "-fexceptions",
                 "-DBUILDING_EPUB3",
 //                "-DLIBXML_ICU_ENABLED",
@@ -181,34 +187,107 @@ model {
             }
         } //buildTypes
 
-        productFlavors {
-            if (!ndk_skipARM)
-                create("arm") {
-                    ndk.with {
-                        abiFilters.add("armeabi-v7a")
-                        ldFlags.addAll([
-                                "-L${file("./obj/local/armeabi-v7a")}".toString()
+        abis {
+            if (!ndk_skipARM) {
+                create("armeabi-v7a") {
+                    ldFlags.addAll([
+                            "-L${file("./obj/local/armeabi-v7a")}".toString()
 //                                ,
 //                                "-L${file("../../../ePub3/ThirdParty/icu4c/lib/armeabi-v7a")}".toString()
-                        ])
-                        cppFlags.add("-I${ndkDirIncludesASM_ARM}".toString())
-                        CFlags.add("-I${ndkDirIncludesASM_ARM}".toString())
-                    }
+                    ])
+                    cppFlags.add("-I${ndkDirIncludesASM_ARM}".toString())
+                    cppFlags.add("-J6")
+                    CFlags.add("-I${ndkDirIncludesASM_ARM}".toString())
+                    CFlags.add("-J6")
                 }
+                create("arm64-v8a") {
+                    ldFlags.addAll([
+                            "-L${file("./obj/local/armeabi-v8a")}".toString()
+//                                ,
+//                                "-L${file("../../../ePub3/ThirdParty/icu4c/lib/armeabi-v7a")}".toString()
+                    ])
+                    cppFlags.add("-I${ndkDirIncludesASM_ARM64}".toString())
+                    CFlags.add("-I${ndkDirIncludesASM_ARM64}".toString())
+                }
+            }
 
-            if (!ndk_skipX86)
+            if (!ndk_skipX86) {
                 create("x86") {
-                    ndk.with {
-                        abiFilters.add("x86")
-                        ldFlags.addAll([
-                                "-L${file("./obj/local/x86")}".toString()
+                    ldFlags.addAll([
+                            "-L${file("./obj/local/x86")}".toString()
 //                                ,
 //                                "-L${file("../../../ePub3/ThirdParty/icu4c/lib/x86")}".toString()
-                        ])
-                        cppFlags.add("-I${ndkDirIncludesASM_X86}".toString())
-                        CFlags.add("-I${ndkDirIncludesASM_X86}".toString())
+                    ])
+                    cppFlags.add("-I${ndkDirIncludesASM_X86}".toString())
+                    CFlags.add("-I${ndkDirIncludesASM_X86}".toString())
+                }
+                create("x86_64") {
+                    ldFlags.addAll([
+                            "-L${file("./obj/local/x86_64")}".toString()
+//                                ,
+//                                "-L${file("../../../ePub3/ThirdParty/icu4c/lib/x86")}".toString()
+                    ])
+                    cppFlags.add("-I${ndkDirIncludesASM_X86}".toString())
+                    CFlags.add("-I${ndkDirIncludesASM_X86}".toString())
+                }
+            }
+        } //abis
+
+        productFlavors {
+            if (!ndk_skipARM) {
+                // create("armeabi-v7a") {
+                //     ndk.with {
+                //         abiFilters.add("armeabi-v7a")
+                //     }
+                // }
+                // create("arm64-v8a") {
+                //     ndk.with {
+                //         abiFilters.add("arm64-v8a")
+                //     }
+                // }
+                create("armeabi-v7a--arm64-v8a") {
+                    ndk.with {
+                        abiFilters.add("armeabi-v7a")
+                        abiFilters.add("arm64-v8a")
                     }
                 }
+            }
+
+            if (!ndk_skipX86) {
+                // create("x86") {
+                //     ndk.with {
+                //         abiFilters.add("x86")
+                //     }
+                // }
+                // create("x86_64") {
+                //     ndk.with {
+                //         abiFilters.add("x86_64")
+                //     }
+                // }
+                create("x86--x86_64") {
+                    ndk.with {
+                        abiFilters.add("x86")
+                        abiFilters.add("x86_64")
+                    }
+                }
+            }
+
+            if (!ndk_skipARM && !ndk_skipX86) {
+                create("armeabi-v7a--arm64-v8a--x86--x86_64") {
+                    ndk.with {
+                        abiFilters.add("armeabi-v7a")
+                        abiFilters.add("arm64-v8a")
+                        abiFilters.add("x86")
+                        abiFilters.add("x86_64")
+                    }
+                }
+            }
         } //productFlavors
     } //android
 } //model
+
+// tasks.all { task ->
+//     if (task.name.startsWith('compile') && task.name.endsWith('Ndk')) {
+//         task.enabled = false
+//     }
+// }

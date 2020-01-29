@@ -7,12 +7,17 @@ def ndk_skipARM = (rootProject.hasProperty("readium_ndk_skipARM") && rootProject
 def ndk_clang = (rootProject.hasProperty("readium_ndk_clang") && rootProject.readium_ndk_clang)
 def ndk_experimental = (rootProject.hasProperty("readium_ndk_experimental") && rootProject.readium_ndk_experimental)
 
+println "[[${project.name}]] (EPUB3) Gradle Experimental: ${ndk_experimental}"
+println "[[${project.name}]] (EPUB3) Skip ARM: ${ndk_skipARM}"
+println "[[${project.name}]] (EPUB3) Skip x86: ${ndk_skipX86}"
+println "[[${project.name}]] (EPUB3) Clang: ${ndk_clang}"
+
 if (ndk_experimental) {
-    println "${project.name}: Using Gradle EXPERIMENTAL to build EPUB3 lib"
     apply from: 'build_experimental.gradle'
-} else {
-    println "${project.name}: Using Gradle STABLE to build EPUB3 lib"
 }
+// else {
+//     defaultTasks 'buildMk'
+// }
 
 /**
  * Prebuild using ndk
@@ -77,7 +82,7 @@ task copyEpub3XmlIncludesVALIDATION(type: Copy) {
 }
 
 task copyEpub3XmlIncludes() {
-    println "Copy XML includes"
+    println "[[${project.name}]] (EPUB3) Task: copyEpub3XmlIncludes"
 }
 
 copyEpub3XmlIncludes.dependsOn "copyEpub3XmlIncludesVALIDATION", "copyEpub3XmlIncludesUTILS", "copyEpub3XmlIncludesTREE"
@@ -101,7 +106,7 @@ task copyEpub3Includes(dependsOn: 'copyEpub3RootIncludes', type: Copy) {
 }
 
 task buildIncludes {
-    println "Build includes"
+    println "[[${project.name}]] (EPUB3) Task: buildIncludes"
 }
 
 buildIncludes.dependsOn "copyEpub3Includes",
@@ -114,16 +119,14 @@ buildIncludes.dependsOn "copyEpub3Includes",
 
 task buildMk(dependsOn: "buildIncludes", type: Exec) {
 
-    // Retrieve ndk dir
+    println "[[${project.name}]] (EPUB3) Task: buildMk"
+
     Properties properties = new Properties()
     properties.load(project.rootProject.file('local.properties').newDataInputStream())
     def ndkDir = properties.getProperty('ndk.dir', null)
 
-    def ndkDirIncludes = "${ndkDir}/sysroot/usr/include".toString().replaceAll("\\\\", "/")
-    println "NDK includes: ${ndkDirIncludes}"
-    environment "READIUM_NDK_INCLUDE_DIR", "${ndkDirIncludes}"
-
-    // Call ndk build
+    // def ndkDirIncludes = "${ndkDir}/sysroot/usr/include".toString().replaceAll("\\\\", "/")
+    // environment "READIUM_NDK_INCLUDE_DIR", "${ndkDirIncludes}"
 
     //def isWindows = OperatingSystem.current().isLinux();
     def isWindows = Os.isFamily(Os.FAMILY_WINDOWS)
@@ -138,7 +141,7 @@ task buildMk(dependsOn: "buildIncludes", type: Exec) {
     if (ndk_experimental) environment 'READIUM_EXPERIMENTAL', 'true'
 
     commandLine "$ndkDir/ndk-build${ndkBuildExt}",
-            "-j", "4", //Runtime.runtime.availableProcessors()
+            "-j", "12", //Runtime.runtime.availableProcessors()
             '-C', projectPath,
             'NDK_APPLICATION_MK=Application.mk',
             "APP_BUILD_SCRIPT=${buildScript}",
@@ -147,14 +150,14 @@ task buildMk(dependsOn: "buildIncludes", type: Exec) {
 }
 
 tasks.whenTaskAdded { task ->
-    def taskName = task.name
+    println "[[${project.name}]] (EPUB3) TaskAdded: ${task.name}"
 
-    if (taskName.startsWith("compile")) {
+    if (task.name.startsWith("compile")) {
         if (ndk_experimental) {
-            println "${project.name} - ${taskName}: Using Gradle EXPERIMENTAL, no need to invoke external NDK / Makefile to build EPUB3 lib"
             task.dependsOn "buildIncludes"
-        } else {
-            task.dependsOn "buildMk"
         }
+        // else {
+        //     task.dependsOn "buildMk"
+        // }
     }
 }
