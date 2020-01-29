@@ -137,7 +137,7 @@ task copyLibs {
                     def dstDirPath_AAR = "${project.projectDir}/../dist/${buildType.name.toUpperCase()}"
                     copy {
                         from("${srcDirPath_AAR}") {
-                            include("lib-${flavor.name}-${buildType.name}.aar")
+                            include("*-${flavor.name}-${buildType.name}.aar")
                         }
                         into("${dstDirPath_AAR}")
                     }
